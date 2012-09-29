@@ -1,15 +1,24 @@
 <!DOCTYPE HTML>
 <html lang="en">
-		<head>
-				<title>MysTrade</title>  
-  			<meta name="description" content="MysTrade - A game of mysterious trades">  
-  			<link rel="stylesheet" href="style.css">  
- 		</head>  
+	<head>
+		<title>MysTrade</title>  
+  		<meta name="description" content="MysTrade - A game of mysterious trades">  
+  		<link rel="stylesheet" href="style.css">  
+ 	</head>  
  		
-		<body>
-				<div class="logobox">
-					<img src="logo_mystrade.png" height="122" width="422" alt="MysTrade">
-					<div class="motto">a game of mysterious trades</div>
-				<div>
-		</body>  
+	<body>
+		<div class="toplinks">
+			{% block toplinks %}<a href="{% url game.login %}">Log in</a>{% endblock %}
+		</div>
+
+		<div class="logobox">
+			<img src="logo_mystrade.png" height="122" width="422" alt="MysTrade">
+			<div class="motto">a game of mysterious trades<br/></div>
+
+		<div>
+
+		<div class="content">
+			{% block content %}{% endblock %}
+		</div>
+	</body>  
 </html>
