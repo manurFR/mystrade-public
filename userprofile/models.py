@@ -1,0 +1,18 @@
+from django.contrib.auth.models import User
+from django.db import models
+from django.db.models.signals import post_save
+
+# Create your models here.
+class UserProfile(models.Model):
+    user = models.OneToOneField(User)
+    
+    bio = models.TextField(null = True, blank = True, 
+        help_text = "The presentation text for the user")
+    contact = models.TextField(null = True, blank = True, 
+        help_text = "This user's email address will never be publicly displayed. Let her specify here how other players can reach her (IM, email, etc.)")
+
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+post_save.connect(create_user_profile, sender=User)
