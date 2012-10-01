@@ -1,4 +1,5 @@
 # Django settings for mystrade project.
+from django.core.urlresolvers import reverse_lazy
 import os
 
 DEBUG = True
@@ -129,6 +130,8 @@ INSTALLED_APPS = (
 )
 
 AUTH_PROFILE_MODULE = 'userprofile.UserProfile'
+LOGIN_URL = reverse_lazy('login')
+LOGIN_REDIRECT_URL = reverse_lazy('welcome')
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
