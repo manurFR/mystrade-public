@@ -1,11 +1,12 @@
+{% load staticfiles %}
 {% load url from future %}
 
 <!DOCTYPE HTML>
 <html lang="en">
 	<head>
 		<title>MysTrade</title>  
-  		<meta name="description" content="MysTrade - A game of mysterious trades">  
-  		<link rel="stylesheet" href="style.css">  
+  		<meta name="description" content="MysTrade - A game of mysterious trades"/>  
+  		<link rel="stylesheet" href="{% static "style.css" %}" type="text/css"/>  
  	</head>  
  		
 	<body>
@@ -14,10 +15,9 @@
 		</div>
 
 		<div class="logobox">
-			<img src="logo_mystrade.png" height="122" width="422" alt="MysTrade">
+			<img src="{% static "logo_mystrade.png" %}" height="122" width="422" alt="MysTrade">
 			<div class="motto">a game of mysterious trades<br/></div>
-
-		<div>
+		</div>
 
 		<div class="content">
 			{% block content %}{% endblock %}
