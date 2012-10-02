@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% load url from future %}
+
+{% block toplinks %}
+	<a href="{% url 'userprofile.views.profile' %}">Profile</a> 
+	<a href="{% url 'logout' %}">Log out</a>
+{% endblock toplinks %}
