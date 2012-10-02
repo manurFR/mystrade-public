@@ -1,0 +1,38 @@
+{% extends "base_authenticated.html" %}
+
+{% block content %}
+	<table class="">
+		<thead>
+			<tr>
+				<th colspan="2">Your details</th>			
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Username :</td>
+				<td>{{ user.username }}</td>
+			</tr>
+			<tr>
+				<td>First name :</td>
+				<td>{{ user.first_name }}</td>
+			</tr>
+			<tr>
+				<td>Last name :</td>
+				<td>{{ user.last_name }}</td>
+			</tr>
+			<tr>
+				<td>Email :<br/>
+				    Note: only for sending notifications. It will never be publicly displayed.</td>
+				<td>{{ user.email }}</td>
+			</tr>
+			<tr>
+				<td>Your bio (for others to know you) :</td>
+				<td>{{ user.get_profile.bio|default:"Nothing yet." }}</td>
+			</tr>
+			<tr>
+				<td>Your contact informations (for others to reach you) :</td>
+				<td>{{ user.get_profile.contact|default:"Nothing yet." }}</td>
+			</tr>													
+		</tbody>
+	</table>
+{% endblock content %}
