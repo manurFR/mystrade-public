@@ -13,15 +13,15 @@
 
 	<form method="post" action="{% url 'login' %}">
 		{% csrf_token %}
-		<table>
-		<tr class="form-row">
-		    <td class="label">{{ form.username.label_tag }} :</td>
-		    <td>{{ form.username }}</td>
-		</tr>
-		<tr class="form-row">
-		    <td class="label">{{ form.password.label_tag }} :</td>
-		    <td>{{ form.password }}</td>
-		</tr>
+		<table class="login">
+			<tr class="form-row">
+			    <td class="label">{{ form.username.label_tag }} :</td>
+			    <td>{{ form.username }}</td>
+			</tr>
+			<tr class="form-row">
+			    <td class="label">{{ form.password.label_tag }} :</td>
+			    <td>{{ form.password }}</td>
+			</tr>
 		</table>
 		
 		<div class="submit-row">

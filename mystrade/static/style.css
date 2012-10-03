@@ -1,7 +1,9 @@
 body {
 	background-color: #FFB600;
-	margin: 8px 20px 0 20px;
+	width: 980px;
+	margin: 5px auto 0 auto;
   	font-family: 'Lucida Grande', Verdana, Arial, sans-serif;
+	font-size: 11pt;
 }
 
 .toplinks {
@@ -27,11 +29,34 @@ body {
 
 .content {
 	border: 1px solid #FFD773;
-	/*background-color: #FFE640;*/
-	padding: 5px;
+	padding: 10px;
 	border-radius: 10px;
 	-moz-border-radius: 10px;
 	-webkit-border-radius: 10px;
+}
+
+.content table {
+	width: 960px;
+}
+
+.content thead {
+	background-color: #FFE640;
+	text-align: center;
+}
+
+.content .label {
+	width: 480px;
+	color: #333333;
+	line-height: 2em;
+	padding-right: 1em;
+	text-align: right;
+}
+
+.content .label .note {
+	margin-top: -0.5em;
+	line-height: 1em;
+	font-size: 0.8em;
+	font-style: italic;
 }
 
 .form-row .label {

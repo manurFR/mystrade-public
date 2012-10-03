@@ -1,7 +1,7 @@
 {% extends "base_authenticated.html" %}
 
 {% block content %}
-	<table class="">
+	<table>
 		<thead>
 			<tr>
 				<th colspan="2">Your details</th>			
@@ -9,29 +9,34 @@
 		</thead>
 		<tbody>
 			<tr>
-				<td>Username :</td>
+				<td class="label">Username :</td>
 				<td>{{ user.username }}</td>
 			</tr>
 			<tr>
-				<td>First name :</td>
-				<td>{{ user.first_name }}</td>
+				<td class="label">First name :</td>
+				<td>{{ user.first_name|default:"<em>Nothing yet.</em>" }}</td>
 			</tr>
 			<tr>
-				<td>Last name :</td>
-				<td>{{ user.last_name }}</td>
+				<td class="label">Last name :</td>
+				<td>{{ user.last_name|default:"<em>Nothing yet.</em>" }}</td>
 			</tr>
 			<tr>
-				<td>Email :<br/>
-				    Note: only for sending notifications. It will never be publicly displayed.</td>
+				<td class="label">Email :
+				    <div class="note">for sending notifications - will never be publicly displayed</div>
+				</td>
 				<td>{{ user.email }}</td>
 			</tr>
 			<tr>
-				<td>Your bio (for others to know you) :</td>
-				<td>{{ user.get_profile.bio|default:"Nothing yet." }}</td>
+				<td class="label">Your bio :
+					<div class="note">for others to know you</div>
+				</td>
+				<td>{{ user.get_profile.bio|default:"<em>Nothing yet.</em>" }}</td>
 			</tr>
 			<tr>
-				<td>Your contact informations (for others to reach you) :</td>
-				<td>{{ user.get_profile.contact|default:"Nothing yet." }}</td>
+				<td class="label">Your contact informations :
+					<div class="note">for others to reach you</div>
+				</td>
+				<td>{{ user.get_profile.contact|default:"<em>Nothing yet.</em>" }}</td>
 			</tr>													
 		</tbody>
 	</table>
