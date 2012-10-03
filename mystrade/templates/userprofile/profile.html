@@ -1,10 +1,18 @@
 {% extends "base_authenticated.html" %}
+{% load staticfiles %}
+{% load url from future %}
 
 {% block content %}
 	<table>
 		<thead>
 			<tr>
-				<th colspan="2">Your details</th>			
+				<th colspan="2">
+					Your details
+					<span class="floatright">
+						<a href="{% url 'userprofile.views.editprofile' user.id %}">
+							<img src="{% static "pencil.png" %}" height="16" width="16" alt=""/>Edit</a>
+					</span>
+				</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -14,11 +22,11 @@
 			</tr>
 			<tr>
 				<td class="label">First name :</td>
-				<td>{{ user.first_name|default:"<em>Nothing yet.</em>" }}</td>
+				<td>{{ user.first_name|default:'<span class="blank">Nothing yet.</span>' }}</td>
 			</tr>
 			<tr>
 				<td class="label">Last name :</td>
-				<td>{{ user.last_name|default:"<em>Nothing yet.</em>" }}</td>
+				<td>{{ user.last_name|default:'<span class="blank">Nothing yet.</span>' }}</td>
 			</tr>
 			<tr>
 				<td class="label">Email :
@@ -30,13 +38,13 @@
 				<td class="label">Your bio :
 					<div class="note">for others to know you</div>
 				</td>
-				<td>{{ user.get_profile.bio|default:"<em>Nothing yet.</em>" }}</td>
+				<td>{{ user.get_profile.bio|default:'<span class="blank">Nothing yet.</span>' }}</td>
 			</tr>
 			<tr>
 				<td class="label">Your contact informations :
 					<div class="note">for others to reach you</div>
 				</td>
-				<td>{{ user.get_profile.contact|default:"<em>Nothing yet.</em>" }}</td>
+				<td>{{ user.get_profile.contact|default:'<span class="blank">Nothing yet.</span>' }}</td>
 			</tr>													
 		</tbody>
 	</table>

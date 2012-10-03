@@ -2,6 +2,10 @@
 	width: auto;
 }
 
+.content table.login td {
+	vertical-align: middle;
+}
+
 .content {
 	background-color: #FFC840;
 	margin-top: 50px;

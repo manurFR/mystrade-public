@@ -44,6 +44,10 @@ body {
 	text-align: center;
 }
 
+.content td {
+	vertical-align: text-top;
+}
+
 .content .label {
 	width: 480px;
 	color: #333333;
@@ -83,7 +87,6 @@ input, textarea, select {
 	font-weight: normal;
 	margin: 2px 0;
 	padding: 2px 3px;
-	vertical-align: middle;
 }
 
 .submit-row {
@@ -94,4 +97,25 @@ input, textarea, select {
 .errors {
 	font-size: 0.8em;
 	color: #A67600;
+}
+
+.blank {
+	font-style: italic;
+	font-size: 0.8em;
+	color: #A67600;
+}
+
+.floatright {
+	float: right;
+	margin-right: 1em;
+}
+
+a {
+	color: #800024;
+	font-weight: normal;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration:underline;
 }
