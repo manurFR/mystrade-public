@@ -114,6 +114,10 @@ TEMPLATE_DIRS = (
     os.path.join(SITE_ROOT, 'templates'),
 )
 
+MYSTRADE_APPS = (
+    'userprofile',
+)
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -125,9 +129,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
-    ######## mystrade #########
-    'userprofile',
-)
+) + MYSTRADE_APPS
 
 AUTH_PROFILE_MODULE = 'userprofile.UserProfile'
 LOGIN_URL = reverse_lazy('login')

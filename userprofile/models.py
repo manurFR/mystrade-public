@@ -10,6 +10,15 @@ class UserProfile(models.Model):
         help_text = "The presentation text for the user")
     contact = models.TextField(null = True, blank = True, 
         help_text = "This user's email address will never be publicly displayed. Let her specify here how other players can reach her (IM, email, etc.)")
+    
+    @property
+    def name(self):
+        if self.user.first_name and self.user.last_name:
+            return " ".join([self.user.first_name, self.user.last_name])
+        elif self.user.last_name:
+            return self.user.last_name
+        else:
+            return self.user.username
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
