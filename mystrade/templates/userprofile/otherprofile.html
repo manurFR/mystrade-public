@@ -1,0 +1,23 @@
+{% extends "base_authenticated.html" %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th colspan="2">
+					{{ user.get_profile.name|title }}
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td class="label">Bio :</td>
+				<td>{{ user.get_profile.bio|default:'<span class="blank">Nothing yet.</span>' }}</td>
+			</tr>
+			<tr>
+				<td class="label">Contact informations :</td>
+				<td>{{ user.get_profile.contact|default:'<span class="blank">Nothing yet.</span>' }}</td>
+			</tr>													
+		</tbody>
+	</table>
+{% endblock content %}

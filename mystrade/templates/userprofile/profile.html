@@ -7,15 +7,11 @@
 		<thead>
 			<tr>
 				<th colspan="2">
-					{% if not is_other_user %}
-						Your details
-						<span class="floatright">
-							<a href="{% url 'userprofile.views.editprofile' user.id %}">
-								<img src="{% static "pencil.png" %}" height="16" width="16" alt=""/>Edit</a>
-						</span>
-					{% else %}
-						{{ user.username|capfirst }}'s details
-					{% endif %}
+					Your details
+					<span class="floatright">
+						<a href="{% url 'userprofile.views.editprofile' user.id %}">
+							<img src="{% static "pencil.png" %}" height="16" width="16" alt=""/>Edit</a>
+					</span>
 				</th>
 			</tr>
 		</thead>
