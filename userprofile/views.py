@@ -14,7 +14,10 @@ def editprofile(request, user_id):
         user_form = UserForm(data = request.POST, instance = request.user)
         userprofile_form = UserProfileForm(data = request.POST, instance = request.user.get_profile())
         if user_form.is_valid() and userprofile_form.is_valid():
-            user_form.save()
+            user = user_form.save(commit = False)
+            if user_form.cleaned_data['new_password1']:
+                user.set_password(user_form.cleaned_data['new_password1'])
+            user.save()
             userprofile_form.save()
             return HttpResponseRedirect(reverse('profile'))
     else:
