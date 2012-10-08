@@ -2,8 +2,13 @@
 {% load url from future %}
 
 {% block content %}
-
-	<table>
-		{{ form.as_table }}	
-	</table>
+	<form action="{% url 'userprofile.views.editprofile' user.id %}" method="POST">{% csrf_token %}
+		<table>
+			{{ user_form.as_table }}
+		</table>
+		<table>
+			{{ userprofile_form.as_table }}
+		</table>
+		<input type="submit" value="Submit" />
+	</form>
 {% endblock content %}

@@ -1,7 +1,15 @@
 from django import forms
-from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.models import User
+from userprofile.models import UserProfile
 
-class MysTradeUserChangeForm(SetPasswordForm):
-    first_name = forms.CharField(max_length = User._meta.get_field('first_name').max_length)
-    
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['bio', 'contact']
+
+#SetPasswordForm 
