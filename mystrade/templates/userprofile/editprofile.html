@@ -4,11 +4,56 @@
 {% block content %}
 	<form action="{% url 'userprofile.views.editprofile' user.id %}" method="POST">{% csrf_token %}
 		<table>
-			{{ user_form.as_table }}
+			<tr>
+				<td colspan="2" class="header">Edit profile</th>
+			</tr>
+			<tr>
+				<th>{{ user_form.username.label_tag }} :</th>
+				<td>{{ user_form.username }}&nbsp;<span class="errors">{{ user_form.username.errors.as_text }}</span>
+				    <span class="helptext">{{ user_form.username.help_text }}</span></td>
+			</tr>
+			<tr>
+				<th>{{ user_form.first_name.label_tag }} :</th>
+				<td>{{ user_form.first_name }}&nbsp;<span class="errors">{{ user_form.first_name.errors.as_text }}</span>
+				    <span class="helptext">{{ user_form.first_name.help_text }}</span></td>
+			</tr>
+			<tr>
+				<th>{{ user_form.last_name.label_tag }} :</th>
+				<td>{{ user_form.last_name }}&nbsp;<span class="errors">{{ user_form.last_name.errors.as_text }}</span>
+				    <span class="helptext">{{ user_form.last_name.help_text }}</span></td>
+			</tr>
+			<tr>
+				<th>{{ user_form.email.label_tag }} :</th>
+				<td>{{ user_form.email }}&nbsp;<span class="errors">{{ user_form.email.errors.as_text }}</span>
+				    <span class="helptext">{{ user_form.email.help_text }}</span></td>
+			</tr>
+			<tr>
+				<th>{{ userprofile_form.bio.label_tag }} :</th>
+				<td>{{ userprofile_form.bio }}&nbsp;<span class="errors">{{ userprofile_form.bio.errors.as_text }}</span>
+				    <span class="brhelptext">{{ userprofile_form.bio.help_text }}</span></td>
+			</tr>
+			<tr>
+				<th>{{ userprofile_form.contact.label_tag }} :</th>
+				<td>{{ userprofile_form.contact }}&nbsp;<span class="errors">{{ userprofile_form.contact.errors.as_text }}</span>
+				    <span class="brhelptext">{{ userprofile_form.contact.help_text }}</span></td>
+			</tr>
+			<tr>
+				<td colspan="2" class="header">Change password
+					<span class="helptext">Let blank to keep the same password</span></td>
+			</tr>
+			<tr>
+				<th>{{ user_form.new_password1.label_tag }} :</th>
+				<td>{{ user_form.new_password1 }}&nbsp;<span class="errors">{{ user_form.new_password1.errors.as_text }}</span>
+				    <span class="helptext">{{ user_form.new_password1.help_text }}</span></td>
+			</tr>
+			<tr>
+				<th>{{ user_form.new_password2.label_tag }} :</th>
+				<td>{{ user_form.new_password2 }}&nbsp;<span class="errors">{{ user_form.new_password2.errors.as_text }}</span>
+				    <span class="helptext">{{ user_form.new_password2.help_text }}</span></td>
+			</tr>
 		</table>
-		<table>
-			{{ userprofile_form.as_table }}
-		</table>
-		<input type="submit" value="Submit" />
+		<div class="submit-button">
+			<input type="submit" value="Submit" />
+		</div>
 	</form>
 {% endblock content %}

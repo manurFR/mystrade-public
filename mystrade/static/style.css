@@ -39,42 +39,38 @@ body {
 	width: 960px;
 }
 
-.content thead {
-	background-color: #FFE640;
-	text-align: center;
+.content tr {
+	line-height: 1.5em;
 }
 
-.content td {
+.content .header {
+	line-height: 1.2em;
+	background-color: #FFE640;
+	padding-left: 2em;
+}
+
+.content th {
+	width: 230px;
+	font-weight: normal;
+	padding-right: 1em;
+	text-align: right;
 	vertical-align: text-top;
 }
 
-.content .label {
-	width: 480px;
+.content .label, .content label {
 	color: #333333;
-	line-height: 2em;
-	padding-right: 1em;
-	text-align: right;
 }
 
-.content .label .note {
-	margin-top: -0.5em;
-	line-height: 1em;
-	font-size: 0.8em;
+.helptext {
+	font-size: 8pt;
 	font-style: italic;
 }
 
-.form-row .label {
-	color: #333333;
-	float: left;
-	font-size: 1em;
-	line-height: 2em;
-	padding-right: 0.5em;
-	text-align: right;
-	width: 9em;
-}
-
-.form-row .input {
-	width:14em;
+.brhelptext {
+	font-size: 8pt;
+	font-style: italic;
+	display: block;
+	margin-top: -0.6em;
 }
 
 input[type="text"], input[type="password"], textarea, select {
@@ -89,9 +85,8 @@ input, textarea, select {
 	padding: 2px 3px;
 }
 
-.submit-row {
-	padding-top: 1em;
-	padding-bottom: 0.5em;
+.submit-button {
+	margin-left: 250px;
 }
 
 .errors {
@@ -108,6 +103,11 @@ input, textarea, select {
 .floatright {
 	float: right;
 	margin-right: 1em;
+}
+
+.frame {
+	border: thin inset white;
+	padding: 2px;
 }
 
 a {

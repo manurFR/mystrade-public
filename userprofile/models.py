@@ -7,9 +7,9 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User)
     
     bio = models.TextField(null = True, blank = True, 
-        help_text = "The presentation text for the user")
+        help_text = "Your presentation text")
     contact = models.TextField(null = True, blank = True, 
-        help_text = "This user's email address will never be publicly displayed. Let her specify here how other players can reach her (IM, email, etc.)")
+        help_text = "Your email address will never be publicly displayed. Specify here how other players can reach you (IM, email, etc.)")
     
     @property
     def name(self):

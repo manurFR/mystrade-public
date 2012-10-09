@@ -2,22 +2,22 @@
 
 {% block content %}
 	<table>
-		<thead>
-			<tr>
-				<th colspan="2">
-					{{ user.get_profile.name|title }}
-				</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td class="label">Bio :</td>
-				<td>{{ user.get_profile.bio|default:'<span class="blank">Nothing yet.</span>' }}</td>
-			</tr>
-			<tr>
-				<td class="label">Contact informations :</td>
-				<td>{{ user.get_profile.contact|default:'<span class="blank">Nothing yet.</span>' }}</td>
-			</tr>													
-		</tbody>
+		<tr>
+			<td colspan="2" class="header">
+				{{ user.get_profile.name|title }}
+			</td>
+		</tr>
+		<tr>
+			<th class="label">Bio :</th>
+			<td><div class="frame">
+					{{ user.get_profile.bio|linebreaksbr|default:'<span class="blank">Nothing yet.</span>' }}
+				</div></td>
+		</tr>
+		<tr>
+			<th class="label">Contact informations :</th>
+			<td><div class="frame">
+					{{ user.get_profile.contact|linebreaksbr|default:'<span class="blank">Nothing yet.</span>' }}
+				</div></td>
+		</tr>													
 	</table>
 {% endblock content %}

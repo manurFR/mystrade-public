@@ -1,3 +1,12 @@
+.content {
+	background-color: #FFC840;
+	margin-top: 50px;
+	margin-left: auto;
+	margin-right: auto;
+  	width: 21em;
+  	text-align: center;
+}
+
 .content table.login {
 	width: auto;
 }
@@ -6,11 +15,21 @@
 	vertical-align: middle;
 }
 
-.content {
-	background-color: #FFC840;
-	margin-top: 50px;
-	margin-left: auto;
-	margin-right: auto;
-  	width: 21em;
-  	text-align: center;
+.form-row .label {
+	color: #333333;
+	float: left;
+	font-size: 1em;
+	line-height: 2em;
+	padding-right: 0.5em;
+	text-align: right;
+	width: 9em;
+}
+
+.form-row .input {
+	width:14em;
+}
+
+.submit-row {
+	padding-top: 1em;
+	padding-bottom: 0.5em;
 }
