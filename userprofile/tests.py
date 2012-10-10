@@ -9,7 +9,11 @@ class UserProfileTest(TestCase):
     def test_name_firstBlank_and_last(self):
         user = User.objects.create(username = "username", first_name = "", last_name="last")
         self.assertEqual("last", user.get_profile().name)
-    
+
+    def test_name_lastBlank_and_first(self):
+        user = User.objects.create(username = "username", first_name = "first", last_name="")
+        self.assertEqual("first", user.get_profile().name)
+
     def test_only_username(self):
         user = User.objects.create(username = "username", first_name = "", last_name="")
         self.assertEqual("username", user.get_profile().name)

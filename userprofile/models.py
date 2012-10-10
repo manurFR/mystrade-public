@@ -17,6 +17,8 @@ class UserProfile(models.Model):
             return " ".join([self.user.first_name, self.user.last_name])
         elif self.user.last_name:
             return self.user.last_name
+        elif self.user.first_name:
+            return self.user.first_name
         else:
             return self.user.username
 

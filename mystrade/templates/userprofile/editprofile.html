@@ -1,4 +1,5 @@
 {% extends "base_authenticated.html" %}
+{% load staticfiles %}
 {% load url from future %}
 
 {% block content %}
@@ -21,6 +22,10 @@
 				<th>{{ user_form.last_name.label_tag }} :</th>
 				<td>{{ user_form.last_name }}&nbsp;<span class="errors">{{ user_form.last_name.errors.as_text }}</span>
 				    <span class="helptext">{{ user_form.last_name.help_text }}</span></td>
+			</tr>
+			<tr>
+				<th/>
+				<td class="helptext">People will see you as : <span id="displayed_name"></span></td>
 			</tr>
 			<tr>
 				<th>{{ user_form.email.label_tag }} :</th>
@@ -56,4 +61,5 @@
 			<input type="submit" value="Submit" />
 		</div>
 	</form>
+	<script type="text/javascript" src="{% static 'displayed_name.js' %}"></script>
 {% endblock content %}
