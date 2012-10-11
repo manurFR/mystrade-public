@@ -8,5 +8,7 @@ class RuleCard(models.Model):
 
     ref_name = models.CharField("Internal reference name", max_length = 20, unique = True)
     public_name = models.CharField("Public name shown to the players (can be blank)", max_length = 50, blank = True)
+    
+    mandatory = models.BooleanField("Activate for rules that must always be included in their ruleset")
 
     description = models.TextField()
