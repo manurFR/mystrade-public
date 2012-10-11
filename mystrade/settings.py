@@ -117,6 +117,7 @@ TEMPLATE_DIRS = (
 
 MYSTRADE_APPS = (
     'userprofile',
+    'scoring',
 )
 
 INSTALLED_APPS = (

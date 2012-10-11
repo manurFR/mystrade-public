@@ -6,10 +6,8 @@ from django.db.models.signals import post_save
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     
-    bio = models.TextField(null = True, blank = True, 
-        help_text = "Your presentation text")
-    contact = models.TextField(null = True, blank = True, 
-        help_text = "Your email address will never be publicly displayed. Specify here how other players can reach you (IM, email, etc.)")
+    bio = models.TextField(blank = True, help_text = "Your presentation text")
+    contact = models.TextField(blank = True, help_text = "Your email address will never be publicly displayed. Specify here how other players can reach you (IM, email, etc.)")
     
     @property
     def name(self):
