@@ -12,3 +12,6 @@ class RuleCard(models.Model):
     mandatory = models.BooleanField("Activate for rules that must always be included in their ruleset")
 
     description = models.TextField()
+
+    def __unicode__(self):
+        return "{} - ({}) {}".format(self.ref_name, self.public_name, self.description)

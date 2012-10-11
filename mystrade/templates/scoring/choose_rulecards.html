@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load url from future %}
+
+{% block content %}
+	<form action="{% url 'scoring' %}" method="POST">{% csrf_token %}
+		{% for rulecard in list_rulecards %}
+			<div class="rulecard">
+				<div class="rulecard_name">{{ rulecard.public_name }}</div>
+				<div class="rulecard_desc">{{ rulecard.description }}</div>
+			</div>
+		{% endfor %}
+	</form>
+{% endblock content %}

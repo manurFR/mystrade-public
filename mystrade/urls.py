@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     url(r'^logout$', 'django.contrib.auth.views.logout_then_login',
         name='logout'),
     url(r'^profile/', include('userprofile.urls')),
+    url(r'^scoring/', include('scoring.urls')),
     
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^caramba/doc/', include('django.contrib.admindocs.urls')),
