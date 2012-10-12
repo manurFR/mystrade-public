@@ -4,11 +4,14 @@
 
 {% block content %}
 	<form action="{% url 'scoring' %}" method="POST">{% csrf_token %}
+		<input type="submit" value="Submit"/>
 		{% for rulecard in list_rulecards %}
 			<div class="rulecard">
 				<div class="rulecard_name">{{ rulecard.public_name }}</div>
 				<div class="rulecard_desc">{{ rulecard.description }}</div>
+				<input type="checkbox" name="id_rulecard_{{ rulecard.id }}"/>
 			</div>
 		{% endfor %}
+		{{ rulecards_form.as_p }}
 	</form>
 {% endblock content %}
