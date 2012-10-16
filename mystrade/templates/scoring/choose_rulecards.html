@@ -8,6 +8,7 @@
 		<input type="submit" value="Submit"/>
 		{% for form in formset %}
 			<div class="rulecard">
+				{{ form.cardId }}
 				<div class="rulecard_name">{{ form.public_name.value }}</div>
 				<div class="rulecard_desc">{{ form.description.value }}</div>
 				{{ form.selectedRule }}
