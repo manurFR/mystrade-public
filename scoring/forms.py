@@ -7,3 +7,4 @@ class RuleCardFormParse(forms.Form):
 class RuleCardFormDisplay(RuleCardFormParse):
     public_name = forms.CharField()
     description = forms.CharField()
+    mandatory = forms.BooleanField()

@@ -14,6 +14,9 @@ def choose_rulecards(request):
         if formset.is_valid():
             selected_cards = []
             for card in queryset:
+                if card.mandatory:
+                    selected_cards.append(card)
+                    continue
                 for form in formset:
                     if int(form.cleaned_data['card_id']) == card.id and form.cleaned_data['selected_rule']:
                         selected_cards.append(card)
@@ -26,8 +29,9 @@ def choose_rulecards(request):
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
         formset = RuleCardsFormSet(initial = [{'card_id':       card.id,
-                                               'public_name':  card.public_name,
-                                               'description':  card.description,
+                                               'public_name':   card.public_name,
+                                               'description':   card.description,
+                                               'mandatory':     bool(card.mandatory),
                                                'selected_rule': bool(card.mandatory)}
                                                 for card in queryset])
     return render(request, 'scoring/choose_rulecards.html', {'formset': formset})
