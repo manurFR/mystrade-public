@@ -28,11 +28,7 @@ body {
 }
 
 .content {
-	border: 1px solid #FFD773;
 	padding: 10px;
-	border-radius: 10px;
-	-moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
 }
 
 .content table {
@@ -64,11 +60,13 @@ body {
 .helptext {
 	font-size: 8pt;
 	font-style: italic;
+	color: #A67600;
 }
 
 .brhelptext {
 	font-size: 8pt;
 	font-style: italic;
+	color: #A67600;
 	display: block;
 	margin-top: -0.6em;
 }
@@ -99,12 +97,6 @@ input[type="submit"] {
 	color: #A67600;
 }
 
-.blank {
-	font-style: italic;
-	font-size: 0.8em;
-	color: #A67600;
-}
-
 .floatright {
 	float: right;
 	margin-right: 1em;
@@ -113,6 +105,29 @@ input[type="submit"] {
 .frame {
 	border: thin inset white;
 	padding: 2px;
+}
+
+.rulecard {
+	margin: 3px;
+	padding: 5px;
+	border: 1px solid #FFD773;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	text-align: center;
+	width: 220px;
+	min-height: 190px;
+	float: left;
+}
+
+.rulecard_name {
+	font-size: 1.5em;
+	weight: bold;
+	padding: 3px;
+}
+
+.rulecard_desc {
+	padding: 3px;
 }
 
 a {

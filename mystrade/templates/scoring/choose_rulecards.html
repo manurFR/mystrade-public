@@ -3,9 +3,11 @@
 {% load url from future %}
 
 {% block content %}
+	<div class="header">Select rule cards :</div>
 	<form action="{% url 'scoring' %}" method="POST">{% csrf_token %}
 		{{ formset.management_form }}
 		<input type="submit" value="Submit"/>
+		<div>
 		{% for form in formset %}
 			<div class="rulecard">
 				{{ form.card_id }}
@@ -14,6 +16,7 @@
 				<input type="checkbox" name="{{ form.selected_rule.html_name }}" id="id_{{ form.selected_rule.html_name }}" {% if form.selected_rule.value %}checked="checked"{% endif %} {% if form.mandatory.value %}disabled="disabled"{% endif %} />
 			</div>
 		{% endfor %}
+		</div>
 		<input type="submit" value="Submit"/>
 	</form>
 {% endblock content %}
