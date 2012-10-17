@@ -7,22 +7,27 @@ from scoring.models import RuleCard
 
 @login_required
 def choose_rulecards(request):
+    queryset = RuleCard.objects.filter(ruleset=1)
     if request.method == 'POST':
         RuleCardFormSet = formset_factory(RuleCardFormParse)
         formset = RuleCardFormSet(request.POST)
         if formset.is_valid():
-            # TODO: validate cardIds are from the expected ruleset ?
+            selected_cards = []
+            for card in queryset:
+                for form in formset:
+                    if int(form.cleaned_data['card_id']) == card.id and form.cleaned_data['selected_rule']:
+                        selected_cards.append(card)
+                        break
             strg = ''
-            for form in formset:
-                strg += form.cleaned_data['cardId'] + ' : '
-                strg += repr(form.cleaned_data['selectedRule']) + '  | '
+            for card in selected_cards:
+                strg += str(card.id) + ' : '
+                strg += card.description + '<br/>\n'
             return HttpResponse(strg)
     else:
-        # TODO : is the ModelForm needed, if we can declare the fields without a max_length ?
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
-        formset = RuleCardsFormSet(initial = [{'cardId':       card.id,
+        formset = RuleCardsFormSet(initial = [{'card_id':       card.id,
                                                'public_name':  card.public_name,
                                                'description':  card.description,
-                                               'selectedRule': bool(card.mandatory)}
-                                              for card in RuleCard.objects.filter(ruleset=1)])
+                                               'selected_rule': bool(card.mandatory)}
+                                                for card in queryset])
     return render(request, 'scoring/choose_rulecards.html', {'formset': formset})
