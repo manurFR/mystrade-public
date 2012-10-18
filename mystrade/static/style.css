@@ -108,7 +108,7 @@ input[type="submit"] {
 }
 
 .rulecard {
-	margin: 3px;
+	position: relative;
 	padding: 5px;
 	border: 1px solid #FFD773;
 	border-radius: 5px;
@@ -116,8 +116,7 @@ input[type="submit"] {
 	-webkit-border-radius: 5px;
 	text-align: center;
 	width: 220px;
-	min-height: 190px;
-	float: left;
+	height: 220px;
 }
 
 .rulecard_name {
@@ -128,6 +127,31 @@ input[type="submit"] {
 
 .rulecard_desc {
 	padding: 3px;
+}
+
+.vertical_top {
+	vertical-align: top;
+}
+
+.vertical_bottom {
+	vertical-align: bottom;
+}
+
+.rulecard_select {
+	vertical-align: bottom;
+}
+
+.css_table {
+	display: table;
+	border-spacing: 4px;
+}
+
+.css_table-row {
+	display: table-row;
+}
+
+.css_table-cell {
+	display: table-cell;
 }
 
 a {
