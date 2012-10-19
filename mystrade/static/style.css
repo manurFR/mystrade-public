@@ -129,16 +129,9 @@ input[type="submit"] {
 	padding: 3px;
 }
 
-.vertical_top {
-	vertical-align: top;
-}
-
-.vertical_bottom {
-	vertical-align: bottom;
-}
-
 .rulecard_select {
-	vertical-align: bottom;
+	width: 220px;
+	text-align: center;	
 }
 
 .css_table {
@@ -152,6 +145,11 @@ input[type="submit"] {
 
 .css_table-cell {
 	display: table-cell;
+}
+
+.align_to_bottom {
+	position: absolute;
+	bottom: 5px;
 }
 
 a {

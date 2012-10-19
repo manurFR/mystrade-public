@@ -24,9 +24,11 @@
 					{{ form.card_id }}
 					<div class="rulecard_name">{{ form.public_name.value }}</div>
 					<div class="rulecard_desc">{{ form.description.value }}</div>
-					<div class="rulecard_select">
+					<div class="align_to_bottom">
+					  <div class="rulecard_select">
 						<input type="checkbox" class="rulecard_checkbox" name="{{ form.selected_rule.html_name }}" id="id_{{ form.selected_rule.html_name }}" {% if form.selected_rule.value %}checked="checked"{% endif %} {% if form.mandatory.value %}disabled="disabled"{% endif %} />
 						<label for="id_{{ form.selected_rule.html_name }}">{% if form.mandatory.value %}Mandatory{% else %}Keep{% endif %}</label>
+					  </div>
 					</div>
 				</div>
 			{% if forloop.counter|divisibleby:"4" or forloop.last %}
