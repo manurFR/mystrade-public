@@ -31,7 +31,6 @@ def choose_rulecards(request):
         formset = RuleCardsFormSet(initial = [{'card_id':       card.id,
                                                'public_name':   card.public_name,
                                                'description':   card.description,
-                                               'mandatory':     bool(card.mandatory),
-                                               'selected_rule': bool(card.mandatory)}
+                                               'mandatory':     bool(card.mandatory)}
                                                 for card in queryset])
     return render(request, 'scoring/choose_rulecards.html', {'formset': formset})

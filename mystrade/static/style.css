@@ -152,12 +152,13 @@ input[type="submit"] {
 	bottom: 5px;
 }
 
-a {
+a, .dynamic_link {
 	color: #800024;
 	font-weight: normal;
 	text-decoration: none;
 }
 
-a:hover {
+a:hover, .dynamic_link:hover {
 	text-decoration:underline;
+	cursor: pointer;
 }
