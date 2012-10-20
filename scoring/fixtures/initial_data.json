@@ -170,5 +170,50 @@
             "ruleset": 1,
             "ref_name": "HAG-15"
         }
+    },
+    {
+        "pk": 1,
+        "model": "scoring.commodity",
+        "fields": {
+            "name": "Yellow",
+            "ruleset": 1,
+            "value": 1
+        }
+    },
+    {
+        "pk": 2,
+        "model": "scoring.commodity",
+        "fields": {
+            "name": "Blue",
+            "ruleset": 1,
+            "value": 2
+        }
+    },
+    {
+        "pk": 3,
+        "model": "scoring.commodity",
+        "fields": {
+            "name": "Red",
+            "ruleset": 1,
+            "value": 3
+        }
+    },
+    {
+        "pk": 4,
+        "model": "scoring.commodity",
+        "fields": {
+            "name": "Orange",
+            "ruleset": 1,
+            "value": 4
+        }
+    },
+    {
+        "pk": 5,
+        "model": "scoring.commodity",
+        "fields": {
+            "name": "White",
+            "ruleset": 1,
+            "value": 5
+        }
     }
 ]

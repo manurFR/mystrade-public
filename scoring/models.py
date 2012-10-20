@@ -15,3 +15,12 @@ class RuleCard(models.Model):
 
     def __unicode__(self):
         return "{} - ({}) {}".format(self.ref_name, self.public_name, self.description)
+
+class Commodity(models.Model):
+    ruleset = models.ForeignKey(Ruleset)
+
+    name = models.CharField(max_length = 50)
+    value = models.IntegerField("Initial value of the commodity (optional)", null = True)
+
+    def __unicode__(self):
+        return self.name
