@@ -2,35 +2,55 @@ from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 from django.http import HttpResponse
 from django.shortcuts import render
-from scoring.forms import RuleCardFormDisplay, RuleCardFormParse
-from scoring.models import RuleCard
+from scoring.forms import RuleCardFormDisplay, RuleCardFormParse, CommoditiesFormDisplay, CommoditiesFormParse
+from scoring.models import RuleCard, Commodity
 
 @login_required
 def choose_rulecards(request):
-    queryset = RuleCard.objects.filter(ruleset=1)
+    rulecards_queryset = RuleCard.objects.filter(ruleset = 1)
+    commodities_queryset = Commodity.objects.filter(ruleset = 1)
     if request.method == 'POST':
         RuleCardFormSet = formset_factory(RuleCardFormParse)
-        formset = RuleCardFormSet(request.POST)
-        if formset.is_valid():
+        rulecards_formset = RuleCardFormSet(request.POST, prefix = 'rulecards')
+        CommoditiesFormSet = formset_factory(CommoditiesFormParse)
+        commodities_formset = CommoditiesFormSet(request.POST, prefix = 'commodities')
+        if rulecards_formset.is_valid() and commodities_formset.is_valid():
             selected_cards = []
-            for card in queryset:
+            for card in rulecards_queryset:
                 if card.mandatory:
                     selected_cards.append(card)
                     continue
-                for form in formset:
+                for form in rulecards_formset:
                     if int(form.cleaned_data['card_id']) == card.id and form.cleaned_data['selected_rule']:
                         selected_cards.append(card)
+                        break
+            commodities = {}
+            for commodity in commodities_queryset:
+                for form in commodities_formset:
+                    if int(form.cleaned_data['commodity_id']) == commodity.id:
+                        commodities[commodity] = form.cleaned_data['nb_cards']
+                        if commodities[commodity] is None:
+                            commodities[commodity] = 0
                         break
             strg = ''
             for card in selected_cards:
                 strg += str(card.id) + ' : '
                 strg += card.description + '<br/>\n'
+            for commodity, nb in commodities.iteritems():
+                strg += commodity.name + ' : ' + str(nb) + '<br/>\n'
             return HttpResponse(strg)
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
-        formset = RuleCardsFormSet(initial = [{'card_id':       card.id,
+        rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.id,
                                                'public_name':   card.public_name,
                                                'description':   card.description,
                                                'mandatory':     bool(card.mandatory)}
-                                                for card in queryset])
-    return render(request, 'scoring/choose_rulecards.html', {'formset': formset})
+                                                for card in rulecards_queryset],
+                                             prefix = 'rulecards')
+        CommoditiesFormSet = formset_factory(CommoditiesFormDisplay, extra = 0)
+        commodities_formset = CommoditiesFormSet(initial = [{'commodity_id':    commodity.id,
+                                                             'name':            commodity.name,
+                                                             'nb_cards':        None}
+                                                            for commodity in commodities_queryset],
+                                                 prefix = 'commodities')
+    return render(request, 'scoring/choose_rulecards.html', {'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})

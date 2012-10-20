@@ -12,15 +12,15 @@
 {% endblock %}
 
 {% block content %}
-	<div class="header">Select rule cards :
-		<span class="floatright"><img src="{% static "select.png" %}" height="16" width="16" alt="" class="icon"/>
-			<span class="dynamic_link" id="selectall">Select all</span>
-		</span>
-	</div>
 	<form action="{% url 'scoring' %}" method="POST">{% csrf_token %}
-		{{ formset.management_form }}
+		<div class="header">Select rule cards :
+			<span class="floatright"><img src="{% static "select.png" %}" height="16" width="16" alt="" class="icon"/>
+				<span class="dynamic_link" id="selectall">Select all</span>
+			</span>
+		</div>	
 		<div class="css_table">
-		{% for form in formset %}
+		{{ rulecards_formset.management_form }}
+		{% for form in rulecards_formset %}
 			{% if forloop.first or forloop.counter0|divisibleby:"4" %}
 			<div class="css_table-row">
 			{% endif %}
@@ -40,6 +40,22 @@
 			{% if forloop.counter|divisibleby:"4" or forloop.last %}
 			</div>
 			{% endif %}
+		{% endfor %}
+		</div>
+		<div class="header">Type the number of each commodity :</div>
+		<div class="css_table">
+		{{ commodities_formset.management_form }}
+		{% for form in commodities_formset %}
+			<div class="css_table-row">
+				<div class="css_table-cell">
+					{{ form.commodity_id }}
+					<label for="id_{{ form.nb_cards.html_name }}">{{ form.name.value }} :</label>
+					{{ form.nb_cards.errors }}
+				</div>
+				<div class="css_table-cell">
+					{{ form.nb_cards }}
+				</div>
+			</div>
 		{% endfor %}
 		</div>
 		<input type="submit" value="Submit"/>
