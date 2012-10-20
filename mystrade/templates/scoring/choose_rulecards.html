@@ -13,7 +13,9 @@
 
 {% block content %}
 	<div class="header">Select rule cards :
-		<span class="floatright dynamic_link" id="selectall">Select all</span>
+		<span class="floatright"><img src="{% static "select.png" %}" height="16" width="16" alt="" class="icon"/>
+			<span class="dynamic_link" id="selectall">Select all</span>
+		</span>
 	</div>
 	<form action="{% url 'scoring' %}" method="POST">{% csrf_token %}
 		{{ formset.management_form }}
@@ -22,7 +24,8 @@
 			{% if forloop.first or forloop.counter0|divisibleby:"4" %}
 			<div class="css_table-row">
 			{% endif %}
-				<div class="rulecard css_table-cell">
+				<div class="css_table-cell">
+				  <div class="rulecard">
 					{{ form.card_id }}
 					<div class="rulecard_name">{{ form.public_name.value }}</div>
 					<div class="rulecard_desc">{{ form.description.value }}</div>
@@ -32,6 +35,7 @@
 						<label for="id_{{ form.selected_rule.html_name }}">{% if form.mandatory.value %}Mandatory{% else %}Keep{% endif %}</label>
 					  </div>
 					</div>
+				  </div>
 				</div>
 			{% if forloop.counter|divisibleby:"4" or forloop.last %}
 			</div>

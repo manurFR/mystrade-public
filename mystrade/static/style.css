@@ -6,6 +6,11 @@ body {
 	font-size: 10pt;
 }
 
+a img, .icon {
+	border: 0px;
+	vertical-align: text-top;
+}
+
 .toplinks {
 	top: 2px;
 	text-align: right;
