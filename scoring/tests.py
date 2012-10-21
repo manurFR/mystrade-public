@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
+from scoring import card_scoring
+from scoring.models import Commodity
 
 class ViewsTest(TestCase):
     def setUp(self):
@@ -79,5 +81,17 @@ class ViewsTest(TestCase):
         self.assertContains(response, "Yellow : 3");
         self.assertContains(response, "Blue : 0");
         self.assertContains(response, "Red : 0");
-        self.assertContains(response, "Orange : 4");
+        self.assertContains(response, "Orange : 8");
         self.assertContains(response, "White : 0");
+
+class ScoringTest(TestCase):
+    def test_haggle_initial_values(self):
+        self.assertEqual(15, card_scoring.HAG01(self.prepare_hand(1, 1, 1, 1, 1)))
+        self.assertEqual(20, card_scoring.HAG01(self.prepare_hand(blue = 1, red = 2, orange = 3)))
+        
+    def prepare_hand(self, yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
+        return { Commodity.objects.get(ruleset = 1, name ='Yellow') : yellow,
+                 Commodity.objects.get(ruleset = 1, name ='Blue') : blue,
+                 Commodity.objects.get(ruleset = 1, name ='Red') : red,
+                 Commodity.objects.get(ruleset = 1, name ='Orange') : orange,
+                 Commodity.objects.get(ruleset = 1, name ='White') : white }
