@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from scoring.card_scoring import calculate_score, HAG01, HAG04, HAG05
+from scoring.card_scoring import calculate_score, HAG01, HAG04, HAG05, HAG09
 from scoring.models import Commodity
 
 class ViewsTest(TestCase):
@@ -85,6 +85,15 @@ class ViewsTest(TestCase):
         self.assertContains(response, "White : 0");
 
 class ScoringTest(TestCase):
+    def test_calculate_score(self):
+        scoresheet = [{'type': 'commodity', 'commodity': Commodity.objects.get(ruleset = 1, name ='Blue'), 
+                       'nb_cards': 2, 'actual_value': 2, 'scored_cards': 2},
+                      {'type': 'commodity', 'commodity': Commodity.objects.get(ruleset = 1, name ='Red'), 
+                       'nb_cards': 4, 'actual_value': 1, 'scored_cards': 3},
+                      {'type': 'extra', 'score': 5 },
+                      {'type': 'extra', 'score': -10 }]
+        self.assertEqual(2, calculate_score(scoresheet))
+    
     def test_haggle_initial_values(self):
         """Yellow = 1 / Blue = 2 / Red = 3 / Orange = 4 / White = 5"""
         self.assertEqual(15, calculate_score(HAG01(self.prepare_hand(1, 1, 1, 1, 1))))
@@ -93,12 +102,20 @@ class ScoringTest(TestCase):
     def test_haggle_HAG04(self):
         """If a player has more than three white cards, all of his/her white cards lose their value."""
         self.assertEqual(15, calculate_score(HAG04(HAG01(self.prepare_hand(white = 3)))))
-        self.assertEqual(0, calculate_score(HAG04(HAG01(self.prepare_hand(white = 4)))))
+        self.assertEqual(0,  calculate_score(HAG04(HAG01(self.prepare_hand(white = 4)))))
     
     def test_haggle_HAG05(self):
         """"A player can score only as many as orange cards as he/she has blue cards."""
         self.assertEqual(18, calculate_score(HAG05(HAG01(self.prepare_hand(blue = 3, orange = 3)))))
         self.assertEqual(12, calculate_score(HAG05(HAG01(self.prepare_hand(blue = 2, orange = 3)))))
+        
+    def test_haggle_HAG09(self):
+        """If a player hands in seven or more cards of the same color, 
+           for each of these colors 10 points are deducted from his/her score.
+        """
+        self.assertEqual(17, calculate_score(HAG09(HAG01(self.prepare_hand(yellow = 6, blue = 3, white = 1)))))
+        self.assertEqual(8,  calculate_score(HAG09(HAG01(self.prepare_hand(yellow = 7, blue = 3, white = 1)))))
+        self.assertEqual(8,  calculate_score(HAG09(HAG01(self.prepare_hand(yellow = 7, blue = 8, white = 1)))))
         
     def prepare_hand(self, yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
         return { Commodity.objects.get(ruleset = 1, name ='Yellow') : yellow,
