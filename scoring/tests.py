@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from scoring import card_scoring
-from scoring.card_scoring import calculate_score, HAG01, HAG04
+from scoring.card_scoring import calculate_score, HAG01, HAG04, HAG05
 from scoring.models import Commodity
 
 class ViewsTest(TestCase):
@@ -87,12 +86,19 @@ class ViewsTest(TestCase):
 
 class ScoringTest(TestCase):
     def test_haggle_initial_values(self):
+        """Yellow = 1 / Blue = 2 / Red = 3 / Orange = 4 / White = 5"""
         self.assertEqual(15, calculate_score(HAG01(self.prepare_hand(1, 1, 1, 1, 1))))
         self.assertEqual(20, calculate_score(HAG01(self.prepare_hand(blue = 1, red = 2, orange = 3))))
 
     def test_haggle_HAG04(self):
+        """If a player has more than three white cards, all of his/her white cards lose their value."""
         self.assertEqual(15, calculate_score(HAG04(HAG01(self.prepare_hand(white = 3)))))
         self.assertEqual(0, calculate_score(HAG04(HAG01(self.prepare_hand(white = 4)))))
+    
+    def test_haggle_HAG05(self):
+        """"A player can score only as many as orange cards as he/she has blue cards."""
+        self.assertEqual(18, calculate_score(HAG05(HAG01(self.prepare_hand(blue = 3, orange = 3)))))
+        self.assertEqual(12, calculate_score(HAG05(HAG01(self.prepare_hand(blue = 2, orange = 3)))))
         
     def prepare_hand(self, yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
         return { Commodity.objects.get(ruleset = 1, name ='Yellow') : yellow,
