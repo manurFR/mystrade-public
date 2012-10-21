@@ -99,7 +99,7 @@
         "model": "scoring.rulecard",
         "fields": {
             "public_name": "9",
-            "description": "If a player hands in seven or more cards of the same color, 10 points are deducted from his/her score.",
+            "description": "If a player hands in seven or more cards of the same color, for each of these colors 10 points are deducted from his/her score.",
             "mandatory": false,
             "ruleset": 1,
             "ref_name": "HAG09"
