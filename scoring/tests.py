@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from scoring.card_scoring import calculate_score, setup_scoresheet, HAG04, HAG05, \
-    HAG09, HAG10, HAG13
+    HAG09, HAG10, HAG13, HAG14
 from scoring.models import Commodity
 
 class ViewsTest(TestCase):
@@ -147,7 +147,15 @@ class ScoringTest(TestCase):
         self.assertEqual(17+5, calculate_score(HAG13(self._prepare_scoresheet(yellow = 2, white = 3))))
         self.assertEqual(21+3*5, calculate_score(HAG13(self._prepare_scoresheet(yellow = 6, white = 3))))
         self.assertEqual(23+3*5, calculate_score(HAG13(self._prepare_scoresheet(yellow = 8, white = 3))))
-        
+
+    def test_haggle_HAG14(self):
+        """Each set of three blue cards quadruples the value of one orange card."""
+        self.assertEqual(8, calculate_score(HAG14(self._prepare_scoresheet(orange = 2))))
+        self.assertEqual(12, calculate_score(HAG14(self._prepare_scoresheet(blue = 2, orange = 2))))
+        self.assertEqual(14+12, calculate_score(HAG14(self._prepare_scoresheet(blue = 3, orange = 2))))
+        self.assertEqual(20+24, calculate_score(HAG14(self._prepare_scoresheet(blue = 6, orange = 2))))
+        self.assertEqual(26+24, calculate_score(HAG14(self._prepare_scoresheet(blue = 9, orange = 2))))
+
     def _prepare_scoresheet(self, yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
         return setup_scoresheet({ Commodity.objects.get(ruleset = 1, name ='Yellow') : yellow,
                                   Commodity.objects.get(ruleset = 1, name ='Blue') : blue,

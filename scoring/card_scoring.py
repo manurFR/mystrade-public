@@ -51,6 +51,14 @@ def HAG13(scoresheet):
         scoresheet['extra'].append(scoresheet['White']['actual_value'])
     return scoresheet
 
+def HAG14(scoresheet):
+    """Each set of three blue cards quadruples the value of one orange card."""
+    nb_sets = int(scoresheet['Blue']['handed_cards']) / 3
+    nb_bonus = min(nb_sets, scoresheet['Orange']['handed_cards'])
+    for _i in range(nb_bonus):
+        scoresheet['extra'].append(3 * scoresheet['Orange']['actual_value'])
+    return scoresheet
+
 def calculate_score(scoresheet):
     score = 0
     for color, cards in scoresheet.iteritems():
