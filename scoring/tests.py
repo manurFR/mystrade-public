@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from scoring.card_scoring import calculate_score, setup_scoresheet, HAG04, HAG05, HAG09    
+from scoring.card_scoring import calculate_score, setup_scoresheet, HAG04, HAG05, \
+    HAG09, HAG10
 from scoring.models import Commodity
 
 class ViewsTest(TestCase):
@@ -132,6 +133,12 @@ class ScoringTest(TestCase):
         self.assertEqual(17, calculate_score(HAG09(self._prepare_scoresheet(yellow = 6, blue = 3, white = 1))))
         self.assertEqual(8,  calculate_score(HAG09(self._prepare_scoresheet(yellow = 7, blue = 3, white = 1))))
         self.assertEqual(8,  calculate_score(HAG09(self._prepare_scoresheet(yellow = 7, blue = 8, white = 1))))
+        
+        """Each set of five different colors gives a bonus of 10 points."""
+    def test_haggle_HAG10(self):
+        self.assertEqual(20, calculate_score(HAG10(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1))))
+        self.assertEqual(35, calculate_score(HAG10(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1, white = 1))))
+        self.assertEqual(63, calculate_score(HAG10(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 3, white = 3))))
         
     def _prepare_scoresheet(self, yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
         return setup_scoresheet({ Commodity.objects.get(ruleset = 1, name ='Yellow') : yellow,

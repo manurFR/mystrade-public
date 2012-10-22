@@ -29,6 +29,20 @@ def HAG09(scoresheet):
                 scoresheet['extra'].append(-10)
     return scoresheet
 
+def HAG10(scoresheet):
+    """Each set of five different colors gives a bonus of 10 points."""
+    min_color_number = None
+    nb_colors = 0
+    for color, cards in scoresheet.iteritems():
+        if color != 'extra':
+            nb_colors += 1
+            if min_color_number is None or cards['handed_cards'] < min_color_number:
+                min_color_number = cards['handed_cards']
+    if min_color_number and nb_colors >= 5:
+        for _i in range(min_color_number):
+            scoresheet['extra'].append(10)
+    return scoresheet
+
 def calculate_score(scoresheet):
     score = 0
     for color, cards in scoresheet.iteritems():
