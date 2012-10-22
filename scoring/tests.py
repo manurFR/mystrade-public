@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from scoring.card_scoring import calculate_score, setup_scoresheet, HAG04, HAG05, \
-    HAG09, HAG10, HAG13, HAG14
+    HAG09, HAG10, HAG13, HAG14, HAG15
 from scoring.models import Commodity
 
 class ViewsTest(TestCase):
@@ -155,6 +155,17 @@ class ScoringTest(TestCase):
         self.assertEqual(14+12, calculate_score(HAG14(self._prepare_scoresheet(blue = 3, orange = 2))))
         self.assertEqual(20+24, calculate_score(HAG14(self._prepare_scoresheet(blue = 6, orange = 2))))
         self.assertEqual(26+24, calculate_score(HAG14(self._prepare_scoresheet(blue = 9, orange = 2))))
+
+    def test_haggle_HAG15(self):
+        """No more than thirteen cards in a hand can be scored. 
+           If more are handed in, the excess will be removed at random.
+        """
+        scoresheet = HAG15(self._prepare_scoresheet(3, 3, 3, 3, 3))
+        total_scored_cards = 0
+        for color, cards in scoresheet.iteritems():
+            if color != 'extra':
+                total_scored_cards += cards['scored_cards']
+        self.assertEqual(13, total_scored_cards)
 
     def _prepare_scoresheet(self, yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
         return setup_scoresheet({ Commodity.objects.get(ruleset = 1, name ='Yellow') : yellow,
