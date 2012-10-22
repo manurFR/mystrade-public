@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from scoring.card_scoring import calculate_score, HAG01, HAG04, HAG05, HAG09
+from scoring.card_scoring import calculate_score, setup_scoresheet, HAG04, HAG05, HAG09    
 from scoring.models import Commodity
 
 class ViewsTest(TestCase):
@@ -86,40 +86,56 @@ class ViewsTest(TestCase):
 
 class ScoringTest(TestCase):
     def test_calculate_score(self):
-        scoresheet = [{'type': 'commodity', 'commodity': Commodity.objects.get(ruleset = 1, name ='Blue'), 
-                       'nb_cards': 2, 'actual_value': 2, 'scored_cards': 2},
-                      {'type': 'commodity', 'commodity': Commodity.objects.get(ruleset = 1, name ='Red'), 
-                       'nb_cards': 4, 'actual_value': 1, 'scored_cards': 3},
-                      {'type': 'extra', 'score': 5 },
-                      {'type': 'extra', 'score': -10 }]
+        scoresheet = {'Blue': { 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2 },
+                      'Red' : { 'handed_cards': 4, 'scored_cards': 3, 'actual_value': 1 },
+                      'extra': [ 5 , -10 ] }
         self.assertEqual(2, calculate_score(scoresheet))
     
-    def test_haggle_initial_values(self):
-        """Yellow = 1 / Blue = 2 / Red = 3 / Orange = 4 / White = 5"""
-        self.assertEqual(15, calculate_score(HAG01(self.prepare_hand(1, 1, 1, 1, 1))))
-        self.assertEqual(20, calculate_score(HAG01(self.prepare_hand(blue = 1, red = 2, orange = 3))))
+    def test_setup_scoresheet(self):
+        """Yellow = 1 / Blue = 2 / Red = 3 / Orange = 4 / White = 5
+           This is a test of the 3 mandatory rulecards for the initial values.
+        """
+        scoresheet = self._prepare_scoresheet(1, 1, 1, 1, 1)
+        self.assertEqual({'Yellow' : { 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 1 },
+                          'Blue'   : { 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 2 },
+                          'Red'    : { 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 3 },
+                          'Orange' : { 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 4 },
+                          'White'  : { 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 5 },
+                          'extra'  : [] },
+                         scoresheet)
+        self.assertEqual(15, calculate_score(scoresheet))
+
+        scoresheet = self._prepare_scoresheet(blue = 1, red = 2, orange = 3)
+        self.assertEqual({'Yellow' : { 'handed_cards': 0, 'scored_cards': 0, 'actual_value': 1 },
+                          'Blue'   : { 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 2 },
+                          'Red'    : { 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 3 },
+                          'Orange' : { 'handed_cards': 3, 'scored_cards': 3, 'actual_value': 4 },
+                          'White'  : { 'handed_cards': 0, 'scored_cards': 0, 'actual_value': 5 },
+                          'extra'  : [] },
+                         scoresheet)
+        self.assertEqual(20, calculate_score(scoresheet))
 
     def test_haggle_HAG04(self):
         """If a player has more than three white cards, all of his/her white cards lose their value."""
-        self.assertEqual(15, calculate_score(HAG04(HAG01(self.prepare_hand(white = 3)))))
-        self.assertEqual(0,  calculate_score(HAG04(HAG01(self.prepare_hand(white = 4)))))
+        self.assertEqual(15, calculate_score(HAG04(self._prepare_scoresheet(white = 3))))
+        self.assertEqual(0,  calculate_score(HAG04(self._prepare_scoresheet(white = 4))))
     
     def test_haggle_HAG05(self):
         """"A player can score only as many as orange cards as he/she has blue cards."""
-        self.assertEqual(18, calculate_score(HAG05(HAG01(self.prepare_hand(blue = 3, orange = 3)))))
-        self.assertEqual(12, calculate_score(HAG05(HAG01(self.prepare_hand(blue = 2, orange = 3)))))
+        self.assertEqual(18, calculate_score(HAG05(self._prepare_scoresheet(blue = 3, orange = 3))))
+        self.assertEqual(12, calculate_score(HAG05(self._prepare_scoresheet(blue = 2, orange = 3))))
         
     def test_haggle_HAG09(self):
         """If a player hands in seven or more cards of the same color, 
            for each of these colors 10 points are deducted from his/her score.
         """
-        self.assertEqual(17, calculate_score(HAG09(HAG01(self.prepare_hand(yellow = 6, blue = 3, white = 1)))))
-        self.assertEqual(8,  calculate_score(HAG09(HAG01(self.prepare_hand(yellow = 7, blue = 3, white = 1)))))
-        self.assertEqual(8,  calculate_score(HAG09(HAG01(self.prepare_hand(yellow = 7, blue = 8, white = 1)))))
+        self.assertEqual(17, calculate_score(HAG09(self._prepare_scoresheet(yellow = 6, blue = 3, white = 1))))
+        self.assertEqual(8,  calculate_score(HAG09(self._prepare_scoresheet(yellow = 7, blue = 3, white = 1))))
+        self.assertEqual(8,  calculate_score(HAG09(self._prepare_scoresheet(yellow = 7, blue = 8, white = 1))))
         
-    def prepare_hand(self, yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
-        return { Commodity.objects.get(ruleset = 1, name ='Yellow') : yellow,
-                 Commodity.objects.get(ruleset = 1, name ='Blue') : blue,
-                 Commodity.objects.get(ruleset = 1, name ='Red') : red,
-                 Commodity.objects.get(ruleset = 1, name ='Orange') : orange,
-                 Commodity.objects.get(ruleset = 1, name ='White') : white }
+    def _prepare_scoresheet(self, yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
+        return setup_scoresheet({ Commodity.objects.get(ruleset = 1, name ='Yellow') : yellow,
+                                  Commodity.objects.get(ruleset = 1, name ='Blue') : blue,
+                                  Commodity.objects.get(ruleset = 1, name ='Red') : red,
+                                  Commodity.objects.get(ruleset = 1, name ='Orange') : orange,
+                                  Commodity.objects.get(ruleset = 1, name ='White') : white })
