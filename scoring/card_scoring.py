@@ -117,3 +117,18 @@ def HAG14(scoresheet):
 ## Post-treatment rules
 # These rules will be applies after all other rules (for example because they need the total score).
 #
+
+def HAG11(scoresheet):
+    """If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. 
+       A pyramid consists of four cards of one color, three cards of a second color, 
+       two cards of a third, and one card of a fourth color.
+       
+       Note: this rule deals with cards *handed in*, not scored. Hence the use of 'handed_cards'.
+    """
+    nb_colors = []
+    for color, cards in scoresheet.iteritems():
+        if color != 'extra':
+            nb_colors.append(cards['handed_cards'])
+    if sorted(nb_colors) == [0, 1, 2, 3, 4]:
+        scoresheet['extra'].append(calculate_score(scoresheet))
+    return scoresheet

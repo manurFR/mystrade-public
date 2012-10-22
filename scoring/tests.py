@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from scoring.card_scoring import calculate_score, setup_scoresheet, HAG04, HAG05, \
-    HAG09, HAG10, HAG13, HAG14, HAG15
+    HAG09, HAG10, HAG13, HAG14, HAG15, HAG11
 from scoring.models import Commodity
 
 class ViewsTest(TestCase):
@@ -139,7 +139,16 @@ class ScoringTest(TestCase):
         self.assertEqual(20, calculate_score(HAG10(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1))))
         self.assertEqual(35, calculate_score(HAG10(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1, white = 1))))
         self.assertEqual(63, calculate_score(HAG10(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 3, white = 3))))
-        
+
+    def test_haggle_HAG11(self):
+        """If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. 
+           A pyramid consists of four cards of one color, three cards of a second color, 
+           two cards of a third, and one card of a fourth color.
+        """
+        self.assertEqual(20*2, calculate_score(HAG11(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1))))
+        self.assertEqual(37*2, calculate_score(HAG11(self._prepare_scoresheet(yellow = 1, blue = 2, orange = 3, white = 4))))
+        self.assertEqual(40, calculate_score(HAG11(self._prepare_scoresheet(yellow = 1, blue = 2, red = 1, orange = 3, white = 4))))
+
     def test_haggle_HAG13(self):
         """Each set of two yellow cards doubles the value of one white card."""
         self.assertEqual(15, calculate_score(HAG13(self._prepare_scoresheet(white = 3))))
