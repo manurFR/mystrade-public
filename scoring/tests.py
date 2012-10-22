@@ -169,7 +169,7 @@ class ScoringTest(TestCase):
         """No more than thirteen cards in a hand can be scored. 
            If more are handed in, the excess will be removed at random.
         """
-        scoresheet = HAG15(self._prepare_scoresheet(3, 3, 3, 3, 3))
+        scoresheet = HAG15(self._prepare_scoresheet(5, 5, 5, 5, 15))
         total_scored_cards = 0
         for color, cards in scoresheet.iteritems():
             if color != 'extra':
