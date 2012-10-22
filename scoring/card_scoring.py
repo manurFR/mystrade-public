@@ -43,6 +43,14 @@ def HAG10(scoresheet):
             scoresheet['extra'].append(10)
     return scoresheet
 
+def HAG13(scoresheet):
+    """Each set of two yellow cards doubles the value of one white card."""
+    nb_sets = int(scoresheet['Yellow']['handed_cards']) / 2
+    nb_bonus = min(nb_sets, scoresheet['White']['handed_cards'])
+    for _i in range(nb_bonus):
+        scoresheet['extra'].append(scoresheet['White']['actual_value'])
+    return scoresheet
+
 def calculate_score(scoresheet):
     score = 0
     for color, cards in scoresheet.iteritems():
