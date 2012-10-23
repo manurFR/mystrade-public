@@ -113,6 +113,18 @@ def HAG14(scoresheet):
 # These rules may impact other players' score or may require a comparison of the hand of all players.
 #
 
+def HAG06(scoresheets):
+    """If a player has five or more blue cards, 10 points are deducted from every other player's score."""
+    culprits = []
+    for index, player in enumerate(scoresheets):
+        if player['Blue']['scored_cards'] >= 5:
+            culprits.append(index)
+    for culprit in culprits:
+        for index, victim in enumerate(scoresheets):
+            if index != culprit:
+                victim['extra'].append(-10)
+    return scoresheets
+
 #
 ## Post-treatment rules
 # These rules will be applies after all other rules (for example because they need the total score).

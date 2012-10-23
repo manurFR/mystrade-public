@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from scoring.card_scoring import calculate_score, setup_scoresheet, HAG04, HAG05, \
-    HAG09, HAG10, HAG13, HAG14, HAG15, HAG11
+    HAG09, HAG10, HAG13, HAG14, HAG15, HAG11, HAG06
 from scoring.models import Commodity
 
 class ViewsTest(TestCase):
@@ -125,7 +125,18 @@ class ScoringTest(TestCase):
         """"A player can score only as many as orange cards as he/she has blue cards."""
         self.assertEqual(18, calculate_score(HAG05(self._prepare_scoresheet(blue = 3, orange = 3))))
         self.assertEqual(12, calculate_score(HAG05(self._prepare_scoresheet(blue = 2, orange = 3))))
-        
+
+    def test_haggle_HAG06(self):
+        """If a player has five or more blue cards, 10 points are deducted from every other player's score."""
+        player1 = self._prepare_scoresheet(blue = 5)
+        player2 = self._prepare_scoresheet(blue = 6, orange = 1)
+        player3 = self._prepare_scoresheet(yellow = 4, blue = 2, white = 4)
+        scoresheets = HAG06([player1, player2, player3])
+        self.assertEqual(3, len(scoresheets))
+        self.assertEqual(10-10, calculate_score(scoresheets[0])) # player1
+        self.assertEqual(16-10, calculate_score(scoresheets[1])) # player2
+        self.assertEqual(28-20, calculate_score(scoresheets[2])) # player3
+
     def test_haggle_HAG09(self):
         """If a player hands in seven or more cards of the same color, 
            for each of these colors 10 points are deducted from his/her score.
