@@ -11,11 +11,11 @@ def setup_scoresheet(hand):
 
 def calculate_score(scoresheet):
     score = 0
-    for color, cards in scoresheet.iteritems():
+    for color, details in scoresheet.iteritems():
         if color == 'extra':
-            score += sum(cards)
+            score += sum([extra['score'] for extra in details])
         else:
-            score += cards['scored_cards'] * cards['actual_value']
+            score += details['scored_cards'] * details['actual_value']
     return score
 
 #
@@ -29,10 +29,10 @@ def HAG15(scoresheet):
     """
     total_scored_cards = 0
     present_colors = []
-    for color, cards in scoresheet.iteritems():
-        if color != 'extra' and cards['scored_cards'] > 0:
+    for color, details in scoresheet.iteritems():
+        if color != 'extra' and details['scored_cards'] > 0:
             present_colors.append(color)
-            total_scored_cards += cards['scored_cards']
+            total_scored_cards += details['scored_cards']
     while total_scored_cards > 13:
         selected_color = random.choice(present_colors)
         scoresheet[selected_color]['scored_cards'] -= 1
@@ -72,24 +72,24 @@ def HAG09(scoresheet):
 
        Note: this rule deals with cards *handed in*, not scored. Hence the use of 'handed_cards'.
     """
-    for color, cards in scoresheet.iteritems():
+    for color, details in scoresheet.iteritems():
         if color != 'extra':
-            if cards['handed_cards'] >= 7:
-                scoresheet['extra'].append(-10)
+            if details['handed_cards'] >= 7:
+                scoresheet['extra'].append({'score': -10, 'cause': 'HAG09'})
     return scoresheet
 
 def HAG10(scoresheet):
     """Each set of five different colors gives a bonus of 10 points."""
     min_color_number = None
     nb_colors = 0
-    for color, cards in scoresheet.iteritems():
+    for color, details in scoresheet.iteritems():
         if color != 'extra':
             nb_colors += 1
-            if min_color_number is None or cards['scored_cards'] < min_color_number:
-                min_color_number = cards['scored_cards']
+            if min_color_number is None or details['scored_cards'] < min_color_number:
+                min_color_number = details['scored_cards']
     if min_color_number and nb_colors >= 5:
         for _i in range(min_color_number):
-            scoresheet['extra'].append(10)
+            scoresheet['extra'].append({'score': 10, 'cause': 'HAG10'})
     return scoresheet
 
 def HAG13(scoresheet):
@@ -97,7 +97,7 @@ def HAG13(scoresheet):
     nb_sets = int(scoresheet['Yellow']['scored_cards']) / 2
     nb_bonus = min(nb_sets, scoresheet['White']['scored_cards'])
     for _i in range(nb_bonus):
-        scoresheet['extra'].append(scoresheet['White']['actual_value'])
+        scoresheet['extra'].append({'score': scoresheet['White']['actual_value'], 'cause': 'HAG13'})
     return scoresheet
 
 def HAG14(scoresheet):
@@ -105,7 +105,7 @@ def HAG14(scoresheet):
     nb_sets = int(scoresheet['Blue']['scored_cards']) / 3
     nb_bonus = min(nb_sets, scoresheet['Orange']['scored_cards'])
     for _i in range(nb_bonus):
-        scoresheet['extra'].append(3 * scoresheet['Orange']['actual_value'])
+        scoresheet['extra'].append({'score': 3 * scoresheet['Orange']['actual_value'], 'cause': 'HAG14'})
     return scoresheet
 
 #
@@ -113,17 +113,28 @@ def HAG14(scoresheet):
 # These rules may impact other players' score or may require a comparison of the hand of all players.
 #
 
-def HAG06(scoresheets):
+def HAG06(players):
     """If a player has five or more blue cards, 10 points are deducted from every other player's score."""
     culprits = []
-    for index, player in enumerate(scoresheets):
+    for index, player in enumerate(players):
         if player['Blue']['scored_cards'] >= 5:
             culprits.append(index)
     for culprit in culprits:
-        for index, victim in enumerate(scoresheets):
+        for index, victim in enumerate(players):
             if index != culprit:
-                victim['extra'].append(-10)
-    return scoresheets
+                victim['extra'].append({'score': -10, 'cause': 'HAG06'})
+    return players
+
+def HAG07(players):
+    """A set of three red cards protects you from one set of five blue cards."""
+    for player in players:
+        nb_sets = int(player['Red']['scored_cards']) / 3
+        for _i in range(nb_sets):
+            for extra in player['extra']:
+                if extra['cause'] == 'HAG06' and extra['score'] <> 0:
+                    extra['score'] = 0
+                    extra['cause'] = 'HAG07' 
+    return players
 
 #
 ## Post-treatment rules
@@ -138,9 +149,9 @@ def HAG11(scoresheet):
        Note: this rule deals with cards *handed in*, not scored. Hence the use of 'handed_cards'.
     """
     nb_colors = []
-    for color, cards in scoresheet.iteritems():
+    for color, details in scoresheet.iteritems():
         if color != 'extra':
-            nb_colors.append(cards['handed_cards'])
+            nb_colors.append(details['handed_cards'])
     if sorted(nb_colors) == [0, 1, 2, 3, 4]:
-        scoresheet['extra'].append(calculate_score(scoresheet))
+        scoresheet['extra'].append({'score': calculate_score(scoresheet), 'cause': 'HAG11'})
     return scoresheet

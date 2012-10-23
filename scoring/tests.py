@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from scoring.card_scoring import calculate_score, setup_scoresheet, HAG04, HAG05, \
-    HAG09, HAG10, HAG13, HAG14, HAG15, HAG11, HAG06
+    HAG09, HAG10, HAG13, HAG14, HAG15, HAG11, HAG06, HAG07
 from scoring.models import Commodity
 
 class ViewsTest(TestCase):
@@ -89,7 +89,7 @@ class ScoringTest(TestCase):
     def test_calculate_score(self):
         scoresheet = {'Blue': { 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2 },
                       'Red' : { 'handed_cards': 4, 'scored_cards': 3, 'actual_value': 1 },
-                      'extra': [ 5 , -10 ] }
+                      'extra': [ {'score': 5} , {'score': -10} ] }
         self.assertEqual(2, calculate_score(scoresheet))
     
     def test_setup_scoresheet(self):
@@ -131,11 +131,22 @@ class ScoringTest(TestCase):
         player1 = self._prepare_scoresheet(blue = 5)
         player2 = self._prepare_scoresheet(blue = 6, orange = 1)
         player3 = self._prepare_scoresheet(yellow = 4, blue = 2, white = 4)
-        scoresheets = HAG06([player1, player2, player3])
-        self.assertEqual(3, len(scoresheets))
-        self.assertEqual(10-10, calculate_score(scoresheets[0])) # player1
-        self.assertEqual(16-10, calculate_score(scoresheets[1])) # player2
-        self.assertEqual(28-20, calculate_score(scoresheets[2])) # player3
+        players = HAG06([player1, player2, player3])
+        self.assertEqual(3, len(players))
+        self.assertEqual(10-10, calculate_score(players[0])) # player1
+        self.assertEqual(16-10, calculate_score(players[1])) # player2
+        self.assertEqual(28-20, calculate_score(players[2])) # player3
+
+    def test_haggle_HAG07(self):
+        """A set of three red cards protects you from one set of five blue cards."""
+        player1 = self._prepare_scoresheet(blue = 5)
+        player2 = self._prepare_scoresheet(blue = 6, red = 3)
+        player3 = self._prepare_scoresheet(yellow = 2, blue = 2, red = 6)
+        players = HAG07(HAG06([player1, player2, player3]))
+        self.assertEqual(3, len(players))
+        self.assertEqual(10-10, calculate_score(players[0])) # player1
+        self.assertEqual(21, calculate_score(players[1])) # player2
+        self.assertEqual(24, calculate_score(players[2])) # player3
 
     def test_haggle_HAG09(self):
         """If a player hands in seven or more cards of the same color, 
