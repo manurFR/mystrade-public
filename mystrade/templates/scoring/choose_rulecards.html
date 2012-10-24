@@ -9,6 +9,7 @@
 {% block scripts %}
 <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
 <script src="{% static 'jquery/jquery-ui-1.9.0.custom.min.js' %}"></script>
+<script src="{% static 'jquery/jquery.formset.min.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -42,18 +43,28 @@
 			{% endif %}
 		{% endfor %}
 		</div>
-		<div class="header">Type the number of each commodity :</div>
+		<div class="header">Type the hands of each player :</div>
 		<div class="css_table">
-		{{ commodities_formset.management_form }}
-		{% for form in commodities_formset %}
-			<div class="css_table-row">
+		{{ hands_formset.management_form }}
+		{% for form in hands_formset %}
+			<div class="css_table-row hand">
 				<div class="css_table-cell">
-					{{ form.commodity_id }}
-					<label for="id_{{ form.nb_cards.html_name }}">{{ form.name.value }} :</label>
-					{{ form.nb_cards.errors }}
+					Player #<span class="counter">{{ forloop.counter }}</span> >
 				</div>
 				<div class="css_table-cell">
-					{{ form.nb_cards }}
+					{{ form.yellow.label_tag }} : {{ form.yellow }}
+				</div>
+				<div class="css_table-cell">
+					{{ form.blue.label_tag }} : {{ form.blue }}
+				</div>
+				<div class="css_table-cell">
+					{{ form.red.label_tag }} : {{ form.red }}
+				</div>
+				<div class="css_table-cell">
+					{{ form.orange.label_tag }} : {{ form.orange }}
+				</div>
+				<div class="css_table-cell">
+					{{ form.white.label_tag }} : {{ form.white }}
 				</div>
 			</div>
 		{% endfor %}
@@ -74,5 +85,22 @@
 		selectall = !selectall;
 		$('#selectall').text(selectall ? 'Select all' : 'Deselect all');
     });
-	</script>
+    
+	var counter = $('.counter').length + 1
+    $(function() {
+            $('.hand').formset({
+            	prefix: 		'hands',
+            	addText: 		'&lt;Add a player&gt;',
+            	deleteText: 	'&lt;Delete&gt;',
+            	addCssClass: 	'helptext',
+            	deleteCssClass: 'helptext',
+            	added:			function(row) {
+            						$(row).find('.counter').text(counter++);
+            					},
+            	removed:		function(row) {
+            						counter--;
+            					}
+            });
+    })
+    </script>
 {% endblock content %}

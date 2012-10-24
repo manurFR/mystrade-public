@@ -9,10 +9,14 @@ class RuleCardFormDisplay(RuleCardFormParse):
     description = forms.CharField()
     mandatory = forms.BooleanField()
 
-class CommoditiesFormParse(forms.Form):
-    commodity_id = forms.CharField(widget = forms.HiddenInput())
-    nb_cards = forms.IntegerField(min_value = 0, max_value = 999, required = False,
-                                  widget = forms.TextInput(attrs = {'size': 3, 'maxlength': 3}))
-
-class CommoditiesFormDisplay(CommoditiesFormParse):
-    name = forms.CharField()
+class HandsForm(forms.Form):
+    yellow = forms.IntegerField(min_value = 0, max_value = 999, required = False,
+                                widget = forms.TextInput(attrs = {'size': 3, 'maxlength': 3}))
+    blue = forms.IntegerField(min_value = 0, max_value = 999, required = False,
+                                widget = forms.TextInput(attrs = {'size': 3, 'maxlength': 3}))
+    red = forms.IntegerField(min_value = 0, max_value = 999, required = False,
+                                widget = forms.TextInput(attrs = {'size': 3, 'maxlength': 3}))
+    orange = forms.IntegerField(min_value = 0, max_value = 999, required = False,
+                                widget = forms.TextInput(attrs = {'size': 3, 'maxlength': 3}))
+    white = forms.IntegerField(min_value = 0, max_value = 999, required = False,
+                                widget = forms.TextInput(attrs = {'size': 3, 'maxlength': 3}))
