@@ -31,7 +31,7 @@ class ViewsTest(TestCase):
                                      'rulecards-12-card_id': 13, 'rulecards-12-selected_rule': 'on',
                                      'rulecards-13-card_id': 14,
                                      'rulecards-14-card_id': 15,
-                                     'commodities-TOTAL_FORMS': 0, 'commodities-INITIAL_FORMS': 0
+                                     'hands-TOTAL_FORMS': 0, 'hands-INITIAL_FORMS': 0
                                     })
 
         self.assertEqual(200, response.status_code)
@@ -59,7 +59,7 @@ class ViewsTest(TestCase):
                                      'rulecards-12-card_id': 13,
                                      'rulecards-13-card_id': 14,
                                      'rulecards-14-card_id': 15,
-                                     'commodities-TOTAL_FORMS': 0, 'commodities-INITIAL_FORMS': 0
+                                     'hands-TOTAL_FORMS': 0, 'hands-INITIAL_FORMS': 0
                                     })
 
         self.assertEqual(200, response.status_code)
@@ -67,23 +67,37 @@ class ViewsTest(TestCase):
         self.assertContains(response, "2 : White cards have the highest basic value and are equal to a red card and a blue card.")
         self.assertContains(response, "3 : Blue cards have a basic value twice that of yellow and half that of orange.")
 
-    def test_specify_commodities(self):
+    def test_specify_hands(self):
         response = self.client.post("/scoring/",
                                     {'rulecards-TOTAL_FORMS': 0, 'rulecards-INITIAL_FORMS': 0,
-                                     'commodities-TOTAL_FORMS': 5, 'commodities-INITIAL_FORMS': 5,
-                                     'commodities-0-commodity_id': 1, 'commodities-0-nb_cards': 3,
-                                     'commodities-1-commodity_id': 2,
-                                     'commodities-2-commodity_id': 3, 'commodities-2-nb_cards': 0,
-                                     'commodities-3-commodity_id': 4, 'commodities-3-nb_cards': 8,
-                                     'commodities-4-commodity_id': 5,
+                                     'hands-TOTAL_FORMS': 2, 'hands-INITIAL_FORMS': 2,
+                                     'hands-0-yellow': 3,
+                                     'hands-0-blue': 0,
+                                     'hands-0-orange': 8,
+                                     'hands-1-yellow': 1,
+                                     'hands-1-blue': 2,
+                                     'hands-1-red': 3,
+                                     'hands-1-orange': 4,
+                                     'hands-1-white': 5
                                     })
 
         self.assertEqual(200, response.status_code)
-        self.assertContains(response, "Yellow : 3");
-        self.assertContains(response, "Blue : 0");
-        self.assertContains(response, "Red : 0");
-        self.assertContains(response, "Orange : 8");
-        self.assertContains(response, "White : 0");
+        self.assertContains(response, "Player #1 : Yellow : 3 / Blue : 0 / Red : 0 / Orange : 8 / White : 0");
+        self.assertContains(response, "Player #2 : Yellow : 1 / Blue : 2 / Red : 3 / Orange : 4 / White : 5");
+
+    def test_specify_hands_only_empty_fields(self):
+        response = self.client.post("/scoring/",
+                                    {'rulecards-TOTAL_FORMS': 0, 'rulecards-INITIAL_FORMS': 0,
+                                     'hands-TOTAL_FORMS': 1, 'hands-INITIAL_FORMS': 1,
+                                     'hands-0-yellow': '',
+                                     'hands-0-blue': '',
+                                     'hands-0-red': '',
+                                     'hands-0-orange': '',
+                                     'hands-0-white': ''
+                                    })
+
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, "Player #1 : Yellow : 0 / Blue : 0 / Red : 0 / Orange : 0 / White : 0");
 
 class ScoringTest(TestCase):
     def test_calculate_score(self):
