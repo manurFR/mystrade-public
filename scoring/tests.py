@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from scoring.card_scoring import calculate_score, setup_scoresheet, HAG04, HAG05, \
-    HAG09, HAG10, HAG13, HAG14, HAG15, HAG11, HAG06, HAG07, HAG08
+    HAG09, HAG10, HAG13, HAG14, HAG15, HAG11, HAG06, HAG07, HAG08, HAG12
 from scoring.models import Commodity
 
 class ViewsTest(TestCase):
@@ -169,7 +169,7 @@ class ScoringTest(TestCase):
         players = HAG08([player1, player2, player3])
         self.assertEqual(3, len(players))
         self.assertEqual(5, calculate_score(players[0]))
-        self.assertEqual(12 ,calculate_score(players[1]))
+        self.assertEqual(12, calculate_score(players[1]))
         self.assertEqual(10+(2**2), calculate_score(players[2]))
 
     def test_haggle_HAG09(self):
@@ -194,6 +194,29 @@ class ScoringTest(TestCase):
         self.assertEqual(20*2, calculate_score(HAG11(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1))))
         self.assertEqual(37*2, calculate_score(HAG11(self._prepare_scoresheet(yellow = 1, blue = 2, orange = 3, white = 4))))
         self.assertEqual(40, calculate_score(HAG11(self._prepare_scoresheet(yellow = 1, blue = 2, red = 1, orange = 3, white = 4))))
+
+    def test_haggle_HAG12(self):
+        """The player with the most red cards double their value.
+           In case of a tie, no player collects the extra value.
+        """
+        player1 = self._prepare_scoresheet(yellow = 3, red = 4)
+        player2 = self._prepare_scoresheet(blue = 1, red = 3)
+        player3 = self._prepare_scoresheet(yellow = 2, orange = 2)
+        players = HAG12([player1, player2, player3])
+        self.assertEqual(3, len(players))
+        self.assertEqual(15+12, calculate_score(players[0]))
+        self.assertEqual(11, calculate_score(players[1]))
+        self.assertEqual(10, calculate_score(players[2]))
+
+    def test_haggle_HAG12_tie(self):
+        player1 = self._prepare_scoresheet(yellow = 3, red = 3)
+        player2 = self._prepare_scoresheet(blue = 1, red = 3)
+        player3 = self._prepare_scoresheet(yellow = 2, orange = 2)
+        players = HAG12([player1, player2, player3])
+        self.assertEqual(3, len(players))
+        self.assertEqual(12, calculate_score(players[0]))
+        self.assertEqual(11, calculate_score(players[1]))
+        self.assertEqual(10, calculate_score(players[2]))
 
     def test_haggle_HAG13(self):
         """Each set of two yellow cards doubles the value of one white card."""

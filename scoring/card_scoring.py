@@ -150,6 +150,17 @@ def HAG08(players):
             break
     return players
 
+def HAG12(players):
+    """The player with the most red cards double their value.
+       In case of a tie, no player collects the extra value.
+    """
+    winner = None
+    reds = [player['Red']['scored_cards'] for player in players]
+    if reds.count(max(reds)) == 1:
+        winner = players[reds.index(max(reds))]
+        winner['extra'].append({'score': winner['Red']['scored_cards'] * winner['Red']['actual_value'], 'cause': 'HAG12'})
+    return players
+
 #
 ## Post-treatment rules
 # These rules will be applies after all other rules (for example because they need the total score).
