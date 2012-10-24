@@ -136,6 +136,20 @@ def HAG07(players):
                     extra['cause'] = 'HAG07' 
     return players
 
+def HAG08(players):
+    """The player with the most yellow cards gets a bonus of the number of those cards squared. 
+       If two or more players tie for most yellow, the bonus is calculated instead for the player 
+       with the next highest number of yellows.
+    """
+    winner = None
+    yellows = [player['Yellow']['scored_cards'] for player in players]
+    for winning_number in range(max(yellows), 1, -1):
+        if yellows.count(winning_number) == 1:
+            winner = players[yellows.index(winning_number)]
+            winner['extra'].append({'score': winner['Yellow']['scored_cards'] ** 2, 'cause': 'HAG08'})
+            break
+    return players
+
 #
 ## Post-treatment rules
 # These rules will be applies after all other rules (for example because they need the total score).
