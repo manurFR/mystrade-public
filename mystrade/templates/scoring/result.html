@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load url from future %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.0.custom.min.css' %}" />
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
+<script src="{% static 'jquery/jquery-ui-1.9.0.custom.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+	<div class="header">Result :</div>
+	Rules : {% for card in rules %}{{ card.public_name }} {% endfor %}
+	<br/>
+	<br/>
+	{% for player in players %}
+		Player : {{ forloop.counter }} [{% for commodity, nb_cards in player.items %}{{ commodity.name }} : {{ nb_cards }}{% if not forloop.last %} | {% endif %}{% endfor %}]<br/>
+	{% endfor %}
+	
+	{{ result|linebreaksbr }}
+{% endblock content %}

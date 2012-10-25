@@ -35,11 +35,7 @@ class ViewsTest(TestCase):
                                     })
 
         self.assertEqual(200, response.status_code)
-        self.assertContains(response, "1 : Orange cards have a basic value of 4 and are equal to a red card and a yellow card.")
-        self.assertContains(response, "2 : White cards have the highest basic value and are equal to a red card and a blue card.")
-        self.assertContains(response, "3 : Blue cards have a basic value twice that of yellow and half that of orange.")
-        self.assertContains(response, "10 : Each set of five different colors gives a bonus of 10 points.")
-        self.assertContains(response, "13 : Each set of two yellow cards doubles the value of one white card.")
+        self.assertContains(response, "Rules : 1 2 3 10 13")
 
     def test_mandatory_cards(self):
         response = self.client.post("/scoring/",
@@ -63,9 +59,7 @@ class ViewsTest(TestCase):
                                     })
 
         self.assertEqual(200, response.status_code)
-        self.assertContains(response, "1 : Orange cards have a basic value of 4 and are equal to a red card and a yellow card.")
-        self.assertContains(response, "2 : White cards have the highest basic value and are equal to a red card and a blue card.")
-        self.assertContains(response, "3 : Blue cards have a basic value twice that of yellow and half that of orange.")
+        self.assertContains(response, "Rules : 1 2 3")
 
     def test_specify_hands(self):
         response = self.client.post("/scoring/",
@@ -82,8 +76,8 @@ class ViewsTest(TestCase):
                                     })
 
         self.assertEqual(200, response.status_code)
-        self.assertContains(response, "Player #1 : Yellow : 3 / Blue : 0 / Red : 0 / Orange : 8 / White : 0");
-        self.assertContains(response, "Player #2 : Yellow : 1 / Blue : 2 / Red : 3 / Orange : 4 / White : 5");
+        self.assertContains(response, "Player : 1 [Yellow : 3 | Blue : 0 | Red : 0 | Orange : 8 | White : 0]")
+        self.assertContains(response, "Player : 2 [Yellow : 1 | Blue : 2 | Red : 3 | Orange : 4 | White : 5]")
 
     def test_specify_hands_only_empty_fields(self):
         response = self.client.post("/scoring/",
@@ -97,7 +91,7 @@ class ViewsTest(TestCase):
                                     })
 
         self.assertEqual(200, response.status_code)
-        self.assertContains(response, "Player #1 : Yellow : 0 / Blue : 0 / Red : 0 / Orange : 0 / White : 0");
+        self.assertContains(response, "Player : 1 [Yellow : 0 | Blue : 0 | Red : 0 | Orange : 0 | White : 0]")
 
 class ScoringTest(TestCase):
     def test_calculate_score(self):

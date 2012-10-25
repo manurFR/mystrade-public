@@ -15,36 +15,27 @@ def choose_rulecards(request):
         HandsFormSet = formset_factory(HandsForm)
         hands_formset = HandsFormSet(request.POST, prefix = 'hands')
         if rulecards_formset.is_valid() and hands_formset.is_valid():
-            selected_cards = []
+            selected_rules = []
             for card in rulecards_queryset:
                 if card.mandatory:
-                    selected_cards.append(card)
+                    selected_rules.append(card)
                     continue
                 for form in rulecards_formset:
                     if int(form.cleaned_data['card_id']) == card.id and form.cleaned_data['selected_rule']:
-                        selected_cards.append(card)
+                        selected_rules.append(card)
                         break
-            hands = []
+            players = []
             for form in hands_formset:
-                player_hand = {}
+                hand = {}
                 for commodity in commodities_queryset:
                     if not form.cleaned_data: # none of the fields are valued
-                        player_hand[commodity] = 0
+                        hand[commodity] = 0
                     else:
-                        player_hand[commodity] = form.cleaned_data[commodity.name.lower()]
-                        if player_hand[commodity] is None:
-                            player_hand[commodity] = 0
-                hands.append(player_hand)
-            strg = ''
-            for card in selected_cards:
-                strg += str(card.id) + ' : '
-                strg += card.description + '<br/>\n'
-            for index, player in enumerate(hands):
-                strg += 'Player #' + str(index+1) + ' : '
-                for commodity, nb in player.iteritems():
-                    strg += commodity.name + ' : ' + str(nb) + ' / '
-                strg += '<br/>\n'
-            return HttpResponse(strg)
+                        hand[commodity] = form.cleaned_data[commodity.name.lower()]
+                        if hand[commodity] is None:
+                            hand[commodity] = 0
+                players.append(hand)
+            return render(request, 'scoring/result.html', {'rules': selected_rules, 'players': players})
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
         rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.id,
