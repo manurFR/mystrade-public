@@ -150,11 +150,13 @@ class ScoringTest(TestCase):
         player1 = self._prepare_scoresheet(blue = 5)
         player2 = self._prepare_scoresheet(blue = 6, red = 3)
         player3 = self._prepare_scoresheet(yellow = 2, blue = 2, red = 6)
-        players = HAG07(HAG06([player1, player2, player3]))
-        self.assertEqual(3, len(players))
-        self.assertEqual(10-10, calculate_score(players[0]))
-        self.assertEqual(21, calculate_score(players[1]))
-        self.assertEqual(24, calculate_score(players[2]))
+        players = HAG06([player1, player2, player3])
+        player1 = HAG07(players[0])
+        player2 = HAG07(players[1])
+        player3 = HAG07(players[2])
+        self.assertEqual(10-10, calculate_score(player1))
+        self.assertEqual(21, calculate_score(player2))
+        self.assertEqual(24, calculate_score(player3))
         
     def test_haggle_HAG08(self):
         """The player with the most yellow cards gets a bonus of the number of those cards squared. 

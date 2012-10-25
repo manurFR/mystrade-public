@@ -19,31 +19,7 @@ def calculate_score(scoresheet):
     return score
 
 #
-### Pre-treatment rules
-# They should be applied before all other rules (for example because they can exclude any card from a hand)
-#
-
-def HAG15(scoresheet):
-    """No more than thirteen cards in a hand can be scored.
-       If more are handed in, the excess will be removed at random.
-    """
-    total_scored_cards = 0
-    present_colors = []
-    for color, details in scoresheet.iteritems():
-        if color != 'extra' and details['scored_cards'] > 0:
-            present_colors.append(color)
-            total_scored_cards += details['scored_cards']
-    while total_scored_cards > 13:
-        selected_color = random.choice(present_colors)
-        scoresheet[selected_color]['scored_cards'] -= 1
-        if scoresheet[selected_color]['scored_cards'] == 0:
-            present_colors.remove(selected_color)
-        total_scored_cards -= 1
-    return scoresheet
-
-#
-### Modifying rules
-# These rules may modify the number of scored cards or their value.
+### Rules
 #
 
 def HAG04(scoresheet):
@@ -58,13 +34,46 @@ def HAG05(scoresheet):
         scoresheet['Orange']['scored_cards'] = scoresheet['Blue']['scored_cards']
     return scoresheet
 
-#
-### Regular rules
-# These rules are guaranteed that each commodity has a stable value and number of scored cards
-# when they're applied (no future modifications).
-# They may or may not use this property.
-# These rules must be applied only after all Modifying rules.
-#
+def HAG06(players):
+    """If a player has five or more blue cards, 10 points are deducted from every other player's score.
+
+        # Global rulecard #
+    """
+    culprits = []
+    for index, player in enumerate(players):
+        if player['Blue']['scored_cards'] >= 5:
+            culprits.append(index)
+    for culprit in culprits:
+        for index, victim in enumerate(players):
+            if index != culprit:
+                victim['extra'].append({'score': -10, 'cause': 'HAG06'})
+    return players
+
+def HAG07(scoresheet):
+    """A set of three red cards protects you from one set of five blue cards."""
+    nb_sets = int(scoresheet['Red']['scored_cards']) / 3
+    for _i in range(nb_sets):
+        for extra in scoresheet['extra']:
+            if extra['cause'] == 'HAG06' and extra['score'] <> 0:
+                extra['score'] = 0
+                extra['cause'] = 'HAG07' 
+    return scoresheet
+
+def HAG08(players):
+    """The player with the most yellow cards gets a bonus of the number of those cards squared. 
+       If two or more players tie for most yellow, the bonus is calculated instead for the player 
+       with the next highest number of yellows.
+
+        # Global rulecard #
+    """
+    winner = None
+    yellows = [player['Yellow']['scored_cards'] for player in players]
+    for winning_number in range(max(yellows), 1, -1):
+        if yellows.count(winning_number) == 1:
+            winner = players[yellows.index(winning_number)]
+            winner['extra'].append({'score': winner['Yellow']['scored_cards'] ** 2, 'cause': 'HAG08'})
+            break
+    return players
 
 def HAG09(scoresheet):
     """If a player hands in seven or more cards of the same color, 
@@ -92,6 +101,34 @@ def HAG10(scoresheet):
             scoresheet['extra'].append({'score': 10, 'cause': 'HAG10'})
     return scoresheet
 
+def HAG11(scoresheet):
+    """If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. 
+       A pyramid consists of four cards of one color, three cards of a second color, 
+       two cards of a third, and one card of a fourth color.
+
+       Note: this rule deals with cards *handed in*, not scored. Hence the use of 'handed_cards'.
+    """
+    nb_colors = []
+    for color, details in scoresheet.iteritems():
+        if color != 'extra':
+            nb_colors.append(details['handed_cards'])
+    if sorted(nb_colors) == [0, 1, 2, 3, 4]:
+        scoresheet['extra'].append({'score': calculate_score(scoresheet), 'cause': 'HAG11'})
+    return scoresheet
+
+def HAG12(players):
+    """The player with the most red cards double their value.
+       In case of a tie, no player collects the extra value.
+
+        # Global rulecard #
+    """
+    winner = None
+    reds = [player['Red']['scored_cards'] for player in players]
+    if reds.count(max(reds)) == 1:
+        winner = players[reds.index(max(reds))]
+        winner['extra'].append({'score': winner['Red']['scored_cards'] * winner['Red']['actual_value'], 'cause': 'HAG12'})
+    return players
+
 def HAG13(scoresheet):
     """Each set of two yellow cards doubles the value of one white card."""
     nb_sets = int(scoresheet['Yellow']['scored_cards']) / 2
@@ -108,75 +145,20 @@ def HAG14(scoresheet):
         scoresheet['extra'].append({'score': 3 * scoresheet['Orange']['actual_value'], 'cause': 'HAG14'})
     return scoresheet
 
-#
-## Global rules
-# These rules may impact other players' score or may require a comparison of the hand of all players.
-#
-
-def HAG06(players):
-    """If a player has five or more blue cards, 10 points are deducted from every other player's score."""
-    culprits = []
-    for index, player in enumerate(players):
-        if player['Blue']['scored_cards'] >= 5:
-            culprits.append(index)
-    for culprit in culprits:
-        for index, victim in enumerate(players):
-            if index != culprit:
-                victim['extra'].append({'score': -10, 'cause': 'HAG06'})
-    return players
-
-def HAG07(players):
-    """A set of three red cards protects you from one set of five blue cards."""
-    for player in players:
-        nb_sets = int(player['Red']['scored_cards']) / 3
-        for _i in range(nb_sets):
-            for extra in player['extra']:
-                if extra['cause'] == 'HAG06' and extra['score'] <> 0:
-                    extra['score'] = 0
-                    extra['cause'] = 'HAG07' 
-    return players
-
-def HAG08(players):
-    """The player with the most yellow cards gets a bonus of the number of those cards squared. 
-       If two or more players tie for most yellow, the bonus is calculated instead for the player 
-       with the next highest number of yellows.
+def HAG15(scoresheet):
+    """No more than thirteen cards in a hand can be scored.
+       If more are handed in, the excess will be removed at random.
     """
-    winner = None
-    yellows = [player['Yellow']['scored_cards'] for player in players]
-    for winning_number in range(max(yellows), 1, -1):
-        if yellows.count(winning_number) == 1:
-            winner = players[yellows.index(winning_number)]
-            winner['extra'].append({'score': winner['Yellow']['scored_cards'] ** 2, 'cause': 'HAG08'})
-            break
-    return players
-
-def HAG12(players):
-    """The player with the most red cards double their value.
-       In case of a tie, no player collects the extra value.
-    """
-    winner = None
-    reds = [player['Red']['scored_cards'] for player in players]
-    if reds.count(max(reds)) == 1:
-        winner = players[reds.index(max(reds))]
-        winner['extra'].append({'score': winner['Red']['scored_cards'] * winner['Red']['actual_value'], 'cause': 'HAG12'})
-    return players
-
-#
-## Post-treatment rules
-# These rules will be applies after all other rules (for example because they need the total score).
-#
-
-def HAG11(scoresheet):
-    """If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. 
-       A pyramid consists of four cards of one color, three cards of a second color, 
-       two cards of a third, and one card of a fourth color.
-       
-       Note: this rule deals with cards *handed in*, not scored. Hence the use of 'handed_cards'.
-    """
-    nb_colors = []
+    total_scored_cards = 0
+    present_colors = []
     for color, details in scoresheet.iteritems():
-        if color != 'extra':
-            nb_colors.append(details['handed_cards'])
-    if sorted(nb_colors) == [0, 1, 2, 3, 4]:
-        scoresheet['extra'].append({'score': calculate_score(scoresheet), 'cause': 'HAG11'})
+        if color != 'extra' and details['scored_cards'] > 0:
+            present_colors.append(color)
+            total_scored_cards += details['scored_cards']
+    while total_scored_cards > 13:
+        selected_color = random.choice(present_colors)
+        scoresheet[selected_color]['scored_cards'] -= 1
+        if scoresheet[selected_color]['scored_cards'] == 0:
+            present_colors.remove(selected_color)
+        total_scored_cards -= 1
     return scoresheet
