@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from scoring.card_scoring import calculate_player_score, _hand_to_scoresheet, \
-    scoring
+    tally_scores
 from scoring.haggle import HAG04, HAG05, HAG06, HAG07, HAG08, HAG09, HAG10, \
     HAG11, HAG12, HAG13, HAG14, HAG15
 from scoring.models import Commodity, RuleCard, Ruleset
@@ -96,18 +96,18 @@ class ViewsTest(TestCase):
         self.assertContains(response, "Player : 1 [Yellow : 0 | Blue : 0 | Red : 0 | Orange : 0 | White : 0]")
 
 class ScoringTest(TestCase):
-    def test_scoring(self):
+    def test_tally_scores(self):
         haggle_ruleset = Ruleset.objects.get(pk = 1)
         haggle_all_rulecards = RuleCard.objects.filter(ruleset = haggle_ruleset)
         hands = [_prepare_hand(yellow = 2, blue = 1, red = 3, orange = 3, white = 4),
                  _prepare_hand(yellow = 3, blue = 5, red = 3, orange = 0, white = 1),
                  _prepare_hand(yellow = 3, blue = 1, red = 1, orange = 7, white = 1),
                  _prepare_hand(yellow = 0, blue = 3, red = 4, orange = 2, white = 1)]
-        scoresheets = scoring(hands, haggle_ruleset, [rule for rule in haggle_all_rulecards])
-        self.assertEqual(31, scoresheets[0])
-        self.assertEqual(32, scoresheets[1])
-        self.assertEqual(12, scoresheets[2])
-        self.assertEqual(110, scoresheets[3])
+        scores = tally_scores(hands, haggle_ruleset, [rule for rule in haggle_all_rulecards])
+        self.assertEqual(31, scores[0])
+        self.assertEqual(32, scores[1])
+        self.assertEqual(12, scores[2])
+        self.assertEqual(110, scores[3])
     
     def test_calculate_player_score(self):
         scoresheet = {'Blue': { 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2 },

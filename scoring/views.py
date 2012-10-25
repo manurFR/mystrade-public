@@ -1,6 +1,5 @@
 from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
-from django.http import HttpResponse
 from django.shortcuts import render
 from scoring.forms import RuleCardFormDisplay, RuleCardFormParse, HandsForm
 from scoring.models import RuleCard, Commodity

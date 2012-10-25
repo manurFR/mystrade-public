@@ -1,7 +1,7 @@
 import importlib
 
-def scoring(hands, ruleset, selected_rules):
-    module = importlib.import_module(ruleset.module)
+def tally_scores(hands, ruleset, selected_rules):
+    module = importlib.import_module('scoring.' + ruleset.module)
     scoresheets = [_hand_to_scoresheet(hand) for hand in hands]
     rules = sorted(selected_rules, key = lambda rule : rule.step)
     for rule in rules:
@@ -13,7 +13,7 @@ def scoring(hands, ruleset, selected_rules):
         else:
             for scoresheet in scoresheets:
                 scoresheet = func(scoresheet)
-    return scoresheets
+    return [calculate_player_score(scoresheet) for scoresheet in scoresheets]
 
 def calculate_player_score(scoresheet):
     score = 0
