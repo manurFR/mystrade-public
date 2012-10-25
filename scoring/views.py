@@ -2,12 +2,14 @@ from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 from django.shortcuts import render
 from scoring.forms import RuleCardFormDisplay, RuleCardFormParse, HandsForm
-from scoring.models import RuleCard, Commodity
+from scoring.models import RuleCard, Commodity, Ruleset
+from scoring.card_scoring import tally_scores
 
 @login_required
 def choose_rulecards(request):
-    rulecards_queryset = RuleCard.objects.filter(ruleset = 1)
-    commodities_queryset = Commodity.objects.filter(ruleset = 1)
+    ruleset = Ruleset.objects.get(pk = 1)
+    rulecards_queryset = RuleCard.objects.filter(ruleset = ruleset)
+    commodities_queryset = Commodity.objects.filter(ruleset = ruleset)
     if request.method == 'POST':
         RuleCardFormSet = formset_factory(RuleCardFormParse)
         rulecards_formset = RuleCardFormSet(request.POST, prefix = 'rulecards')
@@ -34,7 +36,8 @@ def choose_rulecards(request):
                         if hand[commodity] is None:
                             hand[commodity] = 0
                 players.append(hand)
-            return render(request, 'scoring/result.html', {'rules': selected_rules, 'players': players})
+            scores = tally_scores(players, ruleset, selected_rules)
+            return render(request, 'scoring/result.html', {'rules': selected_rules, 'players': players, 'scores': scores})
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
         rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.id,

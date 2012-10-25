@@ -18,6 +18,7 @@
 	<br/>
 	{% for player in players %}
 		Player : {{ forloop.counter }} [{% for commodity, nb_cards in player.items %}{{ commodity.name }} : {{ nb_cards }}{% if not forloop.last %} | {% endif %}{% endfor %}]<br/>
+		Score : {{ scores }}<br/>
 	{% endfor %}
 	
 	{{ result|linebreaksbr }}
