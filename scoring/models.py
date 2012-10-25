@@ -2,6 +2,7 @@ from django.db import models
 
 class Ruleset(models.Model):
     name = models.CharField(max_length = 255)
+    module = models.CharField("Internal scoring module name", max_length = 20)
 
 class RuleCard(models.Model):
     ruleset = models.ForeignKey(Ruleset)

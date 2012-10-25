@@ -3,7 +3,8 @@
         "pk": 1,
         "model": "scoring.ruleset",
         "fields": {
-            "name": "Original Haggle (1969)"
+            "name": "Original Haggle (1969)",
+            "module": "haggle"
         }
     },
     {
