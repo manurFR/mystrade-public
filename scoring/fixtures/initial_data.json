@@ -14,7 +14,8 @@
             "description": "Orange cards have a basic value of 4 and are equal to a red card and a yellow card.",
             "mandatory": true,
             "ruleset": 1,
-            "ref_name": "HAG01"
+            "ref_name": "HAG01",
+            "glob": false
         }
     },
     {
@@ -25,7 +26,8 @@
             "description": "White cards have the highest basic value and are equal to a red card and a blue card.",
             "mandatory": true,
             "ruleset": 1,
-            "ref_name": "HAG02"
+            "ref_name": "HAG02",
+            "glob": false
         }
     },
     {
@@ -36,7 +38,8 @@
             "description": "Blue cards have a basic value twice that of yellow and half that of orange.",
             "mandatory": true,
             "ruleset": 1,
-            "ref_name": "HAG03"
+            "ref_name": "HAG03",
+            "glob": false
         }
     },
     {
@@ -47,7 +50,9 @@
             "description": "If a player has more than three white cards, all of his/her white cards lose their value.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG04"
+            "ref_name": "HAG04",
+            "step": 10,
+            "glob": false
         }
     },
 	{
@@ -58,7 +63,9 @@
             "description": "A player can score only as many as orange cards as he/she has blue cards.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG05"
+            "ref_name": "HAG05",
+            "step": 10,
+            "glob": false
         }
     },
 	{
@@ -69,7 +76,9 @@
             "description": "If a player has five or more blue cards, 10 points are deducted from every other player's score.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG06"
+            "ref_name": "HAG06",
+            "step": 30,
+            "glob": true
         }
     },
     {
@@ -80,7 +89,9 @@
             "description": "A set of three red cards protects you from one set of five blue cards.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG07"
+            "ref_name": "HAG07",
+            "step": 31,
+            "glob": false
         }
     },   
     {
@@ -91,7 +102,9 @@
             "description": "The player with the most yellow cards gets a bonus of the number of those cards squared. If two or more players tie for most yellow, the bonus is calculated instead for the player with the next highest number of yellows.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG08"
+            "ref_name": "HAG08",
+            "step": 32,
+            "glob": true
         }
     },
     {
@@ -102,7 +115,9 @@
             "description": "If a player hands in seven or more cards of the same color, for each of these colors 10 points are deducted from his/her score.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG09"
+            "ref_name": "HAG09",
+            "step": 20,
+            "glob": false
         }
     },
     {
@@ -113,7 +128,9 @@
             "description": "Each set of five different colors gives a bonus of 10 points.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG10"
+            "ref_name": "HAG10",
+            "step": 20,
+            "glob": false
         }
     },
     {
@@ -124,7 +141,9 @@
             "description": "If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. A pyramid consists of four cards of one color, three cards of a second color, two cards of a third, and one card of a fourth color.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG11"
+            "ref_name": "HAG11",
+            "step": 40,
+            "glob": false
         }
     },
     {
@@ -135,7 +154,9 @@
             "description": "The player with the most red cards double their value. In case of a tie, no player collects the extra value.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG12"
+            "ref_name": "HAG12",
+            "step": 32,
+            "glob": true
         }
     },
     {
@@ -146,7 +167,9 @@
             "description": "Each set of two yellow cards doubles the value of one white card.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG13"
+            "ref_name": "HAG13",
+            "step": 20,
+            "glob": false
         }
     },
     {
@@ -157,7 +180,9 @@
             "description": "Each set of three blue cards quadruples the value of one orange card.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG14"
+            "ref_name": "HAG14",
+            "step": 20,
+            "glob": false
         }
     },
     {
@@ -168,7 +193,9 @@
             "description": "No more than thirteen cards in a hand can be scored. If more are handed in, the excess will be removed at random.",
             "mandatory": false,
             "ruleset": 1,
-            "ref_name": "HAG15"
+            "ref_name": "HAG15",
+            "step": 0,
+            "glob": false
         }
     },
     {
