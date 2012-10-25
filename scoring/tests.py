@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from scoring.card_scoring import calculate_score, setup_scoresheet
+from scoring.card_scoring import calculate_player_score, _hand_to_scoresheet, \
+    scoring
 from scoring.haggle import HAG04, HAG05, HAG06, HAG07, HAG08, HAG09, HAG10, \
     HAG11, HAG12, HAG13, HAG14, HAG15
-from scoring.models import Commodity
+from scoring.models import Commodity, RuleCard, Ruleset
 
 class ViewsTest(TestCase):
     def setUp(self):
@@ -95,17 +96,30 @@ class ViewsTest(TestCase):
         self.assertContains(response, "Player : 1 [Yellow : 0 | Blue : 0 | Red : 0 | Orange : 0 | White : 0]")
 
 class ScoringTest(TestCase):
-    def test_calculate_score(self):
+    def test_scoring(self):
+        haggle_ruleset = Ruleset.objects.get(pk = 1)
+        haggle_all_rulecards = RuleCard.objects.filter(ruleset = haggle_ruleset)
+        hands = [_prepare_hand(yellow = 2, blue = 1, red = 3, orange = 3, white = 4),
+                 _prepare_hand(yellow = 3, blue = 5, red = 3, orange = 0, white = 1),
+                 _prepare_hand(yellow = 3, blue = 1, red = 1, orange = 7, white = 1),
+                 _prepare_hand(yellow = 0, blue = 3, red = 4, orange = 2, white = 1)]
+        scoresheets = scoring(hands, haggle_ruleset, [rule for rule in haggle_all_rulecards])
+        self.assertEqual(31, scoresheets[0])
+        self.assertEqual(32, scoresheets[1])
+        self.assertEqual(12, scoresheets[2])
+        self.assertEqual(110, scoresheets[3])
+    
+    def test_calculate_player_score(self):
         scoresheet = {'Blue': { 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2 },
                       'Red' : { 'handed_cards': 4, 'scored_cards': 3, 'actual_value': 1 },
                       'extra': [ {'score': 5} , {'score': -10} ] }
-        self.assertEqual(2, calculate_score(scoresheet))
+        self.assertEqual(2, calculate_player_score(scoresheet))
     
-    def test_setup_scoresheet(self):
+    def test_hand_to_scoresheet(self):
         """Yellow = 1 / Blue = 2 / Red = 3 / Orange = 4 / White = 5
            This is a test of the 3 mandatory rulecards for the initial values.
         """
-        scoresheet = self._prepare_scoresheet(1, 1, 1, 1, 1)
+        scoresheet = _prepare_scoresheet(1, 1, 1, 1, 1)
         self.assertEqual({'Yellow' : { 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 1 },
                           'Blue'   : { 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 2 },
                           'Red'    : { 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 3 },
@@ -113,9 +127,9 @@ class ScoringTest(TestCase):
                           'White'  : { 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 5 },
                           'extra'  : [] },
                          scoresheet)
-        self.assertEqual(15, calculate_score(scoresheet))
+        self.assertEqual(15, calculate_player_score(scoresheet))
 
-        scoresheet = self._prepare_scoresheet(blue = 1, red = 2, orange = 3)
+        scoresheet = _prepare_scoresheet(blue = 1, red = 2, orange = 3)
         self.assertEqual({'Yellow' : { 'handed_cards': 0, 'scored_cards': 0, 'actual_value': 1 },
                           'Blue'   : { 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 2 },
                           'Red'    : { 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 3 },
@@ -123,142 +137,147 @@ class ScoringTest(TestCase):
                           'White'  : { 'handed_cards': 0, 'scored_cards': 0, 'actual_value': 5 },
                           'extra'  : [] },
                          scoresheet)
-        self.assertEqual(20, calculate_score(scoresheet))
+        self.assertEqual(20, calculate_player_score(scoresheet))
+        
+class HaggleTest(TestCase):        
 
     def test_haggle_HAG04(self):
         """If a player has more than three white cards, all of his/her white cards lose their value."""
-        self.assertEqual(15, calculate_score(HAG04(self._prepare_scoresheet(white = 3))))
-        self.assertEqual(0,  calculate_score(HAG04(self._prepare_scoresheet(white = 4))))
+        self.assertEqual(15, calculate_player_score(HAG04(_prepare_scoresheet(white = 3))))
+        self.assertEqual(0,  calculate_player_score(HAG04(_prepare_scoresheet(white = 4))))
     
     def test_haggle_HAG05(self):
         """"A player can score only as many as orange cards as he/she has blue cards."""
-        self.assertEqual(18, calculate_score(HAG05(self._prepare_scoresheet(blue = 3, orange = 3))))
-        self.assertEqual(12, calculate_score(HAG05(self._prepare_scoresheet(blue = 2, orange = 3))))
+        self.assertEqual(18, calculate_player_score(HAG05(_prepare_scoresheet(blue = 3, orange = 3))))
+        self.assertEqual(12, calculate_player_score(HAG05(_prepare_scoresheet(blue = 2, orange = 3))))
 
     def test_haggle_HAG06(self):
         """If a player has five or more blue cards, 10 points are deducted from every other player's score."""
-        player1 = self._prepare_scoresheet(blue = 5)
-        player2 = self._prepare_scoresheet(blue = 6, orange = 1)
-        player3 = self._prepare_scoresheet(yellow = 4, blue = 2, white = 4)
+        player1 = _prepare_scoresheet(blue = 5)
+        player2 = _prepare_scoresheet(blue = 6, orange = 1)
+        player3 = _prepare_scoresheet(yellow = 4, blue = 2, white = 4)
         players = HAG06([player1, player2, player3])
         self.assertEqual(3, len(players))
-        self.assertEqual(10-10, calculate_score(players[0]))
-        self.assertEqual(16-10, calculate_score(players[1]))
-        self.assertEqual(28-20, calculate_score(players[2]))
+        self.assertEqual(10-10, calculate_player_score(players[0]))
+        self.assertEqual(16-10, calculate_player_score(players[1]))
+        self.assertEqual(28-20, calculate_player_score(players[2]))
 
     def test_haggle_HAG07(self):
         """A set of three red cards protects you from one set of five blue cards."""
-        player1 = self._prepare_scoresheet(blue = 5)
-        player2 = self._prepare_scoresheet(blue = 6, red = 3)
-        player3 = self._prepare_scoresheet(yellow = 2, blue = 2, red = 6)
+        player1 = _prepare_scoresheet(blue = 5)
+        player2 = _prepare_scoresheet(blue = 6, red = 3)
+        player3 = _prepare_scoresheet(yellow = 2, blue = 2, red = 6)
         players = HAG06([player1, player2, player3])
         player1 = HAG07(players[0])
         player2 = HAG07(players[1])
         player3 = HAG07(players[2])
-        self.assertEqual(10-10, calculate_score(player1))
-        self.assertEqual(21, calculate_score(player2))
-        self.assertEqual(24, calculate_score(player3))
+        self.assertEqual(10-10, calculate_player_score(player1))
+        self.assertEqual(21, calculate_player_score(player2))
+        self.assertEqual(24, calculate_player_score(player3))
         
     def test_haggle_HAG08(self):
         """The player with the most yellow cards gets a bonus of the number of those cards squared. 
            If two or more players tie for most yellow, the bonus is calculated instead for the player 
            with the next highest number of yellows.
         """
-        player1 = self._prepare_scoresheet(yellow = 5)
-        player2 = self._prepare_scoresheet(yellow = 3, red = 3)
-        player3 = self._prepare_scoresheet(orange = 2)
+        player1 = _prepare_scoresheet(yellow = 5)
+        player2 = _prepare_scoresheet(yellow = 3, red = 3)
+        player3 = _prepare_scoresheet(orange = 2)
         players = HAG08([player1, player2, player3])
         self.assertEqual(3, len(players))
-        self.assertEqual(5+(5**2), calculate_score(players[0]))
-        self.assertEqual(12, calculate_score(players[1]))
-        self.assertEqual(8, calculate_score(players[2]))
+        self.assertEqual(5+(5**2), calculate_player_score(players[0]))
+        self.assertEqual(12, calculate_player_score(players[1]))
+        self.assertEqual(8, calculate_player_score(players[2]))
 
     def test_haggle_HAG08_tie(self):
-        player1 = self._prepare_scoresheet(yellow = 3, blue = 1) 
-        player2 = self._prepare_scoresheet(yellow = 3, red = 3)
-        player3 = self._prepare_scoresheet(yellow = 2, orange = 2)
+        player1 = _prepare_scoresheet(yellow = 3, blue = 1) 
+        player2 = _prepare_scoresheet(yellow = 3, red = 3)
+        player3 = _prepare_scoresheet(yellow = 2, orange = 2)
         players = HAG08([player1, player2, player3])
         self.assertEqual(3, len(players))
-        self.assertEqual(5, calculate_score(players[0]))
-        self.assertEqual(12, calculate_score(players[1]))
-        self.assertEqual(10+(2**2), calculate_score(players[2]))
+        self.assertEqual(5, calculate_player_score(players[0]))
+        self.assertEqual(12, calculate_player_score(players[1]))
+        self.assertEqual(10+(2**2), calculate_player_score(players[2]))
 
     def test_haggle_HAG09(self):
         """If a player hands in seven or more cards of the same color, 
            for each of these colors 10 points are deducted from his/her score.
         """
-        self.assertEqual(17, calculate_score(HAG09(self._prepare_scoresheet(yellow = 6, blue = 3, white = 1))))
-        self.assertEqual(8,  calculate_score(HAG09(self._prepare_scoresheet(yellow = 7, blue = 3, white = 1))))
-        self.assertEqual(8,  calculate_score(HAG09(self._prepare_scoresheet(yellow = 7, blue = 8, white = 1))))
+        self.assertEqual(17, calculate_player_score(HAG09(_prepare_scoresheet(yellow = 6, blue = 3, white = 1))))
+        self.assertEqual(8,  calculate_player_score(HAG09(_prepare_scoresheet(yellow = 7, blue = 3, white = 1))))
+        self.assertEqual(8,  calculate_player_score(HAG09(_prepare_scoresheet(yellow = 7, blue = 8, white = 1))))
         
     def test_haggle_HAG10(self):
         """Each set of five different colors gives a bonus of 10 points."""
-        self.assertEqual(20, calculate_score(HAG10(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1))))
-        self.assertEqual(35, calculate_score(HAG10(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1, white = 1))))
-        self.assertEqual(63, calculate_score(HAG10(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 3, white = 3))))
+        self.assertEqual(20, calculate_player_score(HAG10(_prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1))))
+        self.assertEqual(35, calculate_player_score(HAG10(_prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1, white = 1))))
+        self.assertEqual(63, calculate_player_score(HAG10(_prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 3, white = 3))))
 
     def test_haggle_HAG11(self):
         """If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. 
            A pyramid consists of four cards of one color, three cards of a second color, 
            two cards of a third, and one card of a fourth color.
         """
-        self.assertEqual(20*2, calculate_score(HAG11(self._prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1))))
-        self.assertEqual(37*2, calculate_score(HAG11(self._prepare_scoresheet(yellow = 1, blue = 2, orange = 3, white = 4))))
-        self.assertEqual(40, calculate_score(HAG11(self._prepare_scoresheet(yellow = 1, blue = 2, red = 1, orange = 3, white = 4))))
+        self.assertEqual(20*2, calculate_player_score(HAG11(_prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1))))
+        self.assertEqual(37*2, calculate_player_score(HAG11(_prepare_scoresheet(yellow = 1, blue = 2, orange = 3, white = 4))))
+        self.assertEqual(40, calculate_player_score(HAG11(_prepare_scoresheet(yellow = 1, blue = 2, red = 1, orange = 3, white = 4))))
 
     def test_haggle_HAG12(self):
         """The player with the most red cards double their value.
            In case of a tie, no player collects the extra value.
         """
-        player1 = self._prepare_scoresheet(yellow = 3, red = 4)
-        player2 = self._prepare_scoresheet(blue = 1, red = 3)
-        player3 = self._prepare_scoresheet(yellow = 2, orange = 2)
+        player1 = _prepare_scoresheet(yellow = 3, red = 4)
+        player2 = _prepare_scoresheet(blue = 1, red = 3)
+        player3 = _prepare_scoresheet(yellow = 2, orange = 2)
         players = HAG12([player1, player2, player3])
         self.assertEqual(3, len(players))
-        self.assertEqual(15+12, calculate_score(players[0]))
-        self.assertEqual(11, calculate_score(players[1]))
-        self.assertEqual(10, calculate_score(players[2]))
+        self.assertEqual(15+12, calculate_player_score(players[0]))
+        self.assertEqual(11, calculate_player_score(players[1]))
+        self.assertEqual(10, calculate_player_score(players[2]))
 
     def test_haggle_HAG12_tie(self):
-        player1 = self._prepare_scoresheet(yellow = 3, red = 3)
-        player2 = self._prepare_scoresheet(blue = 1, red = 3)
-        player3 = self._prepare_scoresheet(yellow = 2, orange = 2)
+        player1 = _prepare_scoresheet(yellow = 3, red = 3)
+        player2 = _prepare_scoresheet(blue = 1, red = 3)
+        player3 = _prepare_scoresheet(yellow = 2, orange = 2)
         players = HAG12([player1, player2, player3])
         self.assertEqual(3, len(players))
-        self.assertEqual(12, calculate_score(players[0]))
-        self.assertEqual(11, calculate_score(players[1]))
-        self.assertEqual(10, calculate_score(players[2]))
+        self.assertEqual(12, calculate_player_score(players[0]))
+        self.assertEqual(11, calculate_player_score(players[1]))
+        self.assertEqual(10, calculate_player_score(players[2]))
 
     def test_haggle_HAG13(self):
         """Each set of two yellow cards doubles the value of one white card."""
-        self.assertEqual(15, calculate_score(HAG13(self._prepare_scoresheet(white = 3))))
-        self.assertEqual(16, calculate_score(HAG13(self._prepare_scoresheet(yellow = 1, white = 3))))
-        self.assertEqual(17+5, calculate_score(HAG13(self._prepare_scoresheet(yellow = 2, white = 3))))
-        self.assertEqual(21+3*5, calculate_score(HAG13(self._prepare_scoresheet(yellow = 6, white = 3))))
-        self.assertEqual(23+3*5, calculate_score(HAG13(self._prepare_scoresheet(yellow = 8, white = 3))))
+        self.assertEqual(15, calculate_player_score(HAG13(_prepare_scoresheet(white = 3))))
+        self.assertEqual(16, calculate_player_score(HAG13(_prepare_scoresheet(yellow = 1, white = 3))))
+        self.assertEqual(17+5, calculate_player_score(HAG13(_prepare_scoresheet(yellow = 2, white = 3))))
+        self.assertEqual(21+3*5, calculate_player_score(HAG13(_prepare_scoresheet(yellow = 6, white = 3))))
+        self.assertEqual(23+3*5, calculate_player_score(HAG13(_prepare_scoresheet(yellow = 8, white = 3))))
 
     def test_haggle_HAG14(self):
         """Each set of three blue cards quadruples the value of one orange card."""
-        self.assertEqual(8, calculate_score(HAG14(self._prepare_scoresheet(orange = 2))))
-        self.assertEqual(12, calculate_score(HAG14(self._prepare_scoresheet(blue = 2, orange = 2))))
-        self.assertEqual(14+12, calculate_score(HAG14(self._prepare_scoresheet(blue = 3, orange = 2))))
-        self.assertEqual(20+24, calculate_score(HAG14(self._prepare_scoresheet(blue = 6, orange = 2))))
-        self.assertEqual(26+24, calculate_score(HAG14(self._prepare_scoresheet(blue = 9, orange = 2))))
+        self.assertEqual(8, calculate_player_score(HAG14(_prepare_scoresheet(orange = 2))))
+        self.assertEqual(12, calculate_player_score(HAG14(_prepare_scoresheet(blue = 2, orange = 2))))
+        self.assertEqual(14+12, calculate_player_score(HAG14(_prepare_scoresheet(blue = 3, orange = 2))))
+        self.assertEqual(20+24, calculate_player_score(HAG14(_prepare_scoresheet(blue = 6, orange = 2))))
+        self.assertEqual(26+24, calculate_player_score(HAG14(_prepare_scoresheet(blue = 9, orange = 2))))
 
     def test_haggle_HAG15(self):
         """No more than thirteen cards in a hand can be scored. 
            If more are handed in, the excess will be removed at random.
         """
-        scoresheet = HAG15(self._prepare_scoresheet(5, 5, 5, 5, 15))
+        scoresheet = HAG15(_prepare_scoresheet(5, 5, 5, 5, 15))
         total_scored_cards = 0
         for color, cards in scoresheet.iteritems():
             if color != 'extra':
                 total_scored_cards += cards['scored_cards']
         self.assertEqual(13, total_scored_cards)
 
-    def _prepare_scoresheet(self, yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
-        return setup_scoresheet({ Commodity.objects.get(ruleset = 1, name ='Yellow') : yellow,
-                                  Commodity.objects.get(ruleset = 1, name ='Blue') : blue,
-                                  Commodity.objects.get(ruleset = 1, name ='Red') : red,
-                                  Commodity.objects.get(ruleset = 1, name ='Orange') : orange,
-                                  Commodity.objects.get(ruleset = 1, name ='White') : white })
+def _prepare_hand(yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
+    return { Commodity.objects.get(ruleset = 1, name ='Yellow') : yellow,
+             Commodity.objects.get(ruleset = 1, name ='Blue') : blue,
+             Commodity.objects.get(ruleset = 1, name ='Red') : red,
+             Commodity.objects.get(ruleset = 1, name ='Orange') : orange,
+             Commodity.objects.get(ruleset = 1, name ='White') : white }
+
+def _prepare_scoresheet(yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
+    return _hand_to_scoresheet(_prepare_hand(yellow, blue, red, orange, white))

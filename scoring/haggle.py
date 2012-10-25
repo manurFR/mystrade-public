@@ -1,7 +1,7 @@
 """
     Rule card scoring resolution for ruleset "Original Haggle"
 """
-from scoring.card_scoring import calculate_score
+from scoring.card_scoring import calculate_player_score
 import random
 
 def HAG04(scoresheet):
@@ -95,7 +95,7 @@ def HAG11(scoresheet):
         if color != 'extra':
             nb_colors.append(details['handed_cards'])
     if sorted(nb_colors) == [0, 1, 2, 3, 4]:
-        scoresheet['extra'].append({'score': calculate_score(scoresheet), 'cause': 'HAG11'})
+        scoresheet['extra'].append({'score': calculate_player_score(scoresheet), 'cause': 'HAG11'})
     return scoresheet
 
 def HAG12(players):
