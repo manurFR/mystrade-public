@@ -108,7 +108,20 @@ class ScoringTest(TestCase):
         self.assertEqual(32, scores[1])
         self.assertEqual(12, scores[2])
         self.assertEqual(110, scores[3])
-    
+
+    def test_tally_scores_rules_subset(self):
+        haggle_ruleset = Ruleset.objects.get(pk = 1)
+        haggle_rulecards = RuleCard.objects.filter(ruleset = haggle_ruleset, public_name__in = ['4', '8', '10', '12', '13'])
+        hands = [_prepare_hand(yellow = 4, blue = 2, red = 2, orange = 3, white = 2),
+                 _prepare_hand(yellow = 2, blue = 5, red = 0, orange = 0, white = 5),
+                 _prepare_hand(yellow = 1, blue = 1, red = 1, orange = 7, white = 0),
+                 _prepare_hand(yellow = 0, blue = 3, red = 4, orange = 2, white = 1)]
+        scores = tally_scores(hands, haggle_ruleset, [rule for rule in haggle_rulecards])
+        self.assertEqual(82, scores[0])
+        self.assertEqual(12, scores[1])
+        self.assertEqual(34, scores[2])
+        self.assertEqual(43, scores[3])
+
     def test_calculate_player_score(self):
         scoresheet = {'Blue': { 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2 },
                       'Red' : { 'handed_cards': 4, 'scored_cards': 3, 'actual_value': 1 },
