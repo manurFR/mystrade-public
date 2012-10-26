@@ -1,10 +1,10 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from scoring.card_scoring import calculate_player_score, _hand_to_scoresheet, \
-    tally_scores
+from scoring.card_scoring import tally_scores, calculate_player_score, \
+    _hand_to_scoresheet
 from scoring.haggle import HAG04, HAG05, HAG06, HAG07, HAG08, HAG09, HAG10, \
     HAG11, HAG12, HAG13, HAG14, HAG15
-from scoring.models import Commodity, RuleCard, Ruleset
+from scoring.models import Ruleset, RuleCard, Commodity
 
 class ViewsTest(TestCase):
     def setUp(self):
@@ -37,6 +37,7 @@ class ViewsTest(TestCase):
                                     })
 
         self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(response, 'scoring/result.html')
         self.assertContains(response, "Rules : 1 2 3 10 13")
 
     def test_mandatory_cards(self):
@@ -61,6 +62,7 @@ class ViewsTest(TestCase):
                                     })
 
         self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(response, 'scoring/result.html')
         self.assertContains(response, "Rules : 1 2 3")
 
     def test_specify_hands(self):
@@ -78,6 +80,7 @@ class ViewsTest(TestCase):
                                     })
 
         self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(response, 'scoring/result.html')
         self.assertContains(response, "Player : 1 [Yellow : 3 | Blue : 0 | Red : 0 | Orange : 8 | White : 0]")
         self.assertContains(response, "Player : 2 [Yellow : 1 | Blue : 2 | Red : 3 | Orange : 4 | White : 5]")
 
@@ -93,6 +96,7 @@ class ViewsTest(TestCase):
                                     })
 
         self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(response, 'scoring/result.html')
         self.assertContains(response, "Player : 1 [Yellow : 0 | Blue : 0 | Red : 0 | Orange : 0 | White : 0]")
 
 class ScoringTest(TestCase):

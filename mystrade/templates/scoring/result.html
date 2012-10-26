@@ -17,8 +17,9 @@
 	<br/>
 	<br/>
 	{% for player in players %}
-		Player : {{ forloop.counter }} [{% for commodity, nb_cards in player.items %}{{ commodity.name }} : {{ nb_cards }}{% if not forloop.last %} | {% endif %}{% endfor %}]<br/>
-		Score : {{ scores }}<br/>
+		#{{ forloop.counter }} &mdash;
+		Player : {{ player.index }} [{% for commodity, nb_cards in player.hand.items %}{{ commodity.name }} : {{ nb_cards }}{% if not forloop.last %} | {% endif %}{% endfor %}]<br/>
+		Score : {{ player.score }}<br/><br/>
 	{% endfor %}
 	
 	{{ result|linebreaksbr }}

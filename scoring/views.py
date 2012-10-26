@@ -1,9 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 from django.shortcuts import render
+from scoring.card_scoring import tally_scores
 from scoring.forms import RuleCardFormDisplay, RuleCardFormParse, HandsForm
 from scoring.models import RuleCard, Commodity, Ruleset
-from scoring.card_scoring import tally_scores
+import operator
 
 @login_required
 def choose_rulecards(request):
@@ -25,7 +26,7 @@ def choose_rulecards(request):
                     if int(form.cleaned_data['card_id']) == card.id and form.cleaned_data['selected_rule']:
                         selected_rules.append(card)
                         break
-            players = []
+            hands = []
             for form in hands_formset:
                 hand = {}
                 for commodity in commodities_queryset:
@@ -35,9 +36,11 @@ def choose_rulecards(request):
                         hand[commodity] = form.cleaned_data[commodity.name.lower()]
                         if hand[commodity] is None:
                             hand[commodity] = 0
-                players.append(hand)
-            scores = tally_scores(players, ruleset, selected_rules)
-            return render(request, 'scoring/result.html', {'rules': selected_rules, 'players': players, 'scores': scores})
+                hands.append(hand)
+            scores = tally_scores(hands, ruleset, selected_rules)
+            players = sorted([{'index': index+1, 'hand': hand, 'score': scores[index]} for index, hand in enumerate(hands)],
+                             key = operator.itemgetter('score'), reverse = True)
+            return render(request, 'scoring/result.html', {'rules': selected_rules, 'players': players})
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
         rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.id,
