@@ -3,24 +3,24 @@
 {% load url from future %}
 
 {% block styles %}
-<link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.0.custom.min.css' %}" />
+<link rel="stylesheet" href="{% static 'style.collapse.css' %}" />
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
-<script src="{% static 'jquery/jquery-ui-1.9.0.custom.min.js' %}"></script>
+<script src="{% static 'jquery/jquery.collapse.js' %}"></script>
 {% endblock %}
 
 {% block content %}
 	<div class="header">Result :</div>
-	Rules : {% for card in rules %}{{ card.public_name }} {% endfor %}
-	<br/>
-	<br/>
+	<div class="collapse" data-collapse>
+		<h4>Rules</h4>
+		<p>{% for card in rules %}{{ card.public_name }} {% endfor %}</p>
+	</div>
+
 	{% for player in players %}
 		#{{ forloop.counter }} &mdash;
 		Player : {{ player.index }} [{% for commodity, nb_cards in player.hand.items %}{{ commodity.name }} : {{ nb_cards }}{% if not forloop.last %} | {% endif %}{% endfor %}]<br/>
 		Score : {{ player.score }}<br/><br/>
 	{% endfor %}
-	
-	{{ result|linebreaksbr }}
 {% endblock content %}

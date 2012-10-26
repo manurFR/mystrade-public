@@ -1,0 +1,15 @@
+.collapse h4 a {
+	background-image: url(open_close.png);
+  	background-position: 15px 8px;
+  	background-repeat: no-repeat no-repeat;
+  	display:block;
+    font-weight:normal;
+    margin:0;
+    padding:5px 10px 10px 32px;
+    text-decoration:none;
+    text-shadow:gray 1px 1px 1px;
+}
+
+.collapse h4.open a {
+  	background-position: 13px -30px;
+}
