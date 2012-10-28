@@ -13,14 +13,29 @@
 
 {% block content %}
 	<div class="header">Result :</div>
-	<div class="collapse" data-collapse>
-		<h4>Rules</h4>
-		<p>{% for card in rules %}{{ card.public_name }} {% endfor %}</p>
-	</div>
-
 	{% for player in players %}
 		#{{ forloop.counter }} &mdash;
 		Player : {{ player.index }} [{% for commodity, nb_cards in player.hand.items %}{{ commodity.name }} : {{ nb_cards }}{% if not forloop.last %} | {% endif %}{% endfor %}]<br/>
 		Score : {{ player.score }}<br/><br/>
 	{% endfor %}
+
+	<div class="collapse" data-collapse>
+		<h4>Rules</h4>
+		<div class="css_table">
+		{% for card in rules %}
+			{% if forloop.first or forloop.counter0|divisibleby:"4" %}
+			<div class="css_table-row">
+			{% endif %}
+			  <div class="css_table-cell">
+			    <div class="rulecard">
+				  <div class="rulecard_name">{{ card.public_name }}</div>
+				  <div class="rulecard_desc">{{ card.description }}</div>
+			    </div>
+			  </div>
+			{% if forloop.counter|divisibleby:"4" or forloop.last %}
+			</div>
+			{% endif %}
+		{% endfor %}
+		</div>
+	</div>
 {% endblock content %}
