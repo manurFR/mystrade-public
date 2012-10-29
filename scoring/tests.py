@@ -38,7 +38,7 @@ class ViewsTest(TestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertTemplateUsed(response, 'scoring/result.html')
-        self.assertContains(response, "<p>1 2 3 10 13")
+        self.assertEqual(['1', '2', '3', '10', '13'], [card.public_name for card in response.context['rules']])
 
     def test_mandatory_cards(self):
         response = self.client.post("/scoring/",
@@ -63,7 +63,7 @@ class ViewsTest(TestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertTemplateUsed(response, 'scoring/result.html')
-        self.assertContains(response, "<p>1 2 3")
+        self.assertEqual(['1', '2', '3'], [card.public_name for card in response.context['rules']])
 
     def test_specify_hands(self):
         response = self.client.post("/scoring/",
