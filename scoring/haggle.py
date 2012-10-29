@@ -1,19 +1,21 @@
 """
     Rule card scoring resolution for ruleset "Original Haggle"
 """
-from scoring.card_scoring import calculate_player_score
+from scoring.card_scoring import calculate_player_score, register_rule
 import random
 
 def HAG04(scoresheet):
     """If a player has more than three white cards, all of his/her white cards lose their value."""
     if scoresheet['White']['scored_cards'] > 3:
         scoresheet['White']['actual_value'] = 0
+        register_rule(scoresheet, 'HAG04')
     return scoresheet
 
 def HAG05(scoresheet):
     """"A player can score only as many as orange cards as he/she has blue cards."""
     if scoresheet['Orange']['scored_cards'] > scoresheet['Blue']['scored_cards']:
         scoresheet['Orange']['scored_cards'] = scoresheet['Blue']['scored_cards']
+        register_rule(scoresheet, 'HAG05')
     return scoresheet
 
 def HAG06(players):
@@ -28,7 +30,7 @@ def HAG06(players):
     for culprit in culprits:
         for index, victim in enumerate(players):
             if index != culprit:
-                victim['extra'].append({'score': -10, 'cause': 'HAG06'})
+                register_rule(victim, 'HAG06', score = -10)
     return players
 
 def HAG07(scoresheet):
@@ -38,7 +40,7 @@ def HAG07(scoresheet):
         for extra in scoresheet['extra']:
             if extra['cause'] == 'HAG06' and extra['score'] <> 0:
                 extra['score'] = 0
-                extra['cause'] = 'HAG07' 
+                register_rule(scoresheet, 'HAG07')
     return scoresheet
 
 def HAG08(players):
@@ -53,7 +55,7 @@ def HAG08(players):
     for winning_number in range(max(yellows), 1, -1):
         if yellows.count(winning_number) == 1:
             winner = players[yellows.index(winning_number)]
-            winner['extra'].append({'score': winner['Yellow']['scored_cards'] ** 2, 'cause': 'HAG08'})
+            register_rule(winner, 'HAG08', score = winner['Yellow']['scored_cards'] ** 2)
             break
     return players
 
@@ -66,7 +68,7 @@ def HAG09(scoresheet):
     for color, details in scoresheet.iteritems():
         if color != 'extra':
             if details['handed_cards'] >= 7:
-                scoresheet['extra'].append({'score': -10, 'cause': 'HAG09'})
+                register_rule(scoresheet, 'HAG09', score = -10)
     return scoresheet
 
 def HAG10(scoresheet):
@@ -80,7 +82,7 @@ def HAG10(scoresheet):
                 min_color_number = details['scored_cards']
     if min_color_number and nb_colors >= 5:
         for _i in range(min_color_number):
-            scoresheet['extra'].append({'score': 10, 'cause': 'HAG10'})
+            register_rule(scoresheet, 'HAG10', score = 10)
     return scoresheet
 
 def HAG11(scoresheet):
@@ -95,7 +97,7 @@ def HAG11(scoresheet):
         if color != 'extra':
             nb_colors.append(details['handed_cards'])
     if sorted(nb_colors) == [0, 1, 2, 3, 4]:
-        scoresheet['extra'].append({'score': calculate_player_score(scoresheet), 'cause': 'HAG11'})
+        register_rule(scoresheet, 'HAG11', score = calculate_player_score(scoresheet))
     return scoresheet
 
 def HAG12(players):
@@ -108,7 +110,7 @@ def HAG12(players):
     reds = [player['Red']['scored_cards'] for player in players]
     if reds.count(max(reds)) == 1:
         winner = players[reds.index(max(reds))]
-        winner['extra'].append({'score': winner['Red']['scored_cards'] * winner['Red']['actual_value'], 'cause': 'HAG12'})
+        register_rule(winner, 'HAG12', score = winner['Red']['scored_cards'] * winner['Red']['actual_value'])
     return players
 
 def HAG13(scoresheet):
@@ -116,7 +118,7 @@ def HAG13(scoresheet):
     nb_sets = int(scoresheet['Yellow']['scored_cards']) / 2
     nb_bonus = min(nb_sets, scoresheet['White']['scored_cards'])
     for _i in range(nb_bonus):
-        scoresheet['extra'].append({'score': scoresheet['White']['actual_value'], 'cause': 'HAG13'})
+        register_rule(scoresheet, 'HAG13', score = scoresheet['White']['actual_value'])
     return scoresheet
 
 def HAG14(scoresheet):
@@ -124,7 +126,7 @@ def HAG14(scoresheet):
     nb_sets = int(scoresheet['Blue']['scored_cards']) / 3
     nb_bonus = min(nb_sets, scoresheet['Orange']['scored_cards'])
     for _i in range(nb_bonus):
-        scoresheet['extra'].append({'score': 3 * scoresheet['Orange']['actual_value'], 'cause': 'HAG14'})
+        register_rule(scoresheet, 'HAG14', score = 3 * scoresheet['Orange']['actual_value'])
     return scoresheet
 
 def HAG15(scoresheet):
@@ -137,10 +139,12 @@ def HAG15(scoresheet):
         if color != 'extra' and details['scored_cards'] > 0:
             present_colors.append(color)
             total_scored_cards += details['scored_cards']
-    while total_scored_cards > 13:
-        selected_color = random.choice(present_colors)
-        scoresheet[selected_color]['scored_cards'] -= 1
-        if scoresheet[selected_color]['scored_cards'] == 0:
-            present_colors.remove(selected_color)
-        total_scored_cards -= 1
+    if total_scored_cards > 13:
+        register_rule(scoresheet, 'HAG15')
+        while total_scored_cards > 13:
+            selected_color = random.choice(present_colors)
+            scoresheet[selected_color]['scored_cards'] -= 1
+            if scoresheet[selected_color]['scored_cards'] == 0:
+                present_colors.remove(selected_color)
+            total_scored_cards -= 1
     return scoresheet

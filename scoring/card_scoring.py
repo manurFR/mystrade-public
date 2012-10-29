@@ -19,10 +19,14 @@ def calculate_player_score(scoresheet):
     score = 0
     for color, details in scoresheet.iteritems():
         if color == 'extra':
-            score += sum([extra['score'] for extra in details])
+            score += sum(extra['score'] for extra in details if extra['score'] is not None)
         else:
             score += details['scored_cards'] * details['actual_value']
     return score
+
+def register_rule(scoresheet, rule, score = None):
+    scoresheet['extra'].append({'cause': rule, 'score': score})
+    return scoresheet
 
 def _hand_to_scoresheet(hand):
     scoresheet = {}
