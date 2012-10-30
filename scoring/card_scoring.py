@@ -1,19 +1,11 @@
-import importlib
-
 def tally_scores(hands, ruleset, selected_rules):
-    module = importlib.import_module('scoring.' + ruleset.module)
-    scoresheets = [_hand_to_scoresheet(hand) for hand in hands]
+    players = [_hand_to_scoresheet(hand) for hand in hands]
     rules = sorted(selected_rules, key = lambda rule : rule.step)
     for rule in rules:
         if rule.step is None:
             continue
-        func = getattr(module, rule.ref_name)
-        if rule.glob:
-            scoresheets = func(scoresheets)
-        else:
-            for scoresheet in scoresheets:
-                scoresheet = func(scoresheet)
-    return [calculate_player_score(scoresheet) for scoresheet in scoresheets]
+        players = rule.perform(players)
+    return [calculate_player_score(scoresheet) for scoresheet in players]
 
 def calculate_player_score(scoresheet):
     score = 0
@@ -24,8 +16,8 @@ def calculate_player_score(scoresheet):
             score += details['scored_cards'] * details['actual_value']
     return score
 
-def register_rule(scoresheet, rule, detail = '', score = None):
-    scoresheet['extra'].append({'cause': rule, 'detail': detail, 'score': score})
+def register_rule(scoresheet, ref_name, detail = '', score = None):
+    scoresheet['extra'].append({'cause': ref_name, 'detail': detail, 'score': score})
     return scoresheet
 
 def _hand_to_scoresheet(hand):

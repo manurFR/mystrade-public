@@ -1,4 +1,5 @@
 from django.db import models
+import importlib
 
 class Ruleset(models.Model):
     name = models.CharField(max_length = 255)
@@ -21,6 +22,17 @@ class RuleCard(models.Model):
 
     def __unicode__(self):
         return "{} - ({}) {}".format(self.ref_name, self.public_name, self.description)
+    
+    def perform(self, players):
+        if self.ref_name:
+            module = importlib.import_module('scoring.' + self.ruleset.module)
+            func = getattr(module, self.ref_name)
+            if self.glob:
+                return func(players, self.ref_name)
+            else:
+                for scoresheet in players:
+                    scoresheet = func(scoresheet, self.ref_name)
+                return players
 
 class Commodity(models.Model):
     ruleset = models.ForeignKey(Ruleset)
