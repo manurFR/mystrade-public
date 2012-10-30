@@ -24,8 +24,8 @@ def calculate_player_score(scoresheet):
             score += details['scored_cards'] * details['actual_value']
     return score
 
-def register_rule(scoresheet, rule, score = None):
-    scoresheet['extra'].append({'cause': rule, 'score': score})
+def register_rule(scoresheet, rule, detail = '', score = None):
+    scoresheet['extra'].append({'cause': rule, 'detail': detail, 'score': score})
     return scoresheet
 
 def _hand_to_scoresheet(hand):
