@@ -4,7 +4,7 @@
 
 {% block content %}
 	<form action="{% url 'userprofile.views.editprofile' user.id %}" method="POST">{% csrf_token %}
-		<table>
+		<table class="fullwidth">
 			<tr>
 				<td colspan="2" class="header">Edit profile</th>
 			</tr>

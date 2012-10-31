@@ -107,11 +107,12 @@ class ScoringTest(TestCase):
                  _prepare_hand(yellow = 3, blue = 5, red = 3, orange = 0, white = 1),
                  _prepare_hand(yellow = 3, blue = 1, red = 1, orange = 7, white = 1),
                  _prepare_hand(yellow = 0, blue = 3, red = 4, orange = 2, white = 1)]
-        scores = tally_scores(hands, haggle_ruleset, [rule for rule in haggle_all_rulecards])
+        scores, scoresheets = tally_scores(hands, haggle_ruleset, [rule for rule in haggle_all_rulecards])
         self.assertEqual(31, scores[0])
         self.assertEqual(32, scores[1])
         self.assertEqual(12, scores[2])
         self.assertEqual(110, scores[3])
+        self.assertEqual(4, len(scoresheets))
 
     def test_tally_scores_rules_subset(self):
         haggle_ruleset = Ruleset.objects.get(pk = 1)
@@ -120,11 +121,23 @@ class ScoringTest(TestCase):
                  _prepare_hand(yellow = 2, blue = 5, red = 0, orange = 0, white = 5),
                  _prepare_hand(yellow = 1, blue = 1, red = 1, orange = 7, white = 0),
                  _prepare_hand(yellow = 0, blue = 3, red = 4, orange = 2, white = 1)]
-        scores = tally_scores(hands, haggle_ruleset, [rule for rule in haggle_rulecards])
+        scores, scoresheets = tally_scores(hands, haggle_ruleset, [rule for rule in haggle_rulecards])
         self.assertEqual(82, scores[0])
         self.assertEqual(12, scores[1])
         self.assertEqual(34, scores[2])
         self.assertEqual(43, scores[3])
+        self.assertEqual(4, len(scoresheets))
+        self.assertDictEqual({'Yellow': { 'handed_cards': 4, 'scored_cards': 4, 'actual_value': 1 },
+                              'Blue':   { 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2 },
+                              'Red':    { 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 3 },
+                              'Orange': { 'handed_cards': 3, 'scored_cards': 3, 'actual_value': 4 },
+                              'White':  { 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 5 },
+                              'extra': [{'cause': 'HAG10', 'detail': 'A set of five different colors gives a bonus.', 'score': 10 },
+                                        {'cause': 'HAG10', 'detail': 'A set of five different colors gives a bonus.', 'score': 10 },
+                                        {'cause': 'HAG13', 'detail': 'A pair of yellow cards doubles the value of one white card.', 'score': 5 },
+                                        {'cause': 'HAG13', 'detail': 'A pair of yellow cards doubles the value of one white card.', 'score': 5 },
+                                        {'cause': 'HAG08', 'detail': 'Having the most yellow cards (4 cards) gives a bonus of 4x4 points.', 'score': 16 }] 
+                              }, scoresheets[0])
 
     def test_calculate_player_score(self):
         scoresheet = {'Blue': { 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2 },

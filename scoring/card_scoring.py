@@ -1,11 +1,11 @@
 def tally_scores(hands, ruleset, selected_rules):
-    players = [_hand_to_scoresheet(hand) for hand in hands]
+    scoresheets = [_hand_to_scoresheet(hand) for hand in hands]
     rules = sorted(selected_rules, key = lambda rule : rule.step)
     for rule in rules:
         if rule.step is None:
             continue
-        players = rule.perform(players)
-    return [calculate_player_score(scoresheet) for scoresheet in players]
+        players = rule.perform(scoresheets)
+    return ([calculate_player_score(scoresheet) for scoresheet in scoresheets], scoresheets)
 
 def calculate_player_score(scoresheet):
     score = 0

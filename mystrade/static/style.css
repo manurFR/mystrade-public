@@ -36,18 +36,18 @@ a img, .icon {
 	padding: 10px;
 }
 
-.content table {
+.fullwidth {
 	width: 960px;
-}
-
-.content tr {
-	line-height: 1.5em;
 }
 
 .content .header {
 	line-height: 1.6em;
 	background-color: #FFE640;
 	padding-left: 2em;
+}
+
+.content tr {
+	line-height: 1.5em;
 }
 
 .content th {
