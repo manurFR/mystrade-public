@@ -22,16 +22,16 @@ class RuleCard(models.Model):
 
     def __unicode__(self):
         return "{} - ({}) {}".format(self.ref_name, self.public_name, self.description)
-    
+
     def perform(self, players):
         if self.ref_name:
             module = importlib.import_module('scoring.' + self.ruleset.module)
             func = getattr(module, self.ref_name)
             if self.glob:
-                return func(players, self.ref_name)
+                return func(players)
             else:
                 for scoresheet in players:
-                    scoresheet = func(scoresheet, self.ref_name)
+                    scoresheet = func(scoresheet)
                 return players
 
 class Commodity(models.Model):
