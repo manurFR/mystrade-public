@@ -1,30 +1,42 @@
 def tally_scores(hands, ruleset, selected_rules):
-    scoresheets = [_hand_to_scoresheet(hand) for hand in hands]
+    scoresheets = [Scoresheet(hand) for hand in hands]
     rules = sorted(selected_rules, key = lambda rule : rule.step)
     for rule in rules:
         if rule.step is None:
             continue
-        players = rule.perform(scoresheets)
-    return ([calculate_player_score(scoresheet) for scoresheet in scoresheets], scoresheets)
+        rule.perform(scoresheets)
+    return ([scoresheet.calculate_score() for scoresheet in scoresheets], scoresheets)
 
-def calculate_player_score(scoresheet):
-    score = 0
-    for color, details in scoresheet.iteritems():
-        if color == 'extra':
-            score += sum(extra['score'] for extra in details if extra['score'] is not None)
-        else:
-            score += details['scored_cards'] * details['actual_value']
-    return score
+class Scoresheet(object):
+    def __init__(self, hand):
+        self._commodities = []
+        for commodity, nb_cards in hand.iteritems():
+            self._commodities.append({'name': commodity.name,
+                                     'handed_cards': nb_cards,
+                                     'scored_cards': nb_cards,
+                                     'actual_value': commodity.value })
+        self._extra = []
 
-def register_rule(scoresheet, rulename, detail = '', score = None):
-    scoresheet['extra'].append({'cause': rulename, 'detail': detail, 'score': score})
-    return scoresheet
+    def commodity(self, name):
+        for c in self.commodities:
+            if c['name'] == name:
+                return c
+        return None
 
-def _hand_to_scoresheet(hand):
-    scoresheet = {}
-    for commodity, nb_cards in hand.iteritems():
-        scoresheet[commodity.name] = {'handed_cards': nb_cards,
-                                      'scored_cards': nb_cards,
-                                      'actual_value': commodity.value }
-    scoresheet['extra'] = []
-    return scoresheet
+    def register_rule(self, rulename, detail = '', score = None):
+        self._extra.append({'cause': rulename, 'detail': detail, 'score': score})
+
+    def calculate_score(self):
+        score = 0
+        for commodity_item in self.commodities:
+            score += commodity_item['scored_cards'] * commodity_item['actual_value']
+        score += sum(item['score'] for item in self.extra if item['score'] is not None)
+        return score
+    
+    @property
+    def commodities(self):
+        return self._commodities
+    
+    @property
+    def extra(self):
+        return self._extra

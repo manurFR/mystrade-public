@@ -28,11 +28,10 @@ class RuleCard(models.Model):
             module = importlib.import_module('scoring.' + self.ruleset.module)
             func = getattr(module, self.ref_name)
             if self.glob:
-                return func(players)
+                func(players)
             else:
                 for scoresheet in players:
-                    scoresheet = func(scoresheet)
-                return players
+                    func(scoresheet)
 
 class Commodity(models.Model):
     ruleset = models.ForeignKey(Ruleset)

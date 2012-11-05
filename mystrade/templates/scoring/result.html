@@ -18,17 +18,24 @@
 		Player : {{ player.index }} [{% for commodity, nb_cards in player.hand.items %}{{ commodity.name }} : {{ nb_cards }}{% if not forloop.last %} | {% endif %}{% endfor %}]<br/>
 		Score : {{ player.score }}<br/><br/>
 		Detail :
-		<table>
+		<table summary="Scoresheet">
+			<tr>
+				<th>Rule</th>
+				<th>Detail</th>
+				<th>Score</th>
+			</tr>
 			{% for color, details in player.scoresheet.items %}
 				{% if color != 'extra' %}
 				<tr>
 					<td>{{ color }}</td>
 					<td>{{ details.scored_cards }} cards x {{ details.actual_value }}</td>
+					<td></td>
 				</tr>
 				{% else %}
 					{% for line in details %}
 					<tr>
 						<td>{{ line.detail }}</td>
+						<td></td>
 						<td>{{ line.score|default_if_none:'' }}</td>
 					</tr>
 					{% endfor %}

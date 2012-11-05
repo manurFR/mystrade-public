@@ -11,6 +11,16 @@ a img, .icon {
 	vertical-align: text-top;
 }
 
+table {
+	border:1px solid black;
+	border-collapse:collapse
+}
+ 
+td, th { 
+	border:1px solid red;
+	padding: 2px;
+}
+
 .toplinks {
 	top: 2px;
 	text-align: right;
@@ -40,17 +50,17 @@ a img, .icon {
 	width: 960px;
 }
 
-.content .header {
+.header {
 	line-height: 1.6em;
 	background-color: #FFE640;
 	padding-left: 2em;
 }
 
-.content tr {
+.formtable tr {
 	line-height: 1.5em;
 }
 
-.content th {
+.formtable th {
 	width: 230px;
 	font-weight: normal;
 	padding-right: 1em;
@@ -58,7 +68,7 @@ a img, .icon {
 	vertical-align: text-top;
 }
 
-.content .label, .content label {
+.formtable .label, .formtable label {
 	color: #333333;
 }
 
