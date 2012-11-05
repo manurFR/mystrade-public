@@ -24,22 +24,19 @@
 				<th>Detail</th>
 				<th>Score</th>
 			</tr>
-			{% for color, details in player.scoresheet.items %}
-				{% if color != 'extra' %}
+			{% for commodity in player.scoresheet.commodities %}
 				<tr>
-					<td>{{ color }}</td>
-					<td>{{ details.scored_cards }} cards x {{ details.actual_value }}</td>
+					<td>{{ commodity.name }}</td>
+					<td>{{ commodity.scored_cards }} cards x {{ commodity.actual_value }}</td>
 					<td></td>
 				</tr>
-				{% else %}
-					{% for line in details %}
-					<tr>
-						<td>{{ line.detail }}</td>
-						<td></td>
-						<td>{{ line.score|default_if_none:'' }}</td>
-					</tr>
-					{% endfor %}
-				{% endif %}
+			{% endfor %}
+			{% for line in player.scoresheet.extra %}
+			<tr>
+				<td>{{ line.detail }}</td>
+				<td></td>
+				<td>{{ line.score|default_if_none:'' }}</td>
+			</tr>
 			{% endfor %}
 		</table>
 		<br/>
