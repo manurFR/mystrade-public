@@ -39,7 +39,7 @@ def HAG07(scoresheet):
     for _i in range(nb_sets):
         for extra in scoresheet.extra:
             if extra['cause'] == 'HAG06' and extra['score'] <> 0:
-                extra['score'] = 0
+                extra['score'] = None
                 extra['detail'] = extra['detail'].replace('are deducted.', 'should have been deducted...')
                 scoresheet.register_rule('HAG07', '...but a set of three red cards cancels that penalty.')
     return scoresheet
