@@ -145,7 +145,7 @@ input[type="submit"] {
 
 .css_table {
 	display: table;
-	border-spacing: 4px;
+	border-spacing: 2px;
 }
 
 .css_table-row {
@@ -156,7 +156,15 @@ input[type="submit"] {
 	display: table-cell;
 }
 
+.colored {
+	background-color: #FFA500;
+	padding: 1px 4px;
+}
 
+.score {
+	min-width: 4em;
+	text-align: right;
+}
 
 .align_to_bottom {
 	position: absolute;

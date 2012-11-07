@@ -8,14 +8,14 @@ def HAG04(scoresheet):
     if scoresheet.commodity('White')['scored_cards'] > 3:
         scoresheet.commodity('White')['actual_value'] = 0
         scoresheet.register_rule('HAG04',
-            'Since there are {} white cards (more than three), their value is set to zero.'.format(scoresheet.commodity('White')['scored_cards']))
+            '(4) Since there are {} white cards (more than three), their value is set to zero.'.format(scoresheet.commodity('White')['scored_cards']))
 
 def HAG05(scoresheet):
     """"A player can score only as many as orange cards as he/she has blue cards."""
     if scoresheet.commodity('Orange')['scored_cards'] > scoresheet.commodity('Blue')['scored_cards']:
         scoresheet.commodity('Orange')['scored_cards'] = scoresheet.commodity('Blue')['scored_cards']
         scoresheet.register_rule('HAG05',
-            'Since there are {0} blue card(s), only {0} orange card(s) score.'.format(scoresheet.commodity('Blue')['scored_cards']))
+            '(5) Since there are {0} blue card(s), only {0} orange card(s) score.'.format(scoresheet.commodity('Blue')['scored_cards']))
 
 def HAG06(players):
     """If a player has five or more blue cards, 10 points are deducted from every other player's score.
@@ -30,7 +30,7 @@ def HAG06(players):
         for index, victim in enumerate(players):
             if index != culprit:
                 victim.register_rule('HAG06',
-                              'Since player #{} has {} blue cards, 10 points are deducted.'.format(culprit, players[culprit].commodity('Blue')['scored_cards']),
+                              '(6) Since player #{} has {} blue cards, 10 points are deducted.'.format(culprit + 1, players[culprit].commodity('Blue')['scored_cards']),
                               score = -10)
 
 def HAG07(scoresheet):
@@ -41,7 +41,7 @@ def HAG07(scoresheet):
             if extra['cause'] == 'HAG06' and extra['score'] <> 0:
                 extra['score'] = None
                 extra['detail'] = extra['detail'].replace('are deducted.', 'should have been deducted...')
-                scoresheet.register_rule('HAG07', '...but a set of three red cards cancels that penalty.')
+                scoresheet.register_rule('HAG07', '(7) ...but a set of three red cards cancels that penalty.')
     return scoresheet
 
 def HAG08(players):
@@ -57,7 +57,7 @@ def HAG08(players):
         if yellows.count(winning_number) == 1:
             winner = players[yellows.index(winning_number)]
             winner.register_rule('HAG08',
-                          'Having the most yellow cards ({0} cards) gives a bonus of {0}x{0} points.'.format(winner.commodity('Yellow')['scored_cards']),
+                          '(8) Having the most yellow cards ({0} cards) gives a bonus of {0}x{0} points.'.format(winner.commodity('Yellow')['scored_cards']),
                           score = winner.commodity('Yellow')['scored_cards'] ** 2)
             break
 
@@ -70,7 +70,7 @@ def HAG09(scoresheet):
     for commodity in scoresheet.commodities:
         if commodity['handed_cards'] >= 7:
             scoresheet.register_rule('HAG09',
-                              'Since {} {} cards where handed in, 10 points are deducted.'.format(commodity['handed_cards'], commodity['name'].lower()),
+                              '(9) Since {} {} cards where handed in, 10 points are deducted.'.format(commodity['handed_cards'], commodity['name'].lower()),
                               score = -10)
 
 def HAG10(scoresheet):
@@ -83,7 +83,7 @@ def HAG10(scoresheet):
             min_color_number = commodity['scored_cards']
     if min_color_number and nb_colors >= 5:
         for _i in range(min_color_number):
-            scoresheet.register_rule('HAG10', 'A set of five different colors gives a bonus.', score = 10)
+            scoresheet.register_rule('HAG10', '(10) A set of five different colors gives a bonus.', score = 10)
 
 def HAG11(scoresheet):
     """If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. 
@@ -98,7 +98,7 @@ def HAG11(scoresheet):
     nb_colors.sort(key = lambda item: item['nb_cards'])
     if [item['nb_cards'] for item in nb_colors] == [0, 1, 2, 3, 4]:
         scoresheet.register_rule('HAG11',
-                      'A pyramid of 4 {} cards, 3 {} cards, 2 {} cards, 1 {} card and no other card doubles the score.'.format(nb_colors[4]['color'], nb_colors[3]['color'], nb_colors[2]['color'], nb_colors[1]['color']),
+                      '(11) A pyramid of 4 {} cards, 3 {} cards, 2 {} cards, 1 {} card and no other card doubles the score.'.format(nb_colors[4]['color'], nb_colors[3]['color'], nb_colors[2]['color'], nb_colors[1]['color']),
                       score = scoresheet.calculate_score())
 
 def HAG12(players):
@@ -112,7 +112,7 @@ def HAG12(players):
     if reds.count(max(reds)) == 1:
         winner = players[reds.index(max(reds))]
         winner.register_rule('HAG12',
-                      'Having the most red cards ({} cards) doubles their value.'.format(winner.commodity('Red')['scored_cards']),
+                      '(12) Having the most red cards ({} cards) doubles their value.'.format(winner.commodity('Red')['scored_cards']),
                       score = winner.commodity('Red')['scored_cards'] * winner.commodity('Red')['actual_value'])
 
 def HAG13(scoresheet):
@@ -121,7 +121,7 @@ def HAG13(scoresheet):
     nb_bonus = min(nb_sets, scoresheet.commodity('White')['scored_cards'])
     for _i in range(nb_bonus):
         scoresheet.register_rule('HAG13',
-                      'A pair of yellow cards doubles the value of one white card.',
+                      '(13) A pair of yellow cards doubles the value of one white card.',
                       score = scoresheet.commodity('White')['actual_value'])
 
 def HAG14(scoresheet):
@@ -130,7 +130,7 @@ def HAG14(scoresheet):
     nb_bonus = min(nb_sets, scoresheet.commodity('Orange')['scored_cards'])
     for _i in range(nb_bonus):
         scoresheet.register_rule('HAG14',
-                      'A set of three blue cards quadruples the value of one orange card.',
+                      '(14) A set of three blue cards quadruples the value of one orange card.',
                       score = 3 * scoresheet.commodity('Orange')['actual_value'])
 
 def HAG15(scoresheet):
@@ -144,7 +144,7 @@ def HAG15(scoresheet):
             present_colors.append(commodity['name'])
             total_scored_cards += commodity['scored_cards']
     if total_scored_cards > 13:
-        detail = 'Since {} cards had to be scored, {} have been discarded : '.format(total_scored_cards, total_scored_cards - 13)
+        detail = '(15) Since {} cards had to be scored, {} have been discarded : '.format(total_scored_cards, total_scored_cards - 13)
         discarded = {}
         while total_scored_cards > 13:
             selected_color = random.choice(present_colors)

@@ -126,17 +126,17 @@ class ScoringTest(TestCase):
         self.assertEqual(34, scores[2])
         self.assertEqual(43, scores[3])
         self.assertEqual(4, len(scoresheets))
-        self.assertEqual([{ 'name': 'Yellow', 'handed_cards': 4, 'scored_cards': 4, 'actual_value': 1 },
-                          { 'name': 'Blue',   'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2 },
-                          { 'name': 'Red',    'handed_cards': 2, 'scored_cards': 2, 'actual_value': 3 },
-                          { 'name': 'Orange', 'handed_cards': 3, 'scored_cards': 3, 'actual_value': 4 },
-                          { 'name': 'White',  'handed_cards': 2, 'scored_cards': 2, 'actual_value': 5 }],
+        self.assertEqual([{ 'name': 'Yellow', 'handed_cards': 4, 'scored_cards': 4, 'actual_value': 1, 'score': 4 },
+                          { 'name': 'Blue',   'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2, 'score': 4 },
+                          { 'name': 'Red',    'handed_cards': 2, 'scored_cards': 2, 'actual_value': 3, 'score': 6 },
+                          { 'name': 'Orange', 'handed_cards': 3, 'scored_cards': 3, 'actual_value': 4, 'score': 12 },
+                          { 'name': 'White',  'handed_cards': 2, 'scored_cards': 2, 'actual_value': 5, 'score': 10 }],
                          scoresheets[0].commodities)
-        self.assertEqual([{'cause': 'HAG10', 'detail': 'A set of five different colors gives a bonus.', 'score': 10 },
-                          {'cause': 'HAG10', 'detail': 'A set of five different colors gives a bonus.', 'score': 10 },
-                          {'cause': 'HAG13', 'detail': 'A pair of yellow cards doubles the value of one white card.', 'score': 5 },
-                          {'cause': 'HAG13', 'detail': 'A pair of yellow cards doubles the value of one white card.', 'score': 5 },
-                          {'cause': 'HAG08', 'detail': 'Having the most yellow cards (4 cards) gives a bonus of 4x4 points.', 'score': 16 }],
+        self.assertEqual([{'cause': 'HAG10', 'detail': '(10) A set of five different colors gives a bonus.', 'score': 10 },
+                          {'cause': 'HAG10', 'detail': '(10) A set of five different colors gives a bonus.', 'score': 10 },
+                          {'cause': 'HAG13', 'detail': '(13) A pair of yellow cards doubles the value of one white card.', 'score': 5 },
+                          {'cause': 'HAG13', 'detail': '(13) A pair of yellow cards doubles the value of one white card.', 'score': 5 },
+                          {'cause': 'HAG08', 'detail': '(8) Having the most yellow cards (4 cards) gives a bonus of 4x4 points.', 'score': 16 }],
                          scoresheets[0].extra )
 
     def test_calculate_score(self):
@@ -145,7 +145,11 @@ class ScoringTest(TestCase):
                 self._commodities = [{ 'name': 'Blue', 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2 },
                                     { 'name': 'Red' , 'handed_cards': 4, 'scored_cards': 3, 'actual_value': 1 }]
                 self._extra = [{'cause': 'HELLO', 'score': -5} , {'cause': 'WORLD', 'score': None}]
-        self.assertEqual(2, MockScoresheet().calculate_score())
+        scoresheet = MockScoresheet()
+        self.assertEqual(2, scoresheet.calculate_score())
+        self.assertEqual([{ 'name': 'Blue', 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2, 'score': 4 },
+                          { 'name': 'Red' , 'handed_cards': 4, 'scored_cards': 3, 'actual_value': 1, 'score': 3 }], 
+                         scoresheet.commodities)
     
     def test_Scoresheet_init(self):
         """Yellow = 1 / Blue = 2 / Red = 3 / Orange = 4 / White = 5
@@ -191,7 +195,7 @@ class HaggleTest(TestCase):
         scoresheet = _prepare_scoresheet(white = 4)
         HAG04(scoresheet)
         self.assertEqual(0, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG04', 'Since there are 4 white cards (more than three), their value is set to zero.')
+        self.assertRuleApplied(scoresheet, 'HAG04', '(4) Since there are 4 white cards (more than three), their value is set to zero.')
     
     def test_haggle_HAG05(self):
         """"A player can score only as many as orange cards as he/she has blue cards."""
@@ -203,7 +207,7 @@ class HaggleTest(TestCase):
         scoresheet = _prepare_scoresheet(blue = 2, orange = 3)
         HAG05(scoresheet)
         self.assertEqual(12, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG05', 'Since there are 2 blue card(s), only 2 orange card(s) score.')
+        self.assertRuleApplied(scoresheet, 'HAG05', '(5) Since there are 2 blue card(s), only 2 orange card(s) score.')
 
     def test_haggle_HAG06(self):
         """If a player has five or more blue cards, 10 points are deducted from every other player's score."""
@@ -214,12 +218,12 @@ class HaggleTest(TestCase):
         HAG06(players)
         self.assertEqual(3, len(players))
         self.assertEqual(10-10, players[0].calculate_score())
-        self.assertRuleApplied(players[0], 'HAG06', 'Since player #1 has 6 blue cards, 10 points are deducted.', -10)
+        self.assertRuleApplied(players[0], 'HAG06', '(6) Since player #2 has 6 blue cards, 10 points are deducted.', -10)
         self.assertEqual(16-10, players[1].calculate_score())
-        self.assertRuleApplied(players[1], 'HAG06', 'Since player #0 has 5 blue cards, 10 points are deducted.', -10)
+        self.assertRuleApplied(players[1], 'HAG06', '(6) Since player #1 has 5 blue cards, 10 points are deducted.', -10)
         self.assertEqual(28-20, players[2].calculate_score())
-        self.assertRuleApplied(players[2], 'HAG06', 'Since player #0 has 5 blue cards, 10 points are deducted.', -10)
-        self.assertRuleApplied(players[2], 'HAG06', 'Since player #1 has 6 blue cards, 10 points are deducted.', -10)
+        self.assertRuleApplied(players[2], 'HAG06', '(6) Since player #1 has 5 blue cards, 10 points are deducted.', -10)
+        self.assertRuleApplied(players[2], 'HAG06', '(6) Since player #2 has 6 blue cards, 10 points are deducted.', -10)
 
     def test_haggle_HAG07(self):
         """A set of three red cards protects you from one set of five blue cards."""
@@ -231,14 +235,14 @@ class HaggleTest(TestCase):
         HAG07(player2)
         HAG07(player3)
         self.assertEqual(10-10, player1.calculate_score())
-        self.assertRuleApplied(player1, 'HAG06', 'Since player #1 has 6 blue cards, 10 points are deducted.', -10)
+        self.assertRuleApplied(player1, 'HAG06', '(6) Since player #2 has 6 blue cards, 10 points are deducted.', -10)
         self.assertEqual(21, player2.calculate_score())
-        self.assertRuleApplied(player2, 'HAG06', 'Since player #0 has 5 blue cards, 10 points should have been deducted...', 0)
-        self.assertRuleApplied(player2, 'HAG07', '...but a set of three red cards cancels that penalty.')
+        self.assertRuleApplied(player2, 'HAG06', '(6) Since player #1 has 5 blue cards, 10 points should have been deducted...')
+        self.assertRuleApplied(player2, 'HAG07', '(7) ...but a set of three red cards cancels that penalty.')
         self.assertEqual(24, player3.calculate_score())
-        self.assertRuleApplied(player3, 'HAG06', 'Since player #0 has 5 blue cards, 10 points should have been deducted...', 0)
-        self.assertRuleApplied(player3, 'HAG06', 'Since player #1 has 6 blue cards, 10 points should have been deducted...', 0)
-        self.assertRuleApplied(player3, 'HAG07', '...but a set of three red cards cancels that penalty.', times = 2)
+        self.assertRuleApplied(player3, 'HAG06', '(6) Since player #1 has 5 blue cards, 10 points should have been deducted...')
+        self.assertRuleApplied(player3, 'HAG06', '(6) Since player #2 has 6 blue cards, 10 points should have been deducted...')
+        self.assertRuleApplied(player3, 'HAG07', '(7) ...but a set of three red cards cancels that penalty.', times = 2)
         
     def test_haggle_HAG08(self):
         """The player with the most yellow cards gets a bonus of the number of those cards squared. 
@@ -252,7 +256,7 @@ class HaggleTest(TestCase):
         HAG08(players)
         self.assertEqual(3, len(players))
         self.assertEqual(5+(5**2), players[0].calculate_score())
-        self.assertRuleApplied(players[0], 'HAG08', 'Having the most yellow cards (5 cards) gives a bonus of 5x5 points.', 5**2)
+        self.assertRuleApplied(players[0], 'HAG08', '(8) Having the most yellow cards (5 cards) gives a bonus of 5x5 points.', 5**2)
         self.assertEqual(12, players[1].calculate_score())
         self.assertEqual(8, players[2].calculate_score())
 
@@ -268,7 +272,7 @@ class HaggleTest(TestCase):
         self.assertEqual(12, players[1].calculate_score())
         self.assertRuleNotApplied(players[1], 'HAG08')
         self.assertEqual(10+(2**2), players[2].calculate_score())
-        self.assertRuleApplied(players[2], 'HAG08', 'Having the most yellow cards (2 cards) gives a bonus of 2x2 points.', 2**2)
+        self.assertRuleApplied(players[2], 'HAG08', '(8) Having the most yellow cards (2 cards) gives a bonus of 2x2 points.', 2**2)
 
     def test_haggle_HAG09(self):
         """If a player hands in seven or more cards of the same color, 
@@ -282,13 +286,13 @@ class HaggleTest(TestCase):
         scoresheet = _prepare_scoresheet(yellow = 7, blue = 3, white = 1)
         HAG09(scoresheet)
         self.assertEqual(8, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG09', 'Since 7 yellow cards where handed in, 10 points are deducted.', -10)
+        self.assertRuleApplied(scoresheet, 'HAG09', '(9) Since 7 yellow cards where handed in, 10 points are deducted.', -10)
 
         scoresheet = _prepare_scoresheet(yellow = 7, blue = 8, white = 1)
         HAG09(scoresheet)
         self.assertEqual(8, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG09', 'Since 7 yellow cards where handed in, 10 points are deducted.', -10)
-        self.assertRuleApplied(scoresheet, 'HAG09', 'Since 8 blue cards where handed in, 10 points are deducted.', -10)
+        self.assertRuleApplied(scoresheet, 'HAG09', '(9) Since 7 yellow cards where handed in, 10 points are deducted.', -10)
+        self.assertRuleApplied(scoresheet, 'HAG09', '(9) Since 8 blue cards where handed in, 10 points are deducted.', -10)
 
     def test_haggle_HAG10(self):
         """Each set of five different colors gives a bonus of 10 points."""
@@ -300,12 +304,12 @@ class HaggleTest(TestCase):
         scoresheet = _prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1, white = 1)
         HAG10(scoresheet)
         self.assertEqual(35, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG10', 'A set of five different colors gives a bonus.', 10)
+        self.assertRuleApplied(scoresheet, 'HAG10', '(10) A set of five different colors gives a bonus.', 10)
 
         scoresheet = _prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 3, white = 3)
         HAG10(scoresheet)
         self.assertEqual(63, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG10', 'A set of five different colors gives a bonus.', 10, times = 2)
+        self.assertRuleApplied(scoresheet, 'HAG10', '(10) A set of five different colors gives a bonus.', 10, times = 2)
 
     def test_haggle_HAG11(self):
         """If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. 
@@ -315,12 +319,12 @@ class HaggleTest(TestCase):
         scoresheet = _prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1)
         HAG11(scoresheet)
         self.assertEqual(20*2, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG11', 'A pyramid of 4 yellow cards, 3 blue cards, 2 red cards, 1 orange card and no other card doubles the score.', 20)
+        self.assertRuleApplied(scoresheet, 'HAG11', '(11) A pyramid of 4 yellow cards, 3 blue cards, 2 red cards, 1 orange card and no other card doubles the score.', 20)
 
         scoresheet = _prepare_scoresheet(yellow = 1, blue = 2, orange = 3, white = 4)
         HAG11(scoresheet)
         self.assertEqual(37*2, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG11', 'A pyramid of 4 white cards, 3 orange cards, 2 blue cards, 1 yellow card and no other card doubles the score.', 37)
+        self.assertRuleApplied(scoresheet, 'HAG11', '(11) A pyramid of 4 white cards, 3 orange cards, 2 blue cards, 1 yellow card and no other card doubles the score.', 37)
 
         scoresheet = _prepare_scoresheet(yellow = 1, blue = 2, red = 1, orange = 3, white = 4)
         HAG11(scoresheet)
@@ -338,7 +342,7 @@ class HaggleTest(TestCase):
         HAG12(players)
         self.assertEqual(3, len(players))
         self.assertEqual(15+12, player1.calculate_score())
-        self.assertRuleApplied(player1, 'HAG12', 'Having the most red cards (4 cards) doubles their value.', 12)
+        self.assertRuleApplied(player1, 'HAG12', '(12) Having the most red cards (4 cards) doubles their value.', 12)
         self.assertEqual(11, player2.calculate_score())
         self.assertRuleNotApplied(player2, 'HAG12')
         self.assertEqual(10, player3.calculate_score())
@@ -373,17 +377,17 @@ class HaggleTest(TestCase):
         scoresheet = _prepare_scoresheet(yellow = 2, white = 3)
         HAG13(scoresheet)
         self.assertEqual(17+5, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG13', 'A pair of yellow cards doubles the value of one white card.', 5)
+        self.assertRuleApplied(scoresheet, 'HAG13', '(13) A pair of yellow cards doubles the value of one white card.', 5)
 
         scoresheet = _prepare_scoresheet(yellow = 6, white = 3)
         HAG13(scoresheet)
         self.assertEqual(21+3*5, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG13', 'A pair of yellow cards doubles the value of one white card.', 5, times = 3)
+        self.assertRuleApplied(scoresheet, 'HAG13', '(13) A pair of yellow cards doubles the value of one white card.', 5, times = 3)
 
         scoresheet = _prepare_scoresheet(yellow = 8, white = 3)
         HAG13(scoresheet)
         self.assertEqual(23+3*5, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG13', 'A pair of yellow cards doubles the value of one white card.', 5, times = 3)
+        self.assertRuleApplied(scoresheet, 'HAG13', '(13) A pair of yellow cards doubles the value of one white card.', 5, times = 3)
 
     def test_haggle_HAG14(self):
         """Each set of three blue cards quadruples the value of one orange card."""
@@ -400,17 +404,17 @@ class HaggleTest(TestCase):
         scoresheet = _prepare_scoresheet(blue = 3, orange = 2)
         HAG14(scoresheet)
         self.assertEqual(14+12, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG14', 'A set of three blue cards quadruples the value of one orange card.', 12)
+        self.assertRuleApplied(scoresheet, 'HAG14', '(14) A set of three blue cards quadruples the value of one orange card.', 12)
 
         scoresheet = _prepare_scoresheet(blue = 6, orange = 2)
         HAG14(scoresheet)
         self.assertEqual(20+24, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG14', 'A set of three blue cards quadruples the value of one orange card.', 12, times = 2)
+        self.assertRuleApplied(scoresheet, 'HAG14', '(14) A set of three blue cards quadruples the value of one orange card.', 12, times = 2)
 
         scoresheet = _prepare_scoresheet(blue = 9, orange = 2)
         HAG14(scoresheet)
         self.assertEqual(26+24, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG14', 'A set of three blue cards quadruples the value of one orange card.', 12, times = 2)
+        self.assertRuleApplied(scoresheet, 'HAG14', '(14) A set of three blue cards quadruples the value of one orange card.', 12, times = 2)
 
     def test_haggle_HAG15(self):
         """No more than thirteen cards in a hand can be scored. 
@@ -423,7 +427,7 @@ class HaggleTest(TestCase):
         self.assertEqual(1, len(scoresheet.extra))
         extra = scoresheet.extra[0]
         self.assertEqual('HAG15', extra['cause'])
-        self.assertTrue(extra['detail'].startswith('Since 35 cards had to be scored, 22 have been discarded'))
+        self.assertTrue(extra['detail'].startswith('(15) Since 35 cards had to be scored, 22 have been discarded'))
 
     def assertRuleApplied(self, scoresheet, rule, detail = '', score = None, times = 1):
         for _i in range(times):

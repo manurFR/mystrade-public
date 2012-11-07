@@ -29,7 +29,9 @@ class Scoresheet(object):
     def calculate_score(self):
         score = 0
         for commodity_item in self.commodities:
-            score += commodity_item['scored_cards'] * commodity_item['actual_value']
+            commodity_score = commodity_item['scored_cards'] * commodity_item['actual_value']
+            commodity_item['score'] = commodity_score
+            score += commodity_score
         score += sum(item['score'] for item in self.extra if item['score'] is not None)
         return score
     
