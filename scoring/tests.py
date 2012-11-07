@@ -80,8 +80,8 @@ class ViewsTest(TestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertTemplateUsed(response, 'scoring/result.html')
-        self.assertContains(response, "Player : 1 [Yellow : 3 | Blue : 0 | Red : 0 | Orange : 8 | White : 0]")
-        self.assertContains(response, "Player : 2 [Yellow : 1 | Blue : 2 | Red : 3 | Orange : 4 | White : 5]")
+        self.assertContains(response, "Yellow : 3, Blue : 0, Red : 0, Orange : 8, White : 0")
+        self.assertContains(response, "Yellow : 1, Blue : 2, Red : 3, Orange : 4, White : 5")
 
     def test_specify_hands_only_empty_fields(self):
         response = self.client.post("/scoring/",
@@ -96,7 +96,7 @@ class ViewsTest(TestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertTemplateUsed(response, 'scoring/result.html')
-        self.assertContains(response, "Player : 1 [Yellow : 0 | Blue : 0 | Red : 0 | Orange : 0 | White : 0]")
+        self.assertContains(response, "Yellow : 0, Blue : 0, Red : 0, Orange : 0, White : 0")
 
 class ScoringTest(TestCase):
     def test_tally_scores(self):
