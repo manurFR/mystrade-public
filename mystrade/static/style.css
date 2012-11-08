@@ -185,3 +185,9 @@ a:hover, .dynamic_link:hover {
 	text-decoration:underline;
 	cursor: pointer;
 }
+
+.ui-datepicker-trigger {
+	position: relative;
+	top: 4px;
+	left: 2px;
+}

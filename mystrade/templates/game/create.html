@@ -1,11 +1,48 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% load url from future %}
+{% load widget_tweaks %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.1.custom.min.css' %}" />
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
+<script src="{% static 'jquery/jquery-ui-1.9.1.custom.min.js' %}"></script>
+{% endblock %}
 
 {% block content %}
-<div class="header">Create new game</div>
 <form action="" method="post">{% csrf_token %}
-	{{ form.as_p }}
-	<input type="submit" value="Submit" />
+	<table class="fullwidth formtable">
+		<tr>
+			<td colspan="2" class="header">Create new game</th>
+		</tr>
+		<tr>
+			{{ form.non_field_errors }}
+		</tr>
+		
+		<tr>
+			<th>{{ form.ruleset.label_tag }} :</th>
+			<td>{{ form.ruleset }}&nbsp;<span class="errors">{{ form.ruleset.errors.as_text }}</span></td>
+		</tr>
+		<tr>
+			<th>{{ form.start_date.label_tag }} :</th>
+			<td>{{ form.start_date|add_class:"jqueryui-datepicker" }}&nbsp;<span class="errors">{{ form.start_date.errors.as_text }}</span></td>
+		</tr>	
+	</table>
+	<div class="submit-button">
+		<input type="submit" value="Submit" />
+	</div>
 </form>
+
+<script>
+$(function() {
+    $(".jqueryui-datepicker").datepicker({
+        showOn: "both",
+        buttonImage: "{% static 'calendar.png' %}",
+        buttonImageOnly: true
+    });
+});
+</script>
 {% endblock content %}

@@ -132,6 +132,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
+    'widget_tweaks',
 ) + MYSTRADE_APPS
 
 AUTH_PROFILE_MODULE = 'userprofile.UserProfile'
