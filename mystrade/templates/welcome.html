@@ -15,9 +15,10 @@
 	{{ user.username|capfirst }}, welcome to MysTrade !
 	
 	{% if perms.game.add_game %}
-		<form action="{% url 'create_game' %}" method="POST">{% csrf_token %}
-			<input type="submit" value="Create new game"/>
-		</form>
+	<br/><br/>
+	<form action="{% url 'create_game' %}" method="POST">{% csrf_token %}
+		<input type="submit" value="Create new game"/>
+	</form>
 	{% endif %}
 	
 	<script>

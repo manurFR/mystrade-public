@@ -29,7 +29,11 @@ a img, .icon {
 	font-family: "Garamond", "Times New Roman", serif;
 	font-size: 1.3em;
 	font-style: italic;
+	color: black;
 	letter-spacing: 7px;
+}
+.logobox a:hover {
+	text-decoration: none;
 }
 
 .content {
