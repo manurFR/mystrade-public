@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import permission_required
-from django.http import HttpResponse
+from django.shortcuts import render
+from game.forms import CreateGameForm
 
 @permission_required('game.add_game')
 def create_game(request):
-    return HttpResponse("Let's create a new game...")
+    game_form = CreateGameForm()
+    return render(request, 'game/create.html', {'form': game_form})
