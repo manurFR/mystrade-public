@@ -1,6 +1,5 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.forms.widgets import TextInput, Textarea
 from userprofile.models import UserProfile
 
 class UserForm(forms.ModelForm):
@@ -22,15 +21,8 @@ class UserForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email']
-        widgets = {
-            'email': TextInput(attrs={'size': 40}),
-        }
 
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ['bio', 'contact']
-        widgets = {
-            'bio'     : Textarea(attrs={'cols': 75, 'rows': 6}),
-            'contact' : Textarea(attrs={'cols': 75, 'rows': 6})
-        }

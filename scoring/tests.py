@@ -286,13 +286,13 @@ class HaggleTest(TestCase):
         scoresheet = _prepare_scoresheet(yellow = 7, blue = 3, white = 1)
         HAG09(scoresheet)
         self.assertEqual(8, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG09', '(9) Since 7 yellow cards where handed in, 10 points are deducted.', -10)
+        self.assertRuleApplied(scoresheet, 'HAG09', '(9) Since 7 yellow cards where handed in (seven or more), 10 points are deducted.', -10)
 
         scoresheet = _prepare_scoresheet(yellow = 7, blue = 8, white = 1)
         HAG09(scoresheet)
         self.assertEqual(8, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG09', '(9) Since 7 yellow cards where handed in, 10 points are deducted.', -10)
-        self.assertRuleApplied(scoresheet, 'HAG09', '(9) Since 8 blue cards where handed in, 10 points are deducted.', -10)
+        self.assertRuleApplied(scoresheet, 'HAG09', '(9) Since 7 yellow cards where handed in (seven or more), 10 points are deducted.', -10)
+        self.assertRuleApplied(scoresheet, 'HAG09', '(9) Since 8 blue cards where handed in (seven or more), 10 points are deducted.', -10)
 
     def test_haggle_HAG10(self):
         """Each set of five different colors gives a bonus of 10 points."""

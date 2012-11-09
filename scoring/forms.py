@@ -1,7 +1,7 @@
 from django import forms
 
 class RuleCardFormParse(forms.Form):
-    card_id = forms.CharField(widget = forms.HiddenInput())
+    card_id = forms.CharField(widget = forms.HiddenInput)
     selected_rule = forms.BooleanField(required = False, label = "Keep")
 
 class RuleCardFormDisplay(RuleCardFormParse):
@@ -10,13 +10,8 @@ class RuleCardFormDisplay(RuleCardFormParse):
     mandatory = forms.BooleanField()
 
 class HandsForm(forms.Form):
-    yellow = forms.IntegerField(min_value = 0, max_value = 999, required = False,
-                                widget = forms.TextInput(attrs = {'size': 3, 'maxlength': 3}))
-    blue = forms.IntegerField(min_value = 0, max_value = 999, required = False,
-                                widget = forms.TextInput(attrs = {'size': 3, 'maxlength': 3}))
-    red = forms.IntegerField(min_value = 0, max_value = 999, required = False,
-                                widget = forms.TextInput(attrs = {'size': 3, 'maxlength': 3}))
-    orange = forms.IntegerField(min_value = 0, max_value = 999, required = False,
-                                widget = forms.TextInput(attrs = {'size': 3, 'maxlength': 3}))
-    white = forms.IntegerField(min_value = 0, max_value = 999, required = False,
-                                widget = forms.TextInput(attrs = {'size': 3, 'maxlength': 3}))
+    yellow = forms.IntegerField(min_value = 0, max_value = 999, required = False)
+    blue = forms.IntegerField(min_value = 0, max_value = 999, required = False)
+    red = forms.IntegerField(min_value = 0, max_value = 999, required = False)
+    orange = forms.IntegerField(min_value = 0, max_value = 999, required = False)
+    white = forms.IntegerField(min_value = 0, max_value = 999, required = False)

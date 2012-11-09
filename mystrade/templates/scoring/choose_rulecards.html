@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% load url from future %}
+{% load widget_tweaks %}
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.1.custom.min.css' %}" />
@@ -52,19 +53,19 @@
 					Player #<span class="counter">{{ forloop.counter }}</span> >
 				</div>
 				<div class="css_table-cell">
-					{{ form.yellow.label_tag }} : {{ form.yellow }}
+					{{ form.yellow.label_tag }} : {{ form.yellow|attr:"size:3"|attr:"maxlength:3" }}
 				</div>
 				<div class="css_table-cell">
-					{{ form.blue.label_tag }} : {{ form.blue }}
+					{{ form.blue.label_tag }} : {{ form.blue|attr:"size:3"|attr:"maxlength:3" }}
 				</div>
 				<div class="css_table-cell">
-					{{ form.red.label_tag }} : {{ form.red }}
+					{{ form.red.label_tag }} : {{ form.red|attr:"size:3"|attr:"maxlength:3" }}
 				</div>
 				<div class="css_table-cell">
-					{{ form.orange.label_tag }} : {{ form.orange }}
+					{{ form.orange.label_tag }} : {{ form.orange|attr:"size:3"|attr:"maxlength:3" }}
 				</div>
 				<div class="css_table-cell">
-					{{ form.white.label_tag }} : {{ form.white }}
+					{{ form.white.label_tag }} : {{ form.white|attr:"size:3"|attr:"maxlength:3" }}
 				</div>
 			</div>
 		{% endfor %}

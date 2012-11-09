@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 {% load url from future %}
+{% load widget_tweaks %}
 
 {% block content %}
 	<form action="{% url 'userprofile.views.editprofile' user.id %}" method="POST">{% csrf_token %}
@@ -26,17 +27,17 @@
 			</tr>
 			<tr>
 				<th>{{ user_form.email.label_tag }} :</th>
-				<td>{{ user_form.email }}&nbsp;<span class="errors">{{ user_form.email.errors.as_text }}</span>
+				<td>{{ user_form.email|attr:"size:40" }}&nbsp;<span class="errors">{{ user_form.email.errors.as_text }}</span>
 				    <span class="helptext">{{ user_form.email.help_text }}</span></td>
 			</tr>
 			<tr>
 				<th>{{ userprofile_form.bio.label_tag }} :</th>
-				<td>{{ userprofile_form.bio }}&nbsp;<span class="errors">{{ userprofile_form.bio.errors.as_text }}</span>
+				<td>{{ userprofile_form.bio|attr:"cols:75"|attr:"rows:6" }}&nbsp;<span class="errors">{{ userprofile_form.bio.errors.as_text }}</span>
 				    <span class="brhelptext">{{ userprofile_form.bio.help_text }}</span></td>
 			</tr>
 			<tr>
 				<th>{{ userprofile_form.contact.label_tag }} :</th>
-				<td>{{ userprofile_form.contact }}&nbsp;<span class="errors">{{ userprofile_form.contact.errors.as_text }}</span>
+				<td>{{ userprofile_form.contact|attr:"cols:75"|attr:"rows:6" }}&nbsp;<span class="errors">{{ userprofile_form.contact.errors.as_text }}</span>
 				    <span class="brhelptext">{{ userprofile_form.contact.help_text }}</span></td>
 			</tr>
 			<tr>

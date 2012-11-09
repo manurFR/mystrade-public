@@ -70,7 +70,7 @@ def HAG09(scoresheet):
     for commodity in scoresheet.commodities:
         if commodity['handed_cards'] >= 7:
             scoresheet.register_rule('HAG09',
-                              '(9) Since {} {} cards where handed in, 10 points are deducted.'.format(commodity['handed_cards'], commodity['name'].lower()),
+                              '(9) Since {} {} cards where handed in (seven or more), 10 points are deducted.'.format(commodity['handed_cards'], commodity['name'].lower()),
                               score = -10)
 
 def HAG10(scoresheet):
@@ -109,7 +109,7 @@ def HAG12(players):
     """
     winner = None
     reds = [player.commodity('Red')['scored_cards'] for player in players]
-    if reds.count(max(reds)) == 1:
+    if reds.count(max(reds)) == 1 and max(reds) > 0:
         winner = players[reds.index(max(reds))]
         winner.register_rule('HAG12',
                       '(12) Having the most red cards ({} cards) doubles their value.'.format(winner.commodity('Red')['scored_cards']),
