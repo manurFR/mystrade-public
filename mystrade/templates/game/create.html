@@ -5,13 +5,13 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.1.custom.min.css' %}" />
-<link rel="stylesheet" href="{% static 'jquery/jquery.ui.timepicker.css' %}" />
+<link rel="stylesheet" href="{% static 'jquery/jquery-ui-timepicker-addon.css' %}" />
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
 <script src="{% static 'jquery/jquery-ui-1.9.1.custom.min.js' %}"></script>
-<script src="{% static 'jquery/jquery.ui.timepicker.js' %}"></script>
+<script src="{% static 'jquery/jquery-ui-timepicker-addon.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -30,12 +30,12 @@
 		</tr>
 		<tr>
 			<th>{{ form.start_date.label_tag }} :</th>
-			<td>{{ form.start_date|add_class:"jqueryui-datepicker" }}&nbsp;<span class="errors">{{ form.start_date.errors.as_text }}</span></td>
+			<td>{{ form.start_date|add_class:"jqueryui-datepicker"|attr:"size:14" }}&nbsp;<span class="errors">{{ form.start_date.errors.as_text }}</span></td>
 		</tr>
 		<tr>
-			<th>{{ form.start_time.label_tag }} :</th>
-			<td>{{ form.start_time|add_class:"jqueryui-timepicker" }}&nbsp;<span class="errors">{{ form.start_time.errors.as_text }}</span></td>
-		</tr>
+			<th>{{ form.end_date.label_tag }} :</th>
+			<td>{{ form.end_date|add_class:"jqueryui-datepicker"|attr:"size:14" }}&nbsp;<span class="errors">{{ form.end_date.errors.as_text }}</span></td>
+		</tr>		
 	</table>
 	<div class="submit-button">
 		<input type="submit" value="Submit" />
@@ -44,17 +44,12 @@
 
 <script>
 $(function() {
-    $(".jqueryui-datepicker").datepicker({
-        showOn: "both",
+    $(".jqueryui-datepicker").datetimepicker({
+    	showOn: "both",
         buttonImage: "{% static 'calendar.png' %}",
-        buttonImageOnly: true
-    });
-    $(".jqueryui-timepicker").timepicker({
-        showPeriodLabels: false,
-        showOn: 'both',
-        minutes: { starts: 0, ends: 45, interval: 15 },
-        showCloseButton: true,
-        showNowButton: true,
+        buttonImageOnly: true,
+		stepMinute: 15,
+		minuteGrid: 15
     });
 });
 </script>
