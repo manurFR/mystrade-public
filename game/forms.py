@@ -5,3 +5,4 @@ class CreateGameForm(forms.Form):
     ruleset = forms.ModelChoiceField(queryset = Ruleset.objects.all(), empty_label = None)
 
     start_date = forms.DateField()
+    start_time = forms.TimeField()
