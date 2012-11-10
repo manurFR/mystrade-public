@@ -16,7 +16,7 @@
 	
 	{% if perms.game.add_game %}
 	<br/><br/>
-	<form action="{% url 'create_game' %}" method="POST">{% csrf_token %}
+	<form action="{% url 'create_game' %}" method="GET">
 		<input type="submit" value="Create new game"/>
 	</form>
 	{% endif %}
