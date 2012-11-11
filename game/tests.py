@@ -31,7 +31,10 @@ class ViewsTest(TestCase):
         self.assertFormError(response, 'form', 'end_date', 'This field is required.')
 
     def test_create_game_step1(self):
-        response = self.client.post("/game/create/", {'ruleset': 1, 'start_date': '11/10/2012 18:30', 'end_date': '11/13/2012 00:15'})
+        response = self.client.post("/game/create/", {'ruleset': 1, 
+                                                      'start_date': '11/10/2012 18:30', 
+                                                      'end_date': '11/13/2012 00:15',
+                                                      'players': self.testUserNoCreate.id})
         self.assertEqual(200, response.status_code)
         created_game = Game.objects.get(master = self.testUserCanCreate.id)
         self.assertEqual(1, created_game.ruleset.id)

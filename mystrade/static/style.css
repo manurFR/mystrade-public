@@ -96,6 +96,9 @@ input, textarea, select {
 select {
 	height: 2em;
 }
+select[multiple] {
+	height: auto;
+}
 
 input[type="submit"] {
 	background-color: #DDDDDD;
