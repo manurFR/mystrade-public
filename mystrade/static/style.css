@@ -86,7 +86,7 @@ input[type="text"], input[type="password"], textarea, select {
 
 input, textarea, select {
 	font-family: inherit;
-	font-size: 11px;
+	font-size: 10px;
 	font-weight: normal;
 	background-color: #FAFFBD;
 	margin: 2px 0;

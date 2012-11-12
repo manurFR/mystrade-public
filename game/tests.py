@@ -8,18 +8,20 @@ class ViewsTest(TestCase):
     def setUp(self):
         self.testUserCanCreate = User.objects.create_user('testCanCreate', 'test@aaa.com', 'test')
         self.testUserCanCreate.user_permissions.add(Permission.objects.get(codename = 'add_game'))
-        self.testUserNoCreate  = User.objects.create_user('testNoCreate', 'test@aaa.com', 'test')
+        self.testUsersNoCreate = []
+        for i in range(3):
+            self.testUsersNoCreate.append(User.objects.create_user('testNoCreate{}'.format(i), 'test@aaa.com', 'test'))
         
         self.client.login(username = 'testCanCreate', password = 'test')
 
     def test_create_game_only_with_the_permission(self):
         # initially logged as testCanCreate
-        response = self.client.post("/game/create/")
+        response = self.client.get("/game/create/")
         self.assertEqual(200, response.status_code)
         self.client.logout()
 
-        self.client.login(username = 'testNoCreate', password = 'test')
-        response = self.client.post("/game/create/")
+        self.client.login(username = 'testNoCreate0', password = 'test')
+        response = self.client.get("/game/create/")
         self.assertEqual(302, response.status_code)
         self.client.logout()
 
@@ -30,11 +32,18 @@ class ViewsTest(TestCase):
         response = self.client.post("/game/create/", {'ruleset': 1, 'start_date':'11/10/2012 15:30', 'end_date': ''})
         self.assertFormError(response, 'form', 'end_date', 'This field is required.')
 
-    def test_create_game_step1(self):
+    def test_create_game_without_enough_players(self):
         response = self.client.post("/game/create/", {'ruleset': 1, 
                                                       'start_date': '11/10/2012 18:30', 
                                                       'end_date': '11/13/2012 00:15',
-                                                      'players': self.testUserNoCreate.id})
+                                                      'players': self.testUsersNoCreate[0].id})
+        self.assertFormError(response, 'form', None, 'Please select at least 3 players (as many as there are mandatory rule cards in this ruleset).')
+
+    def test_create_game(self):
+        response = self.client.post("/game/create/", {'ruleset': 1,
+                                                      'start_date': '11/10/2012 18:30',
+                                                      'end_date': '11/13/2012 00:15',
+                                                      'players': [self.testUsersNoCreate[0].id, self.testUsersNoCreate[1].id, self.testUsersNoCreate[2].id]})
         self.assertEqual(200, response.status_code)
         created_game = Game.objects.get(master = self.testUserCanCreate.id)
         self.assertEqual(1, created_game.ruleset.id)

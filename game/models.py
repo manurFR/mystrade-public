@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.timezone import now
 from scoring.models import Ruleset, RuleCard
-import datetime
+
 
 class Game(models.Model):
     ruleset = models.ForeignKey(Ruleset)
@@ -10,6 +11,7 @@ class Game(models.Model):
     rules = models.ManyToManyField(RuleCard)
     players = models.ManyToManyField(User, related_name = 'playing_games_set')
 
-    creation_date = models.DateTimeField(default = datetime.datetime.now)
-    start_date = models.DateTimeField(default = datetime.datetime.now)
+    # it's important to use django.utils.timezone.now() which is an aware date
+    creation_date = models.DateTimeField(default = now())
+    start_date = models.DateTimeField(default = now())
     end_date = models.DateTimeField()
