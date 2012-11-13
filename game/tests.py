@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Permission
 from django.test import TestCase
-from django.utils.timezone import utc, get_default_timezone
+from django.utils.timezone import get_default_timezone
 from game.models import Game
 import datetime
 
@@ -43,9 +43,10 @@ class ViewsTest(TestCase):
         response = self.client.post("/game/create/", {'ruleset': 1,
                                                       'start_date': '11/10/2012 18:30',
                                                       'end_date': '11/13/2012 00:15',
-                                                      'players': [self.testUsersNoCreate[0].id, self.testUsersNoCreate[1].id, self.testUsersNoCreate[2].id]})
+                                                      'players': [player.id for player in self.testUsersNoCreate]})
         self.assertEqual(200, response.status_code)
         created_game = Game.objects.get(master = self.testUserCanCreate.id)
         self.assertEqual(1, created_game.ruleset.id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
         self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
+        self.assertListEqual(self.testUsersNoCreate, list(created_game.players.all()))
