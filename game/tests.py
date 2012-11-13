@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User, Permission
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
-from game.models import Game
 import datetime
 
 class ViewsTest(TestCase):
@@ -39,14 +38,15 @@ class ViewsTest(TestCase):
                                                       'players': self.testUsersNoCreate[0].id})
         self.assertFormError(response, 'form', None, 'Please select at least 3 players (as many as there are mandatory rule cards in this ruleset).')
 
-    def test_create_game(self):
+    def test_create_game_first_page(self):
         response = self.client.post("/game/create/", {'ruleset': 1,
                                                       'start_date': '11/10/2012 18:30',
                                                       'end_date': '11/13/2012 00:15',
                                                       'players': [player.id for player in self.testUsersNoCreate]})
-        self.assertEqual(200, response.status_code)
-        created_game = Game.objects.get(master = self.testUserCanCreate.id)
-        self.assertEqual(1, created_game.ruleset.id)
-        self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
-        self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
-        self.assertListEqual(self.testUsersNoCreate, list(created_game.players.all()))
+        self.assertRedirects(response, "/game/rules/")
+        #created_game = Game.objects.get(master = self.testUserCanCreate.id)
+        self.assertEqual(1, self.client.session['ruleset'].id)
+        self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), self.client.session['start_date'])
+        self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), self.client.session['end_date'])
+        #self.assertListEqual(self.testUsersNoCreate, list(created_game.players.all()))
+        self.assertListEqual(self.testUsersNoCreate, self.client.session['players'])

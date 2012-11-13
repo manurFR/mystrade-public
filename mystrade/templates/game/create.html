@@ -42,8 +42,8 @@
 			<td>{{ form.players }}&nbsp;<span class="errors">{{ form.players.errors.as_text }}</span></td>
 		</tr>
 	</table>
-	<div class="submit-button">
-		<input type="submit" value="Submit" />
+	<div class="submit-button floatright">
+		<input type="submit" value="Next: Select rules >>" />
 	</div>
 </form>
 
@@ -56,6 +56,9 @@ $(function() {
 		stepMinute: 15,
 		minuteGrid: 15
     });
+});
+$(function() {
+    $( "input[type=submit]" ).button();
 });
 </script>
 {% endblock content %}
