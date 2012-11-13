@@ -16,9 +16,16 @@ class CreateGameForm(forms.Form):
         self.fields['players'].queryset = User.objects.exclude(id = game_master.id)
 
     def clean(self):
-        """ Accept only a minimum of as many players as there are mandatory rule cards. """
         cleaned_data = super(CreateGameForm, self).clean()
-        nb_mandatory_cards = RuleCard.objects.filter(ruleset = cleaned_data['ruleset'], mandatory = True).count()
-        if 'players' in cleaned_data and len(cleaned_data['players']) < nb_mandatory_cards:
-            raise forms.ValidationError("Please select at least {} players (as many as there are mandatory rule cards in this ruleset).".format(nb_mandatory_cards))
+        if 'players' in cleaned_data and 'ruleset' in cleaned_data:
+            validate_number_of_players(cleaned_data['players'], cleaned_data['ruleset'])
         return cleaned_data
+
+def validate_number_of_players(list_of_players, chosen_ruleset):
+    """
+    There must be at least as many players as there are mandatory rule cards.
+    Raises a ValidationError if that condition is not fulfilled.
+    """
+    nb_mandatory_cards = RuleCard.objects.filter(ruleset = chosen_ruleset, mandatory = True).count()
+    if len(list_of_players) < nb_mandatory_cards:
+        raise forms.ValidationError("Please select at least {} players (as many as there are mandatory rule cards in this ruleset).".format(nb_mandatory_cards))
