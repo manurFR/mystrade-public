@@ -2,7 +2,7 @@ from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
-from game.forms import validate_number_of_players
+from game.forms import validate_number_of_players, validate_dates
 from game.models import Game
 from scoring.models import Ruleset
 import datetime
@@ -69,7 +69,28 @@ class ViewsTest(TestCase):
         session.save()
         response = self.client.get("/game/rules/")
         self.assertRedirects(response, "/game/create/")
-        
+
+    def test_access_rules_with_invalid_dates_redirects_to_first_page(self):
+        session = self.client.session
+        session['ruleset'] = 1
+        session['start_date'] = '11/10/2012 18:30'
+        session['end_date'] = '11/13/2011 00:15'
+        session['players'] = [self.testUsersNoCreate[0]]
+        session.save()
+        response = self.client.get("/game/rules/")
+        self.assertRedirects(response, "/game/create/")
+
+    def test_access_rules(self):
+        session = self.client.session
+        session['ruleset'] = 1
+        session['start_date'] = '11/10/2012 18:30'
+        session['end_date'] = '11/13/2012 00:15'
+        session['players'] = self.testUsersNoCreate
+        session.save()
+        response = self.client.get("/game/rules/")
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(response, 'game/rules.html')
+
     def test_create_game_with_too_many_rulecards(self):
         session = self.client.session
         session['ruleset'] = 1
@@ -99,7 +120,7 @@ class ViewsTest(TestCase):
         self.assertTemplateUsed(response, 'game/rules.html')
         self.assertEqual("Please select at most 4 rule cards (including the mandatory ones)", response.context['error'])
 
-    def test_create_game_complete(self):
+    def test_create_game_complete_save_and_clean_session(self):
         response = self.client.post("/game/create/", {'ruleset': 1,
                                                       'start_date': '11/10/2012 18:30',
                                                       'end_date': '11/13/2012 00:15',
@@ -131,6 +152,11 @@ class ViewsTest(TestCase):
         self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
         self.assertListEqual(self.testUsersNoCreate, list(created_game.players.all()))
         self.assertListEqual([1, 2, 3, 9], [rule.id for rule in created_game.rules.all()])
+        self.assertFalse('ruleset' in self.client.session)
+        self.assertFalse('start_date' in self.client.session)
+        self.assertFalse('end_date' in self.client.session)
+        self.assertFalse('players' in self.client.session)
+        self.assertFalse('profiles' in self.client.session)
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
@@ -141,3 +167,17 @@ class FormsTest(TestCase):
             validate_number_of_players(['user1', 'user2', 'user3'], chosen_ruleset)
         except ValidationError:
             self.fail("validate_number_of_players should not fail when there are as many players as mandatory rule cards")
+
+    def test_validate_dates(self):
+        self.assertRaisesMessage(ValidationError, 'End date must be strictly posterior to start date.',
+                                 validate_dates,
+                                 datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()),
+                                 datetime.datetime(2011, 11, 10, 18, 30, tzinfo = get_default_timezone()))
+        self.assertRaisesMessage(ValidationError, 'End date must be strictly posterior to start date.',
+                                 validate_dates,
+                                 datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()),
+                                 datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()))
+        try:
+            validate_dates(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), datetime.datetime(2012, 11, 10, 18, 50, tzinfo = get_default_timezone()))
+        except ValidationError:
+            self.fail("validate_dates should not fail when end_date is strictly posterior to start_date")

@@ -4,7 +4,8 @@ from django.core.urlresolvers import reverse
 from django.forms.formsets import formset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from game.forms import CreateGameForm, validate_number_of_players
+from game.forms import CreateGameForm, validate_number_of_players, \
+    validate_dates
 from game.models import Game
 from scoring.forms import RuleCardFormParse, RuleCardFormDisplay
 from scoring.models import RuleCard
@@ -36,6 +37,7 @@ def select_rules(request):
     players = request.session['players']
 
     try:
+        validate_dates(start_date, end_date)
         validate_number_of_players(players, ruleset)
     except ValidationError:
         return HttpResponseRedirect(reverse('create_game'))
@@ -44,8 +46,8 @@ def select_rules(request):
 
     error = None
     if request.method == 'POST':
-        RuleCardFormSet = formset_factory(RuleCardFormParse)
-        formset = RuleCardFormSet(request.POST)
+        RuleCardsFormSet = formset_factory(RuleCardFormParse)
+        formset = RuleCardsFormSet(request.POST)
         if formset.is_valid():
             selected_rules = []
             for card in rulecards_queryset:
@@ -58,7 +60,14 @@ def select_rules(request):
                         break
             if len(selected_rules) > len(players):
                 error = "Please select at most {} rule cards (including the mandatory ones)".format(len(players))
-                # ...now show again the selection rules page with this error : jump to "prepare display" 
+                RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
+                formset = RuleCardsFormSet(initial = [{'card_id':       card.id,
+                                                       'public_name':   card.public_name,
+                                                       'description':   card.description,
+                                                       'mandatory':     bool(card.mandatory),
+                                                       'selected_rule': bool(card in selected_rules)}
+                                                            for card in rulecards_queryset])
+                return render(request, 'game/rules.html', {'formset': formset, 'session': request.session, 'error': error})
             else:
                 game = Game.objects.create(ruleset    = ruleset,
                                            master     = request.user,
@@ -66,14 +75,17 @@ def select_rules(request):
                                            end_date   = end_date)
                 for user in players: game.players.add(user)
                 for rule in selected_rules: game.rules.add(rule)
+                del request.session['ruleset']
+                del request.session['start_date']
+                del request.session['end_date']
+                del request.session['players']
+                del request.session['profiles']
                 return HttpResponseRedirect(reverse('welcome'))
-
-    # prepare display
-    RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
-    formset = RuleCardsFormSet(initial = [{'card_id':       card.id,
-                                           'public_name':   card.public_name,
-                                           'description':   card.description,
-                                           'mandatory':     bool(card.mandatory)}
-                                                   for card in rulecards_queryset])
-
-    return render(request, 'game/rules.html', {'formset': formset, 'session': request.session, 'error': error})
+    else:
+        RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
+        formset = RuleCardsFormSet(initial = [{'card_id':       card.id,
+                                               'public_name':   card.public_name,
+                                               'description':   card.description,
+                                               'mandatory':     bool(card.mandatory)}
+                                                       for card in rulecards_queryset])
+        return render(request, 'game/rules.html', {'formset': formset, 'session': request.session})

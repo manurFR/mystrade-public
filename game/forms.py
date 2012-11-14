@@ -17,9 +17,18 @@ class CreateGameForm(forms.Form):
 
     def clean(self):
         cleaned_data = super(CreateGameForm, self).clean()
+        if 'start_date' in cleaned_data and 'end_date' in cleaned_data:
+            validate_dates(cleaned_data['start_date'], cleaned_data['end_date'])
         if 'players' in cleaned_data and 'ruleset' in cleaned_data:
             validate_number_of_players(cleaned_data['players'], cleaned_data['ruleset'])
         return cleaned_data
+
+def validate_dates(start_date, end_date):
+    """
+    End date must be strictly after start date.
+    """
+    if end_date <= start_date:
+        raise forms.ValidationError("End date must be strictly posterior to start date.")
 
 def validate_number_of_players(list_of_players, chosen_ruleset):
     """

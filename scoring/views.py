@@ -12,8 +12,8 @@ def choose_rulecards(request):
     rulecards_queryset = RuleCard.objects.filter(ruleset = ruleset)
     commodities_queryset = Commodity.objects.filter(ruleset = ruleset)
     if request.method == 'POST':
-        RuleCardFormSet = formset_factory(RuleCardFormParse)
-        rulecards_formset = RuleCardFormSet(request.POST, prefix = 'rulecards')
+        RuleCardsFormSet = formset_factory(RuleCardFormParse)
+        rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')
         HandsFormSet = formset_factory(HandsForm)
         hands_formset = HandsFormSet(request.POST, prefix = 'hands')
         if rulecards_formset.is_valid() and hands_formset.is_valid():
