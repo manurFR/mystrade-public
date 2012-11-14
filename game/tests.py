@@ -55,27 +55,28 @@ class ViewsTest(TestCase):
         self.assertListEqual(self.testUsersNoCreate, self.client.session['players'])
 
     def test_access_rules_with_incomplete_session_redirects_to_first_page(self):
-        self.client.session.clear()
-        self.client.session.update({'ruleset': 1})
+        session = self.client.session
+        session['ruleset'] = 1
+        session.save()
         response = self.client.get("/game/rules/")
         self.assertRedirects(response, "/game/create/")
  
     def test_access_rules_without_enough_players_redirects_to_first_page(self):
-        self.client.session.clear()
-        self.client.session.update({'ruleset': 1,
-                                    'start_date': '11/10/2012 18:30',
-                                    'end_date': '11/13/2012 00:15',
-                                    'players': self.testUsersNoCreate[0]})
+        session = self.client.session
+        session['ruleset'] = 1
+        session['start_date'] = '11/10/2012 18:30'
+        session['end_date'] = '11/13/2012 00:15'
+        session['players'] = [self.testUsersNoCreate[0]]
+        session.save()
         response = self.client.get("/game/rules/")
         self.assertRedirects(response, "/game/create/")
         
     def test_create_game_with_too_many_rulecards(self):
         session = self.client.session
-        session.clear()
-        session.update({'ruleset': 1,
-                                    'start_date': '11/10/2012 18:30',
-                                    'end_date': '11/13/2012 00:15',
-                                    'players': [player.id for player in self.testUsersNoCreate]})
+        session['ruleset'] = 1
+        session['start_date'] = '11/10/2012 18:30'
+        session['end_date'] = '11/13/2012 00:15'
+        session['players'] = [player.id for player in self.testUsersNoCreate]
         session.save()
         response = self.client.post("/game/rules/",
                                     {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
@@ -95,8 +96,7 @@ class ViewsTest(TestCase):
                                      'form-13-card_id': 14,
                                      'form-14-card_id': 15
                                     })
-        print response.content
-        #self.assertEqual(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertTemplateUsed(response, 'game/rules.html')
         self.assertEqual("Please select at most 3 rule cards (including the mandatory ones)", response.context['error'])
 
