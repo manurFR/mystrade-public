@@ -39,7 +39,7 @@
 		</tr>
 		<tr>
 			<th>{{ form.players.label_tag }} :</th>
-			<td>{{ form.players }}&nbsp;<span class="errors">{{ form.players.errors.as_text }}</span></td>
+			<td>{{ form.players|attr:"size:10" }}&nbsp;<span class="errors">{{ form.players.errors.as_text }}</span></td>
 		</tr>
 	</table>
 	<div class="submit-button floatright">

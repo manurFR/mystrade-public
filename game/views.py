@@ -1,10 +1,8 @@
 from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.forms.forms import NON_FIELD_ERRORS
 from django.forms.formsets import formset_factory
-from django.forms.util import ErrorList
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from game.forms import CreateGameForm, validate_number_of_players
 from game.models import Game

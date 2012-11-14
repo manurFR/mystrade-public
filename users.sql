@@ -1,3 +1,5 @@
+' psql mystrade < users.sql
+
 delete from userprofile_userprofile;
 delete from game_game_players;
 delete from game_game_rules;

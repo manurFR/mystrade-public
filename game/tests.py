@@ -12,7 +12,7 @@ class ViewsTest(TestCase):
         self.testUserCanCreate = User.objects.create_user('testCanCreate', 'test@aaa.com', 'test')
         self.testUserCanCreate.user_permissions.add(Permission.objects.get(codename = 'add_game'))
         self.testUsersNoCreate = []
-        for i in range(3):
+        for i in range(4):
             self.testUsersNoCreate.append(User.objects.create_user('testNoCreate{}'.format(i), 'test@aaa.com', 'test'))
         
         self.client.login(username = 'testCanCreate', password = 'test')
@@ -48,11 +48,9 @@ class ViewsTest(TestCase):
                                                       'end_date': '11/13/2012 00:15',
                                                       'players': [player.id for player in self.testUsersNoCreate]})
         self.assertRedirects(response, "/game/rules/")
-        #created_game = Game.objects.get(master = self.testUserCanCreate.id)
         self.assertEqual(1, self.client.session['ruleset'].id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), self.client.session['start_date'])
         self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), self.client.session['end_date'])
-        #self.assertListEqual(self.testUsersNoCreate, list(created_game.players.all()))
         self.assertListEqual(self.testUsersNoCreate, self.client.session['players'])
 
     def test_access_rules_with_incomplete_session_redirects_to_first_page(self):
@@ -99,7 +97,7 @@ class ViewsTest(TestCase):
                                     })
         self.assertEqual(200, response.status_code)
         self.assertTemplateUsed(response, 'game/rules.html')
-        self.assertEqual("Please select at most 3 rule cards (including the mandatory ones)", response.context['error'])
+        self.assertEqual("Please select at most 4 rule cards (including the mandatory ones)", response.context['error'])
 
     def test_create_game_complete(self):
         response = self.client.post("/game/create/", {'ruleset': 1,
@@ -107,7 +105,7 @@ class ViewsTest(TestCase):
                                                       'end_date': '11/13/2012 00:15',
                                                       'players': [player.id for player in self.testUsersNoCreate]})
         self.assertRedirects(response, "/game/rules/")
-        response = self.client.post("/game/rules",
+        response = self.client.post("/game/rules/",
                                     {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
                                      'form-0-card_id': 1, 'form-0-selected_rule': 'on',
                                      'form-1-card_id': 2, 'form-1-selected_rule': 'on',
@@ -117,7 +115,7 @@ class ViewsTest(TestCase):
                                      'form-5-card_id': 6,
                                      'form-6-card_id': 7,
                                      'form-7-card_id': 8,
-                                     'form-8-card_id': 9,
+                                     'form-8-card_id': 9, 'form-8-selected_rule': 'on',
                                      'form-9-card_id': 10,
                                      'form-10-card_id': 11,
                                      'form-11-card_id': 12,
@@ -126,13 +124,14 @@ class ViewsTest(TestCase):
                                      'form-14-card_id': 15
                                     })
         self.assertRedirects(response, "/welcome/")
-        
+
         created_game = Game.objects.get(master = self.testUserCanCreate.id)
         self.assertEqual(1, created_game.ruleset.id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
         self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
         self.assertListEqual(self.testUsersNoCreate, list(created_game.players.all()))
-        
+        self.assertListEqual([1, 2, 3, 9], [rule.id for rule in created_game.rules.all()])
+
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
         chosen_ruleset = Ruleset.objects.get(id = 1)
