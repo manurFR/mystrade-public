@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
 from game.forms import validate_number_of_players
+from game.models import Game
 from scoring.models import Ruleset
 import datetime
 
@@ -100,6 +101,38 @@ class ViewsTest(TestCase):
         self.assertTemplateUsed(response, 'game/rules.html')
         self.assertEqual("Please select at most 3 rule cards (including the mandatory ones)", response.context['error'])
 
+    def test_create_game_complete(self):
+        response = self.client.post("/game/create/", {'ruleset': 1,
+                                                      'start_date': '11/10/2012 18:30',
+                                                      'end_date': '11/13/2012 00:15',
+                                                      'players': [player.id for player in self.testUsersNoCreate]})
+        self.assertRedirects(response, "/game/rules/")
+        response = self.client.post("/game/rules",
+                                    {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
+                                     'form-0-card_id': 1, 'form-0-selected_rule': 'on',
+                                     'form-1-card_id': 2, 'form-1-selected_rule': 'on',
+                                     'form-2-card_id': 3, 'form-2-selected_rule': 'on',
+                                     'form-3-card_id': 4,
+                                     'form-4-card_id': 5,
+                                     'form-5-card_id': 6,
+                                     'form-6-card_id': 7,
+                                     'form-7-card_id': 8,
+                                     'form-8-card_id': 9,
+                                     'form-9-card_id': 10,
+                                     'form-10-card_id': 11,
+                                     'form-11-card_id': 12,
+                                     'form-12-card_id': 13,
+                                     'form-13-card_id': 14,
+                                     'form-14-card_id': 15
+                                    })
+        self.assertRedirects(response, "/welcome/")
+        
+        created_game = Game.objects.get(master = self.testUserCanCreate.id)
+        self.assertEqual(1, created_game.ruleset.id)
+        self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
+        self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
+        self.assertListEqual(self.testUsersNoCreate, list(created_game.players.all()))
+        
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
         chosen_ruleset = Ruleset.objects.get(id = 1)
