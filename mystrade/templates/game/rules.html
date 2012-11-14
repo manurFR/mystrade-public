@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block content %}
-	<form action="{% url 'scoring' %}" method="POST">{% csrf_token %}
+	<form action="{% url 'select_rules' %}" method="POST">{% csrf_token %}
 		<div class="header">Select at most {{ session.players|length }} rule cards (including the mandatory ones) :
 			<span class="floatright"><img src="{% static "select.png" %}" height="16" width="16" alt="" class="icon"/>
 				<span class="dynamic_link" id="selectall">Select all</span>
@@ -26,6 +26,9 @@
 			End date : {{ session.end_date|date:"SHORT_DATETIME_FORMAT" }}<br/>
 			Players : {{ session.profiles|join:", " }}
 		</div>
+		{% if error %}
+		<div class="errors">{{ error }}</div>
+		{% endif %}
 		<div class="css_table">
 		{{ formset.management_form }}
 		{% for form in formset %}
@@ -50,11 +53,13 @@
 			{% endif %}
 		{% endfor %}
 		</div>
-		<input type="submit" value="Submit"/>
+		<div class="floatright">
+			<input type="submit" value="Submit"/>
+		</div>
 	</form>
 	<script>
     $(function() {
-        $('.rulecard_checkbox').button();
+        $('.rulecard_checkbox,input[type=submit]').button();
     });
     var selectall = true;
     $('#selectall').click(function() {

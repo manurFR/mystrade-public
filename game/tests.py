@@ -56,16 +56,49 @@ class ViewsTest(TestCase):
 
     def test_access_rules_with_incomplete_session_redirects_to_first_page(self):
         self.client.session.clear()
-        response = self.client.get("/game/rules/", {'ruleset': 1})
+        self.client.session.update({'ruleset': 1})
+        response = self.client.get("/game/rules/")
         self.assertRedirects(response, "/game/create/")
  
     def test_access_rules_without_enough_players_redirects_to_first_page(self):
         self.client.session.clear()
-        response = self.client.get("/game/rules/", {'ruleset': 1,
-                                                    'start_date': '11/10/2012 18:30',
-                                                    'end_date': '11/13/2012 00:15',
-                                                    'players': self.testUsersNoCreate[0]})
+        self.client.session.update({'ruleset': 1,
+                                    'start_date': '11/10/2012 18:30',
+                                    'end_date': '11/13/2012 00:15',
+                                    'players': self.testUsersNoCreate[0]})
+        response = self.client.get("/game/rules/")
         self.assertRedirects(response, "/game/create/")
+        
+    def test_create_game_with_too_many_rulecards(self):
+        session = self.client.session
+        session.clear()
+        session.update({'ruleset': 1,
+                                    'start_date': '11/10/2012 18:30',
+                                    'end_date': '11/13/2012 00:15',
+                                    'players': [player.id for player in self.testUsersNoCreate]})
+        session.save()
+        response = self.client.post("/game/rules/",
+                                    {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
+                                     'form-0-card_id': 1, 'form-0-selected_rule': 'on',
+                                     'form-1-card_id': 2, 'form-1-selected_rule': 'on',
+                                     'form-2-card_id': 3, 'form-2-selected_rule': 'on',
+                                     'form-3-card_id': 4,
+                                     'form-4-card_id': 5,
+                                     'form-5-card_id': 6,
+                                     'form-6-card_id': 7,
+                                     'form-7-card_id': 8,
+                                     'form-8-card_id': 9,
+                                     'form-9-card_id': 10, 'form-9-selected_rule': 'on',
+                                     'form-10-card_id': 11,
+                                     'form-11-card_id': 12,
+                                     'form-12-card_id': 13, 'form-12-selected_rule': 'on',
+                                     'form-13-card_id': 14,
+                                     'form-14-card_id': 15
+                                    })
+        print response.content
+        #self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(response, 'game/rules.html')
+        self.assertEqual("Please select at most 3 rule cards (including the mandatory ones)", response.context['error'])
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
