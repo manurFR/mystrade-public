@@ -17,6 +17,7 @@ def create_game(request):
             request.session['start_date'] = form.cleaned_data['start_date']
             request.session['end_date'] = form.cleaned_data['end_date']
             request.session['players'] = list(form.cleaned_data['players'].all()) # convert from Queryset to list
+            request.session['profiles'] = [user.get_profile() for user in request.session['players']]
             #game = Game.objects.create(ruleset    = form.cleaned_data['ruleset'],
             #                           master     = request.user,
             #                           start_date = form.cleaned_data['start_date'],

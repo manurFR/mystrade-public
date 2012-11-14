@@ -24,7 +24,7 @@
 			Ruleset : {{ session.ruleset }} &mdash; 
 			Start date : {{ session.start_date|date:"SHORT_DATETIME_FORMAT" }} &mdash;
 			End date : {{ session.end_date|date:"SHORT_DATETIME_FORMAT" }}<br/>
-			Players : {{ session.players|join:", " }}
+			Players : {{ session.profiles|join:", " }}
 		</div>
 		<div class="css_table">
 		{{ formset.management_form }}

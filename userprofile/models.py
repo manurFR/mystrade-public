@@ -19,6 +19,9 @@ class UserProfile(models.Model):
             return self.user.first_name
         else:
             return self.user.username
+        
+    def __unicode__(self):
+        return self.name
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
