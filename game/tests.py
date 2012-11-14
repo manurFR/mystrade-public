@@ -58,6 +58,14 @@ class ViewsTest(TestCase):
         self.client.session.clear()
         response = self.client.get("/game/rules/", {'ruleset': 1})
         self.assertRedirects(response, "/game/create/")
+ 
+    def test_access_rules_without_enough_players_redirects_to_first_page(self):
+        self.client.session.clear()
+        response = self.client.get("/game/rules/", {'ruleset': 1,
+                                                    'start_date': '11/10/2012 18:30',
+                                                    'end_date': '11/13/2012 00:15',
+                                                    'players': self.testUsersNoCreate[0]})
+        self.assertRedirects(response, "/game/create/")
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
