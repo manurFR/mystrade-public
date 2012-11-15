@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.db.models.query_utils import Q
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
 from game.forms import validate_number_of_players, validate_dates
@@ -166,6 +167,25 @@ class ViewsTest(TestCase):
         self.client.logout()
         response = self.client.get(reverse("welcome"))
         self.assertEqual(302, response.status_code)
+
+    def test_welcome_games_query(self):
+        ruleset = Ruleset.objects.get(id = 1)
+        game1 = Game.objects.create(ruleset = ruleset, master = self.testUserCanCreate, end_date = datetime.datetime(2022, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
+        for user in self.testUsersNoCreate: game1.players.add(user)
+        game2 = Game.objects.create(ruleset = ruleset, master = self.testUsersNoCreate[0], end_date = datetime.datetime(2022, 11, 3, 12, 0, 0, tzinfo = get_default_timezone()))
+        game2.players.add(self.testUserCanCreate)
+        game2.players.add(self.testUsersNoCreate[1])
+        game3 = Game.objects.create(ruleset = ruleset, master = self.testUsersNoCreate[0], end_date = datetime.datetime(2022, 11, 5, 12, 0, 0, tzinfo = get_default_timezone()))
+        game3.players.add(self.testUsersNoCreate[1])
+        game3.players.add(self.testUsersNoCreate[2])
+
+        q = Game.objects.filter(Q(master = self.testUserCanCreate) | Q(players = self.testUserCanCreate)).order_by('-end_date')
+        print q.query
+
+        response = self.client.get(reverse("welcome"))
+        self.assertEqual(200, response.status_code)
+        self.assertListEqual([game2, game1], list(response.context['games']))
+        self.assertNotIn(game3, response.context['games'])        
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):

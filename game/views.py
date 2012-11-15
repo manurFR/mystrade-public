@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.db.models.query_utils import Q
 from django.forms.formsets import formset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -12,7 +13,8 @@ from scoring.models import RuleCard
 
 @login_required
 def welcome(request):
-    return render(request, 'game/welcome.html')
+    games = Game.objects.filter(Q(master = request.user) | Q(players = request.user)).order_by('-end_date')
+    return render(request, 'game/welcome.html', {'games': games})
 
 @permission_required('game.add_game')
 def create_game(request):
