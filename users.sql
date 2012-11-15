@@ -1,4 +1,4 @@
-' psql mystrade < users.sql
+-- psql mystrade < users.sql
 
 delete from userprofile_userprofile;
 delete from game_game_players;
