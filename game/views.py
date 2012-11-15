@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.forms.formsets import formset_factory
@@ -9,6 +9,10 @@ from game.forms import CreateGameForm, validate_number_of_players, \
 from game.models import Game
 from scoring.forms import RuleCardFormParse, RuleCardFormDisplay
 from scoring.models import RuleCard
+
+@login_required
+def welcome(request):
+    return render(request, 'game/welcome.html')
 
 @permission_required('game.add_game')
 def create_game(request):

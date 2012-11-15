@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
 from game.forms import validate_number_of_players, validate_dates
@@ -144,7 +145,7 @@ class ViewsTest(TestCase):
                                      'form-13-card_id': 14,
                                      'form-14-card_id': 15
                                     })
-        self.assertRedirects(response, "/welcome/")
+        self.assertRedirects(response, "/game/")
 
         created_game = Game.objects.get(master = self.testUserCanCreate.id)
         self.assertEqual(1, created_game.ruleset.id)
@@ -157,6 +158,14 @@ class ViewsTest(TestCase):
         self.assertFalse('end_date' in self.client.session)
         self.assertFalse('players' in self.client.session)
         self.assertFalse('profiles' in self.client.session)
+
+    def test_welcome_needs_login(self):
+        response = self.client.get(reverse("welcome"))
+        self.assertEqual(200, response.status_code)
+
+        self.client.logout()
+        response = self.client.get(reverse("welcome"))
+        self.assertEqual(302, response.status_code)
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
