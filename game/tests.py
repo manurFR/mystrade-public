@@ -179,12 +179,9 @@ class ViewsTest(TestCase):
         game3.players.add(self.testUsersNoCreate[1])
         game3.players.add(self.testUsersNoCreate[2])
 
-        q = Game.objects.filter(Q(master = self.testUserCanCreate) | Q(players = self.testUserCanCreate)).order_by('-end_date')
-        print q.query
-
         response = self.client.get(reverse("welcome"))
         self.assertEqual(200, response.status_code)
-        self.assertListEqual([game2, game1], list(response.context['games']))
+        self.assertListEqual([game2, game1], response.context['games'])
         self.assertNotIn(game3, response.context['games'])        
 
 class FormsTest(TestCase):
