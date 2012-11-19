@@ -165,11 +165,22 @@ input[type="submit"] {
 
 .css_table-cell {
 	display: table-cell;
+	padding: 1px 4px;
 }
 
-.colored {
-	background-color: #FFA500;
+.header-row {
+	text-align: center;
+	font-weight: bold;
 	padding: 1px 4px;
+	background-color: #FFA500;
+}
+
+.even_color {
+	background-color: #FFC500
+}
+
+.odd_color {
+	background-color: #FFA500;
 }
 
 .score {

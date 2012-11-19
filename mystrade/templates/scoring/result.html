@@ -20,26 +20,27 @@
 		Detail :
 		<div class="css_table">
 			<div class="css_table-row">
-				<div class="css_table-cell colored">
+				<div class="css_table-cell odd_color">
 					Hand :
 					{% for commodity, nb_cards in player.hand.items %}{{ commodity.name }} : {{ nb_cards }}{% if not forloop.last %}, {% endif %}{% endfor %}
 				</div>
+				<div class="css_table-cell odd_color">&nbsp;</div>
 			</div>
 			{% for commodity in player.scoresheet.commodities %}
 			<div class="css_table-row">
-				<div class="css_table-cell colored">{{ commodity.name }} ({{ commodity.scored_cards }} cards x {{ commodity.actual_value }})</div>
-				<div class="css_table-cell colored score">{{ commodity.score|default_if_none:'' }}</div>
+				<div class="css_table-cell {% cycle 'even_color' 'odd_color' as color %}">{{ commodity.name }} ({{ commodity.scored_cards }} cards x {{ commodity.actual_value }})</div>
+				<div class="css_table-cell {{ color }} score">{{ commodity.score|default_if_none:'' }}</div>
 			</div>
 			{% endfor %}
 			{% for line in player.scoresheet.extra %}
 			<div class="css_table-row">
-				<div class="css_table-cell colored">{{ line.detail }}</div>
-				<div class="css_table-cell colored score">{{ line.score|default_if_none:'' }}</div>
+				<div class="css_table-cell {% cycle color %}">{{ line.detail }}</div>
+				<div class="css_table-cell {{ color }} score">{{ line.score|default_if_none:'' }}</div>
 			</div>
 			{% endfor %}
 			<div class="css_table-row">
-				<div class="css_table-cell colored"><strong>Total</strong></div>
-				<div class="css_table-cell colored score"><strong>{{ player.score }}</strong></div>
+				<div class="css_table-cell odd_color"><strong>Total</strong></div>
+				<div class="css_table-cell odd_color score"><strong>{{ player.score }}</strong></div>
 			</div>
 		</div>
 		<br/>

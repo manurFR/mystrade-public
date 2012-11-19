@@ -13,6 +13,25 @@
 
 {% block content %}
 	{{ user.username|capfirst }}, welcome to MysTrade !
+	<br/><br/>
+	<div>Your games :<br/>
+		<div class="css_table">
+			<div class="css_table-row header-row">
+				<div class="css_table-cell">Game</div>
+				<div class="css_table-cell">Players</div>
+				<div class="css_table-cell">Start date</div>
+				<div class="css_table-cell">End date</div>
+			</div>
+			{% for game in games %}
+			<div class="css_table-row {% cycle 'even_color' 'odd_color' %}">
+				<div class="css_table-cell">{{ game.ruleset }}, by {{ game.master.get_profile.name }}</div>
+				<div class="css_table-cell">{{ game.players.count }} players</div>
+				<div class="css_table-cell">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</div>
+				<div class="css_table-cell">{{ game.end_date|date:"SHORT_DATETIME_FORMAT" }}</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
 	
 	{% if perms.game.add_game %}
 	<br/><br/>
