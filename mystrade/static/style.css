@@ -183,6 +183,10 @@ input[type="submit"] {
 	background-color: #FFA500;
 }
 
+.even_color:hover, .odd_color:hover {
+	background-color: #FFD800;
+}
+
 .score {
 	min-width: 4em;
 	text-align: right;

@@ -15,6 +15,8 @@ def welcome(request):
     games_mastered = list(Game.objects.filter(master = request.user))
     games_played = list(Game.objects.filter(players = request.user))
     games = sorted(games_mastered + games_played, key = lambda game: game.end_date, reverse = True)
+    for game in games:
+        game.list_of_players = [player.get_profile().name for player in game.players.all()]
     return render(request, 'game/welcome.html', {'games': games})
 
 @permission_required('game.add_game')
