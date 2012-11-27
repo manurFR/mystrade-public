@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.timezone import now
-from scoring.models import Ruleset, RuleCard
+from scoring.models import Ruleset, RuleCard, Commodity
 
 class Game(models.Model):
     ruleset = models.ForeignKey(Ruleset)
@@ -18,3 +18,19 @@ class Game(models.Model):
     def __unicode__(self):
         return "{} by {} with {} players and {} rules [{} -> {}]".format(self.ruleset.name, self.master.get_profile().name,
                 len(self.players.all()), len(self.rules.all()), self.start_date, self.end_date)
+
+class RuleInHand(models.Model):
+    game = models.ForeignKey(Game)
+    player = models.ForeignKey(User)
+    rulecard = models.ForeignKey(RuleCard)
+
+    ownership_date = models.DateTimeField("The date when this card was acquired")
+    abandon_date = models.DateTimeField("The date when this card was exchanged", null = True)
+
+class CommodityInHand(models.Model):
+    game = models.ForeignKey(Game)
+    player = models.ForeignKey(User)
+    commodity = models.ForeignKey(Commodity)
+
+    ownership_date = models.DateTimeField("The date when this card was acquired")
+    abandon_date = models.DateTimeField("The date when this card was exchanged", null = True)
