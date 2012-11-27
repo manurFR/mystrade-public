@@ -27,6 +27,9 @@ class RuleInHand(models.Model):
     ownership_date = models.DateTimeField("The date when this card was acquired")
     abandon_date = models.DateTimeField("The date when this card was exchanged", null = True)
 
+    def __unicode__(self):
+        return "Rule <{}> owned by {} in game {}".format(self.rulecard.ref_name, self.player.get_profile().name, self.game.id)
+
 class CommodityInHand(models.Model):
     game = models.ForeignKey(Game)
     player = models.ForeignKey(User)
@@ -34,3 +37,6 @@ class CommodityInHand(models.Model):
 
     ownership_date = models.DateTimeField("The date when this card was acquired")
     abandon_date = models.DateTimeField("The date when this card was exchanged", null = True)
+
+    def __unicode__(self):
+        return "{} card owned by {} in game {}".format(self.commodity.name, self.player.get_profile().name, self.game.id)
