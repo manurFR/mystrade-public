@@ -9,7 +9,7 @@ import operator
 @login_required
 def choose_rulecards(request):
     ruleset = Ruleset.objects.get(pk = 1)
-    rulecards_queryset = RuleCard.objects.filter(ruleset = ruleset)
+    rulecards_queryset = RuleCard.objects.filter(ruleset = ruleset).order_by('ref_name')
     commodities_queryset = Commodity.objects.filter(ruleset = ruleset)
     if request.method == 'POST':
         RuleCardsFormSet = formset_factory(RuleCardFormParse)

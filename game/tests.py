@@ -5,7 +5,8 @@ from django.test import TestCase
 from django.utils.timezone import get_default_timezone
 from game.forms import validate_number_of_players, validate_dates
 from game.models import Game
-from scoring.models import Ruleset
+from model_mommy import mommy
+from scoring.models import Ruleset, RuleCard
 import datetime
 
 class ViewsTest(TestCase):
@@ -206,3 +207,15 @@ class FormsTest(TestCase):
             validate_dates(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), datetime.datetime(2012, 11, 10, 18, 50, tzinfo = get_default_timezone()))
         except ValidationError:
             self.fail("validate_dates should not fail when end_date is strictly posterior to start_date")
+
+class DealTest(TestCase):
+    def setUp(self):
+        self.users = []
+        self.rules = []
+        for _i in range(6):
+            self.users.append(mommy.make_one(User))
+            self.rules.append(mommy.make_one(RuleCard))
+
+    def test_prepare_rule_deck(self):
+        game = mommy.make_one(Game, players = self.users, rules = self.rules)
+        #print game

@@ -51,7 +51,7 @@ def select_rules(request):
     except ValidationError:
         return HttpResponseRedirect(reverse('create_game'))
 
-    rulecards_queryset = RuleCard.objects.filter(ruleset = ruleset)
+    rulecards_queryset = RuleCard.objects.filter(ruleset = ruleset).order_by('ref_name')
 
     error = None
     if request.method == 'POST':
