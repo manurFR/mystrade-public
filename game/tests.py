@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.db.models.query_utils import Q
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
 from game.forms import validate_number_of_players, validate_dates

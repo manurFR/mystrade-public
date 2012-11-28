@@ -35,8 +35,8 @@ class CommodityInHand(models.Model):
     player = models.ForeignKey(User)
     commodity = models.ForeignKey(Commodity)
 
-    ownership_date = models.DateTimeField("The date when this card was acquired")
-    abandon_date = models.DateTimeField("The date when this card was exchanged", null = True)
+    nb_cards = models.PositiveSmallIntegerField(default = 0)
 
     def __unicode__(self):
-        return "{} card owned by {} in game {}".format(self.commodity.name, self.player.get_profile().name, self.game.id)
+        return "{} {} card{} owned by {} in game {}".format(self.nb_cards, self.commodity.name.lower(), 
+                's' if self.nb_cards > 1 else '', self.player.get_profile().name, self.game.id)
