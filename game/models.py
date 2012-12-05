@@ -13,7 +13,7 @@ class Game(models.Model):
     # it's important to use django.utils.timezone.now() which is an aware date
     creation_date = models.DateTimeField(default = now())
     start_date = models.DateTimeField(default = now())
-    end_date = models.DateTimeField()
+    end_date = models.DateTimeField(null = True)
 
     def __unicode__(self):
         return "{} by {} with {} players and {} rules [{} -> {}]".format(self.ruleset.name, self.master.get_profile().name,

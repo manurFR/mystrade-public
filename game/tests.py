@@ -8,6 +8,8 @@ from game.models import Game
 from model_mommy import mommy
 from scoring.models import Ruleset, RuleCard
 import datetime
+from game.deal import prepare_rule_deck
+from django.utils.unittest.case import skip
 
 class ViewsTest(TestCase):
     def setUp(self):
@@ -218,4 +220,7 @@ class DealTest(TestCase):
 
     def test_prepare_rule_deck(self):
         game = mommy.make_one(Game, players = self.users, rules = self.rules)
-        #print game
+        deck = prepare_rule_deck(game, nb_copies = 2)
+        self.assertEqual(12, len(deck))
+        for i in range(6):
+            self.assertTrue(deck.count(self.rules[i]))
