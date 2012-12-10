@@ -3,13 +3,12 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
+from game.deal import prepare_rule_deck, add_a_rule_to_hand
 from game.forms import validate_number_of_players, validate_dates
 from game.models import Game
 from model_mommy import mommy
 from scoring.models import Ruleset, RuleCard
 import datetime
-from game.deal import prepare_rule_deck
-from django.utils.unittest.case import skip
 
 class ViewsTest(TestCase):
     def setUp(self):
@@ -224,3 +223,20 @@ class DealTest(TestCase):
         self.assertEqual(12, len(deck))
         for i in range(6):
             self.assertTrue(deck.count(self.rules[i]))
+
+    def test_add_a_rule_to_hand_last_rule_is_popped(self):
+        hand = []
+        expected_rule = self.rules[5]
+        add_a_rule_to_hand(hand, self.rules)
+        self.assertEqual(1, len(hand))
+        self.assertEqual(5, len(self.rules))
+        self.assertNotIn(expected_rule, self.rules)
+        self.assertIn(expected_rule, hand)
+
+    def test_add_a_rule_to_hand_select_the_first_new_rule_from_end(self):
+        hand = [self.rules[4], self.rules[5]]
+        expected_rule = self.rules[3]
+        add_a_rule_to_hand(hand, self.rules)
+        self.assertEqual(3, len(hand))
+        self.assertEqual(5, len(self.rules))
+        self.assertIn(expected_rule, hand)
