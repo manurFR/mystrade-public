@@ -20,5 +20,9 @@ def add_a_rule_to_hand(hand, deck):
     while deck[rule_index] in hand:
         rule_index -= 1
         if rule_index < -len(deck):
-            raise StopIteration
+            # This will be raised if there are no cards in the deck that are not yet in the hand
+            raise InappropriateDealingException
     hand.append(deck.pop(rule_index))
+
+class InappropriateDealingException(Exception):
+    pass

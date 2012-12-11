@@ -3,7 +3,8 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
-from game.deal import prepare_rule_deck, add_a_rule_to_hand
+from game.deal import prepare_rule_deck, add_a_rule_to_hand, \
+    InappropriateDealingException
 from game.forms import validate_number_of_players, validate_dates
 from game.models import Game
 from model_mommy import mommy
@@ -240,3 +241,7 @@ class DealTest(TestCase):
         self.assertEqual(3, len(hand))
         self.assertEqual(5, len(self.rules))
         self.assertIn(expected_rule, hand)
+
+    def test_add_a_rule_to_hand_inappropriate_dealing(self):
+        with self.assertRaises(InappropriateDealingException):
+            add_a_rule_to_hand(self.rules, self.rules)
