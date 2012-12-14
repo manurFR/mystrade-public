@@ -3,8 +3,8 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
-from game.deal import prepare_rule_deck, add_a_rule_to_hand, \
-    InappropriateDealingException
+from game.deal import prepare_rule_deck, InappropriateDealingException, \
+    prepare_hands, CardDealer
 from game.forms import validate_number_of_players, validate_dates
 from game.models import Game
 from model_mommy import mommy
@@ -214,9 +214,9 @@ class DealTest(TestCase):
     def setUp(self):
         self.users = []
         self.rules = []
-        for _i in range(6):
-            self.users.append(mommy.make_one(User))
-            self.rules.append(mommy.make_one(RuleCard))
+        for i in range(6):
+            self.users.append(mommy.make_one(User, username = i))
+            self.rules.append(mommy.make_one(RuleCard, ref_name = i))
 
     def test_prepare_rule_deck(self):
         game = mommy.make_one(Game, players = self.users, rules = self.rules)
@@ -228,7 +228,7 @@ class DealTest(TestCase):
     def test_add_a_rule_to_hand_last_rule_is_popped(self):
         hand = []
         expected_rule = self.rules[5]
-        add_a_rule_to_hand(hand, self.rules)
+        CardDealer().add_a_rule_to_hand(hand, self.rules)
         self.assertEqual(1, len(hand))
         self.assertEqual(5, len(self.rules))
         self.assertNotIn(expected_rule, self.rules)
@@ -237,11 +237,41 @@ class DealTest(TestCase):
     def test_add_a_rule_to_hand_select_the_first_new_rule_from_end(self):
         hand = [self.rules[4], self.rules[5]]
         expected_rule = self.rules[3]
-        add_a_rule_to_hand(hand, self.rules)
+        CardDealer().add_a_rule_to_hand(hand, self.rules)
         self.assertEqual(3, len(hand))
         self.assertEqual(5, len(self.rules))
         self.assertIn(expected_rule, hand)
 
     def test_add_a_rule_to_hand_inappropriate_dealing(self):
         with self.assertRaises(InappropriateDealingException):
-            add_a_rule_to_hand(self.rules, self.rules)
+            CardDealer().add_a_rule_to_hand(self.rules, self.rules)
+
+    def test_deal_with_as_many_players_as_rules(self):
+        game = mommy.make_one(Game, players = self.users, rules = self.rules)
+        hands = prepare_hands(game)
+        for hand in hands:
+            self.assertEqual(2, len(hand))
+            self.assertNotEqual(hand[0], hand[1])
+
+    def test_deal_with_more_players_than_rules(self):
+        self.users.append(mommy.make_one(User))
+        game = mommy.make_one(Game, players = self.users, rules = self.rules)
+        hands = prepare_hands(game)
+        for hand in hands:
+            self.assertEqual(2, len(hand))
+            self.assertNotEqual(hand[0], hand[1])
+
+    def test_deal_with_inappropriate_dealing_should_make_start_over(self):
+        class MockCardDealer(CardDealer):
+            def __init__(self):
+                self.raisedException = False
+            def add_a_rule_to_hand(self, hand, deck):
+                self.raisedException = True
+                raise InappropriateDealingException
+        mock = MockCardDealer()
+        game = mommy.make_one(Game, players = self.users, rules = self.rules)
+        hands = prepare_hands(game, mock)
+        self.assertTrue(mock.raisedException)
+        for hand in hands:
+            self.assertEqual(2, len(hand))
+            self.assertNotEqual(hand[0], hand[1])
