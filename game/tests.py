@@ -4,9 +4,9 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
 from game.deal import prepare_rule_deck, InappropriateDealingException, \
-    prepare_hands, CardDealer
+    prepare_hands, CardDealer, deal_cards
 from game.forms import validate_number_of_players, validate_dates
-from game.models import Game
+from game.models import Game, RuleInHand
 from model_mommy import mommy
 from scoring.models import Ruleset, RuleCard
 import datetime
@@ -219,8 +219,7 @@ class DealTest(TestCase):
             self.rules.append(mommy.make_one(RuleCard, ref_name = i))
 
     def test_prepare_rule_deck(self):
-        game = mommy.make_one(Game, players = self.users, rules = self.rules)
-        deck = prepare_rule_deck(game, nb_copies = 2)
+        deck = prepare_rule_deck(self.rules, nb_copies = 2)
         self.assertEqual(12, len(deck))
         for i in range(6):
             self.assertTrue(deck.count(self.rules[i]))
@@ -247,16 +246,13 @@ class DealTest(TestCase):
             CardDealer().add_a_rule_to_hand(self.rules, self.rules)
 
     def test_deal_with_as_many_players_as_rules(self):
-        game = mommy.make_one(Game, players = self.users, rules = self.rules)
-        hands = prepare_hands(game)
+        hands = prepare_hands(6, self.rules)
         for hand in hands:
             self.assertEqual(2, len(hand))
             self.assertNotEqual(hand[0], hand[1])
 
     def test_deal_with_more_players_than_rules(self):
-        self.users.append(mommy.make_one(User))
-        game = mommy.make_one(Game, players = self.users, rules = self.rules)
-        hands = prepare_hands(game)
+        hands = prepare_hands(7, self.rules)
         for hand in hands:
             self.assertEqual(2, len(hand))
             self.assertNotEqual(hand[0], hand[1])
@@ -269,9 +265,19 @@ class DealTest(TestCase):
                 self.raisedException = True
                 raise InappropriateDealingException
         mock = MockCardDealer()
-        game = mommy.make_one(Game, players = self.users, rules = self.rules)
-        hands = prepare_hands(game, mock)
+        hands = prepare_hands(6, self.rules, mock)
         self.assertTrue(mock.raisedException)
         for hand in hands:
             self.assertEqual(2, len(hand))
             self.assertNotEqual(hand[0], hand[1])
+
+    def test_deal_cards(self):
+        game = mommy.make_one(Game, players = self.users, rules = self.rules, 
+                 start_date = datetime.datetime(2012, 12, 17, 14, 29, 34, tzinfo = get_default_timezone()))
+        deal_cards(game)
+        for player in self.users:
+            rules = RuleInHand.objects.filter(game = game, player = player)
+            self.assertEqual(2, len(rules))
+            for rule in rules:
+                self.assertEqual(game.start_date, rule.ownership_date)
+        
