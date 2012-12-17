@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.forms.formsets import formset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, \
     validate_dates
 from game.models import Game
@@ -89,6 +90,10 @@ def select_rules(request):
                 del request.session['end_date']
                 del request.session['players']
                 del request.session['profiles']
+
+                # deal starting rule cards
+                deal_cards(game)
+
                 return HttpResponseRedirect(reverse('welcome'))
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
