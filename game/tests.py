@@ -3,12 +3,12 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
-from game.deal import prepare_rule_deck, InappropriateDealingException, \
-    prepare_hands, CardDealer, deal_cards
+from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
+    prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates
 from game.models import Game, RuleInHand
 from model_mommy import mommy
-from scoring.models import Ruleset, RuleCard
+from scoring.models import Ruleset, RuleCard, Commodity
 import datetime
 
 class ViewsTest(TestCase):
@@ -214,65 +214,77 @@ class DealTest(TestCase):
     def setUp(self):
         self.users = []
         self.rules = []
+        self.commodities = []
         for i in range(6):
             self.users.append(mommy.make_one(User, username = i))
             self.rules.append(mommy.make_one(RuleCard, ref_name = i))
+            self.commodities.append(mommy.make_one(Commodity, name = i))
 
-    def test_prepare_rule_deck(self):
-        deck = prepare_rule_deck(self.rules, nb_copies = 2)
+    def test_prepare_deck(self):
+        deck = prepare_deck(self.rules, nb_copies = 2)
         self.assertEqual(12, len(deck))
         for i in range(6):
-            self.assertTrue(deck.count(self.rules[i]))
+            self.assertEqual(2, deck.count(self.rules[i]))
 
-    def test_add_a_rule_to_hand_last_rule_is_popped(self):
+    def test_add_a_card_to_hand_last_rule_is_popped(self):
         hand = []
         expected_rule = self.rules[5]
-        CardDealer().add_a_rule_to_hand(hand, self.rules)
+        RuleCardDealer().add_a_card_to_hand(hand, self.rules)
         self.assertEqual(1, len(hand))
         self.assertEqual(5, len(self.rules))
         self.assertNotIn(expected_rule, self.rules)
         self.assertIn(expected_rule, hand)
 
-    def test_add_a_rule_to_hand_select_the_first_new_rule_from_end(self):
+    def test_add_a_card_to_hand_select_the_first_new_rule_from_end(self):
         hand = [self.rules[4], self.rules[5]]
         expected_rule = self.rules[3]
-        CardDealer().add_a_rule_to_hand(hand, self.rules)
+        RuleCardDealer().add_a_card_to_hand(hand, self.rules)
         self.assertEqual(3, len(hand))
         self.assertEqual(5, len(self.rules))
         self.assertIn(expected_rule, hand)
 
-    def test_add_a_rule_to_hand_inappropriate_dealing(self):
+    def test_add_a_card_to_hand_inappropriate_dealing(self):
         with self.assertRaises(InappropriateDealingException):
-            CardDealer().add_a_rule_to_hand(self.rules, self.rules)
+            RuleCardDealer().add_a_card_to_hand(self.rules, self.rules)
 
-    def test_deal_with_as_many_players_as_rules(self):
-        hands = prepare_hands(6, self.rules)
+    def test_add_a_card_to_hand_duplicates_allowed_for_commodities(self):
+        expected_commodity = self.commodities[5]
+        hand = [expected_commodity]
+        CommodityCardDealer().add_a_card_to_hand(hand, self.commodities)
+        self.assertEqual(2, hand.count(expected_commodity))
+
+    def test_dispatch_rules_with_as_many_players_as_rules(self):
+        hands = dispatch_cards(6, 2, self.rules, RuleCardDealer())
         for hand in hands:
             self.assertEqual(2, len(hand))
             self.assertNotEqual(hand[0], hand[1])
 
-    def test_deal_with_more_players_than_rules(self):
-        hands = prepare_hands(7, self.rules)
+    def test_dispatch_rules_with_more_players_than_rules(self):
+        hands = dispatch_cards(7, 2, self.rules, RuleCardDealer())
         for hand in hands:
             self.assertEqual(2, len(hand))
             self.assertNotEqual(hand[0], hand[1])
 
-    def test_deal_with_inappropriate_dealing_should_make_start_over(self):
-        class MockCardDealer(CardDealer):
+    def test_dispatch_rules_with_inappropriate_dealing_should_make_start_over(self):
+        class MockCardDealer(RuleCardDealer):
             def __init__(self):
                 self.raisedException = False
-            def add_a_rule_to_hand(self, hand, deck):
-                self.raisedException = True
-                raise InappropriateDealingException
+            def add_a_card_to_hand(self, hand, deck):
+                if not self.raisedException:
+                    self.raisedException = True
+                    raise InappropriateDealingException
+                else:
+                    super(MockCardDealer, self).add_a_card_to_hand(hand, deck)
         mock = MockCardDealer()
-        hands = prepare_hands(6, self.rules, mock)
+        hands = dispatch_cards(6, 2, self.rules, mock)
         self.assertTrue(mock.raisedException)
         for hand in hands:
             self.assertEqual(2, len(hand))
             self.assertNotEqual(hand[0], hand[1])
 
     def test_deal_cards(self):
-        game = mommy.make_one(Game, players = self.users, rules = self.rules, 
+        game = mommy.make_one(Game,
+                 ruleset = Ruleset.objects.get(id = 1), players = self.users, rules = self.rules,
                  start_date = datetime.datetime(2012, 12, 17, 14, 29, 34, tzinfo = get_default_timezone()))
         deal_cards(game)
         for player in self.users:
@@ -280,4 +292,3 @@ class DealTest(TestCase):
             self.assertEqual(2, len(rules))
             for rule in rules:
                 self.assertEqual(game.start_date, rule.ownership_date)
-        
