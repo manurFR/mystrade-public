@@ -1,12 +1,13 @@
 from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.db.models.aggregates import Sum
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
     prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates
-from game.models import Game, RuleInHand
+from game.models import Game, RuleInHand, CommodityInHand
 from model_mommy import mommy
 from scoring.models import Ruleset, RuleCard, Commodity
 import datetime
@@ -283,8 +284,8 @@ class DealTest(TestCase):
             self.assertNotEqual(hand[0], hand[1])
 
     def test_deal_cards(self):
-        game = mommy.make_one(Game,
-                 ruleset = Ruleset.objects.get(id = 1), players = self.users, rules = self.rules,
+        ruleset = Ruleset.objects.get(id = 1)
+        game = mommy.make_one(Game, ruleset = ruleset, players = self.users, rules = self.rules,
                  start_date = datetime.datetime(2012, 12, 17, 14, 29, 34, tzinfo = get_default_timezone()))
         deal_cards(game)
         for player in self.users:
@@ -292,3 +293,15 @@ class DealTest(TestCase):
             self.assertEqual(2, len(rules))
             for rule in rules:
                 self.assertEqual(game.start_date, rule.ownership_date)
+            commodities = CommodityInHand.objects.filter(game = game, player = player)
+            nb_commodities = 0
+            for commodity in commodities:
+                nb_commodities += commodity.nb_cards
+            self.assertEqual(10, nb_commodities)
+        for rule in self.rules:
+            nb_cards = RuleInHand.objects.filter(game = game, rulecard = rule).count()
+            min_occurence = 2*6/len(self.rules)
+            self.assertTrue(min_occurence <= nb_cards <= min_occurence+1)
+        for commodity in Commodity.objects.filter(ruleset = ruleset):
+            nb_cards = CommodityInHand.objects.filter(game = game, commodity = commodity).aggregate(Sum('nb_cards'))
+            self.assertEqual(10*6/5, nb_cards['nb_cards__sum'])

@@ -91,7 +91,7 @@ def select_rules(request):
                 del request.session['players']
                 del request.session['profiles']
 
-                # deal starting rule cards
+                # deal starting cards
                 deal_cards(game)
 
                 return HttpResponseRedirect(reverse('welcome'))

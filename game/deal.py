@@ -1,5 +1,5 @@
+from game.models import RuleInHand, CommodityInHand
 from random import shuffle
-from game.models import RuleInHand
 from scoring.models import Commodity
 
 RULECARDS_PER_PLAYER = 2
@@ -30,6 +30,8 @@ def deal_cards(game):
     for idx, player in enumerate(players):
         for rulecard in rules[idx]:
             RuleInHand.objects.create(game = game, player = player, rulecard = rulecard, ownership_date = game.start_date)
+        for commodity in set(commodities[idx]): # only one record per distinct commodity
+            CommodityInHand.objects.create(game = game, player = player, commodity = commodity, nb_cards = commodities[idx].count(commodity))
 
 def dispatch_cards(nb_players, nb_cards_per_player, cards, card_dealer):
     """ A deck of n copies of the cards is prepared, with n chosen so that less than an
