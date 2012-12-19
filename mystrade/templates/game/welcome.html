@@ -25,12 +25,15 @@
 			</div>
 			{% for game in games %}
 			<div class="css_table-row {% cycle 'even_color' 'odd_color' %}">
-				<div class="css_table-cell">{{ game.ruleset }}, by 
+				<div class="css_table-cell">
+					<a href="{% url 'hand' game.id %}">
+				    {{ game.ruleset }}, by 
 					{% if game.master == user %}<strong>{% endif %}{{ game.master.get_profile.name }}{% if game.master == user %}</strong>{% endif %}
+					</a>
 				</div>
-				<div class="css_table-cell"><span data-tip="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></div>
-				<div class="css_table-cell">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</div>
-				<div class="css_table-cell">{{ game.end_date|date:"SHORT_DATETIME_FORMAT" }}</div>
+				<div class="css_table-cell"><a href="{% url 'hand' game.id %}"><span data-tip="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></a></div>
+				<div class="css_table-cell"><a href="{% url 'hand' game.id %}">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</a></div>
+				<div class="css_table-cell"><a href="{% url 'hand' game.id %}">{{ game.end_date|date:"SHORT_DATETIME_FORMAT" }}</a></div>
 			</div>
 			{% endfor %}
 		</div>

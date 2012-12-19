@@ -2,8 +2,8 @@ from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.forms.formsets import formset_factory
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render, get_object_or_404
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, \
     validate_dates
@@ -19,6 +19,12 @@ def welcome(request):
     for game in games:
         game.list_of_players = [player.get_profile().name for player in game.players.all()]
     return render(request, 'game/welcome.html', {'games': games})
+
+@login_required
+def hand(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+    
+    return HttpResponse(game)
 
 @permission_required('game.add_game')
 def create_game(request):
