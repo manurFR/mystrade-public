@@ -1,5 +1,7 @@
+from django.conf.global_settings import SHORT_DATETIME_FORMAT
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import dateformat
 from django.utils.timezone import now
 from scoring.models import Ruleset, RuleCard, Commodity
 
@@ -16,8 +18,9 @@ class Game(models.Model):
     end_date = models.DateTimeField(null = True)
 
     def __unicode__(self):
-        return "{} by {} with {} players and {} rules [{} -> {}]".format(self.ruleset.name, self.master.get_profile().name,
-                len(self.players.all()), len(self.rules.all()), self.start_date, self.end_date)
+        return "{} ({} players, {} - {})".format(self.id, len(self.players.all()),
+                                                 dateformat.format(self.start_date, SHORT_DATETIME_FORMAT),
+                                                 dateformat.format(self.end_date, SHORT_DATETIME_FORMAT))
 
 class RuleInHand(models.Model):
     game = models.ForeignKey(Game)

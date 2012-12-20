@@ -7,7 +7,7 @@ from django.shortcuts import render, get_object_or_404
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, \
     validate_dates
-from game.models import Game
+from game.models import Game, RuleInHand, CommodityInHand
 from scoring.forms import RuleCardFormParse, RuleCardFormDisplay
 from scoring.models import RuleCard
 
@@ -23,8 +23,10 @@ def welcome(request):
 @login_required
 def hand(request, game_id):
     game = get_object_or_404(Game, id = game_id)
-    
-    return HttpResponse(game)
+    rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
+    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user).order_by('commodity__value', 'commodity__name')
+    return render(request, 'game/hand.html',
+                  {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand})
 
 @permission_required('game.add_game')
 def create_game(request):
