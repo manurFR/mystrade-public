@@ -1,2 +1,6 @@
 *.bak
 *.pyc
+*.iws
+.idea/workspace.xml
+.idea/dictionaries/
+

@@ -10,15 +10,23 @@
 			{% if forloop.first or forloop.counter0|divisibleby:"4" %}
 			<div class="css_table-row">
 			{% endif %}
-				<div class="css_table-cell">
-				  <div class="rulecard with_button">
+				<div class="css_table-cell rulecard">
 					<div class="rulecard_name">{{ rule.rulecard.public_name }}</div>
 					<div class="rulecard_desc">{{ rule.rulecard.description }}</div>
-				  </div>
 				</div>
 			{% if forloop.counter|divisibleby:"4" or forloop.last %}
 			</div>
 			{% endif %}
 		{% endfor %}
 	</div>
+    <h4>Commodities</h4>
+    <div class="css_table">
+        <div class="css_table-row">
+            {% for commodity in commodity_hand %}
+            <div class="css_table-cell rulecard">
+                <div class="rulecard_name">{{ commodity.commodity.name }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 {% endblock content %}
