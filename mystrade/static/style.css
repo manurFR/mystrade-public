@@ -123,7 +123,7 @@ input[type="submit"] {
 	padding: 2px;
 }
 
-.rulecard {
+.card {
 	position: relative;
 	padding: 5px;
 	border: 1px solid #FFD773;
@@ -135,21 +135,26 @@ input[type="submit"] {
 	height: 170px;
 }
 
-.rulecard.with_button {
+.card.with_button {
 	height: 200px;
 }
 
-.rulecard_name {
+.card_name {
 	font-size: 1.5em;
-	weight: bold;
+    font-weight: bold;
 	padding: 3px;
 }
 
-.rulecard_desc {
+.card_desc {
 	padding: 3px;
 }
 
-.rulecard_select {
+.card_copies {
+    font-size: 1.5em;
+    margin-top: 30px;
+}
+
+.card_select {
 	width: 220px;
 	text-align: center;	
 }

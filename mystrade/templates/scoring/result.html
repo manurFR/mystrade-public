@@ -54,9 +54,9 @@
 			<div class="css_table-row">
 			{% endif %}
 			  <div class="css_table-cell">
-			    <div class="rulecard">
-				  <div class="rulecard_name">{{ card.public_name }}</div>
-				  <div class="rulecard_desc">{{ card.description }}</div>
+			    <div class="card">
+				  <div class="card_name">{{ card.public_name }}</div>
+				  <div class="card_desc">{{ card.description }}</div>
 			    </div>
 			  </div>
 			{% if forloop.counter|divisibleby:"4" or forloop.last %}

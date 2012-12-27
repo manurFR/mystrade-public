@@ -27,12 +27,12 @@
 			<div class="css_table-row">
 			{% endif %}
 				<div class="css_table-cell">
-				  <div class="rulecard with_button">
+				  <div class="card with_button">
 					{{ form.card_id }}
-					<div class="rulecard_name">{{ form.public_name.value }}</div>
-					<div class="rulecard_desc">{{ form.description.value }}</div>
+					<div class="card_name">{{ form.public_name.value }}</div>
+					<div class="card_desc">{{ form.description.value }}</div>
 					<div class="align_to_bottom">
-					  <div class="rulecard_select">
+					  <div class="card_select">
 						<input type="checkbox" class="rulecard_checkbox" name="{{ form.selected_rule.html_name }}" id="id_{{ form.selected_rule.html_name }}" {% if form.selected_rule.value %}checked="checked"{% endif %} {% if form.mandatory.value %}disabled="disabled"{% endif %} />
 						<label for="id_{{ form.selected_rule.html_name }}">{% if form.mandatory.value %}Mandatory{% else %}Keep{% endif %}</label>
 					  </div>
