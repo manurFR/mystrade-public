@@ -1,18 +1,17 @@
 {% extends "base.html" %}
-{% load staticfiles %}
-{% load url from future %}
+{% load filters %}
 
 {% block content %}
 	<div class="header">Your hand for game #{{ game }}</div>
 	<h4>Rules</h4>
 	<div class="css_table">
-		{% for rule in rule_hand %}
+		{% for card in rule_hand %}
 			{% if forloop.first or forloop.counter0|divisibleby:"4" %}
 			<div class="css_table-row">
 			{% endif %}
 				<div class="css_table-cell card">
-					<div class="card_name">{{ rule.rulecard.public_name }}</div>
-					<div class="card_desc">{{ rule.rulecard.description }}</div>
+					<div class="card_name">{{ card.rulecard.public_name }}</div>
+					<div class="card_desc">{{ card.rulecard.description }}</div>
 				</div>
 			{% if forloop.counter|divisibleby:"4" or forloop.last %}
 			</div>
@@ -22,10 +21,14 @@
     <h4>Commodities</h4>
     <div class="css_table">
         <div class="css_table-row">
-            {% for commodity in commodity_hand %}
+            {% for card in commodity_hand %}
             <div class="css_table-cell card">
-                <div class="card_name">{{ commodity.commodity.name }}</div>
-                <div class="card_copies">x{{ commodity.nb_cards }}</div>
+                <div class="card_name">{{ card.commodity.name }}</div>
+                <div class="card_copies">
+                {% for copy in card.nb_cards|as_range %}
+                    <span class="minicard" style="background-color: {{ card.commodity.color }}">&nbsp;</span>
+                {% endfor %}
+                </div>
             </div>
             {% endfor %}
         </div>

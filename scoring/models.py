@@ -41,6 +41,7 @@ class Commodity(models.Model):
 
     name = models.CharField(max_length = 50)
     value = models.IntegerField("Initial value of the commodity (optional)", null = True)
+    color = models.CharField("HTML background color to display the cards", max_length = 20, default="white")
 
     def __unicode__(self):
         return self.name

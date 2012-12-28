@@ -205,7 +205,8 @@
         "fields": {
             "name": "Yellow",
             "ruleset": 1,
-            "value": 1
+            "value": 1,
+            "color": "yellow"
         }
     },
     {
@@ -214,7 +215,8 @@
         "fields": {
             "name": "Blue",
             "ruleset": 1,
-            "value": 2
+            "value": 2,
+            "color": "blue"
         }
     },
     {
@@ -223,7 +225,8 @@
         "fields": {
             "name": "Red",
             "ruleset": 1,
-            "value": 3
+            "value": 3,
+            "color": "red"
         }
     },
     {
@@ -232,7 +235,8 @@
         "fields": {
             "name": "Orange",
             "ruleset": 1,
-            "value": 4
+            "value": 4,
+            "color": "orange"
         }
     },
     {
@@ -241,7 +245,8 @@
         "fields": {
             "name": "White",
             "ruleset": 1,
-            "value": 5
+            "value": 5,
+            "color": "white"
         }
     }
 ]
