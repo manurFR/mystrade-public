@@ -2,7 +2,7 @@
 {% load filters %}
 
 {% block content %}
-	<div class="header">Your hand for game #{{ game }}</div>
+	<div class="header">Your hand for game #{{ game }} (ending in {{ game.end_date|timeuntil }})</div>
 	<h4>Rules</h4>
 	<div class="css_table">
 		{% for card in rule_hand %}

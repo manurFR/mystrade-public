@@ -18,9 +18,7 @@ class Game(models.Model):
     end_date = models.DateTimeField(null = True)
 
     def __unicode__(self):
-        return "{} ({} players, {} - {})".format(self.id, len(self.players.all()),
-                                                 dateformat.format(self.start_date, SHORT_DATETIME_FORMAT),
-                                                 dateformat.format(self.end_date, SHORT_DATETIME_FORMAT))
+        return "{}".format(self.id)
 
 class RuleInHand(models.Model):
     game = models.ForeignKey(Game)
