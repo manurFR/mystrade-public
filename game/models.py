@@ -41,3 +41,20 @@ class CommodityInHand(models.Model):
     def __unicode__(self):
         return "{} {} card{} owned by {} in game {}".format(self.nb_cards, self.commodity.name.lower(), 
                 's' if self.nb_cards > 1 else '', self.player.get_profile().name, self.game.id)
+
+class Trade(models.Model):
+    initiator = models.ForeignKey(User, related_name="initiator_trades_set")
+    responder = models.ForeignKey(User, related_name="responder_trades_set")
+
+    rules = models.ManyToManyField(RuleInHand)
+    commodities = models.ManyToManyField(CommodityInHand, through='TradedCommodities')
+
+    status = models.CharField(max_length = 15, default = "INITIATED") # INITIATED, CANCELLED, ACCEPTED or DECLINED
+    creation_date = models.DateTimeField(default = now())
+    closing_date = models.DateTimeField(null = True)
+
+class TradedCommodities(models.Model):
+    trade = models.ForeignKey(Trade)
+    commodities = models.ForeignKey(CommodityInHand)
+
+    nb_traded_cards = models.PositiveSmallIntegerField(default = 0)
