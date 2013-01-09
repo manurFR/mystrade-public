@@ -28,6 +28,11 @@ def hand(request, game_id):
     return render(request, 'game/hand.html',
                   {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand})
 
+@login_required
+def trades(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+    return render(request, 'game/trades.html', {'game': game})
+
 @permission_required('game.add_game')
 def create_game(request):
     if request.method == 'POST':
