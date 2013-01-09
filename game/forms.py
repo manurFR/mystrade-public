@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from game.models import Game
 from scoring.models import Ruleset, RuleCard
 from utils.utils import roundTimeToMinute
 
@@ -22,6 +23,13 @@ class CreateGameForm(forms.Form):
         if 'players' in cleaned_data and 'ruleset' in cleaned_data:
             validate_number_of_players(cleaned_data['players'], cleaned_data['ruleset'])
         return cleaned_data
+
+class CreateTradeForm(forms.Form):
+    responder = forms.ModelChoiceField(label = "Trade with", queryset = User.objects.none())
+
+    def __init__(self, me, game, *args, **kwargs):
+        super(CreateTradeForm, self).__init__(*args, **kwargs)
+        self.fields['responder'].queryset = Game.objects.get(id = game.id).players.exclude(id = me.id)
 
 def validate_dates(start_date, end_date):
     """

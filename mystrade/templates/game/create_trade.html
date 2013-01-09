@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load filters %}
+{% load staticfiles %}
+{% load url from future %}
+
+{% block content %}
+    <form action="{% url 'create_trade' game.id %}" method="post">{% csrf_token %}
+        <table class="fullwidth formtable">
+            <tr>
+                <td colspan="2" class="header">Set up a trade proposal for game #{{ game }} (ending in {{ game.end_date|timeuntil }})</th>
+            </tr>
+            {% for err in form.non_field_errors %}
+                <tr>
+                    <td colspan="2"><span class="errors">{{ err }}</span></td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <th>{{ form.responder.label_tag }} :</th>
+                <td>{{ form.responder }}&nbsp;<span class="errors">{{ form.responder.errors.as_text }}</span></td>
+            </tr>
+        </table>
+
+    </form>
+
+{% endblock content %}

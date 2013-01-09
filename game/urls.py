@@ -6,4 +6,5 @@ urlpatterns = patterns('game.views',
     url(r'^rules/$',        'select_rules', name = 'select_rules'),
     url(r'^hand/(\d+)/$',   'hand',         name = 'hand'),
     url(r'^trades/(\d+)/$', 'trades',       name = 'trades'),
+    url(r'^trades/(\d+)/create/$', 'create_trade', name = 'create_trade')
 )

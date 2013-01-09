@@ -2,10 +2,10 @@ from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.forms.formsets import formset_factory
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from game.deal import deal_cards
-from game.forms import CreateGameForm, validate_number_of_players, \
+from game.forms import CreateGameForm, CreateTradeForm, validate_number_of_players, \
     validate_dates
 from game.models import Game, RuleInHand, CommodityInHand
 from scoring.forms import RuleCardFormParse, RuleCardFormDisplay
@@ -116,3 +116,9 @@ def select_rules(request):
                                                'mandatory':     bool(card.mandatory)}
                                                        for card in rulecards_queryset])
         return render(request, 'game/rules.html', {'formset': formset, 'session': request.session})
+
+@login_required
+def create_trade(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+    form = CreateTradeForm(request.user, game)
+    return render(request, 'game/create_trade.html', {'game': game, 'form': form})
