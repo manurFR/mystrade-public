@@ -27,16 +27,17 @@
             {% cycle 'even_color' 'odd_color' as color silent %}
 			<div class="css_table-row">
 				<div class="css_table-cell {{ color }}">
-				    {{ game.ruleset }}, by
+				    #{{ game.id }}, by
 					{% if game.master == user %}<strong>{% endif %}{{ game.master.get_profile.name }}{% if game.master == user %}</strong>{% endif %}
 				</div>
 				<div class="css_table-cell {{ color }}"><span data-tip="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></div>
 				<div class="css_table-cell {{ color }}">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</div>
 				<div class="css_table-cell {{ color }}">{{ game.end_date|date:"SHORT_DATETIME_FORMAT" }}</div>
+                <div class="css_table-cell {{ color }}"> > </div>
                 {% if user in game.players.all %}
-                <div class="css_table-cell"><a href="{% url 'hand' game.id %}">Show Hand</a></div>
+                <div class="css_table-cell {{ color }}"><a href="{% url 'hand' game.id %}">Show Hand</a></div>
                 {% endif %}
-                <div class="css_table-cell"><a href="{% url 'trades' game.id %}">Show Trades</a></div>
+                <div class="css_table-cell {{ color }}"><a href="{% url 'trades' game.id %}">Show Trades</a></div>
 			</div>
 			{% endfor %}
 		</div>
