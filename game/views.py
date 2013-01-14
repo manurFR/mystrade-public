@@ -17,7 +17,7 @@ def welcome(request):
     games_played = list(Game.objects.filter(players = request.user))
     games = sorted(games_mastered + games_played, key = lambda game: game.end_date, reverse = True)
     for game in games:
-        game.list_of_players = [player.get_profile().name for player in game.players.all()]
+        game.list_of_players = [player.get_profile().name for player in game.players.all().order_by('id')]
     return render(request, 'game/welcome.html', {'games': games})
 
 @login_required
@@ -120,5 +120,7 @@ def select_rules(request):
 @login_required
 def create_trade(request, game_id):
     game = get_object_or_404(Game, id = game_id)
+    rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
+    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user).order_by('commodity__value', 'commodity__name')
     form = CreateTradeForm(request.user, game)
-    return render(request, 'game/create_trade.html', {'game': game, 'form': form})
+    return render(request, 'game/create_trade.html', {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand, 'form': form})

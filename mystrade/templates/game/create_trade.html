@@ -3,23 +3,68 @@
 {% load staticfiles %}
 {% load url from future %}
 
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.1.custom.min.css' %}" />
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
+    <script src="{% static 'jquery/jquery-ui-1.9.1.custom.min.js' %}"></script>
+{% endblock %}
+
 {% block content %}
     <form action="{% url 'create_trade' game.id %}" method="post">{% csrf_token %}
-        <table class="fullwidth formtable">
+        <div class="header">Set up a trade proposal for game #{{ game }} (ending in {{ game.end_date|timeuntil }})</div>
+        {% for err in form.non_field_errors %}
             <tr>
-                <td colspan="2" class="header">Set up a trade proposal for game #{{ game }} (ending in {{ game.end_date|timeuntil }})</th>
+                <td colspan="2"><span class="errors">{{ err }}</span></td>
             </tr>
-            {% for err in form.non_field_errors %}
-                <tr>
-                    <td colspan="2"><span class="errors">{{ err }}</span></td>
-                </tr>
-            {% endfor %}
-            <tr>
-                <th>{{ form.responder.label_tag }} :</th>
-                <td>{{ form.responder }}&nbsp;<span class="errors">{{ form.responder.errors.as_text }}</span></td>
-            </tr>
-        </table>
+        {% endfor %}
+        <div>{{ form.responder.label_tag }} : {{ form.responder }}&nbsp;<span class="errors">{{ form.responder.errors.as_text }}</span></div>
+        <div>
+            <h4>Rules</h4>
+            <div class="css_table">
+                {% for card in rule_hand %}
+                    {% if forloop.first or forloop.counter0|divisibleby:"4" %}
+                        <div class="css_table-row">
+                    {% endif %}
+                <div class="css_table-cell card with_button">
+                    <div class="card_name">{{ card.rulecard.public_name }}</div>
+                    <div class="card_desc">{{ card.rulecard.description }}</div>
+                    <div class="align_to_bottom">
+                        <div class="card_select">
+                            <input type="checkbox" class="rulecard_checkbox" name="rulecard" id="id_{{ card.rulecard.id }}" />
+                            <label for="id_{{ card.rulecard.id }}">Offer</label>
+                        </div>
+                    </div>
+                </div>
+                {% if forloop.counter|divisibleby:"4" or forloop.last %}
+                    </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <h4>Commodities</h4>
+            <div class="css_table">
+                <div class="css_table-row">
+                    {% for card in commodity_hand %}
+                        <div class="css_table-cell card">
+                            <div class="card_name">{{ card.commodity.name }}</div>
+                            <div class="card_copies">
+                                {% for copy in card.nb_cards|as_range %}
+                                    <span class="minicard" style="background-color: {{ card.commodity.color }}">&nbsp;</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
 
     </form>
+    <script>
+        $(function() {
+            $('.rulecard_checkbox').button();
+        });
+    </script>
 
 {% endblock content %}

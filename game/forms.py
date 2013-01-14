@@ -25,11 +25,11 @@ class CreateGameForm(forms.Form):
         return cleaned_data
 
 class CreateTradeForm(forms.Form):
-    responder = forms.ModelChoiceField(label = "Trade with", queryset = User.objects.none())
+    responder = forms.ModelChoiceField(label = "Trade with", queryset = User.objects.none(), empty_label=u'- Choose a player -')
 
     def __init__(self, me, game, *args, **kwargs):
         super(CreateTradeForm, self).__init__(*args, **kwargs)
-        self.fields['responder'].queryset = Game.objects.get(id = game.id).players.exclude(id = me.id)
+        self.fields['responder'].queryset = Game.objects.get(id = game.id).players.exclude(id = me.id).order_by('id')
 
 def validate_dates(start_date, end_date):
     """
