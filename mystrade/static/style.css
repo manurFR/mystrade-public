@@ -162,6 +162,13 @@ input[type="submit"] {
     height: 50px;
 }
 
+.clicked {
+    border: gray solid 3px;
+    border-radius: 2px;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px
+}
+
 .card_select {
 	width: 220px;
 	text-align: center;	

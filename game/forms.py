@@ -25,7 +25,7 @@ class CreateGameForm(forms.Form):
         return cleaned_data
 
 class CreateTradeForm(forms.Form):
-    responder = forms.ModelChoiceField(label = "Trade with", queryset = User.objects.none(), empty_label=u'- Choose a player -')
+    responder = forms.ModelChoiceField(queryset = User.objects.none(), empty_label=u'- Choose a player -')
 
     def __init__(self, me, game, *args, **kwargs):
         super(CreateTradeForm, self).__init__(*args, **kwargs)
