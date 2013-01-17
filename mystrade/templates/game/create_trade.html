@@ -20,7 +20,9 @@
                 <td colspan="2"><span class="errors">{{ err }}</span></td>
             </tr>
         {% endfor %}
-        <div>Trade with : {{ form.responder }}&nbsp;<span class="errors">{{ form.responder.errors.as_text }}</span></div>
+        <div>Trade with : {{ form.responder }}&nbsp;<span class="errors">{{ form.responder.errors.as_text }}</span><br/>
+             You are offering: <span id="summary"/>
+        </div>
 
         <div>
             <h4>Rules</h4>
@@ -29,13 +31,13 @@
                     {% if forloop.first or forloop.counter0|divisibleby:"4" %}
                         <div class="css_table-row">
                     {% endif %}
-                <div class="css_table-cell card with_button">
+                <div class="css_table-cell card with_button" id="rule_{{ card.rulecard.id }}">
                     <div class="card_name">{{ card.rulecard.public_name }}</div>
                     <div class="card_desc">{{ card.rulecard.description }}</div>
                     <div class="align_to_bottom">
                         <div class="card_select">
-                            <input type="checkbox" class="rulecard_checkbox" name="rulecard" id="id_rule_{{ card.rulecard.id }}" />
-                            <label for="id_rule_{{ card.rulecard.id }}">Offer</label>
+                            <input type="checkbox" class="rulecard_checkbox" name="rulecard" id="button_rule_{{ card.rulecard.id }}" />
+                            <label for="button_rule_{{ card.rulecard.id }}">Offer</label>
                         </div>
                     </div>
                 </div>
@@ -44,19 +46,19 @@
                 {% endif %}
                 {% endfor %}
             </div>
-            <h4>Commodities (click on cards)</h4>
+            <h4>Commodities (click on cards to offer)</h4>
             <div class="css_table">
                 <div class="css_table-row">
                     {% for card in commodity_hand %}
-                        <div class="css_table-cell card">
+                        <div class="css_table-cell card" id="commodity_{{ card.commodity.id }}">
                             <div class="card_name">{{ card.commodity.name }}</div>
-                            <div class="card_copies" id="commodity_{{ card.commodity.id }}">
+                            <div class="card_copies">
                                 {% for copy in card.nb_cards|as_range %}
                                     <span class="minicard" style="background-color: {{ card.commodity.color }}">&nbsp;</span>
                                 {% endfor %}
                             </div>
+                            <input type="hidden" name="commodity_{{ card.commodity.id }}" value="0">
                         </div>
-                        <input type="hidden" name="commodity_{{ card.commodity.id }}" value="0">
                     {% endfor %}
                 </div>
             </div>
@@ -65,13 +67,45 @@
     </form>
     <script>
         $(function() {
-            $('.rulecard_checkbox').button();
+            $('.rulecard_checkbox').button().click(function() {
+                updateSummary();
+            });
             $('.minicard').click(function() {
                 $(this).toggleClass("clicked")
                 // set the corresponding hidden form field to hold the number of commodities from this type that are now "clicked"
-                $("input[type=hidden][name=" + $(this).parent().attr("id") + "]").val($(this).parent().children(".clicked").length)
+                $("input[type=hidden][name=" + $(this).parents(".card").attr("id") + "]").val($(this).parent().children(".clicked").length)
+                updateSummary();
             })
         });
+
+        function updateSummary() {
+            var elements = new Array();
+
+            $(".card").each(function() {
+                if ($(this).is("[id^=rule]")) {
+                    if ($(this).find(".rulecard_checkbox").attr("checked") == "checked") {
+                        elements.push("Rule #" + $(this).children(".card_name").text());
+                    }
+                }
+                else {
+                    var qty = $(this).children("input[type=hidden][name^=commodity]").val();
+                    if (qty > 0) {
+                        elements.push(qty + " " + $(this).children(".card_name").text() + " card" + (qty > 1 ? "s" : ""));
+                    }
+                }
+            });
+
+            var summary = "";
+            for (var i = 0; i < elements.length; i++) {
+                if (i > 0) {
+                    if (i == elements.length - 1) { summary += " and "; }
+                    else { summary += ", "; }
+                }
+                summary += elements[i];
+            }
+
+            $("#summary").text(summary);
+        }
     </script>
 
 {% endblock content %}
