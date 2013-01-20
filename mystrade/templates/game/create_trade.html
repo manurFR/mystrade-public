@@ -31,13 +31,15 @@
                     {% if forloop.first or forloop.counter0|divisibleby:"4" %}
                         <div class="css_table-row">
                     {% endif %}
-                <div class="css_table-cell card with_button" id="rule_{{ card.rulecard.id }}">
-                    <div class="card_name">{{ card.rulecard.public_name }}</div>
-                    <div class="card_desc">{{ card.rulecard.description }}</div>
-                    <div class="align_to_bottom">
-                        <div class="card_select">
-                            <input type="checkbox" class="rulecard_checkbox" name="rulecard" id="button_rule_{{ card.rulecard.id }}" />
-                            <label for="button_rule_{{ card.rulecard.id }}">Offer</label>
+                <div class="css_table-cell">
+                    <div class="card with_button" id="rule_{{ card.rulecard.id }}">
+                        <div class="card_name">{{ card.rulecard.public_name }}</div>
+                        <div class="card_desc">{{ card.rulecard.description }}</div>
+                        <div class="align_to_bottom">
+                            <div class="card_select">
+                                <input type="checkbox" class="rulecard_checkbox" name="rulecard" id="button_rule_{{ card.rulecard.id }}" />
+                                <label for="button_rule_{{ card.rulecard.id }}">Offer</label>
+                            </div>
                         </div>
                     </div>
                 </div>
