@@ -26,7 +26,7 @@ class CreateGameForm(forms.Form):
 
 class CreateTradeForm(forms.Form):
     responder = forms.ModelChoiceField(queryset = User.objects.none(), empty_label=u'- Choose a player -')
-    comment = forms.CharField(widget=forms.Textarea(attrs = {'cols': '155', 'rows': '3'}))
+    comment = forms.CharField(widget=forms.Textarea(attrs = {'cols': '145', 'rows': '3'}))
 
     def __init__(self, me, game, *args, **kwargs):
         super(CreateTradeForm, self).__init__(*args, **kwargs)

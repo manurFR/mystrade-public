@@ -1,6 +1,7 @@
 Django==1.4.1
 psycopg2==2.4.5
 django-widget-tweaks==1.1.2
+South
 django-extensions
 Werkzeug
 #pygraphviz  # doesn't work: need to do 'sudo apt-get install python-pygraphviz' manually
