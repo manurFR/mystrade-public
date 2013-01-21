@@ -49,7 +49,7 @@ class Trade(models.Model):
     rules = models.ManyToManyField(RuleInHand)
     commodities = models.ManyToManyField(CommodityInHand, through='TradedCommodities')
 
-    comment = models.TextField()
+    comment = models.TextField(blank = True)
 
     status = models.CharField(max_length = 15, default = "INITIATED") # INITIATED, CANCELLED, ACCEPTED or DECLINED
     creation_date = models.DateTimeField(default = now())

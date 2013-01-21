@@ -66,12 +66,19 @@
             </div>
             <div>
                 <h4>Add a comment to the other player (optional)</h4>
-                {{ form.comment }}
+                {{ form.comment }}<br/>
+                <span class="errors">{{ form.comment.errors.as_text }}</span>
+            </div>
+            <div class="floatright">
+                <input type="submit"    value="Propose this trade"/>
+            </div>
+            <br/><br/><br/>
         </div>
 
     </form>
     <script>
         $(function() {
+            $('input[type=submit]').button();
             $('.rulecard_checkbox').button().click(function() {
                 updateSummary();
             });

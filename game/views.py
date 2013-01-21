@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.forms.formsets import formset_factory
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from game.deal import deal_cards
 from game.forms import CreateGameForm, CreateTradeForm, validate_number_of_players, \
@@ -120,7 +120,13 @@ def select_rules(request):
 @login_required
 def create_trade(request, game_id):
     game = get_object_or_404(Game, id = game_id)
+
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
     commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user).order_by('commodity__value', 'commodity__name')
-    form = CreateTradeForm(request.user, game)
+    if request.method == 'POST':
+        form = CreateTradeForm(request.user, game, request.POST)
+        if form.is_valid():
+            return HttpResponse('{} ok {}'.format(form.cleaned_data['responder'], form.cleaned_data['comment']))
+    else:
+        form = CreateTradeForm(request.user, game)
     return render(request, 'game/create_trade.html', {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand, 'form': form})
