@@ -4,11 +4,11 @@ from django.core.urlresolvers import reverse
 from django.forms.formsets import formset_factory
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
+
 from game.deal import deal_cards
 from game.forms import CreateGameForm, CreateTradeForm, validate_number_of_players, \
-    validate_dates
+    validate_dates, RuleCardFormDisplay, RuleCardFormParse
 from game.models import Game, RuleInHand, CommodityInHand
-from scoring.forms import RuleCardFormParse, RuleCardFormDisplay
 from scoring.models import RuleCard
 
 @login_required
@@ -124,9 +124,24 @@ def create_trade(request, game_id):
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
     commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user).order_by('commodity__value', 'commodity__name')
     if request.method == 'POST':
-        form = CreateTradeForm(request.user, game, request.POST)
-        if form.is_valid():
-            return HttpResponse('{} ok {}'.format(form.cleaned_data['responder'], form.cleaned_data['comment']))
+        trade_form = CreateTradeForm(request.user, game, request.POST)
+        RuleCardsFormSet = formset_factory(RuleCardFormParse)
+        rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')
+        if trade_form.is_valid() and rulecards_formset.is_valid(): # TODO if failed, the page doesn't show rule descriptions
+            selected_rules = []
+            for card in rule_hand:
+                for form in rulecards_formset:
+                    if int(form.cleaned_data['card_id']) == card.rulecard.id and form.cleaned_data['selected_rule']:
+                        selected_rules.append(card)
+                        break
+            return HttpResponse(" / ".join([rule.rulecard.ref_name for rule in selected_rules]))
     else:
-        form = CreateTradeForm(request.user, game)
-    return render(request, 'game/create_trade.html', {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand, 'form': form})
+        RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
+        rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.rulecard.id,
+                                                         'public_name':   card.rulecard.public_name,
+                                                         'description':   card.rulecard.description}
+                                                        for card in rule_hand],
+                                             prefix = 'rulecards')
+        trade_form = CreateTradeForm(request.user, game)
+
+    return render(request, 'game/create_trade.html', {'game': game, 'commodity_hand': commodity_hand, 'trade_form': trade_form, 'rulecards_formset': rulecards_formset})

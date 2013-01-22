@@ -1,10 +1,13 @@
+import operator
+
 from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 from django.shortcuts import render
+
 from scoring.card_scoring import tally_scores
 from scoring.forms import RuleCardFormDisplay, RuleCardFormParse, HandsForm
 from scoring.models import RuleCard, Commodity, Ruleset
-import operator
+
 
 @login_required
 def choose_rulecards(request):
@@ -45,10 +48,10 @@ def choose_rulecards(request):
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
         rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.id,
-                                               'public_name':   card.public_name,
-                                               'description':   card.description,
-                                               'mandatory':     bool(card.mandatory)}
-                                                for card in rulecards_queryset],
+                                                         'public_name':   card.public_name,
+                                                         'description':   card.description,
+                                                         'mandatory':     bool(card.mandatory)}
+                                                        for card in rulecards_queryset],
                                              prefix = 'rulecards')
         HandsFormSet = formset_factory(HandsForm, extra = 1)
         hands_formset = HandsFormSet(prefix = 'hands')

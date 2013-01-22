@@ -15,30 +15,32 @@
 {% block content %}
     <form action="{% url 'create_trade' game.id %}" method="post">{% csrf_token %}
         <div class="header">Set up a trade proposal for game #{{ game }} (ending in {{ game.end_date|timeuntil }})</div>
-        {% for err in form.non_field_errors %}
+        {% for err in trade_form.non_field_errors %}
             <tr>
                 <td colspan="2"><span class="errors">{{ err }}</span></td>
             </tr>
         {% endfor %}
-        <div>Trade with : {{ form.responder }}&nbsp;<span class="errors">{{ form.responder.errors.as_text }}</span><br/>
+        <div>Trade with : {{ trade_form.responder }}&nbsp;<span class="errors">{{ trade_form.responder.errors.as_text }}</span><br/>
              You are offering: <span id="summary"/>
         </div>
 
         <div>
             <h4>Rules</h4>
             <div class="css_table">
-                {% for card in rule_hand %}
+                {{ rulecards_formset.management_form }}
+                {% for form in rulecards_formset %}
                     {% if forloop.first or forloop.counter0|divisibleby:"4" %}
                         <div class="css_table-row">
                     {% endif %}
                 <div class="css_table-cell">
-                    <div class="card with_button" id="rule_{{ card.rulecard.id }}">
-                        <div class="card_name">{{ card.rulecard.public_name }}</div>
-                        <div class="card_desc">{{ card.rulecard.description }}</div>
+                    <div class="card with_button" id="rule_{{ form.card_id.value }}">
+                        {{ form.card_id }}
+                        <div class="card_name">{{ form.public_name.value }}</div>
+                        <div class="card_desc">{{ form.description.value }}</div>
                         <div class="align_to_bottom">
                             <div class="card_select">
-                                <input type="checkbox" class="rulecard_checkbox" name="rulecard" id="button_rule_{{ card.rulecard.id }}" />
-                                <label for="button_rule_{{ card.rulecard.id }}">Offer</label>
+                                <input type="checkbox" class="rulecard_checkbox" name="{{ form.selected_rule.html_name }}" id="button_rule_{{ form.card_id.value }}" />
+                                <label for="button_rule_{{ form.card_id.value }}">Offer</label>
                             </div>
                         </div>
                     </div>
@@ -66,8 +68,8 @@
             </div>
             <div>
                 <h4>Add a comment to the other player (optional)</h4>
-                {{ form.comment }}<br/>
-                <span class="errors">{{ form.comment.errors.as_text }}</span>
+                {{ trade_form.comment }}<br/>
+                <span class="errors">{{ trade_form.comment.errors.as_text }}</span>
             </div>
             <div class="floatright">
                 <input type="submit"    value="Propose this trade"/>
