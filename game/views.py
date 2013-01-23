@@ -131,23 +131,62 @@ def create_trade(request, game_id):
         rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')
         CommodityCardsFormSet = formset_factory(CommodityCardFormParse)
         commodities_formset = CommodityCardsFormSet(request.POST, prefix = 'commodity')
-        if trade_form.is_valid() and rulecards_formset.is_valid() and commodities_formset.is_valid(): # TODO if failed, the page doesn't show rule descriptions
-            trade = Trade.objects.create(initiator = request.user,
-                                         responder = trade_form.cleaned_data['responder'],
-                                         comment   = trade_form.cleaned_data['comment'])
+
+        if rulecards_formset.is_valid() and commodities_formset.is_valid():
+            selected_rules = []
             for card in rule_hand:
                 for form in rulecards_formset:
                     if int(form.cleaned_data['card_id']) == card.rulecard.id and form.cleaned_data['selected_rule']:
-                        trade.rules.add(card)
+                        selected_rules.append(card)
                         break
+            nb_commodities = {}
             for commodity in commodity_hand:
                 for form in commodities_formset:
-                    if int(form.cleaned_data['commodity_id']) == commodity.commodity.id and form.cleaned_data['nb_traded_cards'] > 0:
-                        traded_commodities = TradedCommodities.objects.create(
-                            trade = trade, commodity = commodity, nb_traded_cards = form.cleaned_data['nb_traded_cards'])
+                    if int(form.cleaned_data['commodity_id']) == commodity.commodity.id:
+                        nb_commodities[commodity] = form.cleaned_data['nb_traded_cards']
                         break
 
-            return HttpResponse("Trade {} saved".format(trade.id))
+            if trade_form.is_valid():
+                trade = Trade.objects.create(initiator = request.user,
+                                             responder = trade_form.cleaned_data['responder'],
+                                             comment   = trade_form.cleaned_data['comment'])
+                for card in selected_rules:
+                    trade.rules.add(card)
+                for commodity, nb_traded_cards in nb_commodities.iteritems():
+                    if nb_traded_cards > 0:
+                        traded_commodities = TradedCommodities.objects.create(
+                            trade = trade, commodity = commodity, nb_traded_cards = nb_traded_cards)
+
+                return HttpResponse("Trade {} saved".format(trade.id))
+            else:
+                selected_rules = []
+                for card in rule_hand:
+                    for form in rulecards_formset:
+                        if int(form.cleaned_data['card_id']) == card.rulecard.id and form.cleaned_data['selected_rule']:
+                            selected_rules.append(card)
+                            break
+                nb_commodities = {}
+                for commodity in commodity_hand:
+                    for form in commodities_formset:
+                        if int(form.cleaned_data['commodity_id']) == commodity.commodity.id:
+                            nb_commodities[commodity] = form.cleaned_data['nb_traded_cards']
+                            break
+
+                RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
+                rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.rulecard.id,
+                                                                 'public_name':   card.rulecard.public_name,
+                                                                 'description':   card.rulecard.description,
+                                                                 'selected_rule': bool(card in selected_rules)}
+                                                                for card in rule_hand],
+                                                     prefix = 'rulecards')
+                CommodityCardsFormSet = formset_factory(CommodityCardFormDisplay, extra = 0)
+                commodities_formset = CommodityCardsFormSet(initial = [{'commodity_id':     card.commodity.id,
+                                                                        'name':             card.commodity.name,
+                                                                        'color':            card.commodity.color,
+                                                                        'nb_cards':         card.nb_cards,
+                                                                        'nb_traded_cards':  nb_commodities[card]}
+                                                                       for card in commodity_hand],
+                                                            prefix = 'commodity')
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
         rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.rulecard.id,

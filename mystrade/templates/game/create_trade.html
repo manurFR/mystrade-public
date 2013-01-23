@@ -39,7 +39,7 @@
                         <div class="card_desc">{{ form.description.value }}</div>
                         <div class="align_to_bottom">
                             <div class="card_select">
-                                <input type="checkbox" class="rulecard_checkbox" name="{{ form.selected_rule.html_name }}" id="button_rule_{{ form.card_id.value }}" />
+                                <input type="checkbox" class="rulecard_checkbox" name="{{ form.selected_rule.html_name }}" id="button_rule_{{ form.card_id.value }}" {% if form.selected_rule.value %}checked="checked"{% endif %}/>
                                 <label for="button_rule_{{ form.card_id.value }}">Offer</label>
                             </div>
                         </div>
@@ -60,7 +60,7 @@
                             <div class="card_name">{{ form.name.value }}</div>
                             <div class="card_copies">
                                 {% for copy in form.nb_cards.value|as_range %}
-                                    <span class="minicard" style="background-color: {{ form.color.value }}">&nbsp;</span>
+                                    <span class="minicard{% if form.nb_traded_cards.value > copy %} clicked{% endif %}" style="background-color: {{ form.color.value }}">&nbsp;</span>
                                 {% endfor %}
                             </div>
                             {{ form.nb_traded_cards }}
@@ -122,6 +122,8 @@
 
             $("#summary").text(summary);
         }
+
+        updateSummary();
     </script>
 
 {% endblock content %}
