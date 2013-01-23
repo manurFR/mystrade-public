@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404
 from game.deal import deal_cards
 from game.forms import CreateGameForm, CreateTradeForm, validate_number_of_players, \
     validate_dates, RuleCardFormDisplay, RuleCardFormParse, CommodityCardFormParse, CommodityCardFormDisplay
-from game.models import Game, RuleInHand, CommodityInHand
+from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities
 from scoring.models import RuleCard
 
 @login_required
@@ -96,8 +96,10 @@ def select_rules(request):
                                            master     = request.user,
                                            start_date = start_date,
                                            end_date   = end_date)
-                for user in players: game.players.add(user)
-                for rule in selected_rules: game.rules.add(rule)
+                for user in players:
+                    game.players.add(user)
+                for rule in selected_rules:
+                    game.rules.add(rule)
                 del request.session['ruleset']
                 del request.session['start_date']
                 del request.session['end_date']
@@ -127,14 +129,25 @@ def create_trade(request, game_id):
         trade_form = CreateTradeForm(request.user, game, request.POST)
         RuleCardsFormSet = formset_factory(RuleCardFormParse)
         rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')
-        if trade_form.is_valid() and rulecards_formset.is_valid(): # TODO if failed, the page doesn't show rule descriptions
-            selected_rules = []
+        CommodityCardsFormSet = formset_factory(CommodityCardFormParse)
+        commodities_formset = CommodityCardsFormSet(request.POST, prefix = 'commodity')
+        if trade_form.is_valid() and rulecards_formset.is_valid() and commodities_formset.is_valid(): # TODO if failed, the page doesn't show rule descriptions
+            trade = Trade.objects.create(initiator = request.user,
+                                         responder = trade_form.cleaned_data['responder'],
+                                         comment   = trade_form.cleaned_data['comment'])
             for card in rule_hand:
                 for form in rulecards_formset:
                     if int(form.cleaned_data['card_id']) == card.rulecard.id and form.cleaned_data['selected_rule']:
-                        selected_rules.append(card)
+                        trade.rules.add(card)
                         break
-            return HttpResponse(" / ".join([rule.rulecard.ref_name for rule in selected_rules]))
+            for commodity in commodity_hand:
+                for form in commodities_formset:
+                    if int(form.cleaned_data['commodity_id']) == commodity.commodity.id and form.cleaned_data['nb_traded_cards'] > 0:
+                        traded_commodities = TradedCommodities.objects.create(
+                            trade = trade, commodity = commodity, nb_traded_cards = form.cleaned_data['nb_traded_cards'])
+                        break
+
+            return HttpResponse("Trade {} saved".format(trade.id))
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
         rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.rulecard.id,
