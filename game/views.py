@@ -7,7 +7,7 @@ from django.shortcuts import render, get_object_or_404
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, CreateTradeForm, validate_number_of_players, \
-    validate_dates, RuleCardFormDisplay, RuleCardFormParse
+    validate_dates, RuleCardFormDisplay, RuleCardFormParse, CommodityCardFormParse, CommodityCardFormDisplay
 from game.models import Game, RuleInHand, CommodityInHand
 from scoring.models import RuleCard
 
@@ -142,6 +142,16 @@ def create_trade(request, game_id):
                                                          'description':   card.rulecard.description}
                                                         for card in rule_hand],
                                              prefix = 'rulecards')
+        CommodityCardsFormSet = formset_factory(CommodityCardFormDisplay, extra = 0)
+        commodities_formset = CommodityCardsFormSet(initial = [{'commodity_id':     card.commodity.id,
+                                                                'name':             card.commodity.name,
+                                                                'color':            card.commodity.color,
+                                                                'nb_cards':         card.nb_cards,
+                                                                'nb_traded_cards':  0}
+                                                               for card in commodity_hand],
+                                                    prefix = 'commodity')
         trade_form = CreateTradeForm(request.user, game)
 
-    return render(request, 'game/create_trade.html', {'game': game, 'commodity_hand': commodity_hand, 'trade_form': trade_form, 'rulecards_formset': rulecards_formset})
+    return render(request, 'game/create_trade.html', {'game': game, 'trade_form': trade_form,
+                                                      'rulecards_formset': rulecards_formset,
+                                                      'commodities_formset': commodities_formset})

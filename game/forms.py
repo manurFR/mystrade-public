@@ -60,3 +60,12 @@ class RuleCardFormDisplay(RuleCardFormParse):
     public_name = forms.CharField()
     description = forms.CharField()
     mandatory = forms.BooleanField()
+
+class CommodityCardFormParse(forms.Form):
+    commodity_id = forms.CharField(widget = forms.HiddenInput)
+    nb_traded_cards = forms.IntegerField(widget = forms.HiddenInput)
+
+class CommodityCardFormDisplay(CommodityCardFormParse):
+    name = forms.CharField()
+    nb_cards = forms.IntegerField()
+    color = forms.CharField()
