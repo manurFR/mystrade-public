@@ -15,6 +15,11 @@ class UserProfileInline(admin.StackedInline):
 class UserAdmin(UserAdmin):
     inlines = (UserProfileInline, )
 
+#    def get_formsets(self, request, obj=None):
+#        if not obj:
+#            return []
+#        return super(UserAdmin, self).get_formsets(request, obj)
+
 # Re-register UserAdmin
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
