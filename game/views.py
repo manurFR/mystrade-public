@@ -126,7 +126,6 @@ def create_trade(request, game_id):
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
     commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user).order_by('commodity__value', 'commodity__name')
     if request.method == 'POST':
-        trade_form = CreateTradeForm(request.user, game, request.POST)
         RuleCardsFormSet = formset_factory(RuleCardFormParse)
         rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')
         CommodityCardsFormSet = formset_factory(CommodityCardFormParse)
@@ -146,6 +145,9 @@ def create_trade(request, game_id):
                         nb_commodities[commodity] = form.cleaned_data['nb_traded_cards']
                         break
 
+            trade_form = CreateTradeForm(request.user, game, request.POST,
+                                         nb_selected_rules = len(selected_rules), nb_selected_commodities = sum(nb_commodities.values()))
+
             if trade_form.is_valid():
                 trade = Trade.objects.create(initiator = request.user,
                                              responder = trade_form.cleaned_data['responder'],
@@ -159,19 +161,6 @@ def create_trade(request, game_id):
 
                 return HttpResponse("Trade {} saved".format(trade.id))
             else:
-                selected_rules = []
-                for card in rule_hand:
-                    for form in rulecards_formset:
-                        if int(form.cleaned_data['card_id']) == card.rulecard.id and form.cleaned_data['selected_rule']:
-                            selected_rules.append(card)
-                            break
-                nb_commodities = {}
-                for commodity in commodity_hand:
-                    for form in commodities_formset:
-                        if int(form.cleaned_data['commodity_id']) == commodity.commodity.id:
-                            nb_commodities[commodity] = form.cleaned_data['nb_traded_cards']
-                            break
-
                 RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
                 rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.rulecard.id,
                                                                  'public_name':   card.rulecard.public_name,

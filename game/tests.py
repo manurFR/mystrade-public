@@ -185,14 +185,30 @@ class GameViewsTest(TestCase):
         self.assertListEqual([game2, game1], response.context['games'])
         self.assertNotIn(game3, response.context['games'])
 
-#class TradeViewsTest(TestCase):
-#    fixtures = ['test_users.json']
-#
-#    def test_no_cards_fails_the_trade_validation(self):
-#        response = self.client.post("trades/1/create/", {'ruleset': 1,
-#                                                      'start_date': '11/10/2012 18:30',
-#                                                      'end_date': '11/13/2012 00:15',
-#                                                      'players': []})
+class TradeViewsTest(TestCase):
+    fixtures = ['test_users.json']
+
+    def setUp(self):
+        self.testUsersNoCreate = User.objects.exclude(user_permissions__codename = "add_game")
+        self.game = mommy.make_one(Game, id = 1, master = User.objects.get(username = 'test1'), players = self.testUsersNoCreate)
+
+        self.client.login(username = 'test1', password = 'test')
+
+    def test_no_cards_fails_the_trade_validation(self):
+        response = self.client.post("/game/trades/1/create/",
+                                    {'responder': 4,
+                                     'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
+                                     'rulecards-0-card_id': 1,
+                                     'rulecards-1-card_id': 2,
+                                     'commodity-TOTAL_FORMS': 5, 'commodity-INITIAL_FORMS': 5,
+                                     'commodity-0-commodity_id': 1, 'commodity-0-nb_traded_cards': 0,
+                                     'commodity-1-commodity_id': 2, 'commodity-1-nb_traded_cards': 0,
+                                     'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
+                                     'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 0,
+                                     'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
+                                     'comment': 'a comment'
+                                    })
+        self.assertContains(response, "At least one card should be offered")
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
