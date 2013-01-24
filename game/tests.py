@@ -7,12 +7,12 @@ from django.utils.timezone import get_default_timezone
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
     prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates
-from game.models import Game, RuleInHand, CommodityInHand
+from game.models import Game, RuleInHand, CommodityInHand, Trade
 from model_mommy import mommy
 from scoring.models import Ruleset, RuleCard, Commodity
 import datetime
 
-class GameViewsTest(TestCase):
+class GameAndWelcomeViewsTest(TestCase):
     fixtures = ['test_users.json']
 
     def setUp(self):
@@ -192,9 +192,24 @@ class TradeViewsTest(TestCase):
         self.testUsersNoCreate = User.objects.exclude(user_permissions__codename = "add_game")
         self.game = mommy.make_one(Game, id = 1, master = User.objects.get(username = 'test1'), players = self.testUsersNoCreate)
 
-        self.client.login(username = 'test1', password = 'test')
+        self.client.login(username = 'test2', password = 'test')
 
-    def test_no_cards_fails_the_trade_validation(self):
+    def test_create_trade_without_responder_fails(self):
+        response = self.client.post("/game/1/trades/create/",
+            {'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
+             'rulecards-0-card_id': 1,
+             'rulecards-1-card_id': 2,
+             'commodity-TOTAL_FORMS': 5, 'commodity-INITIAL_FORMS': 5,
+             'commodity-0-commodity_id': 1, 'commodity-0-nb_traded_cards': 0,
+             'commodity-1-commodity_id': 2, 'commodity-1-nb_traded_cards': 1,
+             'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
+             'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 0,
+             'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
+             'comment': 'a comment'
+            })
+        self.assertFormError(response, 'trade_form', 'responder', 'This field is required.')
+
+    def test_create_trade_without_selecting_cards_fails(self):
         response = self.client.post("/game/1/trades/create/",
                                     {'responder': 4,
                                      'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
@@ -208,7 +223,34 @@ class TradeViewsTest(TestCase):
                                      'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
                                      'comment': 'a comment'
                                     })
-        self.assertContains(response, "At least one card should be offered")
+        self.assertFormError(response, 'trade_form', None, 'At least one card should be offered.')
+
+    def test_create_trade_complete_save(self):
+        ruleset = mommy.make_one(Ruleset)
+        rulecard = mommy.make_one(RuleCard, ruleset = ruleset, ref_name = 'rulecard_1')
+        rule_in_hand = RuleInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
+                                                 rulecard = rulecard, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+        commodity = mommy.make_one(Commodity, ruleset = ruleset, name = 'commodity_1')
+        commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
+                                                           commodity = commodity, nb_cards = 2)
+        response = self.client.post("/game/1/trades/create/",
+            {'responder': 4,
+             'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
+             'rulecards-0-card_id': rulecard.id, 'rulecards-0-selected_rule': 'on',
+             'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
+             'commodity-0-commodity_id': commodity.id, 'commodity-0-nb_traded_cards': 1,
+             'comment': 'a comment'
+            })
+        self.assertEqual(200, response.status_code)
+
+        trade = Trade.objects.get(initiator__username = 'test2')
+        self.assertEqual(4, trade.responder.id)
+        self.assertEqual('a comment', trade.comment)
+        self.assertEqual('INITIATED', trade.status)
+        self.assertIsNone(trade.closing_date)
+        self.assertEqual([rule_in_hand], list(trade.rules.all()))
+        self.assertEqual([commodity_in_hand], list(trade.commodities.all()))
+        self.assertEqual(1, trade.tradedcommodities_set.all()[0].nb_traded_cards)
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
