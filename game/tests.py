@@ -12,15 +12,13 @@ from model_mommy import mommy
 from scoring.models import Ruleset, RuleCard, Commodity
 import datetime
 
-class ViewsTest(TestCase):
+class GameViewsTest(TestCase):
+    fixtures = ['test_users.json']
+
     def setUp(self):
-        self.testUserCanCreate = User.objects.create_user('testCanCreate', 'test@aaa.com', 'test')
-        self.testUserCanCreate.user_permissions.add(Permission.objects.get(codename = 'add_game'))
-        self.testUsersNoCreate = []
-        for i in range(4):
-            self.testUsersNoCreate.append(User.objects.create_user('testNoCreate{}'.format(i), 'test@aaa.com', 'test'))
-        
-        self.client.login(username = 'testCanCreate', password = 'test')
+        self.testUserCanCreate = User.objects.get(username = 'test1')
+        self.testUsersNoCreate = User.objects.exclude(user_permissions__codename = "add_game")
+        self.client.login(username = 'test1', password = 'test')
 
     def test_create_game_only_with_the_permission(self):
         # initially logged as testCanCreate
@@ -56,7 +54,7 @@ class ViewsTest(TestCase):
         self.assertEqual(1, self.client.session['ruleset'].id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), self.client.session['start_date'])
         self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), self.client.session['end_date'])
-        self.assertListEqual(self.testUsersNoCreate, self.client.session['players'])
+        self.assertListEqual(list(self.testUsersNoCreate), self.client.session['players'])
 
     def test_access_rules_with_incomplete_session_redirects_to_first_page(self):
         session = self.client.session
@@ -101,7 +99,7 @@ class ViewsTest(TestCase):
         session['ruleset'] = 1
         session['start_date'] = '11/10/2012 18:30'
         session['end_date'] = '11/13/2012 00:15'
-        session['players'] = [player.id for player in self.testUsersNoCreate]
+        session['players'] = [player.id for player in self.testUsersNoCreate][:4] # only 4 players
         session.save()
         response = self.client.post("/game/rules/",
                                     {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
@@ -129,7 +127,7 @@ class ViewsTest(TestCase):
         response = self.client.post("/game/create/", {'ruleset': 1,
                                                       'start_date': '11/10/2012 18:30',
                                                       'end_date': '11/13/2012 00:15',
-                                                      'players': [player.id for player in self.testUsersNoCreate]})
+                                                      'players': [player.id for player in self.testUsersNoCreate][:4]})
         self.assertRedirects(response, "/game/rules/")
         response = self.client.post("/game/rules/",
                                     {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
@@ -155,7 +153,7 @@ class ViewsTest(TestCase):
         self.assertEqual(1, created_game.ruleset.id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
         self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
-        self.assertListEqual(self.testUsersNoCreate, list(created_game.players.all()))
+        self.assertEqual(list(self.testUsersNoCreate)[:4], list(created_game.players.all()))
         self.assertListEqual([1, 2, 3, 9], [rule.id for rule in created_game.rules.all()])
         self.assertFalse('ruleset' in self.client.session)
         self.assertFalse('start_date' in self.client.session)
@@ -185,7 +183,16 @@ class ViewsTest(TestCase):
         response = self.client.get(reverse("welcome"))
         self.assertEqual(200, response.status_code)
         self.assertListEqual([game2, game1], response.context['games'])
-        self.assertNotIn(game3, response.context['games'])        
+        self.assertNotIn(game3, response.context['games'])
+
+#class TradeViewsTest(TestCase):
+#    fixtures = ['test_users.json']
+#
+#    def test_no_cards_fails_the_trade_validation(self):
+#        response = self.client.post("trades/1/create/", {'ruleset': 1,
+#                                                      'start_date': '11/10/2012 18:30',
+#                                                      'end_date': '11/13/2012 00:15',
+#                                                      'players': []})
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):

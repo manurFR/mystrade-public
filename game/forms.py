@@ -36,7 +36,7 @@ def validate_dates(start_date, end_date):
 def validate_number_of_players(list_of_players, chosen_ruleset):
     """
     There must be at least as many players as there are mandatory rule cards.
-    Raises a ValidationError if that condition is not fulfilled.
+    Raises a ValidationError ifthat condition is not fulfilled.
     """
     nb_mandatory_cards = RuleCard.objects.filter(ruleset = chosen_ruleset, mandatory = True).count()
     if len(list_of_players) < nb_mandatory_cards:

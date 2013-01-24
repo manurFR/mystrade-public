@@ -24,7 +24,9 @@ class UserProfile(models.Model):
         return self.name
 
 def create_user_profile(sender, instance, created, **kwargs):
-    if created:
+    # "and not kwargs.get('raw', False)" added to let the test fixtures insert userprofiles without trying to recreate the users
+    # see http://stackoverflow.com/questions/3499791/how-do-i-prevent-fixtures-from-conflicting-with-django-post-save-signal-code
+    if created and not kwargs.get('raw', False):
         UserProfile.objects.create(user=instance)
 
 post_save.connect(create_user_profile, sender=User)
