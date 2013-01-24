@@ -195,7 +195,7 @@ class TradeViewsTest(TestCase):
         self.client.login(username = 'test1', password = 'test')
 
     def test_no_cards_fails_the_trade_validation(self):
-        response = self.client.post("/game/trades/1/create/",
+        response = self.client.post("/game/1/trades/create/",
                                     {'responder': 4,
                                      'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
                                      'rulecards-0-card_id': 1,
