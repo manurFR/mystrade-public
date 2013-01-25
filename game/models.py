@@ -11,8 +11,8 @@ class Game(models.Model):
     players = models.ManyToManyField(User, related_name = 'playing_games_set')
 
     # it's important to use django.utils.timezone.now() which is an aware date
-    creation_date = models.DateTimeField(default = now())
-    start_date = models.DateTimeField(default = now())
+    creation_date = models.DateTimeField(default = now)
+    start_date = models.DateTimeField(default = now)
     end_date = models.DateTimeField(null = True)
 
     def __unicode__(self):
@@ -52,7 +52,7 @@ class Trade(models.Model):
     comment = models.TextField(blank = True)
 
     status = models.CharField(max_length = 15, default = "INITIATED") # INITIATED, CANCELLED, ACCEPTED or DECLINED
-    creation_date = models.DateTimeField(default = now())
+    creation_date = models.DateTimeField(default = now)
     closing_date = models.DateTimeField(null = True)
 
 class TradedCommodities(models.Model):
