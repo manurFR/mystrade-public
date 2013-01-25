@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.forms.formsets import formset_factory
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 
 from game.deal import deal_cards
@@ -167,7 +167,7 @@ def create_trade(request, game_id):
                         traded_commodities = TradedCommodities.objects.create(
                             trade = trade, commodity = commodity, nb_traded_cards = nb_traded_cards)
 
-                return HttpResponse("Trade {} saved".format(trade.id))
+                return HttpResponseRedirect(reverse('trades', args = [game.id]))
             else:
                 RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
                 rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.rulecard.id,

@@ -23,6 +23,7 @@
                     Trade proposed by {% if trade.initiator == user %}<strong>you</strong>{% else %}{{ trade.initiator.get_profile.name }}{% endif %}
                     to {% if trade.responder == user %}<strong>you</strong>{% else %}{{ trade.responder.get_profile.name }}{% endif %}
                 </div>
+                <div class="css_table-cell {{ color }}">for {{ trade.summary }}</div>
                 <div class="css_table-cell {{ color }}">{{ trade.status }}</div>
             </div>
         {% endfor %}
