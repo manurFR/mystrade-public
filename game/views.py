@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.forms.formsets import formset_factory
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
@@ -13,9 +14,7 @@ from scoring.models import RuleCard
 
 @login_required
 def welcome(request):
-    games_mastered = list(Game.objects.filter(master = request.user))
-    games_played = list(Game.objects.filter(players = request.user))
-    games = sorted(games_mastered + games_played, key = lambda game: game.end_date, reverse = True)
+    games = Game.objects.filter(Q(master = request.user) | Q(players = request.user)).distinct().order_by('-end_date')
     for game in games:
         game.list_of_players = [player.get_profile().name for player in game.players.all().order_by('id')]
     return render(request, 'game/welcome.html', {'games': games})
@@ -125,8 +124,8 @@ def select_rules(request):
 @login_required
 def trades(request, game_id):
     game = get_object_or_404(Game, id = game_id)
-    #trades = Trade.objects.filter(game = game, )
-    return render(request, 'game/trades.html', {'game': game})
+    trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game)
+    return render(request, 'game/trades.html', {'game': game, 'trades': trades})
 
 @login_required
 def create_trade(request, game_id):

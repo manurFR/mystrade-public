@@ -1,9 +1,9 @@
 import datetime
 
 def roundTimeToMinute(dt = None, roundToMinutes = 1):
-    """Round a datetime object to any time laps in minutes
-        dt : datetime.datetime object, default now.
-        roundTo : Closest number of minutes to round to, default 1 minute.
+    """ Round a datetime object to any time laps in minutes
+         dt : datetime.datetime object, default now.
+         roundTo : Closest number of minutes to round to, default 1 minute.
     """
     if dt == None:
         dt = datetime.datetime.now()

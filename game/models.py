@@ -1,7 +1,5 @@
-from django.conf.global_settings import SHORT_DATETIME_FORMAT
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils import dateformat
 from django.utils.timezone import now
 from scoring.models import Ruleset, RuleCard, Commodity
 

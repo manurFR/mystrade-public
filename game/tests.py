@@ -171,18 +171,21 @@ class GameAndWelcomeViewsTest(TestCase):
 
     def test_welcome_games_query(self):
         ruleset = Ruleset.objects.get(id = 1)
-        game1 = Game.objects.create(ruleset = ruleset, master = self.testUserCanCreate, end_date = datetime.datetime(2022, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
+        game1 = Game.objects.create(ruleset = ruleset, master = self.testUserCanCreate,
+                                    end_date = datetime.datetime(2022, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
         for user in self.testUsersNoCreate: game1.players.add(user)
-        game2 = Game.objects.create(ruleset = ruleset, master = self.testUsersNoCreate[0], end_date = datetime.datetime(2022, 11, 3, 12, 0, 0, tzinfo = get_default_timezone()))
+        game2 = Game.objects.create(ruleset = ruleset, master = self.testUsersNoCreate[0],
+                                    end_date = datetime.datetime(2022, 11, 3, 12, 0, 0, tzinfo = get_default_timezone()))
         game2.players.add(self.testUserCanCreate)
         game2.players.add(self.testUsersNoCreate[1])
-        game3 = Game.objects.create(ruleset = ruleset, master = self.testUsersNoCreate[0], end_date = datetime.datetime(2022, 11, 5, 12, 0, 0, tzinfo = get_default_timezone()))
+        game3 = Game.objects.create(ruleset = ruleset, master = self.testUsersNoCreate[0],
+                                    end_date = datetime.datetime(2022, 11, 5, 12, 0, 0, tzinfo = get_default_timezone()))
         game3.players.add(self.testUsersNoCreate[1])
         game3.players.add(self.testUsersNoCreate[2])
 
         response = self.client.get(reverse("welcome"))
         self.assertEqual(200, response.status_code)
-        self.assertListEqual([game2, game1], response.context['games'])
+        self.assertListEqual([game2, game1], list(response.context['games']))
         self.assertNotIn(game3, response.context['games'])
 
 class TradeViewsTest(TestCase):
