@@ -14,7 +14,20 @@
 
 {% block content %}
     <div class="header">Your trades for game #{{ game }} (ending in {{ game.end_date|timeuntil }})</div>
-    <br/>
+
+    <div class="css_table">
+        {% for trade in trades %}
+            {% cycle 'even_color' 'odd_color' as color silent %}
+            <div class="css_table-row">
+                <div class="css_table-cell {{ color }}">
+                    Trade proposed by {% if trade.initiator == user %}<strong>you</strong>{% else %}{{ trade.initiator.get_profile.name }}{% endif %}
+                    to {% if trade.responder == user %}<strong>you</strong>{% else %}{{ trade.responder.get_profile.name }}{% endif %}
+                </div>
+                <div class="css_table-cell {{ color }}">{{ trade.status }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
     <form action="{% url 'create_trade' game.id %}" method="GET">
         <input type="submit" value="Set up trade proposal" />
     </form>

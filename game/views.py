@@ -124,7 +124,7 @@ def select_rules(request):
 @login_required
 def trades(request, game_id):
     game = get_object_or_404(Game, id = game_id)
-    trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game)
+    trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game).order_by('-creation_date')
     return render(request, 'game/trades.html', {'game': game, 'trades': trades})
 
 @login_required
