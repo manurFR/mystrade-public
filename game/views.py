@@ -28,10 +28,9 @@ def hand(request, game_id):
     return render(request, 'game/hand.html',
                   {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand})
 
-@login_required
-def trades(request, game_id):
-    game = get_object_or_404(Game, id = game_id)
-    return render(request, 'game/trades.html', {'game': game})
+#############################################################################
+##                              Games                                      ##
+#############################################################################
 
 @permission_required('game.add_game')
 def create_game(request):
@@ -119,6 +118,16 @@ def select_rules(request):
                                                        for card in rulecards_queryset])
         return render(request, 'game/rules.html', {'formset': formset, 'session': request.session})
 
+#############################################################################
+##                              Trades                                     ##
+#############################################################################
+
+@login_required
+def trades(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+    #trades = Trade.objects.filter(game = game, )
+    return render(request, 'game/trades.html', {'game': game})
+
 @login_required
 def create_trade(request, game_id):
     game = get_object_or_404(Game, id = game_id)
@@ -149,7 +158,7 @@ def create_trade(request, game_id):
                                          nb_selected_rules = len(selected_rules), nb_selected_commodities = sum(nb_commodities.values()))
 
             if trade_form.is_valid():
-                trade = Trade.objects.create(initiator = request.user,
+                trade = Trade.objects.create(game = game, initiator = request.user,
                                              responder = trade_form.cleaned_data['responder'],
                                              comment   = trade_form.cleaned_data['comment'])
                 for card in selected_rules:

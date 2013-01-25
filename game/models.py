@@ -43,6 +43,8 @@ class CommodityInHand(models.Model):
                 's' if self.nb_cards > 1 else '', self.player.get_profile().name, self.game.id)
 
 class Trade(models.Model):
+    game = models.ForeignKey(Game)
+
     initiator = models.ForeignKey(User, related_name="initiator_trades_set")
     responder = models.ForeignKey(User, related_name="responder_trades_set")
 

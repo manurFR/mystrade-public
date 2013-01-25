@@ -243,7 +243,7 @@ class TradeViewsTest(TestCase):
             })
         self.assertEqual(200, response.status_code)
 
-        trade = Trade.objects.get(initiator__username = 'test2')
+        trade = Trade.objects.get(game = self.game, initiator__username = 'test2')
         self.assertEqual(4, trade.responder.id)
         self.assertEqual('a comment', trade.comment)
         self.assertEqual('INITIATED', trade.status)
