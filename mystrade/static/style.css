@@ -113,6 +113,14 @@ input[type="submit"] {
 	color: #A67600;
 }
 
+.done {
+    color: #A67600;
+}
+
+.cancelled {
+    text-decoration: line-through;
+}
+
 .floatright {
 	float: right;
 	margin-right: 1em;

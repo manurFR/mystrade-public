@@ -18,13 +18,23 @@
     <div class="css_table">
         {% for trade in trades %}
             {% cycle 'even_color' 'odd_color' as color silent %}
-            <div class="css_table-row">
+            <div class="css_table-row{% if trade.status == 'ACCEPTED' or trade.status == 'DECLINED' %} done{% elif trade.status == 'CANCELLED' %} cancelled{% endif %}">
                 <div class="css_table-cell {{ color }}">
                     Trade proposed by {% if trade.initiator == user %}<strong>you</strong>{% else %}{{ trade.initiator.get_profile.name }}{% endif %}
                     to {% if trade.responder == user %}<strong>you</strong>{% else %}{{ trade.responder.get_profile.name }}{% endif %}
                 </div>
                 <div class="css_table-cell {{ color }}">for {{ trade.summary }}</div>
-                <div class="css_table-cell {{ color }}">{{ trade.status }}</div>
+                <div class="css_table-cell {{ color }}">
+                    {% if trade.status == 'INITIATED' %}
+                        submitted {{ trade.creation_date|timesince }} ago
+                    {% elif trade.status == 'CANCELLED' %}
+                        cancelled by {% if trade.initiator == user %}<strong>you</strong>{% else %}{{ trade.initiator.get_profile.name }}{% endif %} {{ trade.closing_date|timesince }} ago
+                    {% elif trade.status == 'ACCEPTED' %}
+                        accepted {{ trade.closing_date|timesince }} ago
+                    {% elif trade.status == 'DECLINED' %}
+                        declined {{ trade.closing_date|timesince }} ago
+                    {% endif %}
+                </div>
             </div>
         {% endfor %}
     </div>

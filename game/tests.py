@@ -192,13 +192,13 @@ class TradeViewsTest(TestCase):
     fixtures = ['test_users.json']
 
     def setUp(self):
-        self.testUsersNoCreate = User.objects.exclude(user_permissions__codename = "add_game")
-        self.game = mommy.make_one(Game, id = 1, master = User.objects.get(username = 'test1'), players = self.testUsersNoCreate)
-
+        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'),
+                                   players = User.objects.exclude(username = 'test1'))
+        self.loginUser = User.objects.get(username = 'test2')
         self.client.login(username = 'test2', password = 'test')
 
     def test_create_trade_without_responder_fails(self):
-        response = self.client.post("/game/1/trades/create/",
+        response = self.client.post("/game/{}/trades/create/".format(self.game.id),
             {'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
              'rulecards-0-card_id': 1,
              'rulecards-1-card_id': 2,
@@ -213,7 +213,7 @@ class TradeViewsTest(TestCase):
         self.assertFormError(response, 'trade_form', 'responder', 'This field is required.')
 
     def test_create_trade_without_selecting_cards_fails(self):
-        response = self.client.post("/game/1/trades/create/",
+        response = self.client.post("/game/{}/trades/create/".format(self.game.id),
                                     {'responder': 4,
                                      'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
                                      'rulecards-0-card_id': 1,
@@ -236,7 +236,7 @@ class TradeViewsTest(TestCase):
         commodity = mommy.make_one(Commodity, ruleset = ruleset, name = 'commodity_1')
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
                                                            commodity = commodity, nb_cards = 2)
-        response = self.client.post("/game/1/trades/create/",
+        response = self.client.post("/game/{}/trades/create/".format(self.game.id),
             {'responder': 4,
              'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
              'rulecards-0-card_id': rulecard.id, 'rulecards-0-selected_rule': 'on',
@@ -244,7 +244,7 @@ class TradeViewsTest(TestCase):
              'commodity-0-commodity_id': commodity.id, 'commodity-0-nb_traded_cards': 1,
              'comment': 'a comment'
             })
-        self.assertEqual(200, response.status_code)
+        self.assertRedirects(response, "/game/{}/trades/".format(self.game.id))
 
         trade = Trade.objects.get(game = self.game, initiator__username = 'test2')
         self.assertEqual(4, trade.responder.id)
@@ -254,6 +254,28 @@ class TradeViewsTest(TestCase):
         self.assertEqual([rule_in_hand], list(trade.rules.all()))
         self.assertEqual([commodity_in_hand], list(trade.commodities.all()))
         self.assertEqual(1, trade.tradedcommodities_set.all()[0].nb_traded_cards)
+
+    def test_trade_list(self):
+        right_now = datetime.datetime.now(tz = get_default_timezone())
+        trade_initiated = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
+                                         rules = [], commodities = [],
+                                         creation_date = right_now.replace(day = right_now.day - 1))
+        trade_cancelled = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
+                                         rules = [], commodities = [],
+                                         closing_date = right_now.replace(day = right_now.day - 2))
+        trade_accepted = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
+                                        rules = [], commodities = [],
+                                        closing_date = right_now.replace(day = right_now.day - 3))
+        trade_declined = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'DECLINED',
+                                        rules = [], commodities = [],
+                                        closing_date = right_now.replace(day = right_now.day - 4))
+
+        response = self.client.get("/game/{}/trades/".format(self.game.id))
+
+        self.assertContains(response, "submitted 1 day ago")
+        self.assertContains(response, "cancelled by <strong>you</strong> 2 days ago")
+        self.assertContains(response, "accepted 3 days ago")
+        self.assertContains(response, "declined 4 days ago")
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
