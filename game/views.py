@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, CreateTradeForm, validate_number_of_players, \
-    validate_dates, RuleCardFormDisplay, RuleCardFormParse, CommodityCardFormParse, CommodityCardFormDisplay
+    validate_dates, RuleCardFormDisplay, RuleCardFormParse, CommodityCardFormParse, CommodityCardFormDisplay, BaseRuleCardsFormSet
 from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities
 from scoring.models import RuleCard
 
@@ -76,7 +76,7 @@ def select_rules(request):
                     selected_rules.append(card)
                     continue
                 for form in formset:
-                    if int(form.cleaned_data['card_id']) == card.id and form.cleaned_data['selected_rule']:
+                    if form.cleaned_data['card_id'] == card.id and form.cleaned_data['selected_rule']:
                         selected_rules.append(card)
                         break
             if len(selected_rules) > len(players):
@@ -134,7 +134,7 @@ def create_trade(request, game_id):
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
     commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user).order_by('commodity__value', 'commodity__name')
     if request.method == 'POST':
-        RuleCardsFormSet = formset_factory(RuleCardFormParse)
+        RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
         rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')
         CommodityCardsFormSet = formset_factory(CommodityCardFormParse)
         commodities_formset = CommodityCardsFormSet(request.POST, prefix = 'commodity')
@@ -170,11 +170,13 @@ def create_trade(request, game_id):
                 return HttpResponseRedirect(reverse('trades', args = [game.id]))
             else:
                 RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
-                rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.rulecard.id,
+                rulecards_formset = RuleCardsFormSet(initial = sorted(
+                                                                [{'card_id':      card.rulecard.id,
                                                                  'public_name':   card.rulecard.public_name,
                                                                  'description':   card.rulecard.description,
+                                                                 'reserved':      bool(card.trade_set.filter(status = 'INITIATED').count() > 0),
                                                                  'selected_rule': bool(card in selected_rules)}
-                                                                for card in rule_hand],
+                                                                for card in rule_hand], key = lambda card: card['reserved']),
                                                      prefix = 'rulecards')
                 CommodityCardsFormSet = formset_factory(CommodityCardFormDisplay, extra = 0)
                 commodities_formset = CommodityCardsFormSet(initial = [{'commodity_id':     card.commodity.id,
@@ -186,10 +188,12 @@ def create_trade(request, game_id):
                                                             prefix = 'commodity')
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
-        rulecards_formset = RuleCardsFormSet(initial = [{'card_id':       card.rulecard.id,
+        rulecards_formset = RuleCardsFormSet(initial = sorted(
+                                                        [{'card_id':      card.rulecard.id,
                                                          'public_name':   card.rulecard.public_name,
-                                                         'description':   card.rulecard.description}
-                                                        for card in rule_hand],
+                                                         'description':   card.rulecard.description,
+                                                         'reserved':      bool(card.trade_set.filter(status = 'INITIATED').count() > 0)}
+                                                        for card in rule_hand], key = lambda card: card['reserved']),
                                              prefix = 'rulecards')
         CommodityCardsFormSet = formset_factory(CommodityCardFormDisplay, extra = 0)
         commodities_formset = CommodityCardsFormSet(initial = [{'commodity_id':     card.commodity.id,

@@ -2,11 +2,12 @@ from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Sum
+from django.forms.formsets import formset_factory
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
     prepare_deck, dispatch_cards, CommodityCardDealer
-from game.forms import validate_number_of_players, validate_dates
+from game.forms import validate_number_of_players, validate_dates, RuleCardFormParse, BaseRuleCardsFormSet
 from game.models import Game, RuleInHand, CommodityInHand, Trade
 from model_mommy import mommy
 from scoring.models import Ruleset, RuleCard, Commodity
@@ -237,13 +238,13 @@ class TradeViewsTest(TestCase):
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
                                                            commodity = commodity, nb_cards = 2)
         response = self.client.post("/game/{}/trades/create/".format(self.game.id),
-            {'responder': 4,
-             'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
-             'rulecards-0-card_id': rulecard.id, 'rulecards-0-selected_rule': 'on',
-             'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
-             'commodity-0-commodity_id': commodity.id, 'commodity-0-nb_traded_cards': 1,
-             'comment': 'a comment'
-            })
+                                    {'responder': 4,
+                                     'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
+                                     'rulecards-0-card_id': rulecard.id, 'rulecards-0-selected_rule': 'on',
+                                     'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
+                                     'commodity-0-commodity_id': commodity.id, 'commodity-0-nb_traded_cards': 1,
+                                     'comment': 'a comment'
+                                    })
         self.assertRedirects(response, "/game/{}/trades/".format(self.game.id))
 
         trade = Trade.objects.get(game = self.game, initiator__username = 'test2')
@@ -300,6 +301,19 @@ class FormsTest(TestCase):
             validate_dates(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), datetime.datetime(2012, 11, 10, 18, 50, tzinfo = get_default_timezone()))
         except ValidationError:
             self.fail("validate_dates should not fail when end_date is strictly posterior to start_date")
+
+    def test_a_rule_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
+        rule = mommy.make_one(RuleCard)
+        rule_in_hand = mommy.make_one(RuleInHand, rulecard = rule, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+        pending_trade = mommy.make_one(Trade, status = 'INITIATED', rules = [rule_in_hand], commodities = [])
+
+        RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
+        rulecards_formset = RuleCardsFormSet({'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
+                                              'rulecards-0-card_id': rule.id, 'rulecards-0-selected_rule': 'on'
+                                             }, prefix = 'rulecards')
+
+        self.assertFalse(rulecards_formset.is_valid())
+        self.assertIn("A rule card in a pending trade can not be offered in another trade.", rulecards_formset._non_form_errors)
 
 class DealTest(TestCase):
     def setUp(self):

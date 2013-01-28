@@ -170,6 +170,10 @@ input[type="submit"] {
     height: 50px;
 }
 
+.reserved {
+    background: url(stripe.png);
+}
+
 .clicked {
     border: gray solid 3px;
     border-radius: 2px;

@@ -1,22 +1,25 @@
 from django import forms
 from django.contrib.auth.models import User
-from game.models import Game
+from django.forms.formsets import BaseFormSet
+from game.models import Game, RuleInHand
 from scoring.models import Ruleset, RuleCard
 from utils.utils import roundTimeToMinute
 
-# ---- create game -----
+#############################################################################
+##                              Games                                      ##
+#############################################################################
 
 class CreateGameForm(forms.Form):
-    ruleset = forms.ModelChoiceField(queryset = Ruleset.objects.all(), empty_label = None)
+    ruleset = forms.ModelChoiceField(queryset=Ruleset.objects.all(), empty_label=None)
 
-    start_date = forms.DateTimeField(initial = roundTimeToMinute(roundToMinutes = 15).strftime("%m/%d/%Y %H:%M"))
+    start_date = forms.DateTimeField(initial=roundTimeToMinute(roundToMinutes=15).strftime("%m/%d/%Y %H:%M"))
     end_date = forms.DateTimeField()
 
-    players = forms.ModelMultipleChoiceField(queryset = User.objects.none())
+    players = forms.ModelMultipleChoiceField(queryset=User.objects.none())
 
     def __init__(self, game_master, *args, **kwargs):
         super(CreateGameForm, self).__init__(*args, **kwargs)
-        self.fields['players'].queryset = User.objects.exclude(id = game_master.id)
+        self.fields['players'].queryset = User.objects.exclude(id=game_master.id)
 
     def clean(self):
         cleaned_data = super(CreateGameForm, self).clean()
@@ -26,6 +29,7 @@ class CreateGameForm(forms.Form):
             validate_number_of_players(cleaned_data['players'], cleaned_data['ruleset'])
         return cleaned_data
 
+
 def validate_dates(start_date, end_date):
     """
     End date must be strictly after start date.
@@ -33,20 +37,25 @@ def validate_dates(start_date, end_date):
     if end_date <= start_date:
         raise forms.ValidationError("End date must be strictly posterior to start date.")
 
+
 def validate_number_of_players(list_of_players, chosen_ruleset):
     """
     There must be at least as many players as there are mandatory rule cards.
     Raises a ValidationError ifthat condition is not fulfilled.
     """
-    nb_mandatory_cards = RuleCard.objects.filter(ruleset = chosen_ruleset, mandatory = True).count()
+    nb_mandatory_cards = RuleCard.objects.filter(ruleset=chosen_ruleset, mandatory=True).count()
     if len(list_of_players) < nb_mandatory_cards:
-        raise forms.ValidationError("Please select at least {} players (as many as there are mandatory rule cards in this ruleset).".format(nb_mandatory_cards))
+        raise forms.ValidationError(
+            "Please select at least {} players (as many as there are mandatory rule cards in this ruleset).".format(
+                nb_mandatory_cards))
 
-# ---- create trade -----
+#############################################################################
+##                              Trades                                     ##
+#############################################################################
 
 class CreateTradeForm(forms.Form):
-    responder = forms.ModelChoiceField(queryset = User.objects.none(), empty_label=u'- Choose a player -')
-    comment = forms.CharField(required = False, widget=forms.Textarea(attrs = {'cols': '145', 'rows': '3'}))
+    responder = forms.ModelChoiceField(queryset=User.objects.none(), empty_label=u'- Choose a player -')
+    comment = forms.CharField(required=False, widget=forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
 
     nb_selected_rules = 0
     nb_selected_commodities = 0
@@ -59,7 +68,7 @@ class CreateTradeForm(forms.Form):
 
         super(CreateTradeForm, self).__init__(*args, **kwargs)
 
-        self.fields['responder'].queryset = Game.objects.get(id = game.id).players.exclude(id = me.id).order_by('id')
+        self.fields['responder'].queryset = Game.objects.get(id=game.id).players.exclude(id=me.id).order_by('id')
 
     def clean(self):
         cleaned_data = super(CreateTradeForm, self).clean()
@@ -68,19 +77,33 @@ class CreateTradeForm(forms.Form):
         return cleaned_data
 
 class RuleCardFormParse(forms.Form):
-    card_id = forms.CharField(widget = forms.HiddenInput)
-    selected_rule = forms.BooleanField(required = False, label = "Offer")
+    card_id = forms.IntegerField(widget=forms.HiddenInput)
+    selected_rule = forms.BooleanField(required=False, label="Offer")
 
 class RuleCardFormDisplay(RuleCardFormParse):
     public_name = forms.CharField()
     description = forms.CharField()
     mandatory = forms.BooleanField()
+    reserved = forms.BooleanField()
+
+class BaseRuleCardsFormSet(BaseFormSet):
+    def clean(self):
+        if any(self.errors):
+            return
+        for i in range(0, self.total_form_count()):
+            form = self.forms[i]
+            if form.cleaned_data['selected_rule']:
+                if RuleInHand.objects.get(rulecard__id = form.cleaned_data['card_id']).trade_set.filter(status = 'INITIATED').count() > 0:
+                    raise forms.ValidationError("A rule card in a pending trade can not be offered in another trade.")
 
 class CommodityCardFormParse(forms.Form):
-    commodity_id = forms.CharField(widget = forms.HiddenInput)
-    nb_traded_cards = forms.IntegerField(widget = forms.HiddenInput)
+    commodity_id = forms.CharField(widget=forms.HiddenInput)
+    nb_traded_cards = forms.IntegerField(widget=forms.HiddenInput)
+
 
 class CommodityCardFormDisplay(CommodityCardFormParse):
     name = forms.CharField()
     nb_cards = forms.IntegerField()
     color = forms.CharField()
+
+

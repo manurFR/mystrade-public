@@ -33,14 +33,18 @@
                         <div class="css_table-row">
                     {% endif %}
                 <div class="css_table-cell">
-                    <div class="card with_button" id="{{ form.prefix }}">
+                    <div class="card with_button{% if form.reserved.value %} reserved{% endif %}" id="{{ form.prefix }}">
                         {{ form.card_id }}
                         <div class="card_name">{{ form.public_name.value }}</div>
                         <div class="card_desc">{{ form.description.value }}</div>
                         <div class="align_to_bottom">
                             <div class="card_select">
+                            {% if form.reserved.value  %}
+                                <span class="helptext">Reserved for a pending trade</span>
+                            {% else %}
                                 <input type="checkbox" class="rulecard_checkbox" name="{{ form.selected_rule.html_name }}" id="button_rule_{{ form.card_id.value }}" {% if form.selected_rule.value %}checked="checked"{% endif %}/>
                                 <label for="button_rule_{{ form.card_id.value }}">Offer</label>
+                            {% endif %}
                             </div>
                         </div>
                     </div>
