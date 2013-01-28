@@ -240,7 +240,7 @@ class TradeViewsTest(TestCase):
         response = self.client.post("/game/{}/trades/create/".format(self.game.id),
                                     {'responder': 4,
                                      'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
-                                     'rulecards-0-card_id': rulecard.id, 'rulecards-0-selected_rule': 'on',
+                                     'rulecards-0-card_id': rule_in_hand.id, 'rulecards-0-selected_rule': 'on',
                                      'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
                                      'commodity-0-commodity_id': commodity.id, 'commodity-0-nb_traded_cards': 1,
                                      'comment': 'a comment'
@@ -309,7 +309,7 @@ class FormsTest(TestCase):
 
         RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
         rulecards_formset = RuleCardsFormSet({'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
-                                              'rulecards-0-card_id': rule.id, 'rulecards-0-selected_rule': 'on'
+                                              'rulecards-0-card_id': rule_in_hand.id, 'rulecards-0-selected_rule': 'on'
                                              }, prefix = 'rulecards')
 
         self.assertFalse(rulecards_formset.is_valid())

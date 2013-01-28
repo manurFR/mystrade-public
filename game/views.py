@@ -143,7 +143,7 @@ def create_trade(request, game_id):
             selected_rules = []
             for card in rule_hand:
                 for form in rulecards_formset:
-                    if int(form.cleaned_data['card_id']) == card.rulecard.id and form.cleaned_data['selected_rule']:
+                    if form.cleaned_data['card_id'] == card.id and form.cleaned_data['selected_rule']:
                         selected_rules.append(card)
                         break
             nb_commodities = {}
@@ -164,20 +164,18 @@ def create_trade(request, game_id):
                     trade.rules.add(card)
                 for commodity, nb_traded_cards in nb_commodities.iteritems():
                     if nb_traded_cards > 0:
-                        traded_commodities = TradedCommodities.objects.create(
-                            trade = trade, commodity = commodity, nb_traded_cards = nb_traded_cards)
+                        TradedCommodities.objects.create(trade = trade, commodity = commodity, nb_traded_cards = nb_traded_cards)
 
                 return HttpResponseRedirect(reverse('trades', args = [game.id]))
             else:
                 RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
-                rulecards_formset = RuleCardsFormSet(initial = sorted(
-                                                                [{'card_id':      card.rulecard.id,
-                                                                 'public_name':   card.rulecard.public_name,
-                                                                 'description':   card.rulecard.description,
-                                                                 'reserved':      bool(card.trade_set.filter(status = 'INITIATED').count() > 0),
-                                                                 'selected_rule': bool(card in selected_rules)}
-                                                                for card in rule_hand], key = lambda card: card['reserved']),
-                                                     prefix = 'rulecards')
+                rulecards_formset = RuleCardsFormSet(initial = sorted([{'card_id':      card.id,
+                                                                        'public_name':   card.rulecard.public_name,
+                                                                        'description':   card.rulecard.description,
+                                                                        'reserved':      bool(card.trade_set.filter(status = 'INITIATED').count() > 0),
+                                                                        'selected_rule': bool(card in selected_rules)}
+                                                                       for card in rule_hand], key = lambda card: card['reserved']),
+                                                                      prefix = 'rulecards')
                 CommodityCardsFormSet = formset_factory(CommodityCardFormDisplay, extra = 0)
                 commodities_formset = CommodityCardsFormSet(initial = [{'commodity_id':     card.commodity.id,
                                                                         'name':             card.commodity.name,
@@ -185,11 +183,11 @@ def create_trade(request, game_id):
                                                                         'nb_cards':         card.nb_cards,
                                                                         'nb_traded_cards':  nb_commodities[card]}
                                                                        for card in commodity_hand],
-                                                            prefix = 'commodity')
+                                                                      prefix = 'commodity')
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
         rulecards_formset = RuleCardsFormSet(initial = sorted(
-                                                        [{'card_id':      card.rulecard.id,
+                                                        [{'card_id':      card.id,
                                                          'public_name':   card.rulecard.public_name,
                                                          'description':   card.rulecard.description,
                                                          'reserved':      bool(card.trade_set.filter(status = 'INITIATED').count() > 0)}

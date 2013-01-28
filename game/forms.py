@@ -93,13 +93,12 @@ class BaseRuleCardsFormSet(BaseFormSet):
         for i in range(0, self.total_form_count()):
             form = self.forms[i]
             if form.cleaned_data['selected_rule']:
-                if RuleInHand.objects.get(rulecard__id = form.cleaned_data['card_id']).trade_set.filter(status = 'INITIATED').count() > 0:
+                if RuleInHand.objects.get(id = form.cleaned_data['card_id']).trade_set.filter(status = 'INITIATED').count() > 0:
                     raise forms.ValidationError("A rule card in a pending trade can not be offered in another trade.")
 
 class CommodityCardFormParse(forms.Form):
     commodity_id = forms.CharField(widget=forms.HiddenInput)
     nb_traded_cards = forms.IntegerField(widget=forms.HiddenInput)
-
 
 class CommodityCardFormDisplay(CommodityCardFormParse):
     name = forms.CharField()
