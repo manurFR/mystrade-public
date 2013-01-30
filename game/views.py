@@ -179,11 +179,13 @@ def create_trade(request, game_id):
                                                                        for card in rule_hand], key = lambda card: card['reserved']),
                                                                       prefix = 'rulecards')
                 CommodityCardsFormSet = formset_factory(CommodityCardFormDisplay, extra = 0)
-                commodities_formset = CommodityCardsFormSet(initial = [{'commodity_id':     card.commodity.id,
-                                                                        'name':             card.commodity.name,
-                                                                        'color':            card.commodity.color,
-                                                                        'nb_cards':         card.nb_cards,
-                                                                        'nb_traded_cards':  nb_commodities[card]}
+                commodities_formset = CommodityCardsFormSet(initial = [{'commodity_id':      card.commodity.id,
+                                                                        'name':              card.commodity.name,
+                                                                        'color':             card.commodity.color,
+                                                                        'nb_cards':          card.nb_cards,
+                                                                        'nb_tradable_cards': card.nb_cards -
+                                    sum([tc.nb_traded_cards for tc in card.tradedcommodities_set.all() if tc.trade.status == 'INITIATED']),
+                                                                        'nb_traded_cards':   nb_commodities[card]}
                                                                        for card in commodity_hand],
                                                                       prefix = 'commodity')
     else:

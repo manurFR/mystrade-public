@@ -5,6 +5,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.1.custom.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'style.css-tooltips.css' %}" />
 {% endblock %}
 
 {% block scripts %}
@@ -66,7 +67,11 @@
                             <div class="card_name">{{ form.name.value }}</div>
                             <div class="card_copies">
                                 {% for copy in form.nb_cards.value|as_range %}
-                                    <span class="minicard{% if copy >= form.nb_tradable_cards.value %} reserved{% elif form.nb_traded_cards.value > copy %} clicked{% endif %}" style="background-color: {{ form.color.value }}">&nbsp;</span>
+                                    <span class="minicard
+                                    {% if copy >= form.nb_tradable_cards.value %} reserved" data-tip="Reserved for a pending trade"
+                                    {% elif form.nb_traded_cards.value > copy %} clicked"
+                                    {% else %}"{% endif %}
+                                    style="background-color: {{ form.color.value }}">&nbsp;</span>
                                 {% endfor %}
                             </div>
                             {{ form.nb_traded_cards }}
