@@ -66,7 +66,7 @@
                             <div class="card_name">{{ form.name.value }}</div>
                             <div class="card_copies">
                                 {% for copy in form.nb_cards.value|as_range %}
-                                    <span class="minicard{% if form.nb_traded_cards.value > copy %} clicked{% endif %}" style="background-color: {{ form.color.value }}">&nbsp;</span>
+                                    <span class="minicard{% if copy >= form.nb_tradable_cards.value %} reserved{% elif form.nb_traded_cards.value > copy %} clicked{% endif %}" style="background-color: {{ form.color.value }}">&nbsp;</span>
                                 {% endfor %}
                             </div>
                             {{ form.nb_traded_cards }}
@@ -92,7 +92,7 @@
             $('.rulecard_checkbox').button().click(function() {
                 updateSummary();
             });
-            $('.minicard').click(function() {
+            $('.minicard').not('.reserved').click(function() {
                 $(this).toggleClass("clicked")
                 // set the corresponding hidden form field to hold the number of commodities from this type that are now "clicked"
                 $("input[type=hidden][name=" + $(this).parents(".card").attr("id") + "-nb_traded_cards]").val($(this).parent().children(".clicked").length)

@@ -1,17 +1,20 @@
-from django.contrib.auth.models import User, Permission
+import datetime
+
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Sum
 from django.forms.formsets import formset_factory
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
+from model_mommy import mommy
+
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
     prepare_deck, dispatch_cards, CommodityCardDealer
-from game.forms import validate_number_of_players, validate_dates, RuleCardFormParse, BaseRuleCardsFormSet
-from game.models import Game, RuleInHand, CommodityInHand, Trade
-from model_mommy import mommy
+from game.forms import validate_number_of_players, validate_dates, RuleCardFormParse, BaseRuleCardsFormSet, CommodityCardFormParse, BaseCommodityCardFormSet
+from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities
 from scoring.models import Ruleset, RuleCard, Commodity
-import datetime
+
 
 class GameAndWelcomeViewsTest(TestCase):
     fixtures = ['test_users.json']
@@ -303,8 +306,7 @@ class FormsTest(TestCase):
             self.fail("validate_dates should not fail when end_date is strictly posterior to start_date")
 
     def test_a_rule_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        rule = mommy.make_one(RuleCard)
-        rule_in_hand = mommy.make_one(RuleInHand, rulecard = rule, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+        rule_in_hand = mommy.make_one(RuleInHand, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
         pending_trade = mommy.make_one(Trade, status = 'INITIATED', rules = [rule_in_hand], commodities = [])
 
         RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
@@ -314,6 +316,22 @@ class FormsTest(TestCase):
 
         self.assertFalse(rulecards_formset.is_valid())
         self.assertIn("A rule card in a pending trade can not be offered in another trade.", rulecards_formset._non_form_errors)
+
+    def test_commodities_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
+        commodity_in_hand = mommy.make_one(CommodityInHand, nb_cards = 1)
+        # see https://github.com/vandersonmota/model_mommy/issues/25
+        pending_trade = mommy.make_one(Trade, game = commodity_in_hand.game, status = 'INITIATED', rules = [], commodities = [])
+        traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodity = commodity_in_hand, trade = pending_trade)
+
+        CommodityCardsFormSet = formset_factory(CommodityCardFormParse, formset = BaseCommodityCardFormSet)
+        commodities_formset = CommodityCardsFormSet({'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
+                                                     'commodity-0-commodity_id': commodity_in_hand.commodity.id, 'commodity-0-nb_traded_cards': 1,
+                                                    }, prefix = 'commodity')
+        commodities_formset.set_game(commodity_in_hand.game)
+        commodities_formset.set_player(commodity_in_hand.player)
+
+        self.assertFalse(commodities_formset.is_valid())
+        self.assertIn("A commodity card in a pending trade can not be offered in another trade.", commodities_formset._non_form_errors)
 
 class DealTest(TestCase):
     def setUp(self):

@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.db.models import Sum
 from django.forms.formsets import BaseFormSet
-from game.models import Game, RuleInHand
+from game.models import Game, RuleInHand, TradedCommodities, CommodityInHand
 from scoring.models import Ruleset, RuleCard
 from utils.utils import roundTimeToMinute
 
@@ -103,6 +104,23 @@ class CommodityCardFormParse(forms.Form):
 class CommodityCardFormDisplay(CommodityCardFormParse):
     name = forms.CharField()
     nb_cards = forms.IntegerField()
+    nb_tradable_cards = forms.IntegerField()
     color = forms.CharField()
 
+class BaseCommodityCardFormSet(BaseFormSet):
+    def set_game(self, game):
+        self.game = game
+    def set_player(self, player):
+        self.player = player
+
+    def clean(self):
+        if any(self.errors):
+            return
+        for i in range(0, self.total_form_count()):
+            form = self.forms[i]
+            commodity_in_hand = CommodityInHand.objects.get(game = self.game, player = self.player, commodity__id = form.cleaned_data['commodity_id'])
+            if (form.cleaned_data['nb_traded_cards'] >
+                    commodity_in_hand.nb_cards -
+                        commodity_in_hand.tradedcommodities_set.filter(trade__status='INITIATED').aggregate(Sum('nb_traded_cards'))['nb_traded_cards__sum']):
+                    raise forms.ValidationError("A commodity card in a pending trade can not be offered in another trade.")
 

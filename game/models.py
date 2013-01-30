@@ -37,7 +37,7 @@ class CommodityInHand(models.Model):
     nb_cards = models.PositiveSmallIntegerField(default = 0)
 
     def __unicode__(self):
-        return "{} {} card{} owned by {} in game {}".format(self.nb_cards, self.commodity.name.lower(), 
+        return "{} {} card{} owned by {} in game {}".format(self.nb_cards, self.commodity.name.lower(),
                 's' if self.nb_cards > 1 else '', self.player.get_profile().name, self.game.id)
 
 class Trade(models.Model):

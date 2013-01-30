@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, CreateTradeForm, validate_number_of_players, \
-    validate_dates, RuleCardFormDisplay, RuleCardFormParse, CommodityCardFormParse, CommodityCardFormDisplay, BaseRuleCardsFormSet
+    validate_dates, RuleCardFormDisplay, RuleCardFormParse, CommodityCardFormParse, CommodityCardFormDisplay, BaseRuleCardsFormSet, BaseCommodityCardFormSet
 from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities
 from scoring.models import RuleCard
 
@@ -136,8 +136,10 @@ def create_trade(request, game_id):
     if request.method == 'POST':
         RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
         rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')
-        CommodityCardsFormSet = formset_factory(CommodityCardFormParse)
+        CommodityCardsFormSet = formset_factory(CommodityCardFormParse, formset = BaseCommodityCardFormSet)
         commodities_formset = CommodityCardsFormSet(request.POST, prefix = 'commodity')
+        commodities_formset.set_game(game)
+        commodities_formset.set_player(request.user)
 
         if rulecards_formset.is_valid() and commodities_formset.is_valid():
             selected_rules = []
@@ -194,11 +196,13 @@ def create_trade(request, game_id):
                                                         for card in rule_hand], key = lambda card: card['reserved']),
                                              prefix = 'rulecards')
         CommodityCardsFormSet = formset_factory(CommodityCardFormDisplay, extra = 0)
-        commodities_formset = CommodityCardsFormSet(initial = [{'commodity_id':     card.commodity.id,
-                                                                'name':             card.commodity.name,
-                                                                'color':            card.commodity.color,
-                                                                'nb_cards':         card.nb_cards,
-                                                                'nb_traded_cards':  0}
+        commodities_formset = CommodityCardsFormSet(initial = [{'commodity_id':      card.commodity.id,
+                                                                'name':              card.commodity.name,
+                                                                'color':             card.commodity.color,
+                                                                'nb_cards':          card.nb_cards,
+                                                                'nb_tradable_cards': card.nb_cards -
+                                    sum([tc.nb_traded_cards for tc in card.tradedcommodities_set.all() if tc.trade.status == 'INITIATED']),
+                                                                'nb_traded_cards':   0}
                                                                for card in commodity_hand],
                                                     prefix = 'commodity')
         trade_form = CreateTradeForm(request.user, game)
