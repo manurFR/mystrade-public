@@ -16,17 +16,16 @@
 {% block content %}
     <form action="{% url 'create_trade' game.id %}" method="post">{% csrf_token %}
         <div class="header">Set up a trade proposal for game #{{ game }} (ending in {{ game.end_date|timeuntil }})</div>
-        {% for err in trade_form.non_field_errors %}
-        <table>
-            <tr>
-                <td colspan="2"><span class="errors">{{ err }}</span></td>
-            </tr>
-        </table>
-        {% endfor %}
         <div>Trade with : {{ trade_form.responder }}&nbsp;<span class="errors">{{ trade_form.responder.errors.as_text }}</span><br/>
              You are offering: <span id="summary"/>
         </div>
-
+        {% for err in trade_form.non_field_errors %}
+            <table>
+                <tr>
+                    <td colspan="2"><span class="errors">{{ err }}</span></td>
+                </tr>
+            </table>
+        {% endfor %}
         <div>
             <h4>Rules</h4>
             <div class="css_table">

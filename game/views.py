@@ -128,6 +128,11 @@ def trades(request, game_id):
     return render(request, 'game/trades.html', {'game': game, 'trades': trades})
 
 @login_required
+def show_trade(request, game_id, trade_id):
+    trade = get_object_or_404(Trade, id = trade_id)
+    return render(request, 'game/show_trade.html', {'trade': trade})
+
+@login_required
 def create_trade(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 

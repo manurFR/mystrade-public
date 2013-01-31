@@ -35,6 +35,7 @@
                         declined {{ trade.closing_date|timesince }} ago
                     {% endif %}
                 </div>
+                <div class="css_table-cell {{ color }}"><a href="{% url 'show_trade' game.id trade.id %}">Show</a></div>
             </div>
         {% endfor %}
     </div>
