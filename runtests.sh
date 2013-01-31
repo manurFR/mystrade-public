@@ -5,7 +5,7 @@ APPS=`python -c "from mystrade.settings import MYSTRADE_APPS; print ' '.join(MYS
 
 for app in ${APPS}; do
 	echo "**** Tests for app:           ${app}"
-	python -Wall manage.py test ${app}
+	./manage.py test ${app}
   if [[ $? != 0 ]]; then
     echo "TESTS FAILURE !"
     exit 1
