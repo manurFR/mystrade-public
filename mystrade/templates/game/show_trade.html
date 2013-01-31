@@ -64,7 +64,7 @@
             {% endif %}
             {% if initiator == request.user and trade.status == 'INITIATED' %}
                 <div class="floatright">
-                    <form action="{# {% url 'cancel_trade' trade.id %} #}" method="post">{% csrf_token %}
+                    <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
                         <input type="submit" value="Cancel this trade"/>
                     </form>
                 </div>

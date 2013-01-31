@@ -7,6 +7,7 @@ from django.db.models.aggregates import Sum
 from django.forms.formsets import formset_factory
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
+from django.utils.unittest.case import skip
 from model_mommy import mommy
 
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
@@ -259,6 +260,7 @@ class TradeViewsTest(TestCase):
         self.assertEqual([commodity_in_hand], list(trade.commodities.all()))
         self.assertEqual(1, trade.tradedcommodities_set.all()[0].nb_traded_cards)
 
+    #noinspection PyUnusedLocal,PyTypeChecker
     def test_trade_list(self):
         right_now = datetime.datetime.now(tz = get_default_timezone())
         trade_initiated = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
@@ -280,6 +282,44 @@ class TradeViewsTest(TestCase):
         self.assertContains(response, "cancelled by <strong>you</strong> 2 days ago")
         self.assertContains(response, "accepted 3 days ago")
         self.assertContains(response, "declined 4 days ago")
+
+    def test_cancel_trade_not_allowed_in_GET(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
+                               rules = [], commodities = [])
+
+        response = self.client.get("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id), follow = True)
+
+        self.assertEqual(404, response.status_code)
+
+    @skip("until control is implemented")
+    def test_cancel_trade_not_allowed_for_trades_you_didnt_create(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'), status = 'INITIATED',
+                               rules = [], commodities = [])
+
+        response = self.client.get("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id))
+
+        self.assertContains(response, "You are not allowed to cancel this trade.")
+
+    @skip("until control is implemented")
+    def test_cancel_trade_not_allowed_for_trades_not_in_status_INITIATED(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
+                               rules = [], commodities = [])
+
+        response = self.client.get("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id))
+
+        self.assertContains(response, "You are not allowed to cancel this trade.")
+
+    def test_cancel_trade_allowed_and_effective_for_trades_you_created_and_still_in_status_INITIATED(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
+                               rules = [], commodities = [])
+
+        response = self.client.post("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id), follow = True)
+
+        self.assertEqual(200, response.status_code)
+
+        trade = Trade.objects.get(pk = trade.id)
+        self.assertEqual("CANCELLED", trade.status)
+        self.assertIsNotNone(trade.closing_date)
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
@@ -305,6 +345,7 @@ class FormsTest(TestCase):
         except ValidationError:
             self.fail("validate_dates should not fail when end_date is strictly posterior to start_date")
 
+    #noinspection PyUnusedLocal
     def test_a_rule_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
         rule_in_hand = mommy.make_one(RuleInHand, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
         pending_trade = mommy.make_one(Trade, status = 'INITIATED', rules = [rule_in_hand], commodities = [])
@@ -317,6 +358,7 @@ class FormsTest(TestCase):
         self.assertFalse(rulecards_formset.is_valid())
         self.assertIn("A rule card in a pending trade can not be offered in another trade.", rulecards_formset._non_form_errors)
 
+    #noinspection PyUnusedLocal
     def test_commodities_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
         commodity_in_hand = mommy.make_one(CommodityInHand, nb_cards = 1)
         # see https://github.com/vandersonmota/model_mommy/issues/25

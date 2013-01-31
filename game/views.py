@@ -1,10 +1,12 @@
+import datetime
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.forms.formsets import formset_factory
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, get_object_or_404
+from django.utils.timezone import get_default_timezone
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, CreateTradeForm, validate_number_of_players, \
@@ -217,3 +219,16 @@ def create_trade(request, game_id):
     return render(request, 'game/create_trade.html', {'game': game, 'trade_form': trade_form,
                                                       'rulecards_formset': rulecards_formset,
                                                       'commodities_formset': commodities_formset})
+
+@login_required
+def cancel_trade(request, game_id, trade_id):
+    if request.method == 'POST':
+        trade = get_object_or_404(Trade, id = trade_id)
+        # TODO control that the trade is currently INITIATED and that request.user is the initiator
+        trade.status = 'CANCELLED'
+        trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
+        trade.save()
+    else:
+        raise Http404
+
+    return HttpResponseRedirect(reverse('trades', args = [game_id]))
