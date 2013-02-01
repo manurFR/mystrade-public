@@ -50,6 +50,7 @@ class Trade(models.Model):
     commodities = models.ManyToManyField(CommodityInHand, through='TradedCommodities')
 
     comment = models.TextField(blank = True)
+    free_information = models.TextField("Free information that won't be revealed until both players accept the trade", blank = True)
 
     status = models.CharField(max_length = 15, default = "INITIATED") # INITIATED, CANCELLED, ACCEPTED or DECLINED
     creation_date = models.DateTimeField(default = now)
