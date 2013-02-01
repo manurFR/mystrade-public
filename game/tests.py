@@ -265,16 +265,16 @@ class TradeViewsTest(TestCase):
         right_now = datetime.datetime.now(tz = get_default_timezone())
         trade_initiated = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
                                          rules = [], commodities = [],
-                                         creation_date = right_now.replace(day = right_now.day - 1))
+                                         creation_date = right_now - datetime.timedelta(days = 1))
         trade_cancelled = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
                                          rules = [], commodities = [],
-                                         closing_date = right_now.replace(day = right_now.day - 2))
+                                         closing_date = right_now - datetime.timedelta(days = 2))
         trade_accepted = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
                                         rules = [], commodities = [],
-                                        closing_date = right_now.replace(day = right_now.day - 3))
+                                        closing_date = right_now - datetime.timedelta(days = 3))
         trade_declined = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'DECLINED',
                                         rules = [], commodities = [],
-                                        closing_date = right_now.replace(day = right_now.day - 4))
+                                        closing_date = right_now - datetime.timedelta(days = 4))
 
         response = self.client.get("/game/{}/trades/".format(self.game.id))
 
