@@ -53,6 +53,7 @@ def validate_number_of_players(list_of_players, chosen_ruleset):
 
 class CreateTradeForm(forms.Form):
     responder = forms.ModelChoiceField(queryset = User.objects.none(), empty_label = u'- Choose a player -')
+    free_information = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
     comment = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
 
     nb_selected_rules = 0

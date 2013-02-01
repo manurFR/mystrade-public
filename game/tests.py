@@ -243,18 +243,20 @@ class TradeViewsTest(TestCase):
                                                            commodity = commodity, nb_cards = 2)
         response = self.client.post("/game/{}/trades/create/".format(self.game.id),
                                     {'responder': 4,
-                                     'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
-                                     'rulecards-0-card_id': rule_in_hand.id, 'rulecards-0-selected_rule': 'on',
-                                     'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
+                                     'rulecards-TOTAL_FORMS': 1,               'rulecards-INITIAL_FORMS': 1,
+                                     'rulecards-0-card_id': rule_in_hand.id,   'rulecards-0-selected_rule': 'on',
+                                     'commodity-TOTAL_FORMS': 1,               'commodity-INITIAL_FORMS': 1,
                                      'commodity-0-commodity_id': commodity.id, 'commodity-0-nb_traded_cards': 1,
+                                     'free_information': 'some "secret" info',
                                      'comment': 'a comment'
                                     })
         self.assertRedirects(response, "/game/{}/trades/".format(self.game.id))
 
         trade = Trade.objects.get(game = self.game, initiator__username = 'test2')
         self.assertEqual(4, trade.responder.id)
-        self.assertEqual('a comment', trade.comment)
         self.assertEqual('INITIATED', trade.status)
+        self.assertEqual('a comment', trade.comment)
+        self.assertEqual('some "secret" info', trade.free_information)
         self.assertIsNone(trade.closing_date)
         self.assertEqual([rule_in_hand], list(trade.rules.all()))
         self.assertEqual([commodity_in_hand], list(trade.commodities.all()))

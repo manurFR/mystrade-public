@@ -79,8 +79,14 @@
                 </div>
             </div>
             <div>
+                <h4>Add any free information(s) (eg. the text of a rule card you don't want to give) to the trade offer (optional)</h4>
+                {{ trade_form.free_information }}<br/>
+                <span class="helptext">That piece of information will NOT be revealed until both players have accepted the trade.<br/>
+                For now, the other player will only be informed that there IS a free information with the trade, not its content. You should give an hint of what it is in the comment below.</span><br/>
+                <span class="errors">{{ trade_form.free_information.errors.as_text }}</span>
                 <h4>Add a comment to the other player (optional)</h4>
                 {{ trade_form.comment }}<br/>
+                <span class="helptext">Your comment will be immediately shown to the other player.</span><br/>
                 <span class="errors">{{ trade_form.comment.errors.as_text }}</span>
             </div>
             <div class="floatright">
@@ -93,15 +99,14 @@
     <script>
         $(function() {
             $('input[type=submit]').button();
-            $('.rulecard_checkbox').button().click(function() {
-                updateSummary();
-            });
-            $('.minicard').not('.reserved').click(function() {
+            $('.rulecard_checkbox').button().on('click', updateSummary);
+            $('.minicard').not('.reserved').on('click', function() {
                 $(this).toggleClass("clicked")
                 // set the corresponding hidden form field to hold the number of commodities from this type that are now "clicked"
                 $("input[type=hidden][name=" + $(this).parents(".card").attr("id") + "-nb_traded_cards]").val($(this).parent().children(".clicked").length)
                 updateSummary();
             })
+            $('#id_free_information').on('input', updateSummary);
         });
 
         function updateSummary() {
@@ -120,6 +125,9 @@
                     }
                 }
             });
+            if ($("#id_free_information").val()) {
+                elements.push("a free information");
+            }
 
             var summary = "";
             for (var i = 0; i < elements.length; i++) {

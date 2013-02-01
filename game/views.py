@@ -167,8 +167,9 @@ def create_trade(request, game_id):
 
             if trade_form.is_valid():
                 trade = Trade.objects.create(game = game, initiator = request.user,
-                                             responder = trade_form.cleaned_data['responder'],
-                                             comment   = trade_form.cleaned_data['comment'])
+                                             responder        = trade_form.cleaned_data['responder'],
+                                             free_information = trade_form.cleaned_data['free_information'],
+                                             comment          = trade_form.cleaned_data['comment'])
                 for card in selected_rules:
                     trade.rules.add(card)
                 for commodity, nb_traded_cards in nb_commodities.iteritems():
