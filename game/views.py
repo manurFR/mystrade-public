@@ -224,11 +224,11 @@ def create_trade(request, game_id):
 def cancel_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
-        # TODO control that the trade is currently INITIATED and that request.user is the initiator
-        trade.status = 'CANCELLED'
-        trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
-        trade.save()
-    else:
-        raise Http404
+        if trade.initiator == request.user and trade.status == 'INITIATED':
+            trade.status = 'CANCELLED'
+            trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
+            trade.save()
+            return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
-    return HttpResponseRedirect(reverse('trades', args = [game_id]))
+    raise Http404
+

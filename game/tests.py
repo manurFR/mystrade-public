@@ -291,23 +291,21 @@ class TradeViewsTest(TestCase):
 
         self.assertEqual(404, response.status_code)
 
-    @skip("until control is implemented")
     def test_cancel_trade_not_allowed_for_trades_you_didnt_create(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'), status = 'INITIATED',
                                rules = [], commodities = [])
 
-        response = self.client.get("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id))
+        response = self.client.post("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id), follow = True)
 
-        self.assertContains(response, "You are not allowed to cancel this trade.")
+        self.assertEqual(404, response.status_code)
 
-    @skip("until control is implemented")
     def test_cancel_trade_not_allowed_for_trades_not_in_status_INITIATED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
                                rules = [], commodities = [])
 
-        response = self.client.get("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id))
+        response = self.client.post("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id), follow = True)
 
-        self.assertContains(response, "You are not allowed to cancel this trade.")
+        self.assertEqual(404, response.status_code)
 
     def test_cancel_trade_allowed_and_effective_for_trades_you_created_and_still_in_status_INITIATED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
