@@ -58,16 +58,22 @@ class Trade(models.Model):
 
     @property
     def summary(self):
-        content = ""
+        content = []
         nb_rules = len(self.rules.all())
         nb_traded_commodities = sum([t.nb_traded_cards for t in self.tradedcommodities_set.all()])
         if nb_rules > 0:
-            content = "{} rule card{}".format(nb_rules, "s" if nb_rules > 1 else "")
+            content.append("{} rule card{}".format(nb_rules, "s" if nb_rules > 1 else ""))
         if nb_traded_commodities > 0:
-            if content:
-                content += " and "
-            content += "{} commodit{}".format(nb_traded_commodities, "ies" if nb_traded_commodities > 1 else "y")
-        return content
+            content.append("{} commodit{}".format(nb_traded_commodities, "ies" if nb_traded_commodities > 1 else "y"))
+        if self.free_information:
+            content.append("some information")
+
+        if not content:
+            return
+        elif len(content) == 1:
+            return content[0]
+        else:
+            return ", ".join(content[:-1]) + " and " + content[-1]
 
 class TradedCommodities(models.Model):
     trade = models.ForeignKey(Trade)

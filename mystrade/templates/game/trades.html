@@ -26,7 +26,7 @@
                 <div class="css_table-cell {{ color }}">for {{ trade.summary }}</div>
                 <div class="css_table-cell {{ color }}">
                     {% if trade.status == 'INITIATED' %}
-                        submitted {{ trade.creation_date|timesince }} ago
+                        {% if trade.initiator == user %}submitted{% else %}offered{% endif %} {{ trade.creation_date|timesince }} ago
                     {% elif trade.status == 'CANCELLED' %}
                         cancelled by {% if trade.initiator == user %}<strong>you</strong>{% else %}{{ trade.initiator.get_profile.name }}{% endif %} {{ trade.closing_date|timesince }} ago
                     {% elif trade.status == 'ACCEPTED' %}
@@ -35,7 +35,13 @@
                         declined {{ trade.closing_date|timesince }} ago
                     {% endif %}
                 </div>
-                <div class="css_table-cell {{ color }}"><a href="{% url 'show_trade' game.id trade.id %}">Show</a></div>
+                <div class="css_table-cell {{ color }}">
+                    {% if trade.status == 'INITIATED' and trade.responder = user %}
+                        <a href="{% url 'show_trade' game.id trade.id %}"><span class="new">Reply</span></a>
+                    {% else %}
+                        <a href="{% url 'show_trade' game.id trade.id %}">Show</a>
+                    {% endif %}
+                </div>
             </div>
         {% endfor %}
     </div>

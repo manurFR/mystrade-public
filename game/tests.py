@@ -277,6 +277,9 @@ class TradeViewsTest(TestCase):
         trade_declined = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'DECLINED',
                                         rules = [], commodities = [],
                                         closing_date = right_now - datetime.timedelta(days = 4))
+        trade_offered = mommy.make_one(Trade, game = self.game, responder = self.loginUser, status = 'INITIATED',
+                                       rules = [], commodities = [],
+                                       creation_date = right_now - datetime.timedelta(days = 5))
 
         response = self.client.get("/game/{}/trades/".format(self.game.id))
 
@@ -284,6 +287,7 @@ class TradeViewsTest(TestCase):
         self.assertContains(response, "cancelled by <strong>you</strong> 2 days ago")
         self.assertContains(response, "accepted 3 days ago")
         self.assertContains(response, "declined 4 days ago")
+        self.assertContains(response, "offered 5 days ago")
 
     def test_cancel_trade_not_allowed_in_GET(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',

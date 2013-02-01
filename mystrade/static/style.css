@@ -236,6 +236,11 @@ input[type="submit"] {
 	background-color: #FFBF00;
 }
 
+.new {
+    color: red;
+    font-weight: bold;
+}
+
 a, .dynamic_link {
 	color: #800024;
 	font-weight: normal;
