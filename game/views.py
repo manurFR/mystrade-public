@@ -1,10 +1,10 @@
 import datetime
 from django.contrib.auth.decorators import permission_required, login_required
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.forms.formsets import formset_factory
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.utils.timezone import get_default_timezone
 
@@ -231,5 +231,5 @@ def cancel_trade(request, game_id, trade_id):
             trade.save()
             return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
-    raise Http404
+    raise PermissionDenied
 

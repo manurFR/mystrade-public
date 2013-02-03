@@ -236,7 +236,7 @@ class TradeViewsTest(TestCase):
     def test_create_trade_complete_save(self):
         ruleset = mommy.make_one(Ruleset)
         rulecard = mommy.make_one(RuleCard, ruleset = ruleset, ref_name = 'rulecard_1')
-        rule_in_hand = RuleInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
+        rule_in_hand = RuleInHand.objects.create(game = self.game, player = self.loginUser,
                                                  rulecard = rulecard, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
         commodity = mommy.make_one(Commodity, ruleset = ruleset, name = 'commodity_1')
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
@@ -289,13 +289,37 @@ class TradeViewsTest(TestCase):
         self.assertContains(response, "declined 4 days ago")
         self.assertContains(response, "offered 5 days ago")
 
+    def test_buttons_in_show_trade_with_own_initiated_trade(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
+                               rules = [], commodities = [])
+
+        response = self.client.get("/game/{}/trades/{}/".format(self.game.id, trade.id))
+
+        self.assertContains(response, 'form action="/game/{}/trades/{}/cancel/"'.format(self.game.id, trade.id))
+
+    def test_buttons_in_show_trade_with_trade_initiated_by_someone_else(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'),
+                                responder = self.loginUser, status = 'INITIATED', rules = [], commodities = [])
+
+        response = self.client.get("/game/{}/trades/{}/".format(self.game.id, trade.id))
+
+        self.assertNotContains(response, 'form action="/game/{}/trades/{}/cancel/"'.format(self.game.id, trade.id))
+
+    def test_buttons_in_show_trade_with_trade_cancelled(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
+            rules = [], commodities = [])
+
+        response = self.client.get("/game/{}/trades/{}/".format(self.game.id, trade.id))
+
+        self.assertNotContains(response, 'form action="/game/{}/trades/{}/cancel/"'.format(self.game.id, trade.id))
+
     def test_cancel_trade_not_allowed_in_GET(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
                                rules = [], commodities = [])
 
         response = self.client.get("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id), follow = True)
 
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_cancel_trade_not_allowed_for_trades_you_didnt_create(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'), status = 'INITIATED',
@@ -303,7 +327,7 @@ class TradeViewsTest(TestCase):
 
         response = self.client.post("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id), follow = True)
 
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_cancel_trade_not_allowed_for_trades_not_in_status_INITIATED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
@@ -311,7 +335,7 @@ class TradeViewsTest(TestCase):
 
         response = self.client.post("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id), follow = True)
 
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_cancel_trade_allowed_and_effective_for_trades_you_created_and_still_in_status_INITIATED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',

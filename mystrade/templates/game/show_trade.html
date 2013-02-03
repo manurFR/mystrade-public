@@ -64,11 +64,11 @@
             {% endif %}
             {% if trade.comment %}
             <div>
-                <h4>Comment to the other player :</h4>
+                <h4>Comment:</h4>
                 {{ trade.comment }}
             </div>
             {% endif %}
-            {% if initiator == request.user and trade.status == 'INITIATED' %}
+            {% if trade.initiator == user and trade.status == 'INITIATED' %}
                 <div class="floatright">
                     <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
                         <input type="submit" value="Cancel this trade"/>
