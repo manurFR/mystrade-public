@@ -13,76 +13,84 @@
 {% endblock %}
 
 {% block content %}
-        <div class="header">Trade for game #{{ trade.game }} (ending in {{ trade.game.end_date|timeuntil }})
-            <span class="floatright">&lt; <a href="{% url 'trades' trade.game.id %}">Back</a></span></div>
-        <div>Trade proposed {% if trade.initiator == user %}to: <strong>{{ trade.responder }}</strong>{% else %}by: <strong>{{ trade.initiator }}</strong>{% endif %} &mdash;
-             Status : {% if trade.status == 'INITIATED' %}waiting for response
-                      {% elif trade.status == 'CANCELLED' %}you cancelled it {{ trade.closing_date|timesince }} ago{% endif %}
-        </div>
-        <div>
-            {% if trade.rules.all %}
-                <h4>Rules</h4>
-                <div class="css_table">
-                    {% for card in trade.rules.all %}
-                        {% if forloop.first or forloop.counter0|divisibleby:"4" %}
-                            <div class="css_table-row">
-                        {% endif %}
-                    <div class="css_table-cell">
-                        <div class="card">
-                            <div class="card_name">{{ card.rulecard.public_name }}</div>
-                            <div class="card_desc">{{ card.rulecard.description }}</div>
+    <div class="header">Trade for game #{{ trade.game }} (ending in {{ trade.game.end_date|timeuntil }})
+        <span class="floatright">&lt; <a href="{% url 'trades' trade.game.id %}">Back</a></span></div>
+    <div>Trade proposed {% if trade.initiator == user %}to: <strong>{{ trade.responder }}</strong>{% else %}by: <strong>{{ trade.initiator }}</strong>{% endif %} &mdash;
+        Status : {% if trade.status == 'INITIATED' %}waiting for response
+        {% elif trade.status == 'CANCELLED' %}you cancelled it {{ trade.closing_date|timesince }} ago{% endif %}
+    </div>
+    <div>
+        {% if trade.rules.all %}
+            <h4>Rules</h4>
+            <div class="css_table">
+                {% for card in trade.rules.all %}
+                    {% if forloop.first or forloop.counter0|divisibleby:"4" %}
+                        <div class="css_table-row">
+                    {% endif %}
+                <div class="css_table-cell">
+                    <div class="card">
+                        <div class="card_name">{{ card.rulecard.public_name }}</div>
+                        <div class="card_desc">
+                            {% if trade.status == 'INITIATED' and trade.responder == user %}
+                                <span class="helptext">(Hidden until trade accepted)</span>
+                            {% else %}
+                                {{ card.rulecard.description }}
+                            {% endif %}
                         </div>
                     </div>
-                    {% if forloop.counter|divisibleby:"4" or forloop.last %}
+                </div>
+                {% if forloop.counter|divisibleby:"4" or forloop.last %}
+                    </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if trade.tradedcommodities_set.all %}
+            <h4>Commodities</h4>
+            <div class="css_table">
+                <div class="css_table-row">
+                    {% for card in trade.tradedcommodities_set.all %}
+                        <div class="css_table-cell card">
+                            <div class="card_name">{{ card.commodity.commodity.name }}</div>
+                            <div class="card_copies">
+                                {% for copy in card.nb_traded_cards|as_range %}
+                                    <span class="minicard" style="background-color: {{ card.commodity.commodity.color }}">&nbsp;</span>
+                                {% endfor %}
+                            </div>
                         </div>
-                    {% endif %}
                     {% endfor %}
                 </div>
-            {% endif %}
-            {% if trade.tradedcommodities_set.all %}
-                <h4>Commodities</h4>
-                <div class="css_table">
-                    <div class="css_table-row">
-                        {% for card in trade.tradedcommodities_set.all %}
-                            <div class="css_table-cell card">
-                                <div class="card_name">{{ card.commodity.commodity.name }}</div>
-                                <div class="card_copies">
-                                    {% for copy in card.nb_traded_cards|as_range %}
-                                        <span class="minicard" style="background-color: {{ card.commodity.commodity.color }}">&nbsp;</span>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
-            {% if trade.free_information and trade.initiator == user %}
+            </div>
+        {% endif %}
+        {% if trade.free_information %}
             <div>
                 <h4>Free information(s)</h4>
-                {{ trade.free_information }}<br/>
+                {% if trade.initiator == user %}
+                    {{ trade.free_information }}<br/>
+                {% else %}
+                    <span class="helptext">Some information(s), hidden until this trade is accepted by both players.</span>
+                {% endif %}
             </div>
-            {% endif %}
-            {% if trade.comment %}
+        {% endif %}
+        {% if trade.comment %}
             <div>
                 <h4>Comment:</h4>
                 {{ trade.comment }}
             </div>
-            {% endif %}
-            {% if trade.initiator == user and trade.status == 'INITIATED' %}
-                <div class="floatright">
-                    <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
-                        <input type="submit" value="Cancel this trade"/>
-                    </form>
-                </div>
-            {% endif %}
-            <br/><br/><br/>
-        </div>
+        {% endif %}
+        {% if trade.initiator == user and trade.status == 'INITIATED' %}
+            <div class="floatright">
+                <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
+                    <input type="submit" value="Cancel this trade"/>
+                </form>
+            </div>
+        {% endif %}
+        <br/><br/><br/>
+    </div>
 
-    </form>
     <script>
         $(function() {
             $('input[type=submit]').button();
         });
     </script>
-
 {% endblock content %}
