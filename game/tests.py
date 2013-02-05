@@ -7,13 +7,12 @@ from django.db.models.aggregates import Sum
 from django.forms.formsets import formset_factory
 from django.test import TestCase
 from django.utils.timezone import get_default_timezone
-from django.utils.unittest.case import skip
 from model_mommy import mommy
 
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
     prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates, RuleCardFormParse, BaseRuleCardsFormSet, CommodityCardFormParse, BaseCommodityCardFormSet
-from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities
+from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities, Offer
 from scoring.models import Ruleset, RuleCard, Commodity
 
 
@@ -199,6 +198,7 @@ class TradeViewsTest(TestCase):
     def setUp(self):
         self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'),
                                    players = User.objects.exclude(username = 'test1'))
+        self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
         self.loginUser = User.objects.get(username = 'test2')
         self.client.login(username = 'test2', password = 'test')
 
@@ -255,30 +255,31 @@ class TradeViewsTest(TestCase):
         trade = Trade.objects.get(game = self.game, initiator__username = 'test2')
         self.assertEqual(4, trade.responder.id)
         self.assertEqual('INITIATED', trade.status)
-        self.assertEqual('a comment', trade.comment)
-        self.assertEqual('some "secret" info', trade.free_information)
+        self.assertEqual('a comment', trade.initiator_offer.comment)
+        self.assertEqual('some "secret" info', trade.initiator_offer.free_information)
         self.assertIsNone(trade.closing_date)
-        self.assertEqual([rule_in_hand], list(trade.rules.all()))
-        self.assertEqual([commodity_in_hand], list(trade.commodities.all()))
-        self.assertEqual(1, trade.tradedcommodities_set.all()[0].nb_traded_cards)
+        self.assertEqual([rule_in_hand], list(trade.initiator_offer.rules.all()))
+        self.assertEqual([commodity_in_hand], list(trade.initiator_offer.commodities.all()))
+        self.assertEqual(1, trade.initiator_offer.tradedcommodities_set.all()[0].nb_traded_cards)
 
-    #noinspection PyUnusedLocal,PyTypeChecker
+
+    #noinspection PyUnusedLocal
     def test_trade_list(self):
         right_now = datetime.datetime.now(tz = get_default_timezone())
         trade_initiated = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
-                                         rules = [], commodities = [],
+                                         initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
                                          creation_date = right_now - datetime.timedelta(days = 1))
         trade_cancelled = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
-                                         rules = [], commodities = [],
+                                         initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
                                          closing_date = right_now - datetime.timedelta(days = 2))
         trade_accepted = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
-                                        rules = [], commodities = [],
+                                        initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
                                         closing_date = right_now - datetime.timedelta(days = 3))
         trade_declined = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'DECLINED',
-                                        rules = [], commodities = [],
+                                        initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
                                         closing_date = right_now - datetime.timedelta(days = 4))
         trade_offered = mommy.make_one(Trade, game = self.game, responder = self.loginUser, status = 'INITIATED',
-                                       rules = [], commodities = [],
+                                       initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
                                        creation_date = right_now - datetime.timedelta(days = 5))
 
         response = self.client.get("/game/{}/trades/".format(self.game.id))
@@ -291,7 +292,7 @@ class TradeViewsTest(TestCase):
 
     def test_buttons_in_show_trade_with_own_initiated_trade(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
-                               rules = [], commodities = [])
+                               initiator_offer = self.dummy_offer)
 
         response = self.client.get("/game/{}/trades/{}/".format(self.game.id, trade.id))
 
@@ -299,7 +300,7 @@ class TradeViewsTest(TestCase):
 
     def test_buttons_in_show_trade_with_trade_initiated_by_someone_else(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'),
-                                responder = self.loginUser, status = 'INITIATED', rules = [], commodities = [])
+                               responder = self.loginUser, status = 'INITIATED', initiator_offer = self.dummy_offer)
 
         response = self.client.get("/game/{}/trades/{}/".format(self.game.id, trade.id))
 
@@ -307,7 +308,7 @@ class TradeViewsTest(TestCase):
 
     def test_buttons_in_show_trade_with_trade_cancelled(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
-            rules = [], commodities = [])
+                               initiator_offer = self.dummy_offer)
 
         response = self.client.get("/game/{}/trades/{}/".format(self.game.id, trade.id))
 
@@ -315,7 +316,7 @@ class TradeViewsTest(TestCase):
 
     def test_cancel_trade_not_allowed_in_GET(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
-                               rules = [], commodities = [])
+                               initiator_offer = self.dummy_offer)
 
         response = self.client.get("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id), follow = True)
 
@@ -323,7 +324,7 @@ class TradeViewsTest(TestCase):
 
     def test_cancel_trade_not_allowed_for_trades_you_didnt_create(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'), status = 'INITIATED',
-                               rules = [], commodities = [])
+                               initiator_offer = self.dummy_offer)
 
         response = self.client.post("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id), follow = True)
 
@@ -331,7 +332,7 @@ class TradeViewsTest(TestCase):
 
     def test_cancel_trade_not_allowed_for_trades_not_in_status_INITIATED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
-                               rules = [], commodities = [])
+                               initiator_offer = self.dummy_offer)
 
         response = self.client.post("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id), follow = True)
 
@@ -339,7 +340,7 @@ class TradeViewsTest(TestCase):
 
     def test_cancel_trade_allowed_and_effective_for_trades_you_created_and_still_in_status_INITIATED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
-                               rules = [], commodities = [])
+                               initiator_offer = self.dummy_offer)
 
         response = self.client.post("/game/{}/trades/{}/cancel/".format(self.game.id, trade.id), follow = True)
 
@@ -376,7 +377,8 @@ class FormsTest(TestCase):
     #noinspection PyUnusedLocal
     def test_a_rule_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
         rule_in_hand = mommy.make_one(RuleInHand, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
-        pending_trade = mommy.make_one(Trade, status = 'INITIATED', rules = [rule_in_hand], commodities = [])
+        offer = mommy.make_one(Offer, rules = [rule_in_hand], commodities = [])
+        pending_trade = mommy.make_one(Trade, status = 'INITIATED', initiator_offer = offer)
 
         RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
         rulecards_formset = RuleCardsFormSet({'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
@@ -390,8 +392,9 @@ class FormsTest(TestCase):
     def test_commodities_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
         commodity_in_hand = mommy.make_one(CommodityInHand, nb_cards = 1)
         # see https://github.com/vandersonmota/model_mommy/issues/25
-        pending_trade = mommy.make_one(Trade, game = commodity_in_hand.game, status = 'INITIATED', rules = [], commodities = [])
-        traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodity = commodity_in_hand, trade = pending_trade)
+        offer = mommy.make_one(Offer, rules = [], commodities = [])
+        traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodity = commodity_in_hand, offer = offer)
+        pending_trade = mommy.make_one(Trade, game = commodity_in_hand.game, status = 'INITIATED', initiator_offer = offer)
 
         CommodityCardsFormSet = formset_factory(CommodityCardFormParse, formset = BaseCommodityCardFormSet)
         commodities_formset = CommodityCardsFormSet({'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,

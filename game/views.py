@@ -11,7 +11,7 @@ from django.utils.timezone import get_default_timezone
 from game.deal import deal_cards
 from game.forms import CreateGameForm, CreateTradeForm, validate_number_of_players, \
     validate_dates, RuleCardFormDisplay, RuleCardFormParse, CommodityCardFormParse, CommodityCardFormDisplay, BaseRuleCardsFormSet, BaseCommodityCardFormSet
-from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities
+from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities, Offer
 from scoring.models import RuleCard
 
 @login_required
@@ -132,7 +132,7 @@ def trades(request, game_id):
 @login_required
 def show_trade(request, game_id, trade_id):
     trade = get_object_or_404(Trade, id = trade_id)
-    return render(request, 'game/show_trade.html', {'trade': trade})
+    return render(request, 'game/show_trade.html', {'trade': trade, 'offer': trade.initiator_offer})
 
 @login_required
 def create_trade(request, game_id):
@@ -166,15 +166,15 @@ def create_trade(request, game_id):
                                          nb_selected_rules = len(selected_rules), nb_selected_commodities = sum(nb_commodities.values()))
 
             if trade_form.is_valid():
-                trade = Trade.objects.create(game = game, initiator = request.user,
-                                             responder        = trade_form.cleaned_data['responder'],
-                                             free_information = trade_form.cleaned_data['free_information'],
+                offer = Offer.objects.create(free_information = trade_form.cleaned_data['free_information'],
                                              comment          = trade_form.cleaned_data['comment'])
+                trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
+                                             responder = trade_form.cleaned_data['responder'])
                 for card in selected_rules:
-                    trade.rules.add(card)
+                    offer.rules.add(card)
                 for commodity, nb_traded_cards in nb_commodities.iteritems():
                     if nb_traded_cards > 0:
-                        TradedCommodities.objects.create(trade = trade, commodity = commodity, nb_traded_cards = nb_traded_cards)
+                        TradedCommodities.objects.create(offer = offer, commodity = commodity, nb_traded_cards = nb_traded_cards)
 
                 return HttpResponseRedirect(reverse('trades', args = [game.id]))
             else:
@@ -182,7 +182,7 @@ def create_trade(request, game_id):
                 rulecards_formset = RuleCardsFormSet(initial = sorted([{'card_id':      card.id,
                                                                         'public_name':   card.rulecard.public_name,
                                                                         'description':   card.rulecard.description,
-                                                                        'reserved':      bool(card.trade_set.filter(status = 'INITIATED').count() > 0),
+                                                                        'reserved':      bool(card.offer_set.filter(trade_initiated__status = 'INITIATED').count() > 0),
                                                                         'selected_rule': bool(card in selected_rules)}
                                                                        for card in rule_hand], key = lambda card: card['reserved']),
                                                                       prefix = 'rulecards')
@@ -192,7 +192,7 @@ def create_trade(request, game_id):
                                                                         'color':             card.commodity.color,
                                                                         'nb_cards':          card.nb_cards,
                                                                         'nb_tradable_cards': card.nb_cards -
-                                    sum([tc.nb_traded_cards for tc in card.tradedcommodities_set.all() if tc.trade.status == 'INITIATED']),
+                                    sum([tc.nb_traded_cards for tc in card.tradedcommodities_set.all() if tc.offer.trade_initiated.status == 'INITIATED']),
                                                                         'nb_traded_cards':   nb_commodities[card]}
                                                                        for card in commodity_hand],
                                                                       prefix = 'commodity')
@@ -202,7 +202,7 @@ def create_trade(request, game_id):
                                                         [{'card_id':      card.id,
                                                          'public_name':   card.rulecard.public_name,
                                                          'description':   card.rulecard.description,
-                                                         'reserved':      bool(card.trade_set.filter(status = 'INITIATED').count() > 0)}
+                                                         'reserved':      bool(card.offer_set.filter(trade_initiated__status = 'INITIATED').count() > 0)}
                                                         for card in rule_hand], key = lambda card: card['reserved']),
                                              prefix = 'rulecards')
         CommodityCardsFormSet = formset_factory(CommodityCardFormDisplay, extra = 0)
@@ -211,7 +211,7 @@ def create_trade(request, game_id):
                                                                 'color':             card.commodity.color,
                                                                 'nb_cards':          card.nb_cards,
                                                                 'nb_tradable_cards': card.nb_cards -
-                                    sum([tc.nb_traded_cards for tc in card.tradedcommodities_set.all() if tc.trade.status == 'INITIATED']),
+                                    sum([tc.nb_traded_cards for tc in card.tradedcommodities_set.all() if tc.offer.trade_initiated.status == 'INITIATED']),
                                                                 'nb_traded_cards':   0}
                                                                for card in commodity_hand],
                                                     prefix = 'commodity')

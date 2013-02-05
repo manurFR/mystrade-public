@@ -46,15 +46,23 @@ class Trade(models.Model):
     initiator = models.ForeignKey(User, related_name="initiator_trades_set")
     responder = models.ForeignKey(User, related_name="responder_trades_set")
 
+    initiator_offer = models.OneToOneField('Offer', related_name = 'trade_initiated')
+    responder_offer = models.OneToOneField('Offer', related_name = 'trade_responded', null = True)
+
+    status = models.CharField(max_length = 15, default = "INITIATED") # INITIATED, CANCELLED, ACCEPTED or DECLINED
+    creation_date = models.DateTimeField(default = now)
+    closing_date = models.DateTimeField(null = True)
+
+    @property
+    def summary(self):
+        return self.initiator_offer.summary
+
+class Offer(models.Model):
     rules = models.ManyToManyField(RuleInHand)
     commodities = models.ManyToManyField(CommodityInHand, through='TradedCommodities')
 
     comment = models.TextField(blank = True)
     free_information = models.TextField("Free information that won't be revealed until both players accept the trade", blank = True)
-
-    status = models.CharField(max_length = 15, default = "INITIATED") # INITIATED, CANCELLED, ACCEPTED or DECLINED
-    creation_date = models.DateTimeField(default = now)
-    closing_date = models.DateTimeField(null = True)
 
     @property
     def summary(self):
@@ -76,7 +84,7 @@ class Trade(models.Model):
             return ", ".join(content[:-1]) + " and " + content[-1]
 
 class TradedCommodities(models.Model):
-    trade = models.ForeignKey(Trade)
+    offer = models.ForeignKey(Offer)
     commodity = models.ForeignKey(CommodityInHand)
 
     nb_traded_cards = models.PositiveSmallIntegerField(default = 0)
