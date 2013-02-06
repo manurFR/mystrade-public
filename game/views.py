@@ -227,6 +227,7 @@ def cancel_trade(request, game_id, trade_id):
         trade = get_object_or_404(Trade, id = trade_id)
         if trade.initiator == request.user and trade.status == 'INITIATED':
             trade.status = 'CANCELLED'
+            trade.finalizer = 'INITIATOR'
             trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
             trade.save()
             return HttpResponseRedirect(reverse('trades', args = [game_id]))

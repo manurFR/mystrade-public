@@ -8,57 +8,16 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Deleting rows where offer_id is null
-        orm['game.TradedCommodities'].objects.filter(offer__isnull = True).delete()
+        # Adding field 'Trade.finalizer'
+        db.add_column('game_trade', 'finalizer',
+                      self.gf('django.db.models.fields.CharField')(max_length=15, null=True),
+                      keep_default=False)
 
-        # Deleting field 'TradedCommodities.trade'
-        db.delete_column('game_tradedcommodities', 'trade_id')
-
-        # Changing field 'TradedCommodities.offer'
-        db.alter_column('game_tradedcommodities', 'offer_id', self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['game.Offer']))
-
-        # Deleting field 'Trade.comment'
-        db.delete_column('game_trade', 'comment')
-
-        # Deleting field 'Trade.free_information'
-        db.delete_column('game_trade', 'free_information')
-
-        # Removing M2M table for field rules on 'Trade'
-        db.delete_table('game_trade_rules')
-
-        # Changing field 'Trade.initiator_offer'
-        db.alter_column('game_trade', 'initiator_offer_id', self.gf('django.db.models.fields.related.OneToOneField')(default=0, unique=True, to=orm['game.Offer']))
 
     def backwards(self, orm):
-        # Adding field 'TradedCommodities.trade'
-        db.add_column('game_tradedcommodities', 'trade',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=28, to=orm['game.Trade']),
-                      keep_default=False)
+        # Deleting field 'Trade.finalizer'
+        db.delete_column('game_trade', 'finalizer')
 
-
-        # Changing field 'TradedCommodities.offer'
-        db.alter_column('game_tradedcommodities', 'offer_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['game.Offer'], null=True))
-        # Adding field 'Trade.comment'
-        db.add_column('game_trade', 'comment',
-                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
-                      keep_default=False)
-
-        # Adding field 'Trade.free_information'
-        db.add_column('game_trade', 'free_information',
-                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
-                      keep_default=False)
-
-        # Adding M2M table for field rules on 'Trade'
-        db.create_table('game_trade_rules', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('trade', models.ForeignKey(orm['game.trade'], null=False)),
-            ('ruleinhand', models.ForeignKey(orm['game.ruleinhand'], null=False))
-        ))
-        db.create_unique('game_trade_rules', ['trade_id', 'ruleinhand_id'])
-
-
-        # Changing field 'Trade.initiator_offer'
-        db.alter_column('game_trade', 'initiator_offer_id', self.gf('django.db.models.fields.related.OneToOneField')(unique=True, null=True, to=orm['game.Offer']))
 
     models = {
         'auth.group': {
@@ -137,6 +96,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Trade'},
             'closing_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'creation_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'finalizer': ('django.db.models.fields.CharField', [], {'max_length': '15', 'null': 'True'}),
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'initiator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'initiator_trades_set'", 'to': "orm['auth.User']"}),

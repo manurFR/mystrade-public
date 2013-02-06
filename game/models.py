@@ -41,6 +41,21 @@ class CommodityInHand(models.Model):
                 's' if self.nb_cards > 1 else '', self.player.get_profile().name, self.game.id)
 
 class Trade(models.Model):
+    """
+                                             (I)
+                       ------------------------> CANCELLED (final)
+                      /                         (R) ^
+            (I)      /                     (R)     /           (I)
+    * --------> INITIATED -----------+-------> REPLIED -----+----> ACCEPTED (final)
+                                     `                      |
+                                      `              (R)    v (I)
+                                       `---------------> DECLINED (final)
+
+     (I) status reached by action of the Initiator   (R) status reached by action of the Responder
+    """
+    STATUS_CHOICES = [(status, status) for status in ['INITIATED', 'CANCELLED', 'REPLIED', 'ACCEPTED', 'DECLINED']]
+    FINALIZER_CHOICES = [(finalizer, finalizer) for finalizer in ['INITIATOR', 'RESPONDER']]
+
     game = models.ForeignKey(Game)
 
     initiator = models.ForeignKey(User, related_name="initiator_trades_set")
@@ -49,7 +64,9 @@ class Trade(models.Model):
     initiator_offer = models.OneToOneField('Offer', related_name = 'trade_initiated')
     responder_offer = models.OneToOneField('Offer', related_name = 'trade_responded', null = True)
 
-    status = models.CharField(max_length = 15, default = "INITIATED") # INITIATED, CANCELLED, ACCEPTED or DECLINED
+    status = models.CharField(max_length = 15, choices = STATUS_CHOICES, default = "INITIATED") # see above
+    finalizer = models.CharField(max_length = 15, null = True, choices = FINALIZER_CHOICES,
+        verbose_name = "Player that caused the trade to reach the current final status, null if not in a final status")
     creation_date = models.DateTimeField(default = now)
     closing_date = models.DateTimeField(null = True)
 
