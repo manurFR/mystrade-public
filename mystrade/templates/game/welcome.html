@@ -28,7 +28,7 @@
 			<div class="css_table-row">
 				<div class="css_table-cell {{ color }}">
 				    #{{ game.id }}, by
-					{% if game.master == user %}<strong>{% endif %}{{ game.master.get_profile.name }}{% if game.master == user %}</strong>{% endif %}
+					{% if game.master == user %}<strong>{% endif %}{% include "common/name_or_you.html" with who=game.master %}{% if game.master == user %}</strong>{% endif %}
 				</div>
 				<div class="css_table-cell {{ color }}"><span data-tip="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></div>
 				<div class="css_table-cell {{ color }}">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</div>

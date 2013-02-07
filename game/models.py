@@ -54,7 +54,6 @@ class Trade(models.Model):
      (I) status reached by action of the Initiator   (R) status reached by action of the Responder
     """
     STATUS_CHOICES = [(status, status) for status in ['INITIATED', 'CANCELLED', 'REPLIED', 'ACCEPTED', 'DECLINED']]
-    FINALIZER_CHOICES = [(finalizer, finalizer) for finalizer in ['INITIATOR', 'RESPONDER']]
 
     game = models.ForeignKey(Game)
 
@@ -65,8 +64,9 @@ class Trade(models.Model):
     responder_offer = models.OneToOneField('Offer', related_name = 'trade_responded', null = True)
 
     status = models.CharField(max_length = 15, choices = STATUS_CHOICES, default = "INITIATED") # see above
-    finalizer = models.CharField(max_length = 15, null = True, choices = FINALIZER_CHOICES,
+    finalizer = models.ForeignKey(User, null = True,
         verbose_name = "Player that caused the trade to reach the current final status, null if not in a final status")
+
     creation_date = models.DateTimeField(default = now)
     closing_date = models.DateTimeField(null = True)
 

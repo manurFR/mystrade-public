@@ -17,7 +17,7 @@
         <span class="floatright">&lt; <a href="{% url 'trades' trade.game.id %}">Back</a></span></div>
     <div>Trade proposed {% if trade.initiator == user %}to: <strong>{{ trade.responder }}</strong>{% else %}by: <strong>{{ trade.initiator }}</strong>{% endif %} &mdash;
         Status : {% if trade.status == 'INITIATED' %}waiting for response
-        {% elif trade.status == 'CANCELLED' %}you cancelled it {{ trade.closing_date|timesince }} ago{% endif %}
+        {% elif trade.status == 'CANCELLED' %}cancelled by <strong>{% include "common/name_or_you.html" with who=trade.finalizer %}</strong> {{ trade.closing_date|timesince }} ago{% endif %}
     </div>
     <div>
         {% if offer.rules.all %}
@@ -78,11 +78,15 @@
                 {{ offer.comment }}
             </div>
         {% endif %}
-        {% if trade.initiator == user and trade.status == 'INITIATED' %}
+        {% if user == trade.initiator and trade.status == 'INITIATED' %}
             <div class="floatright">
                 <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
                     <input type="submit" value="Cancel this trade"/>
                 </form>
+            </div>
+        {% elif user == trade.responder and trade.status == 'INITIATED' %}
+            <div class="floatright">
+                <button type="button">Reply with your offer</button>
             </div>
         {% endif %}
         <br/><br/><br/>
@@ -90,7 +94,7 @@
 
     <script>
         $(function() {
-            $('input[type=submit]').button();
+            $('input[type=submit], button').button();
         });
     </script>
 {% endblock content %}

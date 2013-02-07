@@ -10,13 +10,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Trade.finalizer'
         db.add_column('game_trade', 'finalizer',
-                      self.gf('django.db.models.fields.CharField')(max_length=15, null=True),
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
         # Deleting field 'Trade.finalizer'
-        db.delete_column('game_trade', 'finalizer')
+        db.delete_column('game_trade', 'finalizer_id')
 
 
     models = {
@@ -96,7 +96,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Trade'},
             'closing_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'creation_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'finalizer': ('django.db.models.fields.CharField', [], {'max_length': '15', 'null': 'True'}),
+            'finalizer': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'}),
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'initiator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'initiator_trades_set'", 'to': "orm['auth.User']"}),

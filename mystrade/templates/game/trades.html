@@ -20,11 +20,12 @@
             {% cycle 'even_color' 'odd_color' as color silent %}
             <div class="css_table-row{% if trade.status == 'ACCEPTED' or trade.status == 'DECLINED' %} done{% elif trade.status == 'CANCELLED' %} cancelled{% endif %}">
                 <div class="css_table-cell {{ color }}">
-                    Trade proposed by {% if trade.initiator == user %}<strong>you</strong>{% else %}{{ trade.initiator.get_profile.name }}{% endif %}
-                    to {% if trade.responder == user %}<strong>you</strong>{% else %}{{ trade.responder.get_profile.name }}{% endif %}
+                    Trade proposed by <strong>{% include "common/name_or_you.html" with who=trade.initiator %}</strong>
+                    to <strong>{% include "common/name_or_you.html" with who=trade.responder %}</strong>
                 </div>
                 <div class="css_table-cell {{ color }}">for {{ trade.summary }}</div>
                 <div class="css_table-cell {{ color }}">
+                    {# TODO add REPLIED #}
                     {% if trade.status == 'INITIATED' %}
                         {% if trade.initiator == user %}submitted{% else %}offered{% endif %} {{ trade.creation_date|timesince }} ago
                     {% elif trade.status == 'CANCELLED' %}
