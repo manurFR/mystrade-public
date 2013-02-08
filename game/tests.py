@@ -348,7 +348,7 @@ class TradeViewsTest(TestCase):
 
         trade = Trade.objects.get(pk = trade.id)
         self.assertEqual("CANCELLED", trade.status)
-        self.assertEqual("INITIATOR", trade.finalizer)
+        self.assertEqual(self.loginUser, trade.finalizer)
         self.assertIsNotNone(trade.closing_date)
 
 class FormsTest(TestCase):
