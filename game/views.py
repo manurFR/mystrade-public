@@ -9,8 +9,8 @@ from django.shortcuts import render, get_object_or_404
 from django.utils.timezone import get_default_timezone
 
 from game.deal import deal_cards
-from game.forms import CreateGameForm, CreateTradeForm, validate_number_of_players, \
-    validate_dates, RuleCardFormDisplay, RuleCardFormParse, CommodityCardFormParse, CommodityCardFormDisplay, BaseRuleCardsFormSet, BaseCommodityCardFormSet
+from game.forms import CreateGameForm, OfferForm, validate_number_of_players, \
+    validate_dates, RuleCardFormDisplay, RuleCardFormParse, CommodityCardFormParse, CommodityCardFormDisplay, BaseRuleCardsFormSet, BaseCommodityCardFormSet, TradeForm
 from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities, Offer
 from scoring.models import RuleCard
 
@@ -130,11 +130,6 @@ def trades(request, game_id):
     return render(request, 'game/trades.html', {'game': game, 'trades': trades})
 
 @login_required
-def show_trade(request, game_id, trade_id):
-    trade = get_object_or_404(Trade, id = trade_id)
-    return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer})
-
-@login_required
 def create_trade(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
@@ -162,12 +157,13 @@ def create_trade(request, game_id):
                         nb_commodities[commodity] = form.cleaned_data['nb_traded_cards']
                         break
 
-            trade_form = CreateTradeForm(request.user, game, request.POST,
-                                         nb_selected_rules = len(selected_rules), nb_selected_commodities = sum(nb_commodities.values()))
+            trade_form = TradeForm(request.user, game, request.POST)
+            offer_form = OfferForm(request.POST,
+                                   nb_selected_rules = len(selected_rules), nb_selected_commodities = sum(nb_commodities.values()))
 
-            if trade_form.is_valid():
-                offer = Offer.objects.create(free_information = trade_form.cleaned_data['free_information'],
-                                             comment          = trade_form.cleaned_data['comment'])
+            if trade_form.is_valid() and offer_form.is_valid():
+                offer = Offer.objects.create(free_information = offer_form.cleaned_data['free_information'],
+                                             comment          = offer_form.cleaned_data['comment'])
                 trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
                                              responder = trade_form.cleaned_data['responder'])
                 for card in selected_rules:
@@ -215,11 +211,11 @@ def create_trade(request, game_id):
                                                                 'nb_traded_cards':   0}
                                                                for card in commodity_hand],
                                                     prefix = 'commodity')
-        trade_form = CreateTradeForm(request.user, game)
+        trade_form = TradeForm(request.user, game)
+        offer_form = OfferForm()
 
-    return render(request, 'game/trade_offer.html', {'game': game, 'trade_form': trade_form,
-                                                      'rulecards_formset': rulecards_formset,
-                                                      'commodities_formset': commodities_formset})
+    return render(request, 'game/trade_offer.html', {'game': game, 'trade_form': trade_form, 'offer_form': offer_form,
+                                                      'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
 
 @login_required
 def cancel_trade(request, game_id, trade_id):
@@ -232,4 +228,45 @@ def cancel_trade(request, game_id, trade_id):
             trade.save()
             return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
+    raise PermissionDenied
+
+@login_required
+def show_trade(request, game_id, trade_id):
+    trade = get_object_or_404(Trade, id = trade_id)
+
+    if trade.status == 'INITIATED' and trade.responder == request.user:
+        rule_hand = RuleInHand.objects.filter(game = trade.game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
+        commodity_hand = CommodityInHand.objects.filter(game = trade.game, player = request.user).order_by('commodity__value', 'commodity__name')
+
+        RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
+        rulecards_formset = RuleCardsFormSet(initial = sorted(
+                                                              [{'card_id':      card.id,
+                                                                'public_name':   card.rulecard.public_name,
+                                                                'description':   card.rulecard.description,
+                                                                'reserved':      bool(card.offer_set.filter(trade_initiated__finalizer__isnull = False).count() > 0)}
+                                                               for card in rule_hand], key = lambda card: card['reserved']),
+                                                              prefix = 'rulecards')
+
+        CommodityCardsFormSet = formset_factory(CommodityCardFormDisplay, extra = 0)
+        commodities_formset = CommodityCardsFormSet(initial = [{'commodity_id':      card.commodity.id,
+                                                                'name':              card.commodity.name,
+                                                                'color':             card.commodity.color,
+                                                                'nb_cards':          card.nb_cards,
+                                                                'nb_tradable_cards': card.nb_cards -
+                                        sum([tc.nb_traded_cards for tc in card.tradedcommodities_set.all() if tc.offer.trade_initiated.finalizer == None]),
+                                                                'nb_traded_cards':   0}
+                                                               for card in commodity_hand],
+                                                              prefix = 'commodity')
+
+        trade_form = TradeForm(request.user, trade.game)
+        offer_form = OfferForm()
+
+        return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer,
+                                                         'trade_form': trade_form, 'offer_form': offer_form,
+                                                         'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
+
+    return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer})
+
+@login_required
+def reply_trade(request, game_id, trade_id):
     raise PermissionDenied

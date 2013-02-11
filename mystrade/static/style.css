@@ -257,3 +257,7 @@ a:hover, .dynamic_link:hover {
 	top: 4px;
 	left: 2px;
 }
+
+.hidden {
+    display: none;
+}

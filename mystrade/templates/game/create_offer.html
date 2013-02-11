@@ -1,7 +1,7 @@
 {% load filters %}
 
 <div>You are offering: <span id="summary"/></div>
-{% for err in trade_form.non_field_errors %}
+{% for err in offer_form.non_field_errors %}
     <table>
         <tr>
             <td colspan="2"><span class="errors">{{ err }}</span></td>
@@ -48,7 +48,7 @@
                     <div class="card_name">{{ form.name.value }}</div>
                     <div class="card_copies">
                         {% for copy in form.nb_cards.value|as_range %}
-                            <span class="minicard
+                            <span class="minicard clickable
                             {% if copy >= form.nb_tradable_cards.value %} reserved" data-tip="Reserved for a pending trade"
                             {% elif form.nb_traded_cards.value > copy %} clicked"
                             {% else %}"{% endif %}
@@ -62,17 +62,17 @@
     </div>
     <div>
         <h4>Add any free information(s) (eg. the text of a rule card you don't want to give) to the trade offer (optional)</h4>
-        {{ trade_form.free_information }}<br/>
+        {{ offer_form.free_information }}<br/>
         <span class="helptext">That piece of information will NOT be revealed until both players have accepted the trade.<br/>
         For now, the other player will only be informed that there IS a free information with the trade, not its content. You should give an hint of what it is in the comment below.</span><br/>
-        <span class="errors">{{ trade_form.free_information.errors.as_text }}</span>
+        <span class="errors">{{ offer_form.free_information.errors.as_text }}</span>
         <h4>Add a comment to the other player (optional)</h4>
-        {{ trade_form.comment }}<br/>
+        {{ offer_form.comment }}<br/>
         <span class="helptext">Your comment will be immediately shown to the other player.</span><br/>
-        <span class="errors">{{ trade_form.comment.errors.as_text }}</span>
+        <span class="errors">{{ offer_form.comment.errors.as_text }}</span>
     </div>
     <div class="floatright">
-        <input type="submit" value="Propose this trade"/>
+        <input type="submit" value="{{ submit }}"/>
     </div>
     <br/><br/><br/>
 </div>
@@ -80,7 +80,7 @@
 <script>
     $(function() {
         $('.rulecard_checkbox').button().on('click', updateSummary);
-        $('.minicard').not('.reserved').on('click', function() {
+        $('.minicard.clickable').not('.reserved').on('click', function() {
             $(this).toggleClass("clicked")
             // set the corresponding hidden form field to hold the number of commodities from this type that are now "clicked"
             $("input[type=hidden][name=" + $(this).parents(".card").attr("id") + "-nb_traded_cards]").val($(this).parent().children(".clicked").length)

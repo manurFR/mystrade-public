@@ -51,26 +51,29 @@ def validate_number_of_players(list_of_players, chosen_ruleset):
 ##                              Trades                                     ##
 #############################################################################
 
-class CreateTradeForm(forms.Form):
+class TradeForm(forms.Form):
     responder = forms.ModelChoiceField(queryset = User.objects.none(), empty_label = u'- Choose a player -')
+
+    def __init__(self, me, game, *args, **kwargs):
+        super(TradeForm, self).__init__(*args, **kwargs)
+        self.fields['responder'].queryset = Game.objects.get(id = game.id).players.exclude(id = me.id).order_by('id')
+
+class OfferForm(forms.Form):
     free_information = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
     comment = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
 
     nb_selected_rules = 0
     nb_selected_commodities = 0
 
-    def __init__(self, me, game, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         if kwargs.has_key('nb_selected_rules'):
             self.nb_selected_rules = kwargs.pop('nb_selected_rules')
         if kwargs.has_key('nb_selected_commodities'):
             self.nb_selected_commodities = kwargs.pop('nb_selected_commodities')
-
-        super(CreateTradeForm, self).__init__(*args, **kwargs)
-
-        self.fields['responder'].queryset = Game.objects.get(id = game.id).players.exclude(id = me.id).order_by('id')
+        super(OfferForm, self).__init__(*args, **kwargs)
 
     def clean(self):
-        cleaned_data = super(CreateTradeForm, self).clean()
+        cleaned_data = super(OfferForm, self).clean()
         if self.nb_selected_rules == 0 and self.nb_selected_commodities == 0:
             raise forms.ValidationError("At least one card should be offered.")
         return cleaned_data

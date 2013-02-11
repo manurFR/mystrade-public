@@ -231,7 +231,7 @@ class TradeViewsTest(TestCase):
                                      'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
                                      'comment': 'a comment'
                                     })
-        self.assertFormError(response, 'trade_form', None, 'At least one card should be offered.')
+        self.assertFormError(response, 'offer_form', None, 'At least one card should be offered.')
 
     def test_create_trade_complete_save(self):
         ruleset = mommy.make_one(Ruleset)

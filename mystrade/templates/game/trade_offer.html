@@ -19,28 +19,52 @@
         {# Trade creation #}
         <form action="{% url 'create_trade' game.id %}" method="post">{% csrf_token %}
         <div>Set up a new trade proposal to : {{ trade_form.responder }}&nbsp;<span class="errors">{{ trade_form.responder.errors.as_text }}</span></div>
-        {% include "game/create_offer.html" %}
+        {% include "game/create_offer.html" with submit="Propose this trade" %}
         </form>
     {% else %}
-        {# The trade exists. First, display the initiator's offer. #}
+        <div>Trade proposed by {% include "common/name_or_you.html" with who=trade.initiator %} to {% include "common/name_or_you.html" with who=trade.responder %} &mdash;
+        Status : {% if trade.status == 'INITIATED' %}waiting for response by {% include "common/name_or_you.html" with who=trade.responder %}
+        {% elif trade.status == 'CANCELLED' %}cancelled by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
+        {% elif trade.status == 'DECLINED' %}declined by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
+        {% elif trade.status == 'REPLIED' %}waiting for definitive agreement by {% include "common/name_or_you.html" with who=trade.initiator %}
+        {% elif trade.status == 'ACCEPTED' %}accepted and performed
+        {% endif %}
+        </div>
+
+        {# First, display the initiator's offer. #}
+        <h3>Offered by {% include "common/name_or_you.html" with who=trade.initiator %}:</h3>
         {% include "game/display_offer.html" with offer=initiator_offer %}
-        {% if user == trade.initiator and trade.status == 'INITIATED' %}
+
+        {% if trade.status == 'INITIATED' %}
+            {% if user == trade.initiator  %}
             <div class="floatright">
                 <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
                     <input type="submit" value="Cancel this trade"/>
                 </form>
             </div>
-        {% elif user == trade.responder and trade.status == 'INITIATED' %}
+            {% else %}
             <div class="floatright">
-                <button type="button">Reply with your offer</button>
+                <button type="button" id="reply">Reply with your offer</button>
             </div>
+            {# Let the responder select its replying offer #}
+            <div id="offer"><h3>Your offer:</h3>
+                <form action="{% url 'reply_trade' game.id trade.id %}" method="post">{% csrf_token %}
+                {% include "game/create_offer.html" with submit="Reply with this offer" %}
+                </form>
+            </div>
+            {% endif %}
         {% endif %}
         <br/><br/><br/>
     {% endif %}
 
     <script>
         $(function() {
+            $('#offer').addClass('hidden');
             $('input[type=submit], button').button();
+            $('#reply').on("click", function() {
+                $('#offer').show("blind");
+                $('#reply').hide("blind");
+            })
         });
     </script>
 {% endblock content %}
