@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load url from future %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.1.custom.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'style.css-tooltips.css' %}" />
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
+    <script src="{% static 'jquery/jquery-ui-1.9.1.custom.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="header">Trade for game #{{ game }} (ending in {{ game.end_date|timeuntil }})
+        <span class="floatright">&lt; <a href="{% url 'trades' game.id %}">Back</a></span></div>
+    {% if not trade %}
+        {# Trade creation #}
+        <form action="{% url 'create_trade' game.id %}" method="post">{% csrf_token %}
+        <div>Set up a new trade proposal to : {{ trade_form.responder }}&nbsp;<span class="errors">{{ trade_form.responder.errors.as_text }}</span></div>
+        {% include "game/create_offer.html" %}
+        </form>
+    {% else %}
+        {# The trade exists. First, display the initiator's offer. #}
+        {% include "game/display_offer.html" with offer=initiator_offer %}
+        {% if user == trade.initiator and trade.status == 'INITIATED' %}
+            <div class="floatright">
+                <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
+                    <input type="submit" value="Cancel this trade"/>
+                </form>
+            </div>
+        {% elif user == trade.responder and trade.status == 'INITIATED' %}
+            <div class="floatright">
+                <button type="button">Reply with your offer</button>
+            </div>
+        {% endif %}
+        <br/><br/><br/>
+    {% endif %}
+
+    <script>
+        $(function() {
+            $('input[type=submit], button').button();
+        });
+    </script>
+{% endblock content %}

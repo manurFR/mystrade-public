@@ -1,0 +1,125 @@
+{% load filters %}
+
+<div>You are offering: <span id="summary"/></div>
+{% for err in trade_form.non_field_errors %}
+    <table>
+        <tr>
+            <td colspan="2"><span class="errors">{{ err }}</span></td>
+        </tr>
+    </table>
+{% endfor %}
+<div>
+    <h4>Rules</h4>
+    <div class="css_table">
+        {{ rulecards_formset.management_form }}
+        {% for form in rulecards_formset %}
+            {% if forloop.first or forloop.counter0|divisibleby:"4" %}
+                <div class="css_table-row">
+            {% endif %}
+        <div class="css_table-cell">
+            <div class="card with_button{% if form.reserved.value %} reserved{% endif %}" id="{{ form.prefix }}">
+                {{ form.card_id }}
+                <div class="card_name">{{ form.public_name.value }}</div>
+                <div class="card_desc">{{ form.description.value }}</div>
+                <div class="align_to_bottom">
+                    <div class="card_select">
+                        {% if form.reserved.value  %}
+                            <span class="helptext">Reserved for a pending trade</span>
+                        {% else %}
+                            <input type="checkbox" class="rulecard_checkbox" name="{{ form.selected_rule.html_name }}" id="button_rule_{{ form.card_id.value }}" {% if form.selected_rule.value %}checked="checked"{% endif %}/>
+                            <label for="button_rule_{{ form.card_id.value }}">Offer</label>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if forloop.counter|divisibleby:"4" or forloop.last %}
+            </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <h4>Commodities (click on cards to offer)</h4>
+    <div class="css_table">
+        {{ commodities_formset.management_form }}
+        <div class="css_table-row">
+            {% for form in commodities_formset %}
+                <div class="css_table-cell card" id="{{ form.prefix }}">
+                    {{ form.commodity_id }}
+                    <div class="card_name">{{ form.name.value }}</div>
+                    <div class="card_copies">
+                        {% for copy in form.nb_cards.value|as_range %}
+                            <span class="minicard
+                            {% if copy >= form.nb_tradable_cards.value %} reserved" data-tip="Reserved for a pending trade"
+                            {% elif form.nb_traded_cards.value > copy %} clicked"
+                            {% else %}"{% endif %}
+                            style="background-color: {{ form.color.value }}">&nbsp;</span>
+                        {% endfor %}
+                    </div>
+                    {{ form.nb_traded_cards }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div>
+        <h4>Add any free information(s) (eg. the text of a rule card you don't want to give) to the trade offer (optional)</h4>
+        {{ trade_form.free_information }}<br/>
+        <span class="helptext">That piece of information will NOT be revealed until both players have accepted the trade.<br/>
+        For now, the other player will only be informed that there IS a free information with the trade, not its content. You should give an hint of what it is in the comment below.</span><br/>
+        <span class="errors">{{ trade_form.free_information.errors.as_text }}</span>
+        <h4>Add a comment to the other player (optional)</h4>
+        {{ trade_form.comment }}<br/>
+        <span class="helptext">Your comment will be immediately shown to the other player.</span><br/>
+        <span class="errors">{{ trade_form.comment.errors.as_text }}</span>
+    </div>
+    <div class="floatright">
+        <input type="submit" value="Propose this trade"/>
+    </div>
+    <br/><br/><br/>
+</div>
+
+<script>
+    $(function() {
+        $('.rulecard_checkbox').button().on('click', updateSummary);
+        $('.minicard').not('.reserved').on('click', function() {
+            $(this).toggleClass("clicked")
+            // set the corresponding hidden form field to hold the number of commodities from this type that are now "clicked"
+            $("input[type=hidden][name=" + $(this).parents(".card").attr("id") + "-nb_traded_cards]").val($(this).parent().children(".clicked").length)
+            updateSummary();
+        })
+        $('#id_free_information').on('input', updateSummary);
+    });
+
+    function updateSummary() {
+        var elements = new Array();
+
+        $(".card").each(function() {
+            if ($(this).is("[id^=rulecards]")) {
+                if ($(this).find(".rulecard_checkbox").attr("checked") == "checked") {
+                    elements.push("Rule #" + $(this).children(".card_name").text());
+                }
+            }
+            else { // commodity cards
+                var qty = $(this).children("input[type=hidden][name$=nb_traded_cards]").val();
+                if (qty > 0) {
+                    elements.push(qty + " " + $(this).children(".card_name").text() + " card" + (qty > 1 ? "s" : ""));
+                }
+            }
+        });
+        if ($("#id_free_information").val()) {
+            elements.push("a free information");
+        }
+
+        var summary = "";
+        for (var i = 0; i < elements.length; i++) {
+            if (i > 0) {
+                if (i == elements.length - 1) { summary += " and "; }
+                else { summary += ", "; }
+            }
+            summary += elements[i];
+        }
+
+        $("#summary").text(summary);
+    }
+
+    updateSummary();
+</script>

@@ -132,7 +132,7 @@ def trades(request, game_id):
 @login_required
 def show_trade(request, game_id, trade_id):
     trade = get_object_or_404(Trade, id = trade_id)
-    return render(request, 'game/show_trade.html', {'trade': trade, 'offer': trade.initiator_offer})
+    return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer})
 
 @login_required
 def create_trade(request, game_id):
@@ -217,7 +217,7 @@ def create_trade(request, game_id):
                                                     prefix = 'commodity')
         trade_form = CreateTradeForm(request.user, game)
 
-    return render(request, 'game/create_trade.html', {'game': game, 'trade_form': trade_form,
+    return render(request, 'game/trade_offer.html', {'game': game, 'trade_form': trade_form,
                                                       'rulecards_formset': rulecards_formset,
                                                       'commodities_formset': commodities_formset})
 
@@ -233,4 +233,3 @@ def cancel_trade(request, game_id, trade_id):
             return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
     raise PermissionDenied
-
