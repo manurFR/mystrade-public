@@ -137,16 +137,26 @@ def create_trade(request, game_id):
     if request.method == 'POST':
         trade_form = TradeForm(request.user, game, request.POST)
 
-        offer = _parse_offer_forms(request, game)
-        if offer:
+        try:
+            offer, selected_rules, nb_commodities = _parse_offer_forms(request, game)
             if trade_form.is_valid():
+                offer.save()
+                for card in selected_rules:
+                    offer.rules.add(card)
+                for commodity, nb_traded_cards in nb_commodities.iteritems():
+                    if nb_traded_cards > 0:
+                        TradedCommodities.objects.create(offer = offer, commodity = commodity, nb_traded_cards = nb_traded_cards)
+
                 trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
                                              responder = trade_form.cleaned_data['responder'])
                 return HttpResponseRedirect(reverse('trades', args = [game.id]))
             else:
-                offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, offer.rules.all()) #, offer.commodities)
-        else:
-            offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game)
+                offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, nb_commodities)
+        except FormInvalidException as ex:
+            rulecards_formset = ex.forms['rulecards_formset']
+            commodities_formset = ex.forms['commodities_formset']
+            if 'offer_form' in ex.forms:
+                offer_form = ex.forms['offer_form']
         errors = True
     else:
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game)
@@ -186,69 +196,28 @@ def reply_trade(request, game_id, trade_id):
         trade = get_object_or_404(Trade, id = trade_id)
 
         if trade.status == 'INITIATED' and trade.responder == request.user:
-            rule_hand = RuleInHand.objects.filter(game = trade.game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
-            commodity_hand = CommodityInHand.objects.filter(game = trade.game, player = request.user).order_by('commodity__value', 'commodity__name')
+            try:
+                offer, selected_rules, nb_commodities = _parse_offer_forms(request, trade.game)
 
-            RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
-            rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')
-            CommodityCardsFormSet = formset_factory(CommodityCardFormParse, formset = BaseCommodityCardFormSet)
-            commodities_formset = CommodityCardsFormSet(request.POST, prefix = 'commodity')
-            commodities_formset.set_game(trade.game)
-            commodities_formset.set_player(request.user)
+                offer.save()
+                for card in selected_rules:
+                    offer.rules.add(card)
+                for commodity, nb_traded_cards in nb_commodities.iteritems():
+                    if nb_traded_cards > 0:
+                        TradedCommodities.objects.create(offer = offer, commodity = commodity, nb_traded_cards = nb_traded_cards)
 
-            if rulecards_formset.is_valid() and commodities_formset.is_valid():
-                selected_rules = []
-                for card in rule_hand:
-                    for form in rulecards_formset:
-                        if form.cleaned_data['card_id'] == card.id and form.cleaned_data['selected_rule']:
-                            selected_rules.append(card)
-                            break
-                nb_commodities = {}
-                for commodity in commodity_hand:
-                    for form in commodities_formset:
-                        if int(form.cleaned_data['commodity_id']) == commodity.commodity.id:
-                            nb_commodities[commodity] = form.cleaned_data['nb_traded_cards']
-                            break
+                trade.responder_offer = offer
+                trade.save()
 
-                offer_form = OfferForm(request.POST,
-                    nb_selected_rules = len(selected_rules), nb_selected_commodities = sum(nb_commodities.values()))
-
-                if offer_form.is_valid():
-                    offer = Offer.objects.create(free_information = offer_form.cleaned_data['free_information'],
-                                                 comment          = offer_form.cleaned_data['comment'])
-                    trade.responder_offer = offer
-                    trade.save()
-                    for card in selected_rules:
-                        offer.rules.add(card)
-                    for commodity, nb_traded_cards in nb_commodities.iteritems():
-                        if nb_traded_cards > 0:
-                            TradedCommodities.objects.create(offer = offer, commodity = commodity, nb_traded_cards = nb_traded_cards)
-
-                    return HttpResponseRedirect(reverse('trades', args = [trade.game.id]))
-                else:
-                    RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
-                    rulecards_formset = RuleCardsFormSet(initial = sorted([{'card_id':      card.id,
-                                                                            'public_name':   card.rulecard.public_name,
-                                                                            'description':   card.rulecard.description,
-                                                                            'reserved':      bool(card.offer_set.filter(Q(trade_initiated__finalizer__isnull = True) | Q(trade_responded__finalizer__isnull = True)).count() > 0),
-                                                                            'selected_rule': bool(card in selected_rules)}
-                                                                           for card in rule_hand], key = lambda card: card['reserved']),
-                                                                          prefix = 'rulecards')
-                    CommodityCardsFormSet = formset_factory(CommodityCardFormDisplay, extra = 0)
-                    commodities_formset = CommodityCardsFormSet(initial = [{'commodity_id':      card.commodity.id,
-                                                                            'name':              card.commodity.name,
-                                                                            'color':             card.commodity.color,
-                                                                            'nb_cards':          card.nb_cards,
-                                                                            'nb_tradable_cards': card.nb_cards -
-                                             sum([tc.nb_traded_cards for tc in card.tradedcommodities_set.filter(offer__trade_initiated__isnull = False, offer__trade_initiated__finalizer__isnull = True)]) -
-                                             sum([tc.nb_traded_cards for tc in card.tradedcommodities_set.filter(offer__trade_responded__isnull = False, offer__trade_responded__finalizer__isnull = True)]),
-                                                                            'nb_traded_cards':   nb_commodities[card]}
-                                                                           for card in commodity_hand],
-                                                                          prefix = 'commodity')
-
-            return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer,
-                                                             'errors': True, 'offer_form': offer_form,
-                                                             'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
+                return HttpResponseRedirect(reverse('trades', args = [trade.game.id]))
+            except FormInvalidException as ex:
+                rulecards_formset = ex.forms['rulecards_formset']
+                commodities_formset = ex.forms['commodities_formset']
+                if 'offer_form' in ex.forms:
+                    offer_form = ex.forms['offer_form']
+                return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer,
+                                                                 'errors': True, 'offer_form': offer_form,
+                                                                 'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
 
     raise PermissionDenied # if the method is not POST or the user is not the responder or the status is not INITIATED
 
@@ -299,34 +268,36 @@ def _parse_offer_forms(request, game):
     commodities_formset.set_game(game)
     commodities_formset.set_player(request.user)
 
-    if rulecards_formset.is_valid() and commodities_formset.is_valid():
-        selected_rules = []
-        for card in rule_hand:
-            for form in rulecards_formset:
-                if form.cleaned_data['card_id'] == card.id and form.cleaned_data['selected_rule']:
-                    selected_rules.append(card)
-                    break
-        nb_commodities = {}
-        for commodity in commodity_hand:
-            for form in commodities_formset:
-                if int(form.cleaned_data['commodity_id']) == commodity.commodity.id:
-                    nb_commodities[commodity] = form.cleaned_data['nb_traded_cards']
-                    break
+    if not rulecards_formset.is_valid() or not commodities_formset.is_valid():
+        raise FormInvalidException({'rulecards_formset' : rulecards_formset, 'commodities_formset' : commodities_formset})
 
-        offer_form = OfferForm(request.POST,
-                               nb_selected_rules = len(selected_rules), nb_selected_commodities = sum(nb_commodities.values()))
+    selected_rules = []
+    for card in rule_hand:
+        for form in rulecards_formset:
+            if form.cleaned_data['card_id'] == card.id and form.cleaned_data['selected_rule']:
+                selected_rules.append(card)
+                break
+    nb_commodities = {}
+    for commodity in commodity_hand:
+        for form in commodities_formset:
+            if int(form.cleaned_data['commodity_id']) == commodity.commodity.id:
+                nb_commodities[commodity] = form.cleaned_data['nb_traded_cards']
+                break
 
-        if offer_form.is_valid():
-            offer = Offer.objects.create(free_information = offer_form.cleaned_data['free_information'],
-                                         comment          = offer_form.cleaned_data['comment'])
+    offer_form = OfferForm(request.POST,
+                           nb_selected_rules = len(selected_rules), nb_selected_commodities = sum(nb_commodities.values()))
 
-            for card in selected_rules:
-                offer.rules.add(card)
-            for commodity, nb_traded_cards in nb_commodities.iteritems():
-                if nb_traded_cards > 0:
-                    TradedCommodities.objects.create(offer = offer, commodity = commodity, nb_traded_cards = nb_traded_cards)
+    if not offer_form.is_valid():
+        dummy, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, nb_commodities)
+        raise FormInvalidException({'rulecards_formset' : rulecards_formset, 'commodities_formset' : commodities_formset,
+                                    'offer_form' : offer_form})
 
-            return offer
+    offer = Offer(free_information = offer_form.cleaned_data['free_information'],
+                  comment          = offer_form.cleaned_data['comment'])
 
-    return None
+    return offer, selected_rules, nb_commodities
 
+class FormInvalidException(Exception):
+    def __init__(self, forms, *args, **kwargs):
+        super(FormInvalidException, self).__init__(*args, **kwargs)
+        self.forms = forms

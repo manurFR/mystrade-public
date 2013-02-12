@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.db.models import Sum
 from django.forms.formsets import BaseFormSet
-from game.models import Game, RuleInHand, TradedCommodities, CommodityInHand
+from game.models import Game, RuleInHand, CommodityInHand
 from scoring.models import Ruleset, RuleCard
 from utils.utils import roundTimeToMinute
 

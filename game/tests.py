@@ -15,7 +15,6 @@ from game.forms import validate_number_of_players, validate_dates, RuleCardFormP
 from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities, Offer
 from scoring.models import Ruleset, RuleCard, Commodity
 
-
 class GameAndWelcomeViewsTest(TestCase):
     fixtures = ['test_users.json']
 
