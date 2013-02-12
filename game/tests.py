@@ -262,7 +262,6 @@ class TradeViewsTest(TestCase):
         self.assertEqual([commodity_in_hand], list(trade.initiator_offer.commodities.all()))
         self.assertEqual(1, trade.initiator_offer.tradedcommodities_set.all()[0].nb_traded_cards)
 
-
     #noinspection PyUnusedLocal
     def test_trade_list(self):
         right_now = datetime.datetime.now(tz = get_default_timezone())

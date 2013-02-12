@@ -59,12 +59,16 @@
 
     <script>
         $(function() {
-            $('#offer').addClass('hidden');
             $('input[type=submit], button').button();
+        {% if errors %}
+            $('#reply').hide();
+        {% else %}
+            $('#offer').hide();
             $('#reply').on("click", function() {
                 $('#offer').show("blind");
                 $('#reply').hide("blind");
             })
+        {% endif %}
         });
     </script>
 {% endblock content %}

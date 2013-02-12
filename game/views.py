@@ -132,6 +132,7 @@ def trades(request, game_id):
 @login_required
 def create_trade(request, game_id):
     game = get_object_or_404(Game, id = game_id)
+    errors = False
 
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
     commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user).order_by('commodity__value', 'commodity__name')
@@ -192,6 +193,7 @@ def create_trade(request, game_id):
                                                                         'nb_traded_cards':   nb_commodities[card]}
                                                                        for card in commodity_hand],
                                                                       prefix = 'commodity')
+        errors = True
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
         rulecards_formset = RuleCardsFormSet(initial = sorted(
@@ -261,10 +263,10 @@ def show_trade(request, game_id, trade_id):
         offer_form = OfferForm()
 
         return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer,
-                                                         'offer_form': offer_form,
+                                                         'errors': False, 'offer_form': offer_form,
                                                          'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
     else:
-        return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer})
+        return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer, 'errors': False})
 
 @login_required
 def reply_trade(request, game_id, trade_id):
@@ -332,7 +334,7 @@ def reply_trade(request, game_id, trade_id):
                                                                           prefix = 'commodity')
 
             return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer,
-                                                             'offer_form': offer_form,
+                                                             'errors': True, 'offer_form': offer_form,
                                                              'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
 
     raise PermissionDenied # if the method is not POST or the user is not the responder or the status is not INITIATED
