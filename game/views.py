@@ -184,11 +184,11 @@ def show_trade(request, game_id, trade_id):
     if trade.status == 'INITIATED' and trade.responder == request.user:
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, trade.game)
 
-        return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer,
-                                                         'errors': False, 'offer_form': offer_form,
+        return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
+                                                         'offer_form': offer_form,
                                                          'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
     else:
-        return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer, 'errors': False})
+        return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False})
 
 @login_required
 def reply_trade(request, game_id, trade_id):
@@ -216,7 +216,7 @@ def reply_trade(request, game_id, trade_id):
                 commodities_formset = ex.forms['commodities_formset']
                 if 'offer_form' in ex.forms:
                     offer_form = ex.forms['offer_form']
-                return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'initiator_offer': trade.initiator_offer,
+                return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade,
                                                                  'errors': True, 'offer_form': offer_form,
                                                                  'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
 

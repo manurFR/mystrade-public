@@ -25,15 +25,16 @@
                 </div>
                 <div class="css_table-cell {{ color }}">for {{ trade.summary }}</div>
                 <div class="css_table-cell {{ color }}">
-                    {# TODO add REPLIED #}
                     {% if trade.status == 'INITIATED' %}
                         {% if trade.initiator == user %}submitted{% else %}offered{% endif %} {{ trade.creation_date|timesince }} ago
                     {% elif trade.status == 'CANCELLED' %}
-                        cancelled by {% if trade.initiator == user %}<strong>you</strong>{% else %}{{ trade.initiator.get_profile.name }}{% endif %} {{ trade.closing_date|timesince }} ago
+                        cancelled by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
+                    {% elif trade.status == 'REPLIED' %}
+                        response submitted by {% include "common/name_or_you.html" with who=trade.responder %}
                     {% elif trade.status == 'ACCEPTED' %}
                         accepted {{ trade.closing_date|timesince }} ago
                     {% elif trade.status == 'DECLINED' %}
-                        declined {{ trade.closing_date|timesince }} ago
+                        declined by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
                     {% endif %}
                 </div>
                 <div class="css_table-cell {{ color }}">

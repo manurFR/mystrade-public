@@ -12,10 +12,10 @@
                 <div class="card">
                     <div class="card_name">{{ card.rulecard.public_name }}</div>
                     <div class="card_desc">
-                        {% if trade.status == 'INITIATED' and trade.responder == user %}
-                            <span class="helptext">(Hidden until trade accepted)</span>
-                        {% else %}
+                        {% if trade.status == 'ACCEPTED' or giver == user %}
                             {{ card.rulecard.description }}
+                        {% else %}
+                            <span class="helptext">(Hidden until trade accepted)</span>
                         {% endif %}
                     </div>
                 </div>
@@ -46,7 +46,7 @@
     {% if offer.free_information %}
         <div>
             <h4>Free information(s)</h4>
-            {% if trade.initiator == user %}
+            {% if trade.status == 'ACCEPTED' or giver == user %}
                 {{ offer.free_information }}<br/>
             {% else %}
                 <span class="helptext">Some information(s), hidden until this trade is accepted by both players.</span>

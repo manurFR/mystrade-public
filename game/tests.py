@@ -272,23 +272,23 @@ class TradeViewsTest(TestCase):
                                          creation_date = right_now - datetime.timedelta(days = 1))
         trade_cancelled = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
                                          initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
-                                         closing_date = right_now - datetime.timedelta(days = 2))
+                                         closing_date = right_now - datetime.timedelta(days = 2), finalizer = self.loginUser)
         trade_accepted = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
                                         initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
                                         closing_date = right_now - datetime.timedelta(days = 3))
         trade_declined = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'DECLINED',
                                         initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
-                                        closing_date = right_now - datetime.timedelta(days = 4))
+                                        closing_date = right_now - datetime.timedelta(days = 4), finalizer = self.loginUser)
         trade_offered = mommy.make_one(Trade, game = self.game, responder = self.loginUser, status = 'INITIATED',
                                        initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
                                        creation_date = right_now - datetime.timedelta(days = 5))
-
+        #TODO add replied
         response = self.client.get("/game/{}/trades/".format(self.game.id))
 
         self.assertContains(response, "submitted 1 day ago")
         self.assertContains(response, "cancelled by <strong>you</strong> 2 days ago")
         self.assertContains(response, "accepted 3 days ago")
-        self.assertContains(response, "declined 4 days ago")
+        self.assertContains(response, "declined by <strong>you</strong> 4 days ago")
         self.assertContains(response, "offered 5 days ago")
 
     def test_buttons_in_show_trade_with_own_initiated_trade(self):
@@ -486,6 +486,8 @@ class TradeViewsTest(TestCase):
                        'nb_cards':          2,
                        'nb_tradable_cards': 1, # one card is in a pending trade
                        'nb_traded_cards':   0}, commodities_formset.initial)
+
+    #TODO add a test checking when one displays or no the rule descriptions and free informations in both offers
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):

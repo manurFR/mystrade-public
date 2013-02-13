@@ -33,7 +33,7 @@
 
         {# First, display the initiator's offer. #}
         <h3>Offered by {% include "common/name_or_you.html" with who=trade.initiator %}:</h3>
-        {% include "game/display_offer.html" with offer=initiator_offer %}
+        {% include "game/display_offer.html" with offer=trade.initiator_offer giver=trade.initiator %}
 
         {% if trade.status == 'INITIATED' %}
             {% if user == trade.initiator  %}
@@ -53,6 +53,12 @@
                 </form>
             </div>
             {% endif %}
+        {% elif trade.status == 'CANCELLED' and trade.finalizer == trade.initiator %}
+            {# Nothing more to display for trades cancelled by the initiator #}
+        {% else %}
+            {# Display the responder's offer. #}
+            <h3>Offered by {% include "common/name_or_you.html" with who=trade.responder %}:</h3>
+            {% include "game/display_offer.html" with offer=trade.responder_offer giver=trade.responder %}
         {% endif %}
         <br/><br/><br/>
     {% endif %}
