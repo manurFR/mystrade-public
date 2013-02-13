@@ -1,6 +1,5 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.db.models import Sum
 from django.forms.formsets import BaseFormSet
 from game.models import Game, RuleInHand, CommodityInHand
 from scoring.models import Ruleset, RuleCard
@@ -95,7 +94,7 @@ class BaseRuleCardsFormSet(BaseFormSet):
         for i in range(0, self.total_form_count()):
             form = self.forms[i]
             if form.cleaned_data['selected_rule']:
-                if RuleInHand.objects.get(id = form.cleaned_data['card_id']).offer_set.filter(trade_initiated__status = 'INITIATED').count() > 0:
+                if RuleInHand.objects.get(id=form.cleaned_data['card_id']).is_in_a_pending_trade():
                     raise forms.ValidationError("A rule card in a pending trade can not be offered in another trade.")
 
 class CommodityCardFormParse(forms.Form):
@@ -124,7 +123,5 @@ class BaseCommodityCardFormSet(BaseFormSet):
                 commodity_in_hand = CommodityInHand.objects.get(game = self.game, player = self.player, commodity__id = form.cleaned_data['commodity_id'])
             except CommodityInHand.DoesNotExist: # shouldn't happen in real life, but it simplifies testing greatly
                 continue
-            if (form.cleaned_data['nb_traded_cards'] >
-                    commodity_in_hand.nb_cards -
-                        (commodity_in_hand.tradedcommodities_set.filter(offer__trade_initiated__status = 'INITIATED').aggregate(Sum('nb_traded_cards'))['nb_traded_cards__sum'] or 0)):
+            if form.cleaned_data['nb_traded_cards'] > commodity_in_hand.nb_tradable_cards():
                 raise forms.ValidationError("A commodity card in a pending trade can not be offered in another trade.")
