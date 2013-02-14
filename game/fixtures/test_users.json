@@ -162,6 +162,24 @@
         }
     },
     {
+        "pk": 10,
+        "model": "auth.user",
+        "fields": {
+            "username": "admin",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": true,
+            "is_staff": true,
+            "last_login": "2012-11-14T21:16:59.278Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$J5spRWoc4SNP$8Edtd1yppm6nrFmNj3pRW12jAWT3p+mjLL8nBaPFTqA=",
+            "email": "",
+            "date_joined": "2012-11-14T21:16:59.278Z"
+        }
+    },
+    {
         "pk": 1,
         "model": "userprofile.userprofile",
         "fields": {
@@ -240,6 +258,15 @@
             "bio": "",
             "contact": "",
             "user": 9
+        }
+    },
+    {
+        "pk": 10,
+        "model": "userprofile.userprofile",
+        "fields": {
+            "bio": "",
+            "contact": "",
+            "user": 10
         }
     }
 ]

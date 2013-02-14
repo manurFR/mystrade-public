@@ -181,6 +181,10 @@ def cancel_trade(request, game_id, trade_id):
 def show_trade(request, game_id, trade_id):
     trade = get_object_or_404(Trade, id = trade_id)
 
+    if request.user != trade.initiator and request.user != trade.responder and request.user != trade.game.master\
+        and not request.user.is_staff:
+        raise PermissionDenied
+
     if trade.status == 'INITIATED' and trade.responder == request.user:
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, trade.game)
 

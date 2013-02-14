@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Sum
 from django.forms.formsets import formset_factory
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, Client
 from django.utils.timezone import get_default_timezone
 from model_mommy import mommy
 
@@ -30,7 +30,7 @@ class GameAndWelcomeViewsTest(TestCase):
         self.assertEqual(200, response.status_code)
         self.client.logout()
 
-        self.client.login(username = 'testNoCreate0', password = 'test')
+        self.assertTrue(self.client.login(username = 'test9', password = 'test'))
         response = self.client.get("/game/create/")
         self.assertEqual(302, response.status_code)
         self.client.logout()
@@ -200,6 +200,7 @@ class TradeViewsTest(TestCase):
                                    players = User.objects.exclude(username = 'test1'))
         self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
         self.loginUser = User.objects.get(username = 'test2')
+        self.test5 = User.objects.get(username = 'test5')
         self.client.login(username = 'test2', password = 'test')
 
     def test_create_trade_without_responder_fails(self):
@@ -291,6 +292,39 @@ class TradeViewsTest(TestCase):
         self.assertContains(response, "declined by <strong>you</strong> 4 days ago")
         self.assertContains(response, "offered 5 days ago")
 
+    def test_show_trade_only_allowed_for_authorized_players(self):
+        """ Authorized players are : - the initiator
+                                     - the responder
+                                     - the game master
+                                     - admins ("staff" in django terminology)
+        """
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                               status = 'INITIATED', initiator_offer = self.dummy_offer)
+
+        # the initiator
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertEqual(200, response.status_code)
+
+        # the responder
+        self.assertTrue(self.client.login(username = 'test5', password = 'test'))
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertEqual(200, response.status_code)
+
+        # the game master
+        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertEqual(200, response.status_code)
+
+        # an admin
+        self.assertTrue(self.client.login(username = 'admin', password = 'test'))
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id), follow = True)
+        self.assertEqual(200, response.status_code)
+
+        # anybody else
+        self.assertTrue(self.client.login(username = 'test3', password = 'test'))
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertEqual(403, response.status_code)
+
     def test_buttons_in_show_trade_with_own_initiated_trade(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
                                initiator_offer = self.dummy_offer)
@@ -300,7 +334,7 @@ class TradeViewsTest(TestCase):
         self.assertContains(response, 'form action="/game/{}/trade/{}/cancel/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_for_the_responder_when_INITIATED(self):
-        trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'),
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.test5,
                                responder = self.loginUser, status = 'INITIATED', initiator_offer = self.dummy_offer)
 
         response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
@@ -322,7 +356,7 @@ class TradeViewsTest(TestCase):
         self.assertEqual(403, response.status_code)
 
     def test_cancel_trade_not_allowed_for_trades_you_didnt_create(self):
-        trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'), status = 'INITIATED',
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.test5, status = 'INITIATED',
                                initiator_offer = self.dummy_offer)
 
         response = self.client.post("/game/{}/trade/{}/cancel/".format(self.game.id, trade.id), follow = True)
@@ -355,7 +389,7 @@ class TradeViewsTest(TestCase):
         self.assertEqual(403, response.status_code)
 
     def test_reply_trade_not_allowed_when_one_is_not_the_responder(self):
-        trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'),
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.test5,
                                 responder = User.objects.get(username = 'test6'),
                                 status = 'INITIATED', initiator_offer = self.dummy_offer)
 
@@ -364,7 +398,7 @@ class TradeViewsTest(TestCase):
         self.assertEqual(403, response.status_code)
 
     def test_reply_trade_not_allowed_for_trades_not_in_status_INITIATED(self):
-        trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'),
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.test5,
                                 responder = self.loginUser, status = 'ACCEPTED', initiator_offer = self.dummy_offer)
 
         response = self.client.post("/game/{}/trade/{}/reply/".format(self.game.id, trade.id), follow = True)
@@ -372,7 +406,7 @@ class TradeViewsTest(TestCase):
         self.assertEqual(403, response.status_code)
 
     def test_reply_trade_without_selecting_cards_fails(self):
-        trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'),
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.test5,
                                 responder = self.loginUser, status = 'INITIATED', initiator_offer = self.dummy_offer)
         response = self.client.post("/game/{}/trade/{}/reply/".format(self.game.id, trade.id),
             {'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
@@ -391,13 +425,13 @@ class TradeViewsTest(TestCase):
 
     def test_reply_trade_complete_save(self):
         ruleset = mommy.make_one(Ruleset)
-        rulecard = mommy.make_one(RuleCard, ruleset = ruleset, ref_name = 'rulecard_1')
+        rulecard = mommy.make_one(RuleCard, ruleset = ruleset)
         rule_in_hand = RuleInHand.objects.create(game = self.game, player = self.loginUser,
             rulecard = rulecard, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
         commodity = mommy.make_one(Commodity, ruleset = ruleset, name = 'commodity_1')
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
             commodity = commodity, nb_cards = 2)
-        trade = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'),
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.test5,
             responder = self.loginUser, status = 'INITIATED', initiator_offer = self.dummy_offer)
 
         response = self.client.post("/game/{}/trade/{}/reply/".format(self.game.id, trade.id),
@@ -438,19 +472,19 @@ class TradeViewsTest(TestCase):
         offer1 = mommy.make_one(Offer, rules = [rih1], commodities = [])
         tc1 = mommy.make_one(TradedCommodities, offer = offer1, commodity = cih1, nb_traded_cards = 1)
         offer1.tradedcommodities_set.add(tc1)
-        trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = User.objects.get(username = 'test5'),
+        trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                 initiator_offer = offer1, status = 'INITIATED')
         # rulecard2 and 1 card of commodity1 were in the initiator offer of a finalized trade
         offer2 = mommy.make_one(Offer, rules = [rih2], commodities = [])
         tc2 = mommy.make_one(TradedCommodities, offer = offer2, commodity = cih1, nb_traded_cards = 1)
         offer2.tradedcommodities_set.add(tc2)
-        trade2 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = User.objects.get(username = 'test5'),
+        trade2 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                 initiator_offer = offer2, status = 'CANCELLED', finalizer = self.loginUser)
         # rulecard3 and 1 card of commodity 2 are in the responder offer of a pending trade
         offer3 = mommy.make_one(Offer, rules = [rih3], commodities = [])
         tc3 = mommy.make_one(TradedCommodities, offer = offer3, commodity = cih2, nb_traded_cards = 1)
         offer3.tradedcommodities_set.add(tc3)
-        trade3 = mommy.make_one(Trade, game = self.game, initiator = User.objects.get(username = 'test5'), responder = self.loginUser,
+        trade3 = mommy.make_one(Trade, game = self.game, initiator = self.test5, responder = self.loginUser,
                                 initiator_offer = self.dummy_offer, responder_offer = offer3, status = 'REPLIED')
 
         request = RequestFactory().get("/game/{}/trade/create/".format(self.game.id))
@@ -487,7 +521,115 @@ class TradeViewsTest(TestCase):
                        'nb_tradable_cards': 1, # one card is in a pending trade
                        'nb_traded_cards':   0}, commodities_formset.initial)
 
-    #TODO add a test checking when one displays or no the rule descriptions and free informations in both offers
+    def test_display_of_sensitive_trade_elements(self):
+        """ The description of the rules and the free information should not be shown to the other player until/unless
+             the trade has reached the status ACCEPTED """
+        clientTest5 = Client()
+        self.assertTrue(clientTest5.login(username = 'test5', password = 'test'))
+
+        rulecard_initiator = mommy.make_one(RuleCard, public_name = '7', description = 'rule description 7')
+        rih_initiator = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard_initiator,
+                                  ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+        rulecard_responder = mommy.make_one(RuleCard, public_name = '8', description = 'rule description 8')
+        rih_responder = mommy.make_one(RuleInHand, game = self.game, player = self.test5, rulecard = rulecard_responder,
+                                  ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+        offer_initiator = mommy.make_one(Offer, rules = [rih_initiator], commodities = [], free_information = 'this is sensitive')
+        offer_responder = mommy.make_one(Offer, rules = [rih_responder], commodities = [], free_information = 'these are sensitive')
+
+        # INITIATED : the initiator should see the sensitive elements of his offer, the responder should not
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                               initiator_offer = offer_initiator, status = 'INITIATED')
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertContains(response, 'rule description 7')
+        self.assertContains(response, 'this is sensitive')
+
+        response = clientTest5.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertNotContains(response, 'rule description 7')
+        self.assertNotContains(response, 'this is sensitive')
+        self.assertContains(response, '(Hidden until trade accepted)')
+        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
+
+        # REPLIED : same as INITIATED for the initiator offer, plus the responder should see the sensitive elements of
+        #  her offer, but not the initiator
+        trade.responder_offer = offer_responder
+        trade.status = 'REPLIED'
+        trade.save()
+
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertContains(response, 'rule description 7')
+        self.assertContains(response, 'this is sensitive')
+        self.assertNotContains(response, 'rule description 8')
+        self.assertNotContains(response, 'these are sensitive')
+        self.assertContains(response, '(Hidden until trade accepted)')
+        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
+
+        response = clientTest5.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertNotContains(response, 'rule description 7')
+        self.assertNotContains(response, 'this is sensitive')
+        self.assertContains(response, '(Hidden until trade accepted)')
+        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
+        self.assertContains(response, 'rule description 8')
+        self.assertContains(response, 'these are sensitive')
+
+        # CANCELLED : same as REPLIED
+        trade.status = 'CANCELLED'
+        trade.save()
+
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertContains(response, 'rule description 7')
+        self.assertContains(response, 'this is sensitive')
+        self.assertNotContains(response, 'rule description 8')
+        self.assertNotContains(response, 'these are sensitive')
+        self.assertContains(response, '(Hidden until trade accepted)')
+        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
+
+        response = clientTest5.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertNotContains(response, 'rule description 7')
+        self.assertNotContains(response, 'this is sensitive')
+        self.assertContains(response, '(Hidden until trade accepted)')
+        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
+        self.assertContains(response, 'rule description 8')
+        self.assertContains(response, 'these are sensitive')
+
+        # DECLINED : same as REPLIED
+        trade.status = 'CANCELLED'
+        trade.save()
+
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertContains(response, 'rule description 7')
+        self.assertContains(response, 'this is sensitive')
+        self.assertNotContains(response, 'rule description 8')
+        self.assertNotContains(response, 'these are sensitive')
+        self.assertContains(response, '(Hidden until trade accepted)')
+        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
+
+        response = clientTest5.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertNotContains(response, 'rule description 7')
+        self.assertNotContains(response, 'this is sensitive')
+        self.assertContains(response, '(Hidden until trade accepted)')
+        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
+        self.assertContains(response, 'rule description 8')
+        self.assertContains(response, 'these are sensitive')
+
+        # ACCEPTED : both players should at least be able to see all sensitive information
+        trade.status = 'ACCEPTED'
+        trade.save()
+
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertContains(response, 'rule description 7')
+        self.assertContains(response, 'this is sensitive')
+        self.assertContains(response, 'rule description 8')
+        self.assertContains(response, 'these are sensitive')
+        self.assertNotContains(response, '(Hidden until trade accepted)')
+        self.assertNotContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
+
+        response = clientTest5.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+        self.assertContains(response, 'rule description 7')
+        self.assertContains(response, 'this is sensitive')
+        self.assertNotContains(response, '(Hidden until trade accepted)')
+        self.assertNotContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
+        self.assertContains(response, 'rule description 8')
+        self.assertContains(response, 'these are sensitive')
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
