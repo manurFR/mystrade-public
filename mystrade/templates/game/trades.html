@@ -38,8 +38,10 @@
                     {% endif %}
                 </div>
                 <div class="css_table-cell {{ color }}">
-                    {% if trade.status == 'INITIATED' and trade.responder = user %}
+                    {% if trade.status == 'INITIATED' and user == trade.responder %}
                         <a href="{% url 'show_trade' game.id trade.id %}"><span class="new">Reply</span></a>
+                    {% elif trade.status == 'REPLIED' and user == trade.initiator %}
+                        <a href="{% url 'show_trade' game.id trade.id %}"><span class="new">Decide</span></a>
                     {% else %}
                         <a href="{% url 'show_trade' game.id trade.id %}">Show</a>
                     {% endif %}

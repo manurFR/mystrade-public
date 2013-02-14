@@ -10,5 +10,6 @@ urlpatterns = patterns('game.views',
     url(r'^(\d+)/trade/(\d+)/$',         'show_trade',   name = 'show_trade'),
     url(r'^(\d+)/trade/(\d+)/cancel/$',  'cancel_trade', name = 'cancel_trade'),
     url(r'^(\d+)/trade/(\d+)/reply/$',   'reply_trade',  name = 'reply_trade'),
+    url(r'^(\d+)/trade/(\d+)/accept/$',  'accept_trade', name = 'accept_trade'),
 )
 

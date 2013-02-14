@@ -60,12 +60,20 @@
             <h3>Offered by {% include "common/name_or_you.html" with who=trade.responder %}:</h3>
             {% include "game/display_offer.html" with offer=trade.responder_offer giver=trade.responder %}
 
-            {% if trade.status == 'REPLIED' and user == trade.responder %}
+            {% if trade.status == 'REPLIED' %}
+                {% if user == trade.responder %}
                 <div class="floatright">
                     <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
                         <input type="submit" value="Cancel this trade"/>
                     </form>
                 </div>
+                {% elif user == trade.initiator %}
+                    <div class="floatright">
+                        <form action="{% url 'accept_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
+                            <input type="submit" value="Accept this trade"/>
+                        </form>
+                    </div>
+                {% endif %}
             {% endif %}
         {% endif %}
         <br/><br/><br/>

@@ -354,6 +354,7 @@ class TradeViewsTest(TestCase):
         response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
 
         self.assertContains(response, '<form action="/game/{}/trade/{}/cancel/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/game/{}/trade/{}/accept/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_for_the_initiator_when_REPLIED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser,
@@ -362,6 +363,7 @@ class TradeViewsTest(TestCase):
         response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
 
         self.assertNotContains(response, '<form action="/game/{}/trade/{}/cancel/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<form action="/game/{}/trade/{}/accept/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_with_trade_CANCELLED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
@@ -375,51 +377,51 @@ class TradeViewsTest(TestCase):
         response = self.client.get("/game/{}/trade/{}/cancel/".format(self.game.id, 1))
         self.assertEqual(403, response.status_code)
 
-    def test_cancel_trade_not_allowed_for_trades_when_youre_not_the_player_that_can_cancel(self):
+    def test_cancel_trade_not_allowed_for_trades_when_you_re_not_the_player_that_can_cancel(self):
         # trade INITIATED but we're not the initiator
         trade = mommy.make_one(Trade, game = self.game, initiator = self.test5, status = 'INITIATED',
                                initiator_offer = self.dummy_offer)
-        self._assertCancelNotAllowed(trade.id)
+        self._assertOperationNotAllowed(trade.id, 'cancel')
 
         # trade REPLIED but we're not the responder
         trade.responder = User.objects.get(username = 'test3')
         trade.status = 'REPLIED'
         trade.save()
-        self._assertCancelNotAllowed(trade.id)
+        self._assertOperationNotAllowed(trade.id, 'cancel')
 
     def test_cancel_trade_not_allowed_for_the_initiator_for_trades_not_in_status_INITIATED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'REPLIED',
                                initiator_offer = self.dummy_offer)
-        self._assertCancelNotAllowed(trade.id)
+        self._assertOperationNotAllowed(trade.id, 'cancel')
 
         trade.status = 'ACCEPTED'
         trade.save()
-        self._assertCancelNotAllowed(trade.id)
+        self._assertOperationNotAllowed(trade.id, 'cancel')
 
         trade.status = 'CANCELLED'
         trade.save()
-        self._assertCancelNotAllowed(trade.id)
+        self._assertOperationNotAllowed(trade.id, 'cancel')
 
         trade.status = 'DECLINED'
         trade.save()
-        self._assertCancelNotAllowed(trade.id)
+        self._assertOperationNotAllowed(trade.id, 'cancel')
 
     def test_cancel_trade_not_allowed_for_the_responder_for_trades_not_in_status_REPLIED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.test5, responder = self.loginUser,
                                status = 'INITIATED', initiator_offer = self.dummy_offer)
-        self._assertCancelNotAllowed(trade.id)
+        self._assertOperationNotAllowed(trade.id, 'cancel')
 
         trade.status = 'ACCEPTED'
         trade.save()
-        self._assertCancelNotAllowed(trade.id)
+        self._assertOperationNotAllowed(trade.id, 'cancel')
 
         trade.status = 'CANCELLED'
         trade.save()
-        self._assertCancelNotAllowed(trade.id)
+        self._assertOperationNotAllowed(trade.id, 'cancel')
 
         trade.status = 'DECLINED'
         trade.save()
-        self._assertCancelNotAllowed(trade.id)
+        self._assertOperationNotAllowed(trade.id, 'cancel')
 
     def test_cancel_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_INITIATED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
@@ -456,17 +458,13 @@ class TradeViewsTest(TestCase):
                                 responder = User.objects.get(username = 'test6'),
                                 status = 'INITIATED', initiator_offer = self.dummy_offer)
 
-        response = self.client.post("/game/{}/trade/{}/reply/".format(self.game.id, trade.id), follow = True)
-
-        self.assertEqual(403, response.status_code)
+        self._assertOperationNotAllowed(trade.id, 'reply')
 
     def test_reply_trade_not_allowed_for_trades_not_in_status_INITIATED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.test5,
                                 responder = self.loginUser, status = 'ACCEPTED', initiator_offer = self.dummy_offer)
 
-        response = self.client.post("/game/{}/trade/{}/reply/".format(self.game.id, trade.id), follow = True)
-
-        self.assertEqual(403, response.status_code)
+        self._assertOperationNotAllowed(trade.id, 'reply')
 
     def test_reply_trade_without_selecting_cards_fails(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.test5,
@@ -515,6 +513,53 @@ class TradeViewsTest(TestCase):
         self.assertEqual([rule_in_hand], list(trade.responder_offer.rules.all()))
         self.assertEqual([commodity_in_hand], list(trade.responder_offer.commodities.all()))
         self.assertEqual(2, trade.responder_offer.tradedcommodities_set.all()[0].nb_traded_cards)
+
+    def test_accept_trade_not_allowed_in_GET(self):
+        response = self.client.get("/game/{}/trade/{}/accept/".format(self.game.id, 1))
+        self.assertEqual(403, response.status_code)
+
+    def test_accept_trade_not_allowed_when_you_re_not_the_initiator(self):
+        # responder
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.test5, status = 'REPLIED',
+                               initiator_offer = self.dummy_offer)
+        self._assertOperationNotAllowed(trade.id, 'accept')
+
+        # someone else
+        trade.initiator = User.objects.get(username = 'test3')
+        trade.save()
+        self._assertOperationNotAllowed(trade.id, 'accept')
+
+    def test_accept_trade_not_allowed_for_trades_not_in_status_REPLIED(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
+                               initiator_offer = self.dummy_offer)
+        self._assertOperationNotAllowed(trade.id, 'accept')
+
+        trade.status = 'ACCEPTED'
+        trade.save()
+        self._assertOperationNotAllowed(trade.id, 'accept')
+
+        trade.status = 'CANCELLED'
+        trade.save()
+        self._assertOperationNotAllowed(trade.id, 'accept')
+
+        trade.status = 'DECLINED'
+        trade.save()
+        self._assertOperationNotAllowed(trade.id, 'accept')
+
+    def test_accept_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_REPLIED(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                               status = 'REPLIED', initiator_offer = self.dummy_offer)
+
+        response = self.client.post("/game/{}/trade/{}/accept/".format(self.game.id, trade.id), follow = True)
+
+        self.assertEqual(200, response.status_code)
+
+        trade = Trade.objects.get(pk = trade.id)
+        self.assertEqual("ACCEPTED", trade.status)
+        self.assertEqual(self.loginUser, trade.finalizer)
+        self.assertIsNotNone(trade.closing_date)
+
+        # TODO assert that cards have been transferred between initiator and responder
 
     def test_prepare_offer_forms_sets_up_the_correct_cards_formset_with_cards_in_pending_trades_reserved(self):
         rulecard1, rulecard2, rulecard3 = mommy.make_many(RuleCard, 3)
@@ -694,8 +739,8 @@ class TradeViewsTest(TestCase):
         self.assertContains(response, 'rule description 8')
         self.assertContains(response, 'these are sensitive')
 
-    def _assertCancelNotAllowed(self, trade_id):
-        response = self.client.post("/game/{}/trade/{}/cancel/".format(self.game.id, trade_id), follow=True)
+    def _assertOperationNotAllowed(self, trade_id, operation):
+        response = self.client.post("/game/{}/trade/{}/{}/".format(self.game.id, trade_id, operation), follow=True)
         self.assertEqual(403, response.status_code)
 
 class FormsTest(TestCase):

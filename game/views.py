@@ -295,6 +295,19 @@ def _parse_offer_forms(request, game):
 
     return offer, selected_rules, selected_commodities
 
+@login_required
+def accept_trade(request, game_id, trade_id):
+    if request.method == 'POST':
+        trade = get_object_or_404(Trade, id = trade_id)
+        if trade.status == 'REPLIED' and request.user == trade.initiator:
+            trade.status = 'ACCEPTED'
+            trade.finalizer = request.user
+            trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
+            trade.save()
+            return HttpResponseRedirect(reverse('trades', args = [game_id]))
+
+    raise PermissionDenied
+
 class FormInvalidException(Exception):
     def __init__(self, forms, *args, **kwargs):
         super(FormInvalidException, self).__init__(*args, **kwargs)
