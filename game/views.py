@@ -168,7 +168,8 @@ def create_trade(request, game_id):
 def cancel_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
-        if trade.status == 'INITIATED' and trade.initiator == request.user:
+        if ((trade.status == 'INITIATED' and request.user == trade.initiator) or
+            (trade.status == 'REPLIED' and request.user == trade.responder)):
             trade.status = 'CANCELLED'
             trade.finalizer = request.user
             trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
