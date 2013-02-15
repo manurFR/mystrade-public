@@ -547,16 +547,36 @@ class TradeViewsTest(TestCase):
         self._assertOperationNotAllowed(trade.id, 'accept')
 
     def test_accept_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_REPLIED(self):
-        rulecard1 = mommy.make_one(RuleCard, ref_name = '1', public_name = '1')
-        rulecard2 = mommy.make_one(RuleCard, ref_name = '2', public_name = '2')
+        rulecard1, rulecard2 = mommy.make_many(RuleCard, 2)
+        commodity1, commodity2, commodity3 = mommy.make_many(Commodity, 3)
 
         rih1 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
                               ownership_date = datetime.datetime.now(tz = get_default_timezone()))
         rih2 = mommy.make_one(RuleInHand, game = self.game, player = self.test5, rulecard = rulecard2,
                               ownership_date = datetime.datetime.now(tz = get_default_timezone()))
 
+        cih1i = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity1,
+                               nb_cards = 3)
+        cih1r = mommy.make_one(CommodityInHand, game = self.game, player = self.test5, commodity = commodity1,
+                               nb_cards = 3)
+        cih2i = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity2,
+                               nb_cards = 2)
+        cih3r = mommy.make_one(CommodityInHand, game = self.game, player = self.test5, commodity = commodity3,
+                               nb_cards = 2)
+
+        # the initiaor offers rulecard1, 2 commodity1 and 1 commodity2
         offer_initiator = mommy.make_one(Offer, rules = [rih1], commodities = [])
+        tc1i = mommy.make_one(TradedCommodities, offer = offer_initiator, commodity = cih1i, nb_traded_cards = 2)
+        offer_initiator.tradedcommodities_set.add(tc1i)
+        tc2i = mommy.make_one(TradedCommodities, offer = offer_initiator, commodity = cih2i, nb_traded_cards = 1)
+        offer_initiator.tradedcommodities_set.add(tc2i)
+
+        # the responder offers rulecard2, 1 commodity1 and 2 commodity3
         offer_responder = mommy.make_one(Offer, rules = [rih2], commodities = [])
+        tc1r = mommy.make_one(TradedCommodities, offer = offer_responder, commodity = cih1r, nb_traded_cards = 1)
+        offer_responder.tradedcommodities_set.add(tc1r)
+        tc3r = mommy.make_one(TradedCommodities, offer = offer_responder, commodity = cih3r, nb_traded_cards = 2)
+        offer_responder.tradedcommodities_set.add(tc3r)
 
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                status = 'REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
@@ -565,11 +585,13 @@ class TradeViewsTest(TestCase):
 
         self.assertEqual(200, response.status_code)
 
+        # trade
         trade = Trade.objects.get(pk = trade.id)
         self.assertEqual("ACCEPTED", trade.status)
         self.assertEqual(self.loginUser, trade.finalizer)
         self.assertIsNotNone(trade.closing_date)
 
+        # rule cards : should have been swapped
         self.assertIsNotNone(RuleInHand.objects.get(pk = rih1.id).abandon_date)
         hand_initiator = RuleInHand.objects.filter(game = self.game, player = self.loginUser, abandon_date__isnull = True)
         self.assertEqual(1, hand_initiator.count())
@@ -580,8 +602,18 @@ class TradeViewsTest(TestCase):
         self.assertEqual(1, hand_responder.count())
         self.assertEqual(rulecard1, hand_responder[0].rulecard)
 
-        # TODO assert that commodity cards have been transferred between initiator and responder
+        # commodity cards : the initiator should now own 2 commodity1, 1 commodity2 and 2 commodity3, wherea
+        #  the responder should own 4 commodity1, 1 commodity2 and no commodity3
+        self.assertEqual(2, CommodityInHand.objects.get(game = self.game, player = self.loginUser, commodity = commodity1).nb_cards)
+        self.assertEqual(1, CommodityInHand.objects.get(game = self.game, player = self.loginUser, commodity = commodity2).nb_cards)
+        self.assertEqual(2, CommodityInHand.objects.get(game = self.game, player = self.loginUser, commodity = commodity3).nb_cards)
+
+        self.assertEqual(4, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity1).nb_cards)
+        self.assertEqual(1, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity2).nb_cards)
+        self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity3).nb_cards)
+
         # TODO test failure means rollback
+        # TODO test cih avec nb_cards = 0 ne s'affiche pas
 
     def test_prepare_offer_forms_sets_up_the_correct_cards_formset_with_cards_in_pending_trades_reserved(self):
         rulecard1, rulecard2, rulecard3 = mommy.make_many(RuleCard, 3)
