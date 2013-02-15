@@ -2,6 +2,7 @@ import datetime
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.db.models import Q
 from django.forms.formsets import formset_factory
 from django.http import HttpResponseRedirect
@@ -300,11 +301,26 @@ def accept_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
         if trade.status == 'REPLIED' and request.user == trade.initiator:
-            trade.status = 'ACCEPTED'
-            trade.finalizer = request.user
-            trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
-            trade.save()
-            return HttpResponseRedirect(reverse('trades', args = [game_id]))
+            # Accepting a trade and exchanging the cards is a near-perfect textbook example of a process that must be transactional
+            with transaction.commit_on_success():
+                trade.status = 'ACCEPTED'
+                trade.finalizer = request.user
+                trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
+                trade.save()
+
+                # Exchange rule cards
+                for rule_from_initiator in trade.initiator_offer.rules.all():
+                    RuleInHand.objects.create(game = trade.game, player = trade.responder, rulecard = rule_from_initiator.rulecard,
+                                              ownership_date = trade.closing_date)
+                    rule_from_initiator.abandon_date = trade.closing_date
+                    rule_from_initiator.save()
+                for rule_from_responder in trade.responder_offer.rules.all():
+                    RuleInHand.objects.create(game = trade.game, player = trade.initiator, rulecard = rule_from_responder.rulecard,
+                                              ownership_date = trade.closing_date)
+                    rule_from_responder.abandon_date = trade.closing_date
+                    rule_from_responder.save()
+
+                return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
     raise PermissionDenied
 

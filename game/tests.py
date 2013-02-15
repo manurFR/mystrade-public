@@ -547,8 +547,19 @@ class TradeViewsTest(TestCase):
         self._assertOperationNotAllowed(trade.id, 'accept')
 
     def test_accept_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_REPLIED(self):
+        rulecard1 = mommy.make_one(RuleCard, ref_name = '1', public_name = '1')
+        rulecard2 = mommy.make_one(RuleCard, ref_name = '2', public_name = '2')
+
+        rih1 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
+                              ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+        rih2 = mommy.make_one(RuleInHand, game = self.game, player = self.test5, rulecard = rulecard2,
+                              ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+
+        offer_initiator = mommy.make_one(Offer, rules = [rih1], commodities = [])
+        offer_responder = mommy.make_one(Offer, rules = [rih2], commodities = [])
+
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
-                               status = 'REPLIED', initiator_offer = self.dummy_offer)
+                               status = 'REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
 
         response = self.client.post("/game/{}/trade/{}/accept/".format(self.game.id, trade.id), follow = True)
 
@@ -559,7 +570,18 @@ class TradeViewsTest(TestCase):
         self.assertEqual(self.loginUser, trade.finalizer)
         self.assertIsNotNone(trade.closing_date)
 
-        # TODO assert that cards have been transferred between initiator and responder
+        self.assertIsNotNone(RuleInHand.objects.get(pk = rih1.id).abandon_date)
+        hand_initiator = RuleInHand.objects.filter(game = self.game, player = self.loginUser, abandon_date__isnull = True)
+        self.assertEqual(1, hand_initiator.count())
+        self.assertEqual(rulecard2, hand_initiator[0].rulecard)
+
+        self.assertIsNotNone(RuleInHand.objects.get(pk = rih2.id).abandon_date)
+        hand_responder = RuleInHand.objects.filter(game = self.game, player = self.test5, abandon_date__isnull = True)
+        self.assertEqual(1, hand_responder.count())
+        self.assertEqual(rulecard1, hand_responder[0].rulecard)
+
+        # TODO assert that commodity cards have been transferred between initiator and responder
+        # TODO test failure means rollback
 
     def test_prepare_offer_forms_sets_up_the_correct_cards_formset_with_cards_in_pending_trades_reserved(self):
         rulecard1, rulecard2, rulecard3 = mommy.make_many(RuleCard, 3)
