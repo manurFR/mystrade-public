@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Sum
 from django.forms.formsets import formset_factory
-from django.test import TestCase, RequestFactory, Client
+from django.test import TestCase, RequestFactory, Client, TransactionTestCase
 from django.utils.timezone import get_default_timezone
 from model_mommy import mommy
 
@@ -612,8 +612,7 @@ class TradeViewsTest(TestCase):
         self.assertEqual(1, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity2).nb_cards)
         self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity3).nb_cards)
 
-        # TODO test failure means rollback
-        # TODO test cih avec nb_cards = 0 ne s'affiche pas
+        # TODO test cih avec nb_cards = 0 ne s'affiche pas (en fait si : a corriger)
 
     def test_prepare_offer_forms_sets_up_the_correct_cards_formset_with_cards_in_pending_trades_reserved(self):
         rulecard1, rulecard2, rulecard3 = mommy.make_many(RuleCard, 3)
@@ -796,6 +795,51 @@ class TradeViewsTest(TestCase):
     def _assertOperationNotAllowed(self, trade_id, operation):
         response = self.client.post("/game/{}/trade/{}/{}/".format(self.game.id, trade_id, operation), follow=True)
         self.assertEqual(403, response.status_code)
+
+class TransactionalViewsTest(TransactionTestCase):
+    fixtures = ['test_users.json']
+
+    def setUp(self):
+        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'),
+                                   players = User.objects.exclude(username = 'test1'))
+        self.loginUser = User.objects.get(username = 'test2')
+        self.test5 = User.objects.get(username = 'test5')
+        self.client.login(username = 'test2', password = 'test')
+
+    def test_accept_trade_cards_exchange_is_transactional(self):
+        # let's make the responder offer 1 commodity for which he doesn't have any cards
+        #  (because it's the last save() in the process, so we can assert that everything else has been rollbacked)
+        rih = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser,
+                             ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+        offer_initiator = mommy.make_one(Offer, rules = [rih], commodities = [])
+
+        offer_responder = mommy.make_one(Offer, rules = [], commodities = [])
+        cih = mommy.make_one(CommodityInHand, game = self.game, player = self.test5, nb_cards = 0)
+        tc = mommy.make_one(TradedCommodities, offer = offer_responder, commodity = cih, nb_traded_cards = 1)
+        offer_responder.tradedcommodities_set.add(tc)
+
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                               status = 'REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
+
+        response = self.client.post("/game/{}/trade/{}/accept/".format(self.game.id, trade.id), follow = True)
+
+        self.assertEqual(200, response.status_code)
+
+        # trade : no change
+        trade = Trade.objects.get(pk = trade.id)
+        self.assertEqual("REPLIED", trade.status)
+        self.assertIsNone(trade.finalizer)
+        self.assertIsNone(trade.closing_date)
+
+        # rule cards : no swapping
+        with self.assertRaises(RuleInHand.DoesNotExist):
+            RuleInHand.objects.get(game = self.game, player = self.test5, rulecard = rih.rulecard)
+        self.assertIsNone(RuleInHand.objects.get(pk = rih.id).abandon_date)
+
+        # commodity cards : no change
+        self.assertEqual(1, CommodityInHand.objects.filter(game = self.game, player = self.test5).count())
+        self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = cih.commodity).nb_cards)
+        self.assertEqual(0, CommodityInHand.objects.filter(game = self.game, player = self.loginUser).count())
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):

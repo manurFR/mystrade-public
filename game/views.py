@@ -302,52 +302,57 @@ def accept_trade(request, game_id, trade_id):
         trade = get_object_or_404(Trade, id = trade_id)
         if trade.status == 'REPLIED' and request.user == trade.initiator:
             # Accepting a trade and exchanging the cards is a near-perfect textbook example of a process that must be transactional
-            with transaction.commit_on_success():
-                trade.status = 'ACCEPTED'
-                trade.finalizer = request.user
-                trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
-                trade.save()
+            try:
+                with transaction.commit_on_success():
+                    trade.status = 'ACCEPTED'
+                    trade.finalizer = request.user
+                    trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
+                    trade.save()
 
-                # Exchange rule cards
-                for rule_from_initiator in trade.initiator_offer.rules.all():
-                    RuleInHand.objects.create(game = trade.game, player = trade.responder, rulecard = rule_from_initiator.rulecard,
-                                              ownership_date = trade.closing_date)
-                    rule_from_initiator.abandon_date = trade.closing_date
-                    rule_from_initiator.save()
-                for rule_from_responder in trade.responder_offer.rules.all():
-                    RuleInHand.objects.create(game = trade.game, player = trade.initiator, rulecard = rule_from_responder.rulecard,
-                                              ownership_date = trade.closing_date)
-                    rule_from_responder.abandon_date = trade.closing_date
-                    rule_from_responder.save()
+                    # Exchange rule cards
+                    for rule_from_initiator in trade.initiator_offer.rules.all():
+                        RuleInHand.objects.create(game = trade.game, player = trade.responder, rulecard = rule_from_initiator.rulecard,
+                                                  ownership_date = trade.closing_date)
+                        rule_from_initiator.abandon_date = trade.closing_date
+                        rule_from_initiator.save()
+                    for rule_from_responder in trade.responder_offer.rules.all():
+                        RuleInHand.objects.create(game = trade.game, player = trade.initiator, rulecard = rule_from_responder.rulecard,
+                                                  ownership_date = trade.closing_date)
+                        rule_from_responder.abandon_date = trade.closing_date
+                        rule_from_responder.save()
 
-                # Exchange commodity cards
-                for tradedcommodity_from_initiator in trade.initiator_offer.tradedcommodities_set.all():
-                    cih_from_initiator = tradedcommodity_from_initiator.commodity
-                    try:
-                        cih_for_responder = CommodityInHand.objects.get(game = trade.game, player = trade.responder,
-                                                                        commodity = cih_from_initiator.commodity)
-                    except CommodityInHand.DoesNotExist:
-                        cih_for_responder = CommodityInHand(game = trade.game, player = trade.responder,
-                                                            commodity = cih_from_initiator.commodity, nb_cards = 0)
-                    cih_for_responder.nb_cards += tradedcommodity_from_initiator.nb_traded_cards
-                    cih_for_responder.save()
-                    cih_from_initiator.nb_cards -= tradedcommodity_from_initiator.nb_traded_cards
-                    cih_from_initiator.save()
+                    # Exchange commodity cards
+                    for tradedcommodity_from_initiator in trade.initiator_offer.tradedcommodities_set.all():
+                        cih_from_initiator = tradedcommodity_from_initiator.commodity
+                        try:
+                            cih_for_responder = CommodityInHand.objects.get(game = trade.game, player = trade.responder,
+                                                                            commodity = cih_from_initiator.commodity)
+                        except CommodityInHand.DoesNotExist:
+                            cih_for_responder = CommodityInHand(game = trade.game, player = trade.responder,
+                                                                commodity = cih_from_initiator.commodity, nb_cards = 0)
+                        cih_for_responder.nb_cards += tradedcommodity_from_initiator.nb_traded_cards
+                        cih_for_responder.save()
+                        cih_from_initiator.nb_cards -= tradedcommodity_from_initiator.nb_traded_cards
+                        cih_from_initiator.save()
 
-                for tradedcommodity_from_responder in trade.responder_offer.tradedcommodities_set.all():
-                    cih_from_responder = tradedcommodity_from_responder.commodity
-                    try:
-                        cih_for_initiator = CommodityInHand.objects.get(game = trade.game, player = trade.initiator,
-                                                                        commodity = cih_from_responder.commodity)
-                    except CommodityInHand.DoesNotExist:
-                        cih_for_initiator = CommodityInHand(game = trade.game, player = trade.initiator,
-                                                            commodity = cih_from_responder.commodity, nb_cards = 0)
-                    cih_for_initiator.nb_cards += tradedcommodity_from_responder.nb_traded_cards
-                    cih_for_initiator.save()
-                    cih_from_responder.nb_cards -= tradedcommodity_from_responder.nb_traded_cards
-                    cih_from_responder.save()
+                    for tradedcommodity_from_responder in trade.responder_offer.tradedcommodities_set.all():
+                        cih_from_responder = tradedcommodity_from_responder.commodity
+                        try:
+                            cih_for_initiator = CommodityInHand.objects.get(game = trade.game, player = trade.initiator,
+                                                                            commodity = cih_from_responder.commodity)
+                        except CommodityInHand.DoesNotExist:
+                            cih_for_initiator = CommodityInHand(game = trade.game, player = trade.initiator,
+                                                                commodity = cih_from_responder.commodity, nb_cards = 0)
+                        cih_for_initiator.nb_cards += tradedcommodity_from_responder.nb_traded_cards
+                        cih_for_initiator.save()
+                        cih_from_responder.nb_cards -= tradedcommodity_from_responder.nb_traded_cards
+                        cih_from_responder.save()
+            except BaseException as ex:
+                # if anything crappy happens, rollback the transaction and do nothing else except logging
+                print 'accept_trace(', game_id, ',',  trade_id, ')'
+                print ' ' * 5, ex
 
-                return HttpResponseRedirect(reverse('trades', args = [game_id]))
+            return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
     raise PermissionDenied
 
