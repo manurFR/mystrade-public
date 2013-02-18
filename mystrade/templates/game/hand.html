@@ -33,4 +33,9 @@
             {% endfor %}
         </div>
     </div>
+    <h4>Free informations</h4>
+    {% for offer in free_informations %}
+        {{ offer.free_information }}<br/>
+    {% endfor %}
+
 {% endblock content %}

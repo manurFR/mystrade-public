@@ -96,8 +96,8 @@ class Offer(models.Model):
     rules = models.ManyToManyField(RuleInHand)
     commodities = models.ManyToManyField(CommodityInHand, through='TradedCommodities')
 
-    comment = models.TextField(blank = True)
-    free_information = models.TextField("Free information that won't be revealed until both players accept the trade", blank = True)
+    comment = models.TextField(blank = True, null = True)
+    free_information = models.TextField("Free information that won't be revealed until both players accept the trade", blank = True, null = True)
 
     @property
     def summary(self):

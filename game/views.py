@@ -1,4 +1,5 @@
 import datetime
+from itertools import chain
 import logging
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError, PermissionDenied
@@ -30,8 +31,23 @@ def hand(request, game_id):
     game = get_object_or_404(Game, id = game_id)
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
     commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
+
+    free_informations = []
+    for offer in Offer.objects.filter(free_information__isnull = False, trade_responded__initiator = request.user,
+                                      trade_responded__status = 'ACCEPTED'):
+        free_informations.append({ 'offerer': offer.trade_responded.responder,
+                                   'date': offer.trade_responded.closing_date,
+                                   'free_information': offer.free_information })
+
+    for offer in Offer.objects.filter(free_information__isnull = False, trade_initiated__responder = request.user,
+                                      trade_initiated__status = 'ACCEPTED'):
+        free_informations.append({ 'offerer': offer.trade_initiated.responder,
+                                   'date': offer.trade_initiated.closing_date,
+                                   'free_information': offer.free_information })
+
     return render(request, 'game/hand.html',
-                  {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand})
+                  {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand,
+                   'free_informations' : sorted(free_informations, key = lambda offer: offer['date'], reverse = True)})
 
 #############################################################################
 ##                              Games                                      ##

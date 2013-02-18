@@ -192,17 +192,48 @@ class GameAndWelcomeViewsTest(TestCase):
         self.assertListEqual([game2, game1], list(response.context['games']))
         self.assertNotIn(game3, response.context['games'])
 
+class ShowHandViewTest(TestCase):
+    fixtures = ['test_users.json']
+
+    def setUp(self):
+        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'),
+                                   players = User.objects.exclude(username = 'test1'))
+        self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
+        self.loginUser = User.objects.get(username = 'test2')
+        self.test5 = User.objects.get(username = 'test5')
+        self.client.login(username = 'test2', password = 'test')
+
     def test_show_hand_doesnt_show_commodities_with_no_cards(self):
-        game = mommy.make_one(Game)
         commodity1 = mommy.make_one(Commodity, name = 'Commodity#1')
         commodity2 = mommy.make_one(Commodity, name = 'Commodity#2')
-        cih1 = CommodityInHand.objects.create(game = game, player = self.testUserCanCreate, commodity = commodity1, nb_cards = 1)
-        cih2 = CommodityInHand.objects.create(game = game, player = self.testUserCanCreate, commodity = commodity2, nb_cards = 0)
+        cih1 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 1)
+        cih2 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity2, nb_cards = 0)
 
-        response = self.client.get("/game/{}/hand/".format(game.id))
+        response = self.client.get("/game/{}/hand/".format(self.game.id))
 
         self.assertContains(response, '<div class="card_name">Commodity#1</div>')
         self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
+
+    def test_see_free_informations_from_ACCEPTED_trades_in_show_hand(self):
+        offer1_from_me_as_initiator = mommy.make_one(Offer, rules = [], commodities = [], free_information = "I don't need to see that 1")
+        offer1_from_other_as_responder = mommy.make_one(Offer, rules = [], commodities = [], free_information = "Show me this 1")
+        trade1 = mommy.make_one(Trade, initiator = self.loginUser, responder = self.test5, status = 'ACCEPTED',
+                                initiator_offer = offer1_from_me_as_initiator, responder_offer = offer1_from_other_as_responder)
+
+        offer2_from_other_as_initiator = mommy.make_one(Offer, rules = [], commodities = [], free_information = "Show me this 2")
+        trade2 = mommy.make_one(Trade, initiator = self.test5, responder = self.loginUser, status = 'ACCEPTED',
+                                initiator_offer = offer2_from_other_as_initiator, responder_offer = self.dummy_offer)
+
+        offer3_from_other_as_responder = mommy.make_one(Offer, rules = [], commodities = [], free_information = "I don't need to see that 3")
+        trade3 = mommy.make_one(Trade, initiator = self.loginUser, responder = self.test5, status = 'DECLINED',
+                                initiator_offer = self.dummy_offer, responder_offer = offer3_from_other_as_responder)
+
+        response = self.client.get("/game/{}/hand/".format(self.game.id))
+
+        self.assertContains(response, "Show me this 1")
+        self.assertContains(response, "Show me this 2")
+        self.assertNotContains(response, "I don't need to see that 1")
+        self.assertNotContains(response, "I don't need to see that 3")
 
 class TradeViewsTest(TestCase):
     fixtures = ['test_users.json']
