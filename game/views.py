@@ -1,4 +1,5 @@
 import datetime
+import logging
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.urlresolvers import reverse
@@ -15,6 +16,8 @@ from game.forms import CreateGameForm, OfferForm, validate_number_of_players, \
 from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities, Offer
 from scoring.models import RuleCard
 
+logger = logging.getLogger(__name__)
+
 @login_required
 def welcome(request):
     games = Game.objects.filter(Q(master = request.user) | Q(players = request.user)).distinct().order_by('-end_date')
@@ -26,7 +29,7 @@ def welcome(request):
 def hand(request, game_id):
     game = get_object_or_404(Game, id = game_id)
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
-    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user).order_by('commodity__value', 'commodity__name')
+    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
     return render(request, 'game/hand.html',
                   {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand})
 
@@ -230,7 +233,7 @@ def reply_trade(request, game_id, trade_id):
 
 def _prepare_offer_forms(request, game, selected_rules = [], selected_commodities = {}):
     rule_hand = RuleInHand.objects.filter(game=game, player=request.user, abandon_date__isnull=True).order_by('rulecard__ref_name')
-    commodity_hand = CommodityInHand.objects.filter(game=game, player=request.user).order_by('commodity__value', 'commodity__name')
+    commodity_hand = CommodityInHand.objects.filter(game=game, player=request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
 
     RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra=0)
     rulecards_formset = RuleCardsFormSet(initial=sorted(
@@ -258,7 +261,7 @@ def _prepare_offer_forms(request, game, selected_rules = [], selected_commoditie
 
 def _parse_offer_forms(request, game):
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
-    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user).order_by('commodity__value', 'commodity__name')
+    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
 
     RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
     rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')
@@ -349,8 +352,7 @@ def accept_trade(request, game_id, trade_id):
                         cih_from_responder.save()
             except BaseException as ex:
                 # if anything crappy happens, rollback the transaction and do nothing else except logging
-                print 'accept_trace(', game_id, ',',  trade_id, ')'
-                print ' ' * 5, ex
+                logger.error("Error in accept_trace({}, {})".format(game_id, trade_id), exc_info = ex)
 
             return HttpResponseRedirect(reverse('trades', args = [game_id]))
 

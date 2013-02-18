@@ -1,6 +1,8 @@
 # Django settings for mystrade project.
+import logging
 from django.core.urlresolvers import reverse_lazy
 import os
+import sys
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -158,6 +160,11 @@ LOGIN_REDIRECT_URL = reverse_lazy('welcome')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '%(levelname)s %(asctime)s %(name)s %(message)s'
+        },
+    },
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
@@ -168,6 +175,11 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'console':{
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
         }
     },
     'loggers': {
@@ -176,5 +188,12 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'game': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
     }
 }
+
+if len(sys.argv) > 1 and sys.argv[1] == 'test':
+    logging.disable(logging.CRITICAL)

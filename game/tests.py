@@ -192,6 +192,18 @@ class GameAndWelcomeViewsTest(TestCase):
         self.assertListEqual([game2, game1], list(response.context['games']))
         self.assertNotIn(game3, response.context['games'])
 
+    def test_show_hand_doesnt_show_commodities_with_no_cards(self):
+        game = mommy.make_one(Game)
+        commodity1 = mommy.make_one(Commodity, name = 'Commodity#1')
+        commodity2 = mommy.make_one(Commodity, name = 'Commodity#2')
+        cih1 = CommodityInHand.objects.create(game = game, player = self.testUserCanCreate, commodity = commodity1, nb_cards = 1)
+        cih2 = CommodityInHand.objects.create(game = game, player = self.testUserCanCreate, commodity = commodity2, nb_cards = 0)
+
+        response = self.client.get("/game/{}/hand/".format(game.id))
+
+        self.assertContains(response, '<div class="card_name">Commodity#1</div>')
+        self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
+
 class TradeViewsTest(TestCase):
     fixtures = ['test_users.json']
 
@@ -242,7 +254,7 @@ class TradeViewsTest(TestCase):
         rule_in_hand = RuleInHand.objects.create(game = self.game, player = self.loginUser,
                                                  rulecard = rulecard, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
         commodity = mommy.make_one(Commodity, ruleset = ruleset, name = 'commodity_1')
-        commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
+        commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = self.loginUser,
                                                            commodity = commodity, nb_cards = 2)
         response = self.client.post("/game/{}/trade/create/".format(self.game.id),
                                     {'responder': 4,
@@ -264,6 +276,17 @@ class TradeViewsTest(TestCase):
         self.assertEqual([rule_in_hand], list(trade.initiator_offer.rules.all()))
         self.assertEqual([commodity_in_hand], list(trade.initiator_offer.commodities.all()))
         self.assertEqual(1, trade.initiator_offer.tradedcommodities_set.all()[0].nb_traded_cards)
+
+    def test_create_trade_page_doesnt_show_commodities_with_no_cards(self):
+        commodity1 = mommy.make_one(Commodity, name = 'Commodity#1')
+        commodity2 = mommy.make_one(Commodity, name = 'Commodity#2')
+        cih1 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 1)
+        cih2 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity2, nb_cards = 0)
+
+        response = self.client.get("/game/{}/trade/create/".format(self.game.id))
+
+        self.assertContains(response, '<div class="card_name">Commodity#1</div>')
+        self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
 
     #noinspection PyUnusedLocal
     def test_trade_list(self):
@@ -611,8 +634,6 @@ class TradeViewsTest(TestCase):
         self.assertEqual(4, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity1).nb_cards)
         self.assertEqual(1, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity2).nb_cards)
         self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity3).nb_cards)
-
-        # TODO test cih avec nb_cards = 0 ne s'affiche pas (en fait si : a corriger)
 
     def test_prepare_offer_forms_sets_up_the_correct_cards_formset_with_cards_in_pending_trades_reserved(self):
         rulecard1, rulecard2, rulecard3 = mommy.make_many(RuleCard, 3)
