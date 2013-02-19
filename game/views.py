@@ -13,7 +13,7 @@ from django.utils.timezone import get_default_timezone
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, OfferForm, validate_number_of_players, \
-    validate_dates, RuleCardFormDisplay, RuleCardFormParse, CommodityCardFormParse, CommodityCardFormDisplay, BaseRuleCardsFormSet, BaseCommodityCardFormSet, TradeForm
+    validate_dates, RuleCardFormDisplay, RuleCardFormParse, CommodityCardFormParse, CommodityCardFormDisplay, BaseRuleCardsFormSet, BaseCommodityCardFormSet, TradeForm, DeclineReasonForm
 from game.models import Game, RuleInHand, CommodityInHand, Trade, TradedCommodities, Offer
 from scoring.models import RuleCard
 
@@ -184,6 +184,7 @@ def create_trade(request, game_id):
 
     return render(request, 'game/trade_offer.html', {'game': game, 'trade_form': trade_form, 'offer_form': offer_form,
                                                      'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
+
 @login_required
 def cancel_trade(request, game_id, trade_id):
     if request.method == 'POST':
@@ -206,11 +207,12 @@ def show_trade(request, game_id, trade_id):
         and not request.user.is_staff:
         raise PermissionDenied
 
-    if trade.status == 'INITIATED' and trade.responder == request.user:
+    if trade.status == 'INITIATED' and request.user == trade.responder:
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, trade.game)
+        decline_reason_form = DeclineReasonForm()
 
         return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
-                                                         'offer_form': offer_form,
+                                                         'decline_reason_form': decline_reason_form, 'offer_form': offer_form,
                                                          'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
     else:
         return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False})
@@ -220,7 +222,7 @@ def reply_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
 
-        if trade.status == 'INITIATED' and trade.responder == request.user:
+        if trade.status == 'INITIATED' and request.user == trade.responder:
             try:
                 offer, selected_rules, selected_commodities = _parse_offer_forms(request, trade.game)
 
@@ -371,6 +373,22 @@ def accept_trade(request, game_id, trade_id):
                 logger.error("Error in accept_trace({}, {})".format(game_id, trade_id), exc_info = ex)
 
             return HttpResponseRedirect(reverse('trades', args = [game_id]))
+
+    raise PermissionDenied
+
+@login_required
+def decline_trade(request, game_id, trade_id):
+    if request.method == 'POST':
+        trade = get_object_or_404(Trade, id = trade_id)
+        if trade.status == 'INITIATED' and request.user == trade.responder:
+            decline_reason_form = DeclineReasonForm(request.POST)
+            if decline_reason_form.is_valid():
+                trade.status = 'DECLINED'
+                trade.finalizer = request.user
+                trade.decline_reason = decline_reason_form.cleaned_data['decline_reason']
+                trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
+                trade.save()
+                return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
     raise PermissionDenied
 

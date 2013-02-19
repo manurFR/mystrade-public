@@ -390,6 +390,10 @@ class TradeViewsTest(TestCase):
         response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
 
         self.assertContains(response, 'form action="/game/{}/trade/{}/cancel/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<button type="button" id="reply">Reply with your offer</button>')
+        self.assertNotContains(response, '<form action="/game/{}/trade/{}/reply/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
+        self.assertNotContains(response, '<form action="/game/{}/trade/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_for_the_responder_when_INITIATED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.test5,
@@ -400,6 +404,8 @@ class TradeViewsTest(TestCase):
         self.assertNotContains(response, 'form action="/game/{}/trade/{}/cancel/"'.format(self.game.id, trade.id))
         self.assertContains(response, '<button type="button" id="reply">Reply with your offer</button>')
         self.assertContains(response, '<form action="/game/{}/trade/{}/reply/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<button type="button" id="decline">Decline</button>')
+        self.assertContains(response, '<form action="/game/{}/trade/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_for_the_responder_when_REPLIED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.test5,
@@ -409,6 +415,10 @@ class TradeViewsTest(TestCase):
 
         self.assertContains(response, '<form action="/game/{}/trade/{}/cancel/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<form action="/game/{}/trade/{}/accept/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<button type="button" id="reply">Reply with your offer</button>')
+        self.assertNotContains(response, '<form action="/game/{}/trade/{}/reply/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
+        self.assertNotContains(response, '<form action="/game/{}/trade/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_for_the_initiator_when_REPLIED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser,
@@ -418,6 +428,8 @@ class TradeViewsTest(TestCase):
 
         self.assertNotContains(response, '<form action="/game/{}/trade/{}/cancel/"'.format(self.game.id, trade.id))
         self.assertContains(response, '<form action="/game/{}/trade/{}/accept/"'.format(self.game.id, trade.id))
+        #self.assertContains(response, '<button type="button" id="decline">Decline</button>')
+        #self.assertContains(response, '<form action="/game/{}/trade/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_with_trade_CANCELLED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
@@ -426,6 +438,9 @@ class TradeViewsTest(TestCase):
         response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
 
         self.assertNotContains(response, 'form action="/game/{}/trade/{}/cancel/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/game/{}/trade/{}/accept/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
+        self.assertNotContains(response, '<form action="/game/{}/trade/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_cancel_trade_not_allowed_in_GET(self):
         response = self.client.get("/game/{}/trade/{}/cancel/".format(self.game.id, 1))
@@ -665,6 +680,55 @@ class TradeViewsTest(TestCase):
         self.assertEqual(4, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity1).nb_cards)
         self.assertEqual(1, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity2).nb_cards)
         self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity3).nb_cards)
+
+    def test_decline_trade_not_allowed_in_GET(self):
+        response = self.client.get("/game/{}/trade/{}/decline/".format(self.game.id, 1))
+        self.assertEqual(403, response.status_code)
+
+    def test_decine_trade_not_allowed_for_trades_when_you_re_not_the_player_that_can_decline(self):
+        # trade INITIATED but we're not the responder
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                               status = 'INITIATED', initiator_offer = self.dummy_offer)
+        self._assertOperationNotAllowed(trade.id, 'decline')
+
+        # trade REPLIED but we're not the initiator
+        trade.initiator = self.test5
+        trade.responder = self.loginUser
+        trade.status = 'REPLIED'
+        trade.save()
+        self._assertOperationNotAllowed(trade.id, 'decline')
+
+    def test_decline_trade_not_allowed_for_the_responder_for_trades_not_in_status_INITIATED(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.test5, responder = self.loginUser,
+                               status = 'REPLIED', initiator_offer = self.dummy_offer)
+        self._assertOperationNotAllowed(trade.id, 'decline')
+
+        trade.status = 'ACCEPTED'
+        trade.save()
+        self._assertOperationNotAllowed(trade.id, 'decline')
+
+        trade.status = 'CANCELLED'
+        trade.save()
+        self._assertOperationNotAllowed(trade.id, 'decline')
+
+        trade.status = 'DECLINED'
+        trade.save()
+        self._assertOperationNotAllowed(trade.id, 'decline')
+
+    def test_decline_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_INITIATED(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.test5, responder = self.loginUser,
+                               status = 'INITIATED', initiator_offer = self.dummy_offer)
+
+        response = self.client.post("/game/{}/trade/{}/decline/".format(self.game.id, trade.id),
+                                    {'decline_reason': "that's my reason"}, follow = True)
+
+        self.assertEqual(200, response.status_code)
+
+        trade = Trade.objects.get(pk = trade.id)
+        self.assertEqual("DECLINED", trade.status)
+        self.assertEqual(self.loginUser, trade.finalizer)
+        self.assertIsNotNone(trade.closing_date)
+        self.assertEqual("that's my reason", trade.decline_reason)
 
     def test_prepare_offer_forms_sets_up_the_correct_cards_formset_with_cards_in_pending_trades_reserved(self):
         rulecard1, rulecard2, rulecard3 = mommy.make_many(RuleCard, 3)

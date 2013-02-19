@@ -82,6 +82,8 @@ class Trade(models.Model):
     responder_offer = models.OneToOneField('Offer', related_name = 'trade_responded', null = True)
 
     status = models.CharField(max_length = 15, choices = STATUS_CHOICES, default = "INITIATED") # see above
+
+    decline_reason = models.TextField(blank = True, null = True)
     finalizer = models.ForeignKey(User, null = True,
         verbose_name = "Player that caused the trade to reach the current final status, null if not in a final status")
 
