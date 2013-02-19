@@ -257,3 +257,18 @@ a:hover, .dynamic_link:hover {
 	top: 4px;
 	left: 2px;
 }
+
+.free_information {
+    border: 1px solid #FFD773;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    padding-left: 30px;
+    padding-top: 10px;
+}
+
+.free_information legend {
+    color: #333333;
+    font-style: italic;
+    margin-left: -15px;
+}

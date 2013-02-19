@@ -33,9 +33,14 @@
             {% endfor %}
         </div>
     </div>
-    <h4>Free informations</h4>
-    {% for offer in free_informations %}
-        {{ offer.free_information }}<br/>
-    {% endfor %}
+    {% if free_informations %}
+        <h4>Free informations obtained during this game</h4>
+        {% for offer in free_informations %}
+            <fieldset class="free_information">
+                <legend>from <strong>{{ offer.offerer }}</strong>, {{ offer.date|timesince }} ago</legend>
+                {{ offer.free_information }}<br/>
+            </fieldset>
+        {% endfor %}
+    {% endif %}
 
 {% endblock content %}
