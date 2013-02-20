@@ -442,6 +442,24 @@ class TradeViewsTest(TestCase):
         self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
         self.assertNotContains(response, '<form action="/game/{}/trade/{}/decline/"'.format(self.game.id, trade.id))
 
+    def test_decline_reason_displayed_in_show_trade_when_DECLINED(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'DECLINED',
+                               initiator_offer = self.dummy_offer, finalizer = self.test5)
+
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+
+        self.assertContains(response, "declined by test5")
+        self.assertNotContains(response, "with the following reason given:")
+
+        trade.decline_reason = "Because I do not need it"
+        trade.save()
+
+        response = self.client.get("/game/{}/trade/{}/".format(self.game.id, trade.id))
+
+        self.assertContains(response, "declined by test5")
+        self.assertContains(response, "with the following reason given:")
+        self.assertContains(response, "Because I do not need it")
+
     def test_cancel_trade_not_allowed_in_GET(self):
         response = self.client.get("/game/{}/trade/{}/cancel/".format(self.game.id, 1))
         self.assertEqual(403, response.status_code)

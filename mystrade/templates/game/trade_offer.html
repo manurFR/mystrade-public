@@ -25,9 +25,12 @@
         <div>Trade proposed by {% include "common/name_or_you.html" with who=trade.initiator %} to {% include "common/name_or_you.html" with who=trade.responder %} &mdash;
         Status : {% if trade.status == 'INITIATED' %}waiting for response by {% include "common/name_or_you.html" with who=trade.responder %}
         {% elif trade.status == 'CANCELLED' %}cancelled by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
-        {% elif trade.status == 'DECLINED' %}declined by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
         {% elif trade.status == 'REPLIED' %}waiting for definitive agreement by {% include "common/name_or_you.html" with who=trade.initiator %}
         {% elif trade.status == 'ACCEPTED' %}accepted and performed
+        {% elif trade.status == 'DECLINED' %}declined by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
+            {% if trade.decline_reason %}with the following reason given:
+                <div class="reminder">{{ trade.decline_reason }}</div>
+            {% endif %}
         {% endif %}
         </div>
 
