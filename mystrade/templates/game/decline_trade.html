@@ -1,0 +1,27 @@
+{% load url from future %}
+
+<div id="reason"><h3>Would you like to explain why you decline this offer ? (optional)</h3>
+    <form action="{% url 'decline_trade' game.id trade.id %}" method="post">{% csrf_token %}
+        <div>{{ decline_reason_form.decline_reason }}<br/>
+            <span class="helptext">The other player will see this comment.</span></div>
+        <div class="floatright">
+            <input type="submit" value="Yes, I confirm I decline"/> &nbsp;&nbsp;
+            <button type="button" id="cancel_decline">Let me think again</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggle_for_decline() {
+        $('#reason').toggle("blind");
+        $('#reply').toggle("blind");
+        $('#accept').toggle("blind");
+        $('#decline').toggle("blind");
+    }
+
+    $(function() {
+        $('#reason').hide();
+        $('#decline').on("click", toggle_for_decline);
+        $('#cancel_decline').on("click", toggle_for_decline);
+    });
+</script>

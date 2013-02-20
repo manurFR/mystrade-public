@@ -209,11 +209,12 @@ def show_trade(request, game_id, trade_id):
 
     if trade.status == 'INITIATED' and request.user == trade.responder:
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, trade.game)
-        decline_reason_form = DeclineReasonForm()
-
         return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
-                                                         'decline_reason_form': decline_reason_form, 'offer_form': offer_form,
+                                                         'decline_reason_form': DeclineReasonForm(), 'offer_form': offer_form,
                                                          'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
+    elif trade.status == 'REPLIED' and request.user == trade.initiator:
+        return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
+                                                         'decline_reason_form': DeclineReasonForm()})
     else:
         return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False})
 
@@ -380,7 +381,8 @@ def accept_trade(request, game_id, trade_id):
 def decline_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
-        if trade.status == 'INITIATED' and request.user == trade.responder:
+        if ((trade.status == 'INITIATED' and request.user == trade.responder) or
+            (trade.status == 'REPLIED' and request.user == trade.initiator)):
             decline_reason_form = DeclineReasonForm(request.POST)
             if decline_reason_form.is_valid():
                 trade.status = 'DECLINED'

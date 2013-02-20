@@ -428,8 +428,8 @@ class TradeViewsTest(TestCase):
 
         self.assertNotContains(response, '<form action="/game/{}/trade/{}/cancel/"'.format(self.game.id, trade.id))
         self.assertContains(response, '<form action="/game/{}/trade/{}/accept/"'.format(self.game.id, trade.id))
-        #self.assertContains(response, '<button type="button" id="decline">Decline</button>')
-        #self.assertContains(response, '<form action="/game/{}/trade/{}/decline/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<button type="button" id="decline">Decline</button>')
+        self.assertContains(response, '<form action="/game/{}/trade/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_with_trade_CANCELLED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
@@ -537,7 +537,7 @@ class TradeViewsTest(TestCase):
 
     def test_reply_trade_without_selecting_cards_fails(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.test5,
-                                responder = self.loginUser, status = 'INITIATED', initiator_offer = self.dummy_offer)
+                               responder = self.loginUser, status = 'INITIATED', initiator_offer = self.dummy_offer)
         response = self.client.post("/game/{}/trade/{}/reply/".format(self.game.id, trade.id),
             {'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
              'rulecards-0-card_id': 1,
@@ -715,9 +715,41 @@ class TradeViewsTest(TestCase):
         trade.save()
         self._assertOperationNotAllowed(trade.id, 'decline')
 
+    def test_decline_trade_not_allowed_for_the_initiator_for_trades_not_in_status_REPLIED(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                               status = 'INITIATED', initiator_offer = self.dummy_offer)
+        self._assertOperationNotAllowed(trade.id, 'decline')
+
+        trade.status = 'ACCEPTED'
+        trade.save()
+        self._assertOperationNotAllowed(trade.id, 'decline')
+
+        trade.status = 'CANCELLED'
+        trade.save()
+        self._assertOperationNotAllowed(trade.id, 'decline')
+
+        trade.status = 'DECLINED'
+        trade.save()
+        self._assertOperationNotAllowed(trade.id, 'decline')
+
     def test_decline_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_INITIATED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.test5, responder = self.loginUser,
                                status = 'INITIATED', initiator_offer = self.dummy_offer)
+
+        response = self.client.post("/game/{}/trade/{}/decline/".format(self.game.id, trade.id),
+                                    {'decline_reason': "that's my reason"}, follow = True)
+
+        self.assertEqual(200, response.status_code)
+
+        trade = Trade.objects.get(pk = trade.id)
+        self.assertEqual("DECLINED", trade.status)
+        self.assertEqual(self.loginUser, trade.finalizer)
+        self.assertIsNotNone(trade.closing_date)
+        self.assertEqual("that's my reason", trade.decline_reason)
+
+    def test_decline_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_REPLIED(self):
+        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                               status = 'REPLIED', initiator_offer = self.dummy_offer)
 
         response = self.client.post("/game/{}/trade/{}/decline/".format(self.game.id, trade.id),
                                     {'decline_reason': "that's my reason"}, follow = True)

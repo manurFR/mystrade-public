@@ -52,16 +52,7 @@
                     {% include "game/create_offer.html" with submit="Reply with this offer" %}
                     </form>
                 </div>
-                <div id="reason"><h3>Would you like to explain why you decline this offer ? (optional)</h3>
-                    <form action="{% url 'decline_trade' game.id trade.id %}" method="post">{% csrf_token %}
-                        <div>{{ decline_reason_form.decline_reason }}<br/>
-                        <span class="helptext">The other player will see this comment.</span></div>
-                        <div class="floatright">
-                            <input type="submit" value="Yes, I confirm I decline"/> &nbsp;&nbsp;
-                            <button type="button" id="cancel_decline">Let me think again</button>
-                        </div>
-                    </form>
-                </div>
+                {% include "game/decline_trade.html" %}
             {% endif %}
         {% elif trade.status == 'CANCELLED' and trade.finalizer == trade.initiator %}
             {# Nothing more to display for trades cancelled by the initiator #}
@@ -72,17 +63,19 @@
 
             {% if trade.status == 'REPLIED' %}
                 {% if user == trade.responder %}
-                <div class="floatright">
-                    <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
-                        <input type="submit" value="Cancel this trade"/>
-                    </form>
-                </div>
+                    <div class="floatright">
+                        <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
+                            <input type="submit" value="Cancel this trade"/>
+                        </form>
+                    </div>
                 {% elif user == trade.initiator %}
                     <div class="floatright">
                         <form action="{% url 'accept_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
-                            <input type="submit" value="Accept this trade"/>
+                            <input type="submit" value="Accept this trade" id="accept"/> &nbsp;&nbsp;
+                            <button type="button" id="decline">Decline</button>
                         </form>
                     </div>
+                    {% include "game/decline_trade.html" %}
                 {% endif %}
             {% endif %}
         {% endif %}
@@ -92,17 +85,6 @@
     <script>
         $(function() {
             $('input[type=submit], button').button();
-            $('#reason').hide();
-            $('#decline').on("click", function() {
-                $('#reason').show("blind");
-                $('#reply').hide("blind");
-                $('#decline').hide("blind");
-            })
-            $('#cancel_decline').on("click", function() {
-                $('#reason').hide("blind");
-                $('#reply').show("blind");
-                $('#decline').show("blind");
-            })
         {% if errors %}
             $('#reply').hide();
         {% else %}
