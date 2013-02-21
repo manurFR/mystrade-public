@@ -1,40 +1,69 @@
 # -*- coding: utf-8 -*-
+import datetime
 from south.db import db
 from south.v2 import SchemaMigration
+from django.db import models
+
 
 class Migration(SchemaMigration):
 
+    depends_on = (("game", "0010_auto__add_field_trade_decline_reason"),)
+
     def forwards(self, orm):
+        # Adding model 'Trade'
+        db.create_table('trade_trade', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('game', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['game.Game'])),
+            ('initiator', self.gf('django.db.models.fields.related.ForeignKey')(related_name='initiator_trades_set', to=orm['auth.User'])),
+            ('responder', self.gf('django.db.models.fields.related.ForeignKey')(related_name='responder_trades_set', to=orm['auth.User'])),
+            ('initiator_offer', self.gf('django.db.models.fields.related.OneToOneField')(related_name='trade_initiated', unique=True, to=orm['trade.Offer'])),
+            ('responder_offer', self.gf('django.db.models.fields.related.OneToOneField')(related_name='trade_responded', unique=True, null=True, to=orm['trade.Offer'])),
+            ('status', self.gf('django.db.models.fields.CharField')(default='INITIATED', max_length=15)),
+            ('decline_reason', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('finalizer', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True)),
+            ('creation_date', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('closing_date', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+        ))
+        db.send_create_signal('trade', ['Trade'])
 
-        # Changing field 'Offer.comment'
-        db.alter_column('game_offer', 'comment', self.gf('django.db.models.fields.TextField')(null=True))
+        # Adding model 'Offer'
+        db.create_table('trade_offer', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('comment', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('free_information', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+        ))
+        db.send_create_signal('trade', ['Offer'])
 
-        for offer in orm['game.Offer'].objects.filter(comment = ''):
-            offer.comment = None
-            offer.save()
+        # Adding M2M table for field rules on 'Offer'
+        db.create_table('trade_offer_rules', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('offer', models.ForeignKey(orm['trade.offer'], null=False)),
+            ('ruleinhand', models.ForeignKey(orm['game.ruleinhand'], null=False))
+        ))
+        db.create_unique('trade_offer_rules', ['offer_id', 'ruleinhand_id'])
 
-        # Changing field 'Offer.free_information'
-        db.alter_column('game_offer', 'free_information', self.gf('django.db.models.fields.TextField')(null=True))
-
-        for offer in orm['game.Offer'].objects.filter(free_information = ''):
-            offer.free_information = None
-            offer.save()
+        # Adding model 'TradedCommodities'
+        db.create_table('trade_tradedcommodities', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('offer', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['trade.Offer'])),
+            ('commodity', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['game.CommodityInHand'])),
+            ('nb_traded_cards', self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=0)),
+        ))
+        db.send_create_signal('trade', ['TradedCommodities'])
 
     def backwards(self, orm):
+        # Deleting model 'Trade'
+        db.delete_table('trade_trade')
 
-        for offer in orm['game.Offer'].objects.filter(comment__isnull = True):
-            offer.comment = ''
-            offer.save()
+        # Deleting model 'Offer'
+        db.delete_table('trade_offer')
 
-        # Changing field 'Offer.comment'
-        db.alter_column('game_offer', 'comment', self.gf('django.db.models.fields.TextField')(default=''))
+        # Removing M2M table for field rules on 'Offer'
+        db.delete_table('trade_offer_rules')
 
-        for offer in orm['game.Offer'].objects.filter(free_information__isnull = True):
-            offer.free_information = ''
-            offer.save()
+        # Deleting model 'TradedCommodities'
+        db.delete_table('trade_tradedcommodities')
 
-        # Changing field 'Offer.free_information'
-        db.alter_column('game_offer', 'free_information', self.gf('django.db.models.fields.TextField')(default=''))
 
     models = {
         'auth.group': {
@@ -92,14 +121,6 @@ class Migration(SchemaMigration):
             'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.Ruleset']"}),
             'start_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'})
         },
-        'game.offer': {
-            'Meta': {'object_name': 'Offer'},
-            'comment': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'commodities': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['game.CommodityInHand']", 'through': "orm['game.TradedCommodities']", 'symmetrical': 'False'}),
-            'free_information': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['game.RuleInHand']", 'symmetrical': 'False'})
-        },
         'game.ruleinhand': {
             'Meta': {'object_name': 'RuleInHand'},
             'abandon_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
@@ -108,26 +129,6 @@ class Migration(SchemaMigration):
             'ownership_date': ('django.db.models.fields.DateTimeField', [], {}),
             'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
             'rulecard': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.RuleCard']"})
-        },
-        'game.trade': {
-            'Meta': {'object_name': 'Trade'},
-            'closing_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            'creation_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'finalizer': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'}),
-            'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'initiator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'initiator_trades_set'", 'to': "orm['auth.User']"}),
-            'initiator_offer': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'trade_initiated'", 'unique': 'True', 'to': "orm['game.Offer']"}),
-            'responder': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'responder_trades_set'", 'to': "orm['auth.User']"}),
-            'responder_offer': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'trade_responded'", 'unique': 'True', 'null': 'True', 'to': "orm['game.Offer']"}),
-            'status': ('django.db.models.fields.CharField', [], {'default': "'INITIATED'", 'max_length': '15'})
-        },
-        'game.tradedcommodities': {
-            'Meta': {'object_name': 'TradedCommodities'},
-            'commodity': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.CommodityInHand']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nb_traded_cards': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '0'}),
-            'offer': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Offer']"})
         },
         'scoring.commodity': {
             'Meta': {'object_name': 'Commodity'},
@@ -153,7 +154,36 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'module': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
+        },
+        'trade.offer': {
+            'Meta': {'object_name': 'Offer'},
+            'comment': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'commodities': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['game.CommodityInHand']", 'through': "orm['trade.TradedCommodities']", 'symmetrical': 'False'}),
+            'free_information': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['game.RuleInHand']", 'symmetrical': 'False'})
+        },
+        'trade.trade': {
+            'Meta': {'object_name': 'Trade'},
+            'closing_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
+            'creation_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'decline_reason': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'finalizer': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'}),
+            'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'initiator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'initiator_trades_set'", 'to': "orm['auth.User']"}),
+            'initiator_offer': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'trade_initiated'", 'unique': 'True', 'to': "orm['trade.Offer']"}),
+            'responder': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'responder_trades_set'", 'to': "orm['auth.User']"}),
+            'responder_offer': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'trade_responded'", 'unique': 'True', 'null': 'True', 'to': "orm['trade.Offer']"}),
+            'status': ('django.db.models.fields.CharField', [], {'default': "'INITIATED'", 'max_length': '15'})
+        },
+        'trade.tradedcommodities': {
+            'Meta': {'object_name': 'TradedCommodities'},
+            'commodity': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.CommodityInHand']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'nb_traded_cards': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '0'}),
+            'offer': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['trade.Offer']"})
         }
     }
 
-    complete_apps = ['game']
+    complete_apps = ['trade']

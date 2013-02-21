@@ -128,6 +128,7 @@ MYSTRADE_APPS = (
     'userprofile',
     'scoring',
     'game',
+    'trade',
     'utils',
 )
 
