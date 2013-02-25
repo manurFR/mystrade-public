@@ -3,7 +3,7 @@
 
 {% block content %}
 	<div class="header">Your hand for game #{{ game }} (ending in {{ game.end_date|timeuntil }})</div>
-	<h4>Rules Owned</h4>
+	<h4>Rules owned</h4>
 	<div class="css_table">
 		{% for card in rule_hand %}
 			{% if forloop.first or forloop.counter0|divisibleby:"4" %}
@@ -18,6 +18,23 @@
 			{% endif %}
 		{% endfor %}
 	</div>
+    {% if former_rules %}
+        <h4>Rules previously owned</h4>
+        <div class="css_table">
+            {% for card in former_rules %}
+                {% if forloop.first or forloop.counter0|divisibleby:"4" %}
+                    <div class="css_table-row">
+                {% endif %}
+            <div class="css_table-cell card given">
+                <div class="card_name">{{ card.public_name }}</div>
+                <div class="card_desc">{{ card.description }}</div>
+            </div>
+            {% if forloop.counter|divisibleby:"4" or forloop.last %}
+                </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
     <h4>Commodities</h4>
     <div class="css_table">
         <div class="css_table-row">

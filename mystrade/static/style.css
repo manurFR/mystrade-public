@@ -147,6 +147,11 @@ input[type="submit"] {
 	height: 200px;
 }
 
+.card.given {
+    border: 1px dashed #FFD773;
+    color: #644700;
+}
+
 .card_name {
 	font-size: 1.5em;
     font-weight: bold;

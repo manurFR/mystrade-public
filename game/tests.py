@@ -213,7 +213,7 @@ class ShowHandViewTest(TestCase):
         self.assertContains(response, '<div class="card_name">Commodity#1</div>')
         self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
 
-    def test_see_free_informations_from_ACCEPTED_trades_in_show_hand(self):
+    def test_show_hand_displays_free_informations_from_ACCEPTED_trades(self):
         offer1_from_me_as_initiator = mommy.make_one(Offer, rules = [], commodities = [], free_information = "I don't need to see that 1")
         offer1_from_other_as_responder = mommy.make_one(Offer, rules = [], commodities = [], free_information = "Show me this 1")
         trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5, status = 'ACCEPTED',
@@ -234,7 +234,7 @@ class ShowHandViewTest(TestCase):
         self.assertNotContains(response, "I don't need to see that 1")
         self.assertNotContains(response, "I don't need to see that 3")
 
-    def test_do_not_display_free_informations_from_ACCEPTED_trades_of_other_games(self):
+    def test_show_hand_doesnt_display_free_informations_from_ACCEPTED_trades_of_other_games(self):
         other_game = mommy.make_one(Game, master = User.objects.get(username = 'test1'),
                                     players = User.objects.exclude(username = 'test1'))
         initiator_offer1 = mommy.make_one(Offer, rules = [], commodities = [])
@@ -251,6 +251,32 @@ class ShowHandViewTest(TestCase):
 
         self.assertNotContains(response, "There is no point showing this")
         self.assertNotContains(response, "There is no point showing that")
+
+    def test_show_hand_displays_former_rulecards_given_in_trades(self):
+        rulecard1 = mommy.make_one(RuleCard, public_name = 'C1', description = 'Desc1')
+        rulecard2 = mommy.make_one(RuleCard, public_name = 'C2', description = 'Desc2')
+        rih1_former = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
+                                     ownership_date = datetime.datetime(2013, 01, 10, 18, 30, tzinfo = get_default_timezone()),
+                                     abandon_date = datetime.datetime(2012, 01, 11, 10, 45, tzinfo = get_default_timezone()))
+        rih1_former_duplicate = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
+                                               ownership_date = datetime.datetime(2013, 01, 12, 16, 00, tzinfo = get_default_timezone()),
+                                               abandon_date = datetime.datetime(2012, 01, 13, 18, 00, tzinfo = get_default_timezone()))
+        rih2_current = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
+                                      ownership_date = datetime.datetime(2013, 01, 15, 15, 25, tzinfo = get_default_timezone()),
+                                      abandon_date = None)
+        rih2_former_but_copy_of_current = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
+                                                         ownership_date = datetime.datetime(2013, 01, 12, 12, 00, tzinfo = get_default_timezone()),
+                                                         abandon_date = datetime.datetime(2013, 01, 13, 8, 5, tzinfo = get_default_timezone()))
+
+        # one should see one rulecard 2 in rules currently owned and only one rulecard 1 in former rules
+        #  (no duplicates and no copies of cards currently in hand)
+        response = self.client.get("/game/{}/hand/".format(self.game.id))
+
+        self.assertContains(response, '<div class="card_name">C2</div>', count = 1)
+        self.assertEqual([rulecard2], [rih.rulecard for rih in response.context['rule_hand']])
+
+        self.assertContains(response, '<div class="card_name">C1</div>', count = 1)
+        self.assertEqual([{'public_name': 'C1', 'description': 'Desc1'}], response.context['former_rules'])
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):

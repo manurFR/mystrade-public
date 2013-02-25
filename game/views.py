@@ -39,12 +39,16 @@ def hand(request, game_id):
                                    'date': offer.trade_initiated.closing_date,
                                    'free_information': offer.free_information })
 
-#    former_rules = []
-#    for rule in RuleInHand.objects.filter(player = request.user):
-#        pass
+    featured_rulecards = [rh.rulecard.id for rh in rule_hand]
+    former_rules = []
+    for rule in RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = False):
+        if rule.rulecard.id not in featured_rulecards: # add only rulecards that are not currently in the hand and no duplicates
+            former_rules.append({ 'public_name': rule.rulecard.public_name,
+                                  'description': rule.rulecard.description })
+            featured_rulecards.append(rule.rulecard.id)
 
     return render(request, 'game/hand.html',
-                  {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand,
+                  {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand, 'former_rules': former_rules,
                    'free_informations' : sorted(free_informations, key = lambda offer: offer['date'], reverse = True)})
 
 #############################################################################
