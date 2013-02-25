@@ -27,17 +27,21 @@ def hand(request, game_id):
     commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
 
     free_informations = []
-    for offer in Offer.objects.filter(free_information__isnull = False, trade_responded__initiator = request.user,
-                                      trade_responded__status = 'ACCEPTED'):
+    for offer in Offer.objects.filter(free_information__isnull = False, trade_responded__game = game,
+                                      trade_responded__initiator = request.user, trade_responded__status = 'ACCEPTED'):
         free_informations.append({ 'offerer': offer.trade_responded.responder,
                                    'date': offer.trade_responded.closing_date,
                                    'free_information': offer.free_information })
 
-    for offer in Offer.objects.filter(free_information__isnull = False, trade_initiated__responder = request.user,
-                                      trade_initiated__status = 'ACCEPTED'):
+    for offer in Offer.objects.filter(free_information__isnull = False, trade_initiated__game = game,
+                                      trade_initiated__responder = request.user, trade_initiated__status = 'ACCEPTED'):
         free_informations.append({ 'offerer': offer.trade_initiated.responder,
                                    'date': offer.trade_initiated.closing_date,
                                    'free_information': offer.free_information })
+
+#    former_rules = []
+#    for rule in RuleInHand.objects.filter(player = request.user):
+#        pass
 
     return render(request, 'game/hand.html',
                   {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand,

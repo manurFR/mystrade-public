@@ -216,15 +216,15 @@ class ShowHandViewTest(TestCase):
     def test_see_free_informations_from_ACCEPTED_trades_in_show_hand(self):
         offer1_from_me_as_initiator = mommy.make_one(Offer, rules = [], commodities = [], free_information = "I don't need to see that 1")
         offer1_from_other_as_responder = mommy.make_one(Offer, rules = [], commodities = [], free_information = "Show me this 1")
-        trade1 = mommy.make_one(Trade, initiator = self.loginUser, responder = self.test5, status = 'ACCEPTED',
+        trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5, status = 'ACCEPTED',
                                 initiator_offer = offer1_from_me_as_initiator, responder_offer = offer1_from_other_as_responder)
 
         offer2_from_other_as_initiator = mommy.make_one(Offer, rules = [], commodities = [], free_information = "Show me this 2")
-        trade2 = mommy.make_one(Trade, initiator = self.test5, responder = self.loginUser, status = 'ACCEPTED',
+        trade2 = mommy.make_one(Trade, game = self.game, initiator = self.test5, responder = self.loginUser, status = 'ACCEPTED',
                                 initiator_offer = offer2_from_other_as_initiator, responder_offer = self.dummy_offer)
 
         offer3_from_other_as_responder = mommy.make_one(Offer, rules = [], commodities = [], free_information = "I don't need to see that 3")
-        trade3 = mommy.make_one(Trade, initiator = self.loginUser, responder = self.test5, status = 'DECLINED',
+        trade3 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5, status = 'DECLINED',
                                 initiator_offer = self.dummy_offer, responder_offer = offer3_from_other_as_responder)
 
         response = self.client.get("/game/{}/hand/".format(self.game.id))
@@ -233,6 +233,24 @@ class ShowHandViewTest(TestCase):
         self.assertContains(response, "Show me this 2")
         self.assertNotContains(response, "I don't need to see that 1")
         self.assertNotContains(response, "I don't need to see that 3")
+
+    def test_do_not_display_free_informations_from_ACCEPTED_trades_of_other_games(self):
+        other_game = mommy.make_one(Game, master = User.objects.get(username = 'test1'),
+                                    players = User.objects.exclude(username = 'test1'))
+        initiator_offer1 = mommy.make_one(Offer, rules = [], commodities = [])
+        responder_offer1 = mommy.make_one(Offer, rules = [], commodities = [], free_information = "There is no point showing this")
+        trade = mommy.make_one(Trade, game = other_game, initiator = self.loginUser, responder = self.test5,
+                               status = 'ACCEPTED', initiator_offer = initiator_offer1, responder_offer = responder_offer1)
+
+        initiator_offer2 = mommy.make_one(Offer, rules = [], commodities = [], free_information = "There is no point showing that")
+        responder_offer2 = mommy.make_one(Offer, rules = [], commodities = [])
+        trade = mommy.make_one(Trade, game = other_game, initiator = self.test5, responder = self.loginUser,
+                               status = 'ACCEPTED', initiator_offer = initiator_offer2, responder_offer = responder_offer2)
+
+        response = self.client.get("/game/{}/hand/".format(self.game.id))
+
+        self.assertNotContains(response, "There is no point showing this")
+        self.assertNotContains(response, "There is no point showing that")
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
