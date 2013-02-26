@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates
-from game.models import Game, RuleInHand, CommodityInHand
+from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from scoring.models import RuleCard
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer
@@ -41,7 +41,7 @@ def hand(request, game_id):
 
     featured_rulecards = [rh.rulecard.id for rh in rule_hand]
     former_rules = []
-    for rule in RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = False):
+    for rule in RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = False).order_by('rulecard__ref_name'):
         if rule.rulecard.id not in featured_rulecards: # add only rulecards that are not currently in the hand and no duplicates
             former_rules.append({ 'public_name': rule.rulecard.public_name,
                                   'description': rule.rulecard.description })
@@ -118,8 +118,8 @@ def select_rules(request):
                                            master     = request.user,
                                            start_date = start_date,
                                            end_date   = end_date)
-                for user in players:
-                    game.players.add(user)
+                for player in players:
+                    GamePlayer.objects.create(game = game, player = player)
                 for rule in selected_rules:
                     game.rules.add(rule)
                 del request.session['ruleset']

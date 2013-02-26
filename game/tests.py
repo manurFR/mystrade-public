@@ -11,7 +11,7 @@ from model_mommy import mommy
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
     prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates
-from game.models import Game, RuleInHand, CommodityInHand
+from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from scoring.models import Ruleset, RuleCard, Commodity
 from trade.models import Offer, Trade
 
@@ -176,15 +176,15 @@ class GameAndWelcomeViewsTest(TestCase):
         ruleset = Ruleset.objects.get(id = 1)
         game1 = Game.objects.create(ruleset = ruleset, master = self.testUserCanCreate,
                                     end_date = datetime.datetime(2022, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
-        for user in self.testUsersNoCreate: game1.players.add(user)
+        for user in self.testUsersNoCreate: GamePlayer.objects.create(game = game1, player = user)
         game2 = Game.objects.create(ruleset = ruleset, master = self.testUsersNoCreate[0],
                                     end_date = datetime.datetime(2022, 11, 3, 12, 0, 0, tzinfo = get_default_timezone()))
-        game2.players.add(self.testUserCanCreate)
-        game2.players.add(self.testUsersNoCreate[1])
+        GamePlayer.objects.create(game = game2, player = self.testUserCanCreate)
+        GamePlayer.objects.create(game = game2, player = self.testUsersNoCreate[1])
         game3 = Game.objects.create(ruleset = ruleset, master = self.testUsersNoCreate[0],
                                     end_date = datetime.datetime(2022, 11, 5, 12, 0, 0, tzinfo = get_default_timezone()))
-        game3.players.add(self.testUsersNoCreate[1])
-        game3.players.add(self.testUsersNoCreate[2])
+        GamePlayer.objects.create(game = game3, player = self.testUsersNoCreate[1])
+        GamePlayer.objects.create(game = game3, player = self.testUsersNoCreate[2])
 
         response = self.client.get(reverse("welcome"))
         self.assertEqual(200, response.status_code)
@@ -195,8 +195,8 @@ class ShowHandViewTest(TestCase):
     fixtures = ['test_users.json']
 
     def setUp(self):
-        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'),
-                                   players = User.objects.exclude(username = 'test1'))
+        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
+        for player in User.objects.exclude(username = 'test1'): mommy.make_one(GamePlayer, game = self.game, player = player)
         self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
         self.loginUser = User.objects.get(username = 'test2')
         self.test5 = User.objects.get(username = 'test5')
@@ -235,8 +235,9 @@ class ShowHandViewTest(TestCase):
         self.assertNotContains(response, "I don't need to see that 3")
 
     def test_show_hand_doesnt_display_free_informations_from_ACCEPTED_trades_of_other_games(self):
-        other_game = mommy.make_one(Game, master = User.objects.get(username = 'test1'),
-                                    players = User.objects.exclude(username = 'test1'))
+        other_game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
+        for player in User.objects.exclude(username = 'test1'): mommy.make_one(GamePlayer, game = other_game, player = player)
+
         initiator_offer1 = mommy.make_one(Offer, rules = [], commodities = [])
         responder_offer1 = mommy.make_one(Offer, rules = [], commodities = [], free_information = "There is no point showing this")
         trade = mommy.make_one(Trade, game = other_game, initiator = self.loginUser, responder = self.test5,
@@ -376,8 +377,10 @@ class DealTest(TestCase):
 
     def test_deal_cards(self):
         ruleset = Ruleset.objects.get(id = 1)
-        game = mommy.make_one(Game, ruleset = ruleset, players = self.users, rules = self.rules,
-                 start_date = datetime.datetime(2012, 12, 17, 14, 29, 34, tzinfo = get_default_timezone()))
+        game = mommy.make_one(Game, ruleset = ruleset, players = [], rules = self.rules,
+                              start_date = datetime.datetime(2012, 12, 17, 14, 29, 34, tzinfo = get_default_timezone()))
+        for player in self.users:
+            GamePlayer.objects.create(game = game, player = player)
         deal_cards(game)
         for player in self.users:
             rules = RuleInHand.objects.filter(game = game, player = player)

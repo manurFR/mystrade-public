@@ -5,7 +5,7 @@ from django.test import RequestFactory, Client, TransactionTestCase
 from django.utils.timezone import get_default_timezone
 from django.test import TestCase
 from model_mommy import mommy
-from game.models import Game, RuleInHand, CommodityInHand
+from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from scoring.models import Ruleset, RuleCard, Commodity
 from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, CommodityCardFormParse, BaseCommodityCardFormSet
 from trade.models import Offer, Trade, TradedCommodities
@@ -16,8 +16,8 @@ class TradeViewsTest(TestCase):
     fixtures = ['test_users.json']
 
     def setUp(self):
-        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'),
-                                   players = User.objects.exclude(username = 'test1'))
+        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
+        for player in User.objects.exclude(username = 'test1'): mommy.make_one(GamePlayer, game = self.game, player = player)
         self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
         self.loginUser = User.objects.get(username = 'test2')
         self.test5 = User.objects.get(username = 'test5')
@@ -742,8 +742,8 @@ class TransactionalViewsTest(TransactionTestCase):
     fixtures = ['test_users.json']
 
     def setUp(self):
-        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'),
-            players = User.objects.exclude(username = 'test1'))
+        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
+        for player in User.objects.exclude(username = 'test1'): mommy.make_one(GamePlayer, game = self.game, player = player)
         self.loginUser = User.objects.get(username = 'test2')
         self.test5 = User.objects.get(username = 'test5')
         self.client.login(username = 'test2', password = 'test')
@@ -784,11 +784,15 @@ class TransactionalViewsTest(TransactionTestCase):
         self.assertEqual(0, CommodityInHand.objects.filter(game = self.game, player = self.loginUser).count())
 
 class FormsTest(TestCase):
+
+    def setUp(self):
+        self.game = mommy.make_one(Game, players = [])
+
     #noinspection PyUnusedLocal
     def test_a_rule_offered_by_the_initiator_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        rule_in_hand = mommy.make_one(RuleInHand, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+        rule_in_hand = mommy.make_one(RuleInHand, game = self.game, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
         offer = mommy.make_one(Offer, rules = [rule_in_hand], commodities = [])
-        pending_trade = mommy.make_one(Trade, status = 'INITIATED', initiator_offer = offer)
+        pending_trade = mommy.make_one(Trade, game = self.game, status = 'INITIATED', initiator_offer = offer)
 
         RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
         rulecards_formset = RuleCardsFormSet({'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
@@ -800,9 +804,9 @@ class FormsTest(TestCase):
 
     #noinspection PyUnusedLocal
     def test_a_rule_offered_by_the_responder_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        rule_in_hand = mommy.make_one(RuleInHand, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+        rule_in_hand = mommy.make_one(RuleInHand, game = self.game, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
         offer = mommy.make_one(Offer, rules = [rule_in_hand], commodities = [])
-        pending_trade = mommy.make_one(Trade, status = 'INITIATED', responder_offer = offer,
+        pending_trade = mommy.make_one(Trade, game = self.game, status = 'INITIATED', responder_offer = offer,
                                        initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
 
         RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
@@ -815,7 +819,7 @@ class FormsTest(TestCase):
 
     #noinspection PyUnusedLocal
     def test_commodities_offered_by_the_initiator_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        commodity_in_hand = mommy.make_one(CommodityInHand, nb_cards = 1)
+        commodity_in_hand = mommy.make_one(CommodityInHand, game = self.game, nb_cards = 1)
         # see https://github.com/vandersonmota/model_mommy/issues/25
         offer = mommy.make_one(Offer, rules = [], commodities = [])
         traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodity = commodity_in_hand, offer = offer)
@@ -833,7 +837,7 @@ class FormsTest(TestCase):
 
     #noinspection PyUnusedLocal
     def test_commodities_offered_by_the_responder_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        commodity_in_hand = mommy.make_one(CommodityInHand, nb_cards = 2)
+        commodity_in_hand = mommy.make_one(CommodityInHand, game = self.game, nb_cards = 2)
         # see https://github.com/vandersonmota/model_mommy/issues/25
         offer = mommy.make_one(Offer, rules = [], commodities = [])
         traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodity = commodity_in_hand, offer = offer)

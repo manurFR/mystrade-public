@@ -83,7 +83,7 @@ def HAG10(scoresheet):
             min_color_number = commodity['scored_cards']
     if min_color_number and nb_colors >= 5:
         for _i in range(min_color_number):
-            scoresheet.register_rule('HAG10', '(10) A set of five different colors gives a bonus.', score = 10)
+            scoresheet.register_rule('HAG10', '(10) A set of five different colors gives a bonus of 10 points.', score = 10)
 
 def HAG11(scoresheet):
     """If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. 
@@ -144,7 +144,7 @@ def HAG15(scoresheet):
             present_colors.append(commodity['name'])
             total_scored_cards += commodity['scored_cards']
     if total_scored_cards > 13:
-        detail = '(15) Since {} cards had to be scored, {} have been discarded : '.format(total_scored_cards, total_scored_cards - 13)
+        detail = '(15) Since {} cards had to be scored, {} have been discarded (to keep only 13 cards) : '.format(total_scored_cards, total_scored_cards - 13)
         discarded = {}
         while total_scored_cards > 13:
             selected_color = random.choice(present_colors)

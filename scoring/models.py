@@ -19,7 +19,7 @@ class RuleCard(models.Model):
     step = models.IntegerField("Rules will be applied in ascending step during the scoring (can be blank for rules that should not be individually applied)",
                                null = True)
     glob = models.BooleanField("Activate for rules that need to know the hands of all players to operate",
-                               db_column = 'global')
+                               db_column = 'global') # 'global' is a python reserved word
 
     description = models.TextField()
 

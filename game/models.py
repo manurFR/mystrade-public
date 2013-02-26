@@ -9,15 +9,21 @@ class Game(models.Model):
     master = models.ForeignKey(User, related_name = 'mastering_games_set')
 
     rules = models.ManyToManyField(RuleCard)
-    players = models.ManyToManyField(User, related_name = 'playing_games_set')
+    players = models.ManyToManyField(User, related_name = 'playing_games_set', through = 'GamePlayer')
 
-    # it's important to use django.utils.timezone.now() which is an aware date
+    # it's important to use django.utils.timezone.now, which returns an aware date
     creation_date = models.DateTimeField(default = now)
     start_date = models.DateTimeField(default = now)
     end_date = models.DateTimeField(null = True)
 
     def __unicode__(self):
         return "{}".format(self.id)
+
+class GamePlayer(models.Model):
+    game = models.ForeignKey(Game)
+    player = models.ForeignKey(User)
+
+    submit_date = models.DateTimeField(null = True)
 
 class RuleInHand(models.Model):
     game = models.ForeignKey(Game)
@@ -43,6 +49,9 @@ class CommodityInHand(models.Model):
     commodity = models.ForeignKey(Commodity)
 
     nb_cards = models.PositiveSmallIntegerField(default = 0)
+
+    nb_submitted_cards = models.PositiveSmallIntegerField("Number of cards submitted to the game master at the end of the game",
+                                                          null = True)
 
     def __unicode__(self):
         return "{} {} card{} owned by {} in game {}".format(self.nb_cards, self.commodity.name.lower(),

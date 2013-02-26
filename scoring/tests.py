@@ -132,8 +132,8 @@ class ScoringTest(TestCase):
                           { 'name': 'Orange', 'handed_cards': 3, 'scored_cards': 3, 'actual_value': 4, 'score': 12 },
                           { 'name': 'White',  'handed_cards': 2, 'scored_cards': 2, 'actual_value': 5, 'score': 10 }],
                          scoresheets[0].commodities)
-        self.assertEqual([{'cause': 'HAG10', 'detail': '(10) A set of five different colors gives a bonus.', 'score': 10 },
-                          {'cause': 'HAG10', 'detail': '(10) A set of five different colors gives a bonus.', 'score': 10 },
+        self.assertEqual([{'cause': 'HAG10', 'detail': '(10) A set of five different colors gives a bonus of 10 points.', 'score': 10 },
+                          {'cause': 'HAG10', 'detail': '(10) A set of five different colors gives a bonus of 10 points.', 'score': 10 },
                           {'cause': 'HAG13', 'detail': '(13) A pair of yellow cards doubles the value of one white card.', 'score': 5 },
                           {'cause': 'HAG13', 'detail': '(13) A pair of yellow cards doubles the value of one white card.', 'score': 5 },
                           {'cause': 'HAG08', 'detail': '(8) Having the most yellow cards (4 cards) gives a bonus of 4x4 points.', 'score': 16 }],
@@ -304,12 +304,12 @@ class HaggleTest(TestCase):
         scoresheet = _prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 1, white = 1)
         HAG10(scoresheet)
         self.assertEqual(35, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG10', '(10) A set of five different colors gives a bonus.', 10)
+        self.assertRuleApplied(scoresheet, 'HAG10', '(10) A set of five different colors gives a bonus of 10 points.', 10)
 
         scoresheet = _prepare_scoresheet(yellow = 4, blue = 3, red = 2, orange = 3, white = 3)
         HAG10(scoresheet)
         self.assertEqual(63, scoresheet.calculate_score())
-        self.assertRuleApplied(scoresheet, 'HAG10', '(10) A set of five different colors gives a bonus.', 10, times = 2)
+        self.assertRuleApplied(scoresheet, 'HAG10', '(10) A set of five different colors gives a bonus of 10 points.', 10, times = 2)
 
     def test_haggle_HAG11(self):
         """If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. 
