@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def trades(request, game_id):
     game = get_object_or_404(Game, id = game_id)
     trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game).order_by('-creation_date')
-    return render(request, 'game/trades.html', {'game': game, 'trades': trades})
+    return render(request, 'trade/trades.html', {'game': game, 'trades': trades})
 
 @login_required
 def create_trade(request, game_id):
@@ -55,8 +55,8 @@ def create_trade(request, game_id):
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game)
         trade_form = TradeForm(request.user, game)
 
-    return render(request, 'game/trade_offer.html', {'game': game, 'trade_form': trade_form, 'offer_form': offer_form,
-                                                     'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
+    return render(request, 'trade/trade_offer.html', {'game': game, 'trade_form': trade_form, 'offer_form': offer_form,
+                                                      'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
 
 @login_required
 def cancel_trade(request, game_id, trade_id):
@@ -82,14 +82,14 @@ def show_trade(request, game_id, trade_id):
 
     if trade.status == 'INITIATED' and request.user == trade.responder:
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, trade.game)
-        return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
+        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
                                                          'decline_reason_form': DeclineReasonForm(), 'offer_form': offer_form,
                                                          'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
     elif trade.status == 'REPLIED' and request.user == trade.initiator:
-        return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
+        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
                                                          'decline_reason_form': DeclineReasonForm()})
     else:
-        return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False})
+        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False})
 
 @login_required
 def reply_trade(request, game_id, trade_id):
@@ -117,9 +117,9 @@ def reply_trade(request, game_id, trade_id):
                 commodities_formset = ex.forms['commodities_formset']
                 if 'offer_form' in ex.forms:
                     offer_form = ex.forms['offer_form']
-                return render(request, 'game/trade_offer.html', {'game': trade.game, 'trade': trade,
-                                                                 'errors': True, 'offer_form': offer_form,
-                                                                 'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
+                return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade,
+                                                                  'errors': True, 'offer_form': offer_form,
+                                                                  'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
 
     raise PermissionDenied # if the method is not POST or the user is not the responder or the status is not INITIATED
 

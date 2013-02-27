@@ -19,7 +19,7 @@
         {# Trade creation #}
         <form action="{% url 'create_trade' game.id %}" method="post">{% csrf_token %}
         <div>Set up a new trade proposal to : {{ trade_form.responder }}&nbsp;<span class="errors">{{ trade_form.responder.errors.as_text }}</span></div>
-        {% include "game/create_offer.html" with submit="Propose this trade" %}
+        {% include "trade/create_offer.html" with submit="Propose this trade" %}
         </form>
     {% else %}
         <div>Trade proposed by {% include "common/name_or_you.html" with who=trade.initiator %} to {% include "common/name_or_you.html" with who=trade.responder %} &mdash;
@@ -36,7 +36,7 @@
 
         {# First, display the initiator's offer. #}
         <h3>Offered by {% include "common/name_or_you.html" with who=trade.initiator %}:</h3>
-        {% include "game/display_offer.html" with offer=trade.initiator_offer giver=trade.initiator %}
+        {% include "trade/display_offer.html" with offer=trade.initiator_offer giver=trade.initiator %}
 
         {% if trade.status == 'INITIATED' %}
             {% if user == trade.initiator  %}
@@ -52,17 +52,17 @@
                 </div>
                 <div id="offer"><h3>Your offer:</h3>
                     <form action="{% url 'reply_trade' game.id trade.id %}" method="post">{% csrf_token %}
-                    {% include "game/create_offer.html" with submit="Reply with this offer" %}
+                    {% include "trade/create_offer.html" with submit="Reply with this offer" %}
                     </form>
                 </div>
-                {% include "game/decline_trade.html" %}
+                {% include "trade/decline_trade.html" %}
             {% endif %}
         {% elif trade.status == 'CANCELLED' and trade.finalizer == trade.initiator %}
             {# Nothing more to display for trades cancelled by the initiator #}
         {% else %}
             {# Display the responder's offer. #}
             <h3>Offered by {% include "common/name_or_you.html" with who=trade.responder %}:</h3>
-            {% include "game/display_offer.html" with offer=trade.responder_offer giver=trade.responder %}
+            {% include "trade/display_offer.html" with offer=trade.responder_offer giver=trade.responder %}
 
             {% if trade.status == 'REPLIED' %}
                 {% if user == trade.responder %}
@@ -78,7 +78,7 @@
                             <button type="button" id="decline">Decline</button>
                         </form>
                     </div>
-                    {% include "game/decline_trade.html" %}
+                    {% include "trade/decline_trade.html" %}
                 {% endif %}
             {% endif %}
         {% endif %}
