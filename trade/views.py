@@ -10,7 +10,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.timezone import get_default_timezone
 from game.models import RuleInHand, CommodityInHand, Game
-from trade.forms import DeclineReasonForm, TradeForm, RuleCardFormDisplay, CommodityCardFormDisplay, OfferForm, RuleCardFormParse, BaseRuleCardsFormSet, CommodityCardFormParse, BaseCommodityCardFormSet
+from trade.forms import DeclineReasonForm, TradeForm, RuleCardFormDisplay, TradeCommodityCardFormDisplay, OfferForm, RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet
 from trade.models import Trade, TradedCommodities, Offer
 
 logger = logging.getLogger(__name__)
@@ -124,20 +124,19 @@ def reply_trade(request, game_id, trade_id):
     raise PermissionDenied # if the method is not POST or the user is not the responder or the status is not INITIATED
 
 def _prepare_offer_forms(request, game, selected_rules = [], selected_commodities = {}):
-    rule_hand = RuleInHand.objects.filter(game=game, player=request.user, abandon_date__isnull=True).order_by('rulecard__ref_name')
-    commodity_hand = CommodityInHand.objects.filter(game=game, player=request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
+    rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
+    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
 
     RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra=0)
-    rulecards_formset = RuleCardsFormSet(initial=sorted(
-        [{'card_id':       card.id,
-          'public_name':   card.rulecard.public_name,
-          'description':   card.rulecard.description,
-          'reserved':      card.is_in_a_pending_trade(),
-          'selected_rule': bool(card in selected_rules)}
-         for card in rule_hand], key=lambda card: card['reserved']),
-        prefix='rulecards')
+    rulecards_formset = RuleCardsFormSet(initial=sorted([{'card_id':       card.id,
+                                                          'public_name':   card.rulecard.public_name,
+                                                          'description':   card.rulecard.description,
+                                                          'reserved':      card.is_in_a_pending_trade(),
+                                                          'selected_rule': bool(card in selected_rules)}
+                                                         for card in rule_hand], key=lambda card: card['reserved']),
+                                                        prefix='rulecards')
 
-    CommodityCardsFormSet = formset_factory(CommodityCardFormDisplay, extra=0)
+    CommodityCardsFormSet = formset_factory(TradeCommodityCardFormDisplay, extra=0)
     commodities_formset = CommodityCardsFormSet(initial=[{'commodity_id':      card.commodity.id,
                                                           'name':              card.commodity.name,
                                                           'color':             card.commodity.color,
@@ -145,7 +144,7 @@ def _prepare_offer_forms(request, game, selected_rules = [], selected_commoditie
                                                           'nb_tradable_cards': card.nb_tradable_cards(),
                                                           'nb_traded_cards':   selected_commodities.get(card, 0)}
                                                          for card in commodity_hand],
-        prefix='commodity')
+                                                        prefix='commodity')
 
     offer_form = OfferForm()
 
@@ -157,7 +156,7 @@ def _parse_offer_forms(request, game):
 
     RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
     rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')
-    CommodityCardsFormSet = formset_factory(CommodityCardFormParse, formset = BaseCommodityCardFormSet)
+    CommodityCardsFormSet = formset_factory(TradeCommodityCardFormParse, formset = BaseCommodityCardFormSet)
     commodities_formset = CommodityCardsFormSet(request.POST, prefix = 'commodity')
     commodities_formset.set_game(game)
     commodities_formset.set_player(request.user)

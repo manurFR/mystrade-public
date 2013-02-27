@@ -43,3 +43,12 @@ def validate_number_of_players(list_of_players, chosen_ruleset):
     if len(list_of_players) < nb_mandatory_cards:
         raise forms.ValidationError(
             "Please select at least {} players (as many as there are mandatory rule cards in this ruleset).".format(nb_mandatory_cards))
+
+class GameCommodityCardFormParse(forms.Form):
+    commodity_id = forms.CharField(widget = forms.HiddenInput)
+    nb_submitted_cards = forms.IntegerField(widget = forms.HiddenInput)
+
+class GameCommodityCardFormDisplay(GameCommodityCardFormParse):
+    name = forms.CharField()
+    nb_cards = forms.IntegerField()
+    color = forms.CharField()

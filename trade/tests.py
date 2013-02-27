@@ -7,7 +7,7 @@ from django.test import TestCase
 from model_mommy import mommy
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from scoring.models import Ruleset, RuleCard, Commodity
-from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, CommodityCardFormParse, BaseCommodityCardFormSet
+from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet
 from trade.models import Offer, Trade, TradedCommodities
 from trade.views import _prepare_offer_forms
 
@@ -825,7 +825,7 @@ class FormsTest(TestCase):
         traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodity = commodity_in_hand, offer = offer)
         pending_trade = mommy.make_one(Trade, game = commodity_in_hand.game, status = 'INITIATED', initiator_offer = offer)
 
-        CommodityCardsFormSet = formset_factory(CommodityCardFormParse, formset = BaseCommodityCardFormSet)
+        CommodityCardsFormSet = formset_factory(TradeCommodityCardFormParse, formset = BaseCommodityCardFormSet)
         commodities_formset = CommodityCardsFormSet({'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
                                                      'commodity-0-commodity_id': commodity_in_hand.commodity.id, 'commodity-0-nb_traded_cards': 1,
                                                      }, prefix = 'commodity')
@@ -844,7 +844,7 @@ class FormsTest(TestCase):
         pending_trade = mommy.make_one(Trade, game = commodity_in_hand.game, status = 'INITIATED', responder_offer = offer,
                                        initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
 
-        CommodityCardsFormSet = formset_factory(CommodityCardFormParse, formset = BaseCommodityCardFormSet)
+        CommodityCardsFormSet = formset_factory(TradeCommodityCardFormParse, formset = BaseCommodityCardFormSet)
         commodities_formset = CommodityCardsFormSet({'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
                                                      'commodity-0-commodity_id': commodity_in_hand.commodity.id, 'commodity-0-nb_traded_cards': 2,
                                                      }, prefix = 'commodity')

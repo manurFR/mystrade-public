@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 
 from game.deal import deal_cards
-from game.forms import CreateGameForm, validate_number_of_players, validate_dates
+from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from scoring.models import RuleCard
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
@@ -62,7 +62,18 @@ def submit_hand(request, game_id):
     if request.user not in game.players.all():
         raise PermissionDenied
 
-    return render(request, 'game/submit_hand.html', {'game': game})
+    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
+
+    CommodityCardsFormSet = formset_factory(GameCommodityCardFormDisplay, extra = 0)
+    commodities_formset = CommodityCardsFormSet(initial=[{'commodity_id':       card.commodity.id,
+                                                          'name':               card.commodity.name,
+                                                          'color':              card.commodity.color,
+                                                          'nb_cards':           card.nb_cards,
+                                                          'nb_submitted_cards': card.nb_cards}
+                                                         for card in commodity_hand],
+                                                        prefix='commodity')
+
+    return render(request, 'game/submit_hand.html', {'game': game, 'commodities_formset': commodities_formset})
 
 #############################################################################
 ##                              Games                                      ##

@@ -1,5 +1,16 @@
 {% extends "base.html" %}
+{% load staticfiles %}
 {% load url from future %}
+{% load filters %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.1.custom.min.css' %}" />
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
+    <script src="{% static 'jquery/jquery-ui-1.9.1.custom.min.js' %}"></script>
+{% endblock %}
 
 {% block content %}
     <div class="header">Submit your hand in game #{{ game }}
@@ -12,4 +23,38 @@
         Alternatively, you may submit only <em>some</em> of your commodity cards <strong>and</strong> finish your game now. Select those cards below.<br/>
         Please note that, if you do, you will not be able to propose or respond to any trade until the actual end of the game.
     </div>
+
+    <form action="{% url 'submit_hand' game.id %}" method="post">{% csrf_token %}
+        <h4>Deselect the commodities you want to exclude (click on the cards)</h4>
+        <div class="css_table">
+            {{ commodities_formset.management_form }}
+            <div class="css_table-row">
+                {% for form in commodities_formset %}
+                    <div class="css_table-cell card" id="{{ form.prefix }}">
+                        {{ form.commodity_id }}
+                        <div class="card_name">{{ form.name.value }}</div>
+                        <div class="card_copies">
+                            {% for copy in form.nb_cards.value|as_range %}
+                                <span class="minicard clickable{% if form.nb_submitted_cards.value > copy %} clicked"{% else %}"{% endif %}
+                                style="background-color: {{ form.color.value }}">&nbsp;</span>
+                            {% endfor %}
+                        </div>
+                        {{ form.nb_submitted_cards }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </form>
+
+    <script>
+        $(function() {
+            $('input[type=submit], button').button();
+            $('.minicard.clickable').on('click', function() {
+                $(this).toggleClass("clicked")
+                $(this).toggleClass("reserved")
+                // set the corresponding hidden form field to hold the number of commodities from this type that are now "clicked"
+                $("input[type=hidden][name=" + $(this).parents(".card").attr("id") + "-nb_submitted_cards]").val($(this).parent().children(".clicked").length)
+            })
+        });
+    </script>
 {% endblock %}
