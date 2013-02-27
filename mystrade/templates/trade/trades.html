@@ -21,9 +21,10 @@
             <div class="css_table-row{% if trade.status == 'ACCEPTED' or trade.status == 'DECLINED' %} done{% elif trade.status == 'CANCELLED' %} cancelled{% endif %}">
                 <div class="css_table-cell {{ color }}">
                     Trade proposed by <strong>{% include "common/name_or_you.html" with who=trade.initiator %}</strong>
+                    ({{ trade.initiator_offer.summary }})
                     to <strong>{% include "common/name_or_you.html" with who=trade.responder %}</strong>
+                    {% if trade.responder_offer %}({{ trade.responder_offer.summary }}){% endif %}
                 </div>
-                <div class="css_table-cell {{ color }}">for {{ trade.summary }}</div>
                 <div class="css_table-cell {{ color }}">
                     {% if trade.status == 'INITIATED' %}
                         {% if trade.initiator == user %}submitted{% else %}offered{% endif %} {{ trade.creation_date|timesince }} ago
@@ -32,7 +33,7 @@
                     {% elif trade.status == 'REPLIED' %}
                         response submitted by {% include "common/name_or_you.html" with who=trade.responder %}
                     {% elif trade.status == 'ACCEPTED' %}
-                        accepted {{ trade.closing_date|timesince }} ago
+                        done {{ trade.closing_date|timesince }} ago
                     {% elif trade.status == 'DECLINED' %}
                         declined by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
                     {% endif %}

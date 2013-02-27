@@ -121,7 +121,7 @@ class TradeViewsTest(TestCase):
 
         self.assertContains(response, "submitted 1 day ago")
         self.assertContains(response, "cancelled by <strong>you</strong> 2 days ago")
-        self.assertContains(response, "accepted 3 days ago")
+        self.assertContains(response, "done 3 days ago")
         self.assertContains(response, "declined by <strong>you</strong> 4 days ago")
         self.assertContains(response, "offered 5 days ago")
         self.assertContains(response, "response submitted by test5")
