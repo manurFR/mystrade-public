@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import permission_required, login_required
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.forms.formsets import formset_factory
@@ -23,6 +23,10 @@ def welcome(request):
 @login_required
 def hand(request, game_id):
     game = get_object_or_404(Game, id = game_id)
+
+    if request.user not in game.players.all():
+        raise PermissionDenied
+
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
     commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
 
@@ -50,6 +54,15 @@ def hand(request, game_id):
     return render(request, 'game/hand.html',
                   {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand, 'former_rules': former_rules,
                    'free_informations' : sorted(free_informations, key = lambda offer: offer['date'], reverse = True)})
+
+@login_required
+def submit_hand(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+
+    if request.user not in game.players.all():
+        raise PermissionDenied
+
+    return render(request, 'game/submit_hand.html', {'game': game})
 
 #############################################################################
 ##                              Games                                      ##

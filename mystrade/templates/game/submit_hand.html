@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load url from future %}
+
+{% block content %}
+    <div class="header">Submit your hand in game #{{ game }}
+        <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span></div>
+    <div class="reminder">
+        This game will end on {{ game.end_date }} ({{ game.end_date|timeuntil }} from now on).<br/>
+        At this moment, <strong>all</strong> your commodity cards will automatically be submitted back to the game master for scoring.<br/>
+        You can leave this page now if you are fine with this procedure.<br/>
+        <br/>
+        Alternatively, you may submit only <em>some</em> of your commodity cards <strong>and</strong> finish your game now. Select those cards below.<br/>
+        Please note that, if you do, you will not be able to propose or respond to any trade until the actual end of the game.
+    </div>
+{% endblock %}

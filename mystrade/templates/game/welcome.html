@@ -36,6 +36,7 @@
                 <div class="css_table-cell {{ color }}"> > </div>
                 <div class="css_table-cell {{ color }}">{% if user in game.players.all %}<a href="{% url 'hand' game.id %}">Show Hand</a>{% endif %}</div>
                 <div class="css_table-cell {{ color }}"><a href="{% url 'trades' game.id %}">Show Trades</a></div>
+                <div class="css_table-cell {{ color }}">{% if user in game.players.all %}<a href="{% url 'submit_hand' game.id %}">Submit Hand and Finish</a>{% endif %}</div>
 			</div>
 			{% endfor %}
 		</div>

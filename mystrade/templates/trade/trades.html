@@ -13,7 +13,8 @@
 {% endblock %}
 
 {% block content %}
-    <div class="header">Your trades for game #{{ game }} (ending in {{ game.end_date|timeuntil }})</div>
+    <div class="header">Your trades for game #{{ game }} (ending in {{ game.end_date|timeuntil }})
+        <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span></div>
 
     <div class="css_table">
         {% for trade in trades %}
