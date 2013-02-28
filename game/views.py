@@ -15,7 +15,7 @@ from game.forms import CreateGameForm, validate_number_of_players, validate_date
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from scoring.models import RuleCard
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
-from trade.models import Offer
+from trade.models import Offer, Trade
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +91,23 @@ def submit_hand(request, game_id):
                         else: # if the for loop ends without a break, ie we didn't find the commodity in the form -- shouldn't happen but here for security
                             commodity.nb_submitted_cards = commodity.nb_cards
                         commodity.save()
+
+                    # abort pending trades
+                    for trade in Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game, finalizer__isnull = True):
+                        if trade.initiator == request.user:
+                            if trade.status == 'INITIATED':
+                                trade.status = 'CANCELLED'
+                            elif trade.status == 'REPLIED':
+                                trade.status = 'DECLINED'
+                        else:
+                            if trade.status == 'INITIATED':
+                                trade.status = 'DECLINED'
+                            elif trade.status == 'REPLIED':
+                                trade.status = 'CANCELLED'
+                        trade.finalizer = request.user
+                        trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
+                        trade.save()
+
             except BaseException as ex:
                 logger.error("Error in submit_hand({})".format(game_id), exc_info = ex)
 

@@ -21,7 +21,8 @@
         You can leave this page now if you are fine with this procedure.<br/>
         <br/>
         Alternatively, you may submit only <em>some</em> of your commodity cards <strong>and</strong> finish your game now. Select those cards below.<br/>
-        Please note that, if you do, you will not be able to propose or respond to any trade until the actual end of the game.
+        Please note that, if you do, you will not be able to propose or respond to any trade until the actual end of the game, and all your pending trades
+        will be aborted.
     </div>
 
     <form action="{% url 'submit_hand' game.id %}" method="post">{% csrf_token %}

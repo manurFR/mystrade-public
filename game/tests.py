@@ -331,6 +331,43 @@ class HandViewTest(TestCase):
 
         self.assertIsNotNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
 
+    def test_submit_hand_cancels_or_declines_pending_trades(self):
+        trade_initiated_by_me = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                               initiator_offer = self.dummy_offer, status = 'INITIATED')
+        trade_initiated_by_other_player = mommy.make_one(Trade, game = self.game, initiator = self.test5, responder = self.loginUser,
+                                                         initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+                                                         status = 'INITIATED')
+        trade_replied_by_me = mommy.make_one(Trade, game = self.game, initiator = self.test5, responder = self.loginUser,
+                                             initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+                                             status = 'REPLIED')
+        trade_replied_by_other_player = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                                       initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+                                                       status = 'REPLIED')
+
+        response = self.client.post("/game/{}/hand/submit/".format(self.game.id),
+                                    {'commodity-TOTAL_FORMS': 0, 'commodity-INITIAL_FORMS': 0}, follow = True)
+        self.assertEqual(200, response.status_code)
+
+        trade_initiated_by_me = Trade.objects.get(pk = trade_initiated_by_me.id)
+        self.assertEqual('CANCELLED', trade_initiated_by_me.status)
+        self.assertEqual(self.loginUser, trade_initiated_by_me.finalizer)
+        self.assertIsNotNone(trade_initiated_by_me.closing_date)
+
+        trade_initiated_by_other_player = Trade.objects.get(pk = trade_initiated_by_other_player.id)
+        self.assertEqual('DECLINED', trade_initiated_by_other_player.status)
+        self.assertEqual(self.loginUser, trade_initiated_by_other_player.finalizer)
+        self.assertIsNotNone(trade_initiated_by_other_player.closing_date)
+
+        trade_replied_by_me = Trade.objects.get(pk = trade_replied_by_me.id)
+        self.assertEqual('CANCELLED', trade_replied_by_me.status)
+        self.assertEqual(self.loginUser, trade_replied_by_me.finalizer)
+        self.assertIsNotNone(trade_replied_by_me.closing_date)
+
+        trade_replied_by_other_player = Trade.objects.get(pk = trade_replied_by_other_player.id)
+        self.assertEqual('DECLINED', trade_replied_by_other_player.status)
+        self.assertEqual(self.loginUser, trade_replied_by_other_player.finalizer)
+        self.assertIsNotNone(trade_replied_by_other_player.closing_date)
+
 class TransactionalViewsTest(TransactionTestCase):
     fixtures = ['test_users.json']
 
