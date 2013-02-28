@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Sum
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.utils.timezone import get_default_timezone
 from model_mommy import mommy
 
@@ -191,7 +191,7 @@ class GameAndWelcomeViewsTest(TestCase):
         self.assertListEqual([game2, game1], list(response.context['games']))
         self.assertNotIn(game3, response.context['games'])
 
-class ShowHandViewTest(TestCase):
+class HandViewTest(TestCase):
     fixtures = ['test_users.json']
 
     def setUp(self):
@@ -278,6 +278,90 @@ class ShowHandViewTest(TestCase):
 
         self.assertContains(response, '<div class="card_name">C1</div>', count = 1)
         self.assertEqual([{'public_name': 'C1', 'description': 'Desc1'}], response.context['former_rules'])
+
+    def test_submit_hand_displays_the_commodities(self):
+        commodity1 = mommy.make_one(Commodity, name = 'c1', color = 'colA')
+        commodity2 = mommy.make_one(Commodity, name = 'c2', color = 'colB')
+        commodity3 = mommy.make_one(Commodity, name = 'c3', color = 'colC')
+
+        cih1 = mommy.make_one(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
+                              nb_cards = 1, nb_submitted_cards = None)
+        cih2 = mommy.make_one(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
+                              nb_cards = 2, nb_submitted_cards = None)
+        cih3 = mommy.make_one(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
+                              nb_cards = 3, nb_submitted_cards = None)
+
+        response = self.client.get("/game/{}/hand/submit/".format(self.game.id))
+        self.assertEqual(200, response.status_code)
+
+        self.assertEqual(3, len(response.context['commodities_formset'].initial))
+        self.assertIn({'commodity_id': commodity1.id, 'name': 'c1', 'color': 'colA', 'nb_cards': 1, 'nb_submitted_cards': 1},
+                      response.context['commodities_formset'].initial)
+        self.assertIn({'commodity_id': commodity2.id, 'name': 'c2', 'color': 'colB', 'nb_cards': 2, 'nb_submitted_cards': 2},
+                      response.context['commodities_formset'].initial)
+        self.assertIn({'commodity_id': commodity3.id, 'name': 'c3', 'color': 'colC', 'nb_cards': 3, 'nb_submitted_cards': 3},
+                      response.context['commodities_formset'].initial)
+
+    def test_submit_hand_save_submitted_commodities_and_submit_date(self):
+        self.assertIsNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
+
+        commodity1 = mommy.make_one(Commodity, name = 'c1', color = 'colA')
+        commodity2 = mommy.make_one(Commodity, name = 'c2', color = 'colB')
+        commodity3 = mommy.make_one(Commodity, name = 'c3', color = 'colC')
+
+        cih1 = mommy.make_one(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
+                              nb_cards = 1, nb_submitted_cards = None)
+        cih2 = mommy.make_one(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
+                              nb_cards = 2, nb_submitted_cards = None)
+        cih3 = mommy.make_one(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
+                              nb_cards = 3, nb_submitted_cards = None)
+
+        response = self.client.post("/game/{}/hand/submit/".format(self.game.id),
+                                    {'commodity-TOTAL_FORMS': 2, 'commodity-INITIAL_FORMS': 2,
+                                     'commodity-0-commodity_id': commodity1.id, 'commodity-0-nb_submitted_cards': 0,
+                                     'commodity-1-commodity_id': commodity3.id, 'commodity-1-nb_submitted_cards': 2 }, follow = True)
+        self.assertEqual(200, response.status_code)
+
+        cih1 = CommodityInHand.objects.get(game = self.game, player = self.loginUser, commodity = commodity1)
+        self.assertEqual(0, cih1.nb_submitted_cards)
+        cih2 = CommodityInHand.objects.get(game = self.game, player = self.loginUser, commodity = commodity2)
+        self.assertEqual(2, cih2.nb_submitted_cards)
+        cih3 = CommodityInHand.objects.get(game = self.game, player = self.loginUser, commodity = commodity3)
+        self.assertEqual(2, cih3.nb_submitted_cards)
+
+        self.assertIsNotNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
+
+class TransactionalViewsTest(TransactionTestCase):
+    fixtures = ['test_users.json']
+
+    def setUp(self):
+        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
+        for player in User.objects.exclude(username = 'test1'): mommy.make_one(GamePlayer, game = self.game, player = player)
+        self.loginUser = User.objects.get(username = 'test2')
+        self.test5 = User.objects.get(username = 'test5')
+        self.client.login(username = 'test2', password = 'test')
+
+    def test_submit_hand_is_transactional(self):
+        commodity1 = mommy.make_one(Commodity, name = 'c1', color = 'colA')
+        commodity2 = mommy.make_one(Commodity, name = 'c2', color = 'colB')
+
+        cih1 = mommy.make_one(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
+            nb_cards = 1, nb_submitted_cards = None)
+        cih2 = mommy.make_one(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
+            nb_cards = 2, nb_submitted_cards = None)
+
+        # set a nb_submitted_cards < 0 on the last form to make the view fail on the last iteration
+        response = self.client.post("/game/{}/hand/submit/".format(self.game.id),
+            {'commodity-TOTAL_FORMS': 2, 'commodity-INITIAL_FORMS': 2,
+             'commodity-0-commodity_id': commodity1.id, 'commodity-0-nb_submitted_cards': 1,
+             'commodity-1-commodity_id': commodity2.id, 'commodity-1-nb_submitted_cards': -3 }, follow = True)
+
+        self.assertEqual(200, response.status_code)
+
+        self.assertIsNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
+
+        for commodity in CommodityInHand.objects.filter(game = self.game, player = self.loginUser):
+            self.assertIsNone(commodity.nb_submitted_cards)
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):

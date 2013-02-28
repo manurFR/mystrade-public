@@ -193,6 +193,10 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'ERROR',
         },
+        'trade': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+        },
     }
 }
 
