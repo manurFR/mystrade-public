@@ -15,6 +15,15 @@ from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from scoring.models import Ruleset, RuleCard, Commodity
 from trade.models import Offer, Trade
 
+def _common_setUp(self):
+    self.game = mommy.make_one(Game, master = User.objects.get(username='test1'), players = [])
+    for player in User.objects.exclude(username = 'test1').exclude(username = 'admin'):
+        mommy.make_one(GamePlayer, game = self.game, player = player)
+    self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
+    self.loginUser = User.objects.get(username = 'test2')
+    self.test5 = User.objects.get(username = 'test5')
+    self.client.login(username = 'test2', password = 'test')
+
 class GameAndWelcomeViewsTest(TestCase):
     fixtures = ['test_users.json']
 
@@ -195,12 +204,7 @@ class HandViewTest(TestCase):
     fixtures = ['test_users.json']
 
     def setUp(self):
-        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
-        for player in User.objects.exclude(username = 'test1'): mommy.make_one(GamePlayer, game = self.game, player = player)
-        self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
-        self.loginUser = User.objects.get(username = 'test2')
-        self.test5 = User.objects.get(username = 'test5')
-        self.client.login(username = 'test2', password = 'test')
+        _common_setUp(self)
 
     def test_show_hand_doesnt_show_commodities_with_no_cards(self):
         commodity1 = mommy.make_one(Commodity, name = 'Commodity#1')
@@ -372,11 +376,7 @@ class TransactionalViewsTest(TransactionTestCase):
     fixtures = ['test_users.json']
 
     def setUp(self):
-        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
-        for player in User.objects.exclude(username = 'test1'): mommy.make_one(GamePlayer, game = self.game, player = player)
-        self.loginUser = User.objects.get(username = 'test2')
-        self.test5 = User.objects.get(username = 'test5')
-        self.client.login(username = 'test2', password = 'test')
+        _common_setUp(self)
 
     def test_submit_hand_is_transactional(self):
         commodity1 = mommy.make_one(Commodity, name = 'c1', color = 'colA')

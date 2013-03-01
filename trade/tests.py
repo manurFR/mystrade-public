@@ -11,17 +11,21 @@ from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityC
 from trade.models import Offer, Trade, TradedCommodities
 from trade.views import _prepare_offer_forms
 
+def _common_setUp(self):
+    self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
+    for player in User.objects.exclude(username = 'test1').exclude(username = 'admin'):
+        mommy.make_one(GamePlayer, game = self.game, player = player)
+    self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
+    self.loginUser = User.objects.get(username = 'test2')
+    self.test5 = User.objects.get(username = 'test5')
+    self.client.login(username = 'test2', password = 'test')
+
 #noinspection PyUnresolvedReferences
 class ViewsTest(TestCase):
     fixtures = ['test_users.json']
 
     def setUp(self):
-        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
-        for player in User.objects.exclude(username = 'test1'): mommy.make_one(GamePlayer, game = self.game, player = player)
-        self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
-        self.loginUser = User.objects.get(username = 'test2')
-        self.test5 = User.objects.get(username = 'test5')
-        self.client.login(username = 'test2', password = 'test')
+        _common_setUp(self)
 
     def test_create_trade_without_responder_fails(self):
         response = self.client.post("/trade/{}/create/".format(self.game.id),
@@ -61,24 +65,54 @@ class ViewsTest(TestCase):
         gameplayer.submit_date = datetime.datetime.now(tz = get_default_timezone())
         gameplayer.save()
 
-        response = self.client.get("/trade/{}/create/".format(self.game.id))
-        self.assertEqual(403, response.status_code)
+        self._assertIsCreateTradeAllowed(self.game, False)
 
-        response = self.client.post("/trade/{}/create/".format(self.game.id),
-                                    {'responder': 4,
-                                     'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
-                                     'rulecards-0-card_id': 1,
-                                     'rulecards-1-card_id': 2,
-                                     'commodity-TOTAL_FORMS': 5, 'commodity-INITIAL_FORMS': 5,
-                                     'commodity-0-commodity_id': 1, 'commodity-0-nb_traded_cards': 0,
-                                     'commodity-1-commodity_id': 2, 'commodity-1-nb_traded_cards': 0,
-                                     'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
-                                     'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 0,
-                                     'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
-                                     'free_information': 'secret!',
-                                     'comment': 'a comment'
-                                    })
-        self.assertEqual(403, response.status_code)
+    def test_create_trade_only_allowed_for_the_game_players(self):
+        # most notably: the game master, the admins (when not in the players' list) and the users not in this game are denied
+        game = mommy.make_one(Game, master = self.loginUser, players = [])
+        self._assertIsCreateTradeAllowed(game, False)
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test4', password = 'test'))
+        self._assertIsCreateTradeAllowed(game, False, list_allowed = False) # a random non-player user can not even see the list of trades
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'admin', password = 'test'))
+        self._assertIsCreateTradeAllowed(game, False)
+
+        mommy.make_one(GamePlayer, game = game, player = User.objects.get(username = 'admin'))
+        self._assertIsCreateTradeAllowed(game, True)
+
+    def _assertIsCreateTradeAllowed(self, game, create_allowed, list_allowed = True):
+        expected_status = 200 if create_allowed else 403
+
+        response = self.client.get("/trade/{}/create/".format(game.id))
+        self.assertEqual(expected_status, response.status_code)
+
+        response = self.client.post("/trade/{}/create/".format(game.id),
+            {'responder': 4,
+             'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
+             'rulecards-0-card_id': 1,
+             'rulecards-1-card_id': 2,
+             'commodity-TOTAL_FORMS': 5, 'commodity-INITIAL_FORMS': 5,
+             'commodity-0-commodity_id': 1, 'commodity-0-nb_traded_cards': 0,
+             'commodity-1-commodity_id': 2, 'commodity-1-nb_traded_cards': 0,
+             'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
+             'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 0,
+             'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
+             'free_information': 'secret!',
+             'comment': 'a comment'
+            })
+        self.assertEqual(expected_status, response.status_code)
+
+        response = self.client.get("/trade/{}/".format(game.id))
+        if list_allowed:
+            if create_allowed:
+                self.assertContains(response, '<input type="submit" value="Set up trade proposal" />')
+            else:
+                self.assertNotContains(response, '<input type="submit" value="Set up trade proposal" />')
+        else:
+            self.assertEqual(403, response.status_code)
 
     def test_create_trade_complete_save(self):
         ruleset = mommy.make_one(Ruleset)
@@ -766,11 +800,7 @@ class TransactionalViewsTest(TransactionTestCase):
     fixtures = ['test_users.json']
 
     def setUp(self):
-        self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
-        for player in User.objects.exclude(username = 'test1'): mommy.make_one(GamePlayer, game = self.game, player = player)
-        self.loginUser = User.objects.get(username = 'test2')
-        self.test5 = User.objects.get(username = 'test5')
-        self.client.login(username = 'test2', password = 'test')
+        _common_setUp(self)
 
     def test_accept_trade_cards_exchange_is_transactional(self):
         # let's make the responder offer 1 commodity for which he doesn't have any cards

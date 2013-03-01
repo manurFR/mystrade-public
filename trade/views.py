@@ -18,16 +18,32 @@ logger = logging.getLogger(__name__)
 @login_required
 def trades(request, game_id):
     game = get_object_or_404(Game, id = game_id)
+
+    if request.user not in game.players.all() and request.user != game.master and not request.user.is_staff:
+        raise PermissionDenied
+
     trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game).order_by('-creation_date')
-    can_create_trade = game.gameplayer_set.get(player = request.user).submit_date is None
+
+    try:
+        can_create_trade = game.gameplayer_set.get(player = request.user).submit_date is None
+    except GamePlayer.DoesNotExist:
+        can_create_trade = False
+
     return render(request, 'trade/trades.html', {'game': game, 'trades': trades, 'can_create_trade': can_create_trade})
 
 @login_required
 def create_trade(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
-    # Trade creation is not allowed for players who have already submitted their hand to the game master
-    if GamePlayer.objects.get(game = game, player = request.user).submit_date:
+    # Trade creation is not allowed for :
+    #  - players who have already submitted their hand to the game master
+    #  - the game master
+    #  - admins who are not players
+    #  - more generally, all site users who are not players in this game
+    try:
+        if GamePlayer.objects.get(game = game, player = request.user).submit_date:
+            raise PermissionDenied
+    except GamePlayer.DoesNotExist:
         raise PermissionDenied
 
     if request.method == 'POST':
