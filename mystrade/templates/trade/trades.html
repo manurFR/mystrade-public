@@ -52,13 +52,15 @@
         {% endfor %}
     </div>
 
-    <form action="{% url 'create_trade' game.id %}" method="GET">
-        <input type="submit" value="Set up trade proposal" />
-    </form>
+    {% if can_create_trade %}
+        <form action="{% url 'create_trade' game.id %}" method="GET">
+            <input type="submit" value="Set up trade proposal" />
+        </form>
 
-    <script>
-        $(function() {
-            $( "input[type=submit]" ).button();
-        });
-    </script>
+        <script>
+            $(function() {
+                $( "input[type=submit]" ).button();
+            });
+        </script>
+    {% endif %}
 {% endblock content %}

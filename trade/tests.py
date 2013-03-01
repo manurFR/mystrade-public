@@ -7,12 +7,12 @@ from django.test import TestCase
 from model_mommy import mommy
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from scoring.models import Ruleset, RuleCard, Commodity
-from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet
+from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet, TradeForm
 from trade.models import Offer, Trade, TradedCommodities
 from trade.views import _prepare_offer_forms
 
 #noinspection PyUnresolvedReferences
-class TradeViewsTest(TestCase):
+class ViewsTest(TestCase):
     fixtures = ['test_users.json']
 
     def setUp(self):
@@ -55,6 +55,30 @@ class TradeViewsTest(TestCase):
              'comment': 'a comment'
             })
         self.assertFormError(response, 'offer_form', None, 'At least one card should be offered.')
+
+    def test_create_trade_is_forbidden_if_you_have_submitted_your_hand(self):
+        gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)
+        gameplayer.submit_date = datetime.datetime.now(tz = get_default_timezone())
+        gameplayer.save()
+
+        response = self.client.get("/trade/{}/create/".format(self.game.id))
+        self.assertEqual(403, response.status_code)
+
+        response = self.client.post("/trade/{}/create/".format(self.game.id),
+                                    {'responder': 4,
+                                     'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
+                                     'rulecards-0-card_id': 1,
+                                     'rulecards-1-card_id': 2,
+                                     'commodity-TOTAL_FORMS': 5, 'commodity-INITIAL_FORMS': 5,
+                                     'commodity-0-commodity_id': 1, 'commodity-0-nb_traded_cards': 0,
+                                     'commodity-1-commodity_id': 2, 'commodity-1-nb_traded_cards': 0,
+                                     'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
+                                     'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 0,
+                                     'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
+                                     'free_information': 'secret!',
+                                     'comment': 'a comment'
+                                    })
+        self.assertEqual(403, response.status_code)
 
     def test_create_trade_complete_save(self):
         ruleset = mommy.make_one(Ruleset)
@@ -853,3 +877,14 @@ class FormsTest(TestCase):
 
         self.assertFalse(commodities_formset.is_valid())
         self.assertIn("A commodity card in a pending trade can not be offered in another trade.", commodities_formset._non_form_errors)
+
+    def test_a_trade_with_a_responder_who_has_already_submitted_his_hand_is_forbidden(self):
+        ihavesubmitted = mommy.make_one(User, username = 'ihavesubmitted')
+        ihavent = mommy.make_one(User, username = 'ihavent')
+        mommy.make_one(GamePlayer, game = self.game, player = ihavesubmitted, submit_date = datetime.datetime.now(tz = get_default_timezone()))
+        mommy.make_one(GamePlayer, game = self.game, player = ihavent, submit_date = None)
+
+        form = TradeForm(ihavent, self.game, {'responder': ihavesubmitted.id})
+        self.assertFalse(form.is_valid())
+        self.assertIn("This player doesn't participate to this game or has already submitted his hand to the game master",
+                      form.errors['responder'])

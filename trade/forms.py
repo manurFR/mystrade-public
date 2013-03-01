@@ -4,11 +4,13 @@ from django.forms.formsets import BaseFormSet
 from game.models import Game, RuleInHand, CommodityInHand
 
 class TradeForm(forms.Form):
-    responder = forms.ModelChoiceField(queryset = User.objects.none(), empty_label = u'- Choose a player -')
+    responder = forms.ModelChoiceField(queryset = User.objects.none(), empty_label = u'- Choose a player -',
+                                       error_messages = {'invalid_choice': "This player doesn't participate to this game or has already submitted his hand to the game master"})
 
     def __init__(self, me, game, *args, **kwargs):
         super(TradeForm, self).__init__(*args, **kwargs)
-        self.fields['responder'].queryset = Game.objects.get(id = game.id).players.exclude(id = me.id).order_by('id')
+        self.fields['responder'].queryset = Game.objects.get(id = game.id).players.exclude(id = me.id).exclude(
+                                                gameplayer__submit_date__isnull = False).order_by('id')
 
 class DeclineReasonForm(forms.Form):
     decline_reason = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))

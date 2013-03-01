@@ -9,7 +9,7 @@ from django.forms.formsets import formset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.timezone import get_default_timezone
-from game.models import RuleInHand, CommodityInHand, Game
+from game.models import RuleInHand, CommodityInHand, Game, GamePlayer
 from trade.forms import DeclineReasonForm, TradeForm, RuleCardFormDisplay, TradeCommodityCardFormDisplay, OfferForm, RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet
 from trade.models import Trade, TradedCommodities, Offer
 
@@ -19,12 +19,16 @@ logger = logging.getLogger(__name__)
 def trades(request, game_id):
     game = get_object_or_404(Game, id = game_id)
     trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game).order_by('-creation_date')
-    return render(request, 'trade/trades.html', {'game': game, 'trades': trades})
+    can_create_trade = game.gameplayer_set.get(player = request.user).submit_date is None
+    return render(request, 'trade/trades.html', {'game': game, 'trades': trades, 'can_create_trade': can_create_trade})
 
 @login_required
 def create_trade(request, game_id):
     game = get_object_or_404(Game, id = game_id)
-    errors = False
+
+    # Trade creation is not allowed for players who have already submitted their hand to the game master
+    if GamePlayer.objects.get(game = game, player = request.user).submit_date:
+        raise PermissionDenied
 
     if request.method == 'POST':
         trade_form = TradeForm(request.user, game, request.POST)
@@ -50,7 +54,6 @@ def create_trade(request, game_id):
             commodities_formset = ex.forms['commodities_formset']
             if 'offer_form' in ex.forms:
                 offer_form = ex.forms['offer_form']
-        errors = True
     else:
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game)
         trade_form = TradeForm(request.user, game)
