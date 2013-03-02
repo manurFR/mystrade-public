@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Sum
 from django.test import TestCase, TransactionTestCase
-from django.utils.timezone import get_default_timezone
+from django.utils.timezone import get_default_timezone, now
 from model_mommy import mommy
 
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
@@ -16,7 +16,7 @@ from scoring.models import Ruleset, RuleCard, Commodity
 from trade.models import Offer, Trade
 
 def _common_setUp(self):
-    self.game = mommy.make_one(Game, master = User.objects.get(username='test1'), players = [])
+    self.game = mommy.make_one(Game, master = User.objects.get(username='test1'), players = [], end_date = now() + datetime.timedelta(days = 7))
     for player in User.objects.exclude(username = 'test1').exclude(username = 'admin'):
         mommy.make_one(GamePlayer, game = self.game, player = player)
     self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
@@ -239,7 +239,7 @@ class HandViewTest(TestCase):
         self.assertNotContains(response, "I don't need to see that 3")
 
     def test_show_hand_doesnt_display_free_informations_from_ACCEPTED_trades_of_other_games(self):
-        other_game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
+        other_game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [], end_date = now() + datetime.timedelta(days = 7))
         for player in User.objects.exclude(username = 'test1'): mommy.make_one(GamePlayer, game = other_game, player = player)
 
         initiator_offer1 = mommy.make_one(Offer, rules = [], commodities = [])
@@ -498,8 +498,7 @@ class DealTest(TestCase):
 
     def test_deal_cards(self):
         ruleset = Ruleset.objects.get(id = 1)
-        game = mommy.make_one(Game, ruleset = ruleset, players = [], rules = self.rules,
-                              start_date = datetime.datetime(2012, 12, 17, 14, 29, 34, tzinfo = get_default_timezone()))
+        game = mommy.make_one(Game, ruleset = ruleset, players = [], rules = self.rules, end_date = now() + datetime.timedelta(days = 7))
         for player in self.users:
             GamePlayer.objects.create(game = game, player = player)
         deal_cards(game)

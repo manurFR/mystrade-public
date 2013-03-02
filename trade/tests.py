@@ -2,7 +2,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.forms.formsets import formset_factory
 from django.test import RequestFactory, Client, TransactionTestCase
-from django.utils.timezone import get_default_timezone
+from django.utils.timezone import get_default_timezone, now
 from django.test import TestCase
 from model_mommy import mommy
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
@@ -12,7 +12,7 @@ from trade.models import Offer, Trade, TradedCommodities
 from trade.views import _prepare_offer_forms
 
 def _common_setUp(self):
-    self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [])
+    self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [], end_date = now() + datetime.timedelta(days = 7))
     for player in User.objects.exclude(username = 'test1').exclude(username = 'admin'):
         mommy.make_one(GamePlayer, game = self.game, player = player)
     self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
@@ -69,7 +69,7 @@ class ViewsTest(TestCase):
 
     def test_create_trade_only_allowed_for_the_game_players(self):
         # most notably: the game master, the admins (when not in the players' list) and the users not in this game are denied
-        game = mommy.make_one(Game, master = self.loginUser, players = [])
+        game = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = 7))
         self._assertIsCreateTradeAllowed(game, False)
 
         self.client.logout()
@@ -840,7 +840,7 @@ class TransactionalViewsTest(TransactionTestCase):
 class FormsTest(TestCase):
 
     def setUp(self):
-        self.game = mommy.make_one(Game, players = [])
+        self.game = mommy.make_one(Game, players = [], end_date = now() + datetime.timedelta(days = 7))
 
     #noinspection PyUnusedLocal
     def test_a_rule_offered_by_the_initiator_in_a_pending_trade_cannot_be_offered_in_another_trade(self):

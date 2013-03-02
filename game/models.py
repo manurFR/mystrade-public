@@ -14,10 +14,13 @@ class Game(models.Model):
     # it's important to use django.utils.timezone.now, which returns an aware date
     creation_date = models.DateTimeField(default = now)
     start_date = models.DateTimeField(default = now)
-    end_date = models.DateTimeField(null = True)
+    end_date = models.DateTimeField()
 
     def __unicode__(self):
         return "{}".format(self.id)
+
+    def is_active(self):
+        return self.start_date <= now() <= self.end_date
 
 class GamePlayer(models.Model):
     game = models.ForeignKey(Game)
