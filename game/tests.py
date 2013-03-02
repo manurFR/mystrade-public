@@ -200,6 +200,28 @@ class GameAndWelcomeViewsTest(TestCase):
         self.assertListEqual([game2, game1], list(response.context['games']))
         self.assertNotIn(game3, response.context['games'])
 
+class GameModelsTest(TestCase):
+    def test_game_is_active_if_start_and_end_date_enclose_now(self):
+        start_date = now() + datetime.timedelta(days = -10)
+        end_date = now() + datetime.timedelta(days = 10)
+        game = mommy.make_one(Game, players = [], start_date = start_date, end_date = end_date)
+
+        self.assertTrue(game.is_active())
+
+    def test_game_is_not_active_if_start_date_has_not_yet_happened(self):
+        start_date = now() + datetime.timedelta(days = 2)
+        end_date = now() + datetime.timedelta(days = 10)
+        game = mommy.make_one(Game, players = [], start_date = start_date, end_date = end_date)
+
+        self.assertFalse(game.is_active())
+
+    def test_game_is_not_active_if_end_date_is_over(self):
+        start_date = now() + datetime.timedelta(days = -10)
+        end_date = now() + datetime.timedelta(days = -3)
+        game = mommy.make_one(Game, players = [], start_date = start_date, end_date = end_date)
+
+        self.assertFalse(game.is_active())
+
 class HandViewTest(TestCase):
     fixtures = ['test_users.json']
 
