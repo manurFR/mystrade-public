@@ -23,9 +23,14 @@
         </form>
     {% else %}
         <div>Trade proposed by {% include "common/name_or_you.html" with who=trade.initiator %} to {% include "common/name_or_you.html" with who=trade.responder %} &mdash;
-        Status : {% if trade.status == 'INITIATED' %}waiting for response by {% include "common/name_or_you.html" with who=trade.responder %}
+        Status :
+        {% if trade.status == 'INITIATED' %}
+            {% if game.is_active %}waiting for response by {% include "common/name_or_you.html" with who=trade.responder %}
+            {% else %}<strong>This game has ended. This trade proposal can not be advanced any further.</strong>{% endif %}
         {% elif trade.status == 'CANCELLED' %}cancelled by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
-        {% elif trade.status == 'REPLIED' %}waiting for definitive agreement by {% include "common/name_or_you.html" with who=trade.initiator %}
+        {% elif trade.status == 'REPLIED' %}
+            {% if game.is_active %}waiting for definitive agreement by {% include "common/name_or_you.html" with who=trade.initiator %}
+            {% else %}<strong>This game has ended. This trade proposal can not be advanced any further.</strong>{% endif %}
         {% elif trade.status == 'ACCEPTED' %}accepted and performed
         {% elif trade.status == 'DECLINED' %}declined by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
             {% if trade.decline_reason %}with the following reason given:
@@ -38,7 +43,7 @@
         <h3>Offered by {% include "common/name_or_you.html" with who=trade.initiator %}:</h3>
         {% include "trade/display_offer.html" with offer=trade.initiator_offer giver=trade.initiator %}
 
-        {% if trade.status == 'INITIATED' %}
+        {% if trade.status == 'INITIATED' and game.is_active %}
             {% if user == trade.initiator  %}
                 <div class="floatright">
                     <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}
@@ -57,14 +62,12 @@
                 </div>
                 {% include "trade/decline_trade.html" %}
             {% endif %}
-        {% elif trade.status == 'CANCELLED' and trade.finalizer == trade.initiator %}
-            {# Nothing more to display for trades cancelled by the initiator #}
-        {% else %}
+        {% elif trade.responder_offer %}
             {# Display the responder's offer. #}
             <h3>Offered by {% include "common/name_or_you.html" with who=trade.responder %}:</h3>
             {% include "trade/display_offer.html" with offer=trade.responder_offer giver=trade.responder %}
 
-            {% if trade.status == 'REPLIED' %}
+            {% if trade.status == 'REPLIED' and game.is_active %}
                 {% if user == trade.responder %}
                     <div class="floatright">
                         <form action="{% url 'cancel_trade' trade.game.id trade.id %}" method="post">{% csrf_token %}

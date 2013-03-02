@@ -52,7 +52,7 @@
         {% endfor %}
     </div>
 
-    {% if can_create_trade %}
+    {% if can_create_trade and game.is_active %}
         <form action="{% url 'create_trade' game.id %}" method="GET">
             <input type="submit" value="Set up trade proposal" />
         </form>

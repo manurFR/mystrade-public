@@ -181,7 +181,7 @@ def select_rules(request):
                         break
             if len(selected_rules) > len(players):
                 error = "Please select at most {} rule cards (including the mandatory ones)".format(len(players))
-                RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra=0)
+                RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
                 formset = RuleCardsFormSet(initial=[{'card_id': card.id,
                                                      'public_name': card.public_name,
                                                      'description': card.description,
@@ -190,12 +190,12 @@ def select_rules(request):
                                                     for card in rulecards_queryset])
                 return render(request, 'game/rules.html', {'formset': formset, 'session': request.session, 'error': error})
             else:
-                game = Game.objects.create(ruleset=ruleset,
-                    master=request.user,
-                    start_date=start_date,
-                    end_date=end_date)
+                game = Game.objects.create(ruleset    = ruleset,
+                                           master     = request.user,
+                                           start_date = start_date,
+                                           end_date   = end_date)
                 for player in players:
-                    GamePlayer.objects.create(game=game, player=player)
+                    GamePlayer.objects.create(game = game, player = player)
                 for rule in selected_rules:
                     game.rules.add(rule)
                 del request.session['ruleset']

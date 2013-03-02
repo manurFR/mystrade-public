@@ -243,7 +243,8 @@ class ViewsTest(TestCase):
 
     def test_buttons_in_show_trade_for_the_responder_when_REPLIED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.test5,
-                               responder = self.loginUser, status = 'REPLIED', initiator_offer = self.dummy_offer)
+                               responder = self.loginUser, status = 'REPLIED', initiator_offer = self.dummy_offer,
+                               responder_offer = mommy.make_one(Offer, rules = [], commodities = []))
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
@@ -256,7 +257,8 @@ class ViewsTest(TestCase):
 
     def test_buttons_in_show_trade_for_the_initiator_when_REPLIED(self):
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser,
-                               responder = self.test5, status = 'REPLIED', initiator_offer = self.dummy_offer)
+                               responder = self.test5, status = 'REPLIED', initiator_offer = self.dummy_offer,
+                               responder_offer = mommy.make_one(Offer, rules = [], commodities = []))
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
