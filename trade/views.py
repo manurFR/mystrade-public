@@ -81,8 +81,9 @@ def create_trade(request, game_id):
 def cancel_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
-        if ((trade.status == 'INITIATED' and request.user == trade.initiator) or
-            (trade.status == 'REPLIED' and request.user == trade.responder)):
+        if (trade.game.id == int(game_id) and trade.game.is_active() and
+            ((trade.status == 'INITIATED' and request.user == trade.initiator) or
+             (trade.status == 'REPLIED' and request.user == trade.responder))):
             trade.status = 'CANCELLED'
             trade.finalizer = request.user
             trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
@@ -115,7 +116,8 @@ def reply_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
 
-        if trade.status == 'INITIATED' and request.user == trade.responder:
+        if (trade.game.id == int(game_id) and trade.game.is_active() and
+           trade.status == 'INITIATED' and request.user == trade.responder):
             try:
                 offer, selected_rules, selected_commodities = _parse_offer_forms(request, trade.game)
 
@@ -140,7 +142,7 @@ def reply_trade(request, game_id, trade_id):
                                                                   'errors': True, 'offer_form': offer_form,
                                                                   'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
 
-    raise PermissionDenied # if the method is not POST or the user is not the responder or the status is not INITIATED
+    raise PermissionDenied # if the method is not POST or the user is not the responder or the status is not INITIATED or the game has ended
 
 def _prepare_offer_forms(request, game, selected_rules = [], selected_commodities = {}):
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
@@ -213,7 +215,8 @@ def _parse_offer_forms(request, game):
 def accept_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
-        if trade.status == 'REPLIED' and request.user == trade.initiator:
+        if (trade.game.id == int(game_id) and trade.game.is_active() and
+            trade.status == 'REPLIED' and request.user == trade.initiator):
             # Accepting a trade and exchanging the cards is a near-perfect textbook example of a process that must be transactional
             try:
                 with transaction.commit_on_success():
@@ -272,8 +275,9 @@ def accept_trade(request, game_id, trade_id):
 def decline_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
-        if ((trade.status == 'INITIATED' and request.user == trade.responder) or
-            (trade.status == 'REPLIED' and request.user == trade.initiator)):
+        if (trade.game.id == int(game_id) and trade.game.is_active() and
+            ((trade.status == 'INITIATED' and request.user == trade.responder) or
+            (trade.status == 'REPLIED' and request.user == trade.initiator))):
             decline_reason_form = DeclineReasonForm(request.POST)
             if decline_reason_form.is_valid():
                 trade.status = 'DECLINED'
