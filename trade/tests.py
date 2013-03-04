@@ -511,16 +511,16 @@ class ManageViewsTest(TestCase):
 
         # the initiaor offers rulecard1, 2 commodity1 and 1 commodity2
         offer_initiator = mommy.make_one(Offer, rules = [rih1], commodities = [])
-        tc1i = mommy.make_one(TradedCommodities, offer = offer_initiator, commodity = cih1i, nb_traded_cards = 2)
+        tc1i = mommy.make_one(TradedCommodities, offer = offer_initiator, commodityinhand = cih1i, nb_traded_cards = 2)
         offer_initiator.tradedcommodities_set.add(tc1i)
-        tc2i = mommy.make_one(TradedCommodities, offer = offer_initiator, commodity = cih2i, nb_traded_cards = 1)
+        tc2i = mommy.make_one(TradedCommodities, offer = offer_initiator, commodityinhand = cih2i, nb_traded_cards = 1)
         offer_initiator.tradedcommodities_set.add(tc2i)
 
         # the responder offers rulecard2, 1 commodity1 and 2 commodity3
         offer_responder = mommy.make_one(Offer, rules = [rih2], commodities = [])
-        tc1r = mommy.make_one(TradedCommodities, offer = offer_responder, commodity = cih1r, nb_traded_cards = 1)
+        tc1r = mommy.make_one(TradedCommodities, offer = offer_responder, commodityinhand = cih1r, nb_traded_cards = 1)
         offer_responder.tradedcommodities_set.add(tc1r)
-        tc3r = mommy.make_one(TradedCommodities, offer = offer_responder, commodity = cih3r, nb_traded_cards = 2)
+        tc3r = mommy.make_one(TradedCommodities, offer = offer_responder, commodityinhand = cih3r, nb_traded_cards = 2)
         offer_responder.tradedcommodities_set.add(tc3r)
 
         trade = self._prepare_trade('REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
@@ -654,17 +654,17 @@ class ManageViewsTest(TestCase):
 
         # rulecard1 and 1 card of commodity1 are in the initator offer of a pending trade
         offer1 = mommy.make_one(Offer, rules = [rih1], commodities = [])
-        tc1 = mommy.make_one(TradedCommodities, offer = offer1, commodity = cih1, nb_traded_cards = 1)
+        tc1 = mommy.make_one(TradedCommodities, offer = offer1, commodityinhand = cih1, nb_traded_cards = 1)
         offer1.tradedcommodities_set.add(tc1)
         trade1 = self._prepare_trade('INITIATED', initiator_offer = offer1)
         # rulecard2 and 1 card of commodity1 were in the initiator offer of a finalized trade
         offer2 = mommy.make_one(Offer, rules = [rih2], commodities = [])
-        tc2 = mommy.make_one(TradedCommodities, offer = offer2, commodity = cih1, nb_traded_cards = 1)
+        tc2 = mommy.make_one(TradedCommodities, offer = offer2, commodityinhand = cih1, nb_traded_cards = 1)
         offer2.tradedcommodities_set.add(tc2)
         trade2 = self._prepare_trade('CANCELLED', initiator_offer = offer2, finalizer = self.loginUser)
         # rulecard3 and 1 card of commodity 2 are in the responder offer of a pending trade
         offer3 = mommy.make_one(Offer, rules = [rih3], commodities = [])
-        tc3 = mommy.make_one(TradedCommodities, offer = offer3, commodity = cih2, nb_traded_cards = 1)
+        tc3 = mommy.make_one(TradedCommodities, offer = offer3, commodityinhand = cih2, nb_traded_cards = 1)
         offer3.tradedcommodities_set.add(tc3)
         trade1 = self._prepare_trade('REPLIED', initiator = self.test5, responder = self.loginUser, responder_offer = offer3)
 
@@ -839,7 +839,7 @@ class TransactionalViewsTest(TransactionTestCase):
 
         offer_responder = mommy.make_one(Offer, rules = [], commodities = [])
         cih = mommy.make_one(CommodityInHand, game = self.game, player = self.test5, nb_cards = 0)
-        tc = mommy.make_one(TradedCommodities, offer = offer_responder, commodity = cih, nb_traded_cards = 1)
+        tc = mommy.make_one(TradedCommodities, offer = offer_responder, commodityinhand = cih, nb_traded_cards = 1)
         offer_responder.tradedcommodities_set.add(tc)
 
         trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
@@ -904,7 +904,7 @@ class FormsTest(TestCase):
         commodity_in_hand = mommy.make_one(CommodityInHand, game = self.game, nb_cards = 1)
         # see https://github.com/vandersonmota/model_mommy/issues/25
         offer = mommy.make_one(Offer, rules = [], commodities = [])
-        traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodity = commodity_in_hand, offer = offer)
+        traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodityinhand = commodity_in_hand, offer = offer)
         pending_trade = mommy.make_one(Trade, game = commodity_in_hand.game, status = 'INITIATED', initiator_offer = offer)
 
         CommodityCardsFormSet = formset_factory(TradeCommodityCardFormParse, formset = BaseCommodityCardFormSet)
@@ -922,7 +922,7 @@ class FormsTest(TestCase):
         commodity_in_hand = mommy.make_one(CommodityInHand, game = self.game, nb_cards = 2)
         # see https://github.com/vandersonmota/model_mommy/issues/25
         offer = mommy.make_one(Offer, rules = [], commodities = [])
-        traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodity = commodity_in_hand, offer = offer)
+        traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodityinhand = commodity_in_hand, offer = offer)
         pending_trade = mommy.make_one(Trade, game = commodity_in_hand.game, status = 'INITIATED', responder_offer = offer,
                                        initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
 

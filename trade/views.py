@@ -55,9 +55,9 @@ def create_trade(request, game_id):
                 offer.save()
                 for card in selected_rules:
                     offer.rules.add(card)
-                for commodity, nb_traded_cards in selected_commodities.iteritems():
+                for commodityinhand, nb_traded_cards in selected_commodities.iteritems():
                     if nb_traded_cards > 0:
-                        TradedCommodities.objects.create(offer = offer, commodity = commodity, nb_traded_cards = nb_traded_cards)
+                        TradedCommodities.objects.create(offer = offer, commodityinhand = commodityinhand, nb_traded_cards = nb_traded_cards)
 
                 #noinspection PyUnusedLocal
                 trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
@@ -124,9 +124,9 @@ def reply_trade(request, game_id, trade_id):
                 offer.save()
                 for card in selected_rules:
                     offer.rules.add(card)
-                for commodity, nb_traded_cards in selected_commodities.iteritems():
+                for commodityinhand, nb_traded_cards in selected_commodities.iteritems():
                     if nb_traded_cards > 0:
-                        TradedCommodities.objects.create(offer = offer, commodity = commodity, nb_traded_cards = nb_traded_cards)
+                        TradedCommodities.objects.create(offer = offer, commodityinhand = commodityinhand, nb_traded_cards = nb_traded_cards)
 
                 trade.status = 'REPLIED'
                 trade.responder_offer = offer
@@ -192,10 +192,10 @@ def _parse_offer_forms(request, game):
                 selected_rules.append(card)
                 break
     selected_commodities = {}
-    for commodity in commodity_hand:
+    for commodityinhand in commodity_hand:
         for form in commodities_formset:
-            if int(form.cleaned_data['commodity_id']) == commodity.commodity.id:
-                selected_commodities[commodity] = form.cleaned_data['nb_traded_cards']
+            if int(form.cleaned_data['commodity_id']) == commodityinhand.commodity.id:
+                selected_commodities[commodityinhand] = form.cleaned_data['nb_traded_cards']
                 break
 
     offer_form = OfferForm(request.POST,
@@ -206,8 +206,8 @@ def _parse_offer_forms(request, game):
         raise FormInvalidException({'rulecards_formset' : rulecards_formset, 'commodities_formset' : commodities_formset,
                                     'offer_form' : offer_form})
 
-    offer = Offer(free_information = offer_form.cleaned_data['free_information'],
-                  comment          = offer_form.cleaned_data['comment'])
+    offer = Offer(free_information = offer_form.cleaned_data['free_information'] or None, # 'or None' necessary to insert null (not empty) values
+                  comment          = offer_form.cleaned_data['comment'] or None)
 
     return offer, selected_rules, selected_commodities
 
@@ -239,26 +239,26 @@ def accept_trade(request, game_id, trade_id):
 
                     # Exchange commodity cards
                     for tradedcommodity_from_initiator in trade.initiator_offer.tradedcommodities_set.all():
-                        cih_from_initiator = tradedcommodity_from_initiator.commodity
+                        cih_from_initiator = tradedcommodity_from_initiator.commodityinhand
                         try:
                             cih_for_responder = CommodityInHand.objects.get(game = trade.game, player = trade.responder,
-                                commodity = cih_from_initiator.commodity)
+                                                                            commodity = cih_from_initiator.commodity)
                         except CommodityInHand.DoesNotExist:
                             cih_for_responder = CommodityInHand(game = trade.game, player = trade.responder,
-                                commodity = cih_from_initiator.commodity, nb_cards = 0)
+                                                                commodity = cih_from_initiator.commodity, nb_cards = 0)
                         cih_for_responder.nb_cards += tradedcommodity_from_initiator.nb_traded_cards
                         cih_for_responder.save()
                         cih_from_initiator.nb_cards -= tradedcommodity_from_initiator.nb_traded_cards
                         cih_from_initiator.save()
 
                     for tradedcommodity_from_responder in trade.responder_offer.tradedcommodities_set.all():
-                        cih_from_responder = tradedcommodity_from_responder.commodity
+                        cih_from_responder = tradedcommodity_from_responder.commodityinhand
                         try:
                             cih_for_initiator = CommodityInHand.objects.get(game = trade.game, player = trade.initiator,
-                                commodity = cih_from_responder.commodity)
+                                                                            commodity = cih_from_responder.commodity)
                         except CommodityInHand.DoesNotExist:
                             cih_for_initiator = CommodityInHand(game = trade.game, player = trade.initiator,
-                                commodity = cih_from_responder.commodity, nb_cards = 0)
+                                                                commodity = cih_from_responder.commodity, nb_cards = 0)
                         cih_for_initiator.nb_cards += tradedcommodity_from_responder.nb_traded_cards
                         cih_for_initiator.save()
                         cih_from_responder.nb_cards -= tradedcommodity_from_responder.nb_traded_cards

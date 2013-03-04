@@ -63,6 +63,6 @@ class Offer(models.Model):
 
 class TradedCommodities(models.Model):
     offer = models.ForeignKey(Offer)
-    commodity = models.ForeignKey(CommodityInHand)
+    commodityinhand = models.ForeignKey(CommodityInHand)
 
     nb_traded_cards = models.PositiveSmallIntegerField(default = 0)
