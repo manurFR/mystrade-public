@@ -1,5 +1,6 @@
-from django.db import models
 import importlib
+from django.contrib.auth.models import User
+from django.db import models
 
 class Ruleset(models.Model):
     name = models.CharField(max_length = 255)
@@ -45,3 +46,20 @@ class Commodity(models.Model):
 
     def __unicode__(self):
         return self.name
+
+class ScoreFromRule(models.Model):
+    game = models.ForeignKey('game.Game')
+    player = models.ForeignKey(User)
+    rulecard = models.ForeignKey(RuleCard)
+
+    detail = models.CharField(max_length = 255)
+    score = models.PositiveIntegerField()
+
+class ScoreFromCommodity(models.Model):
+    game = models.ForeignKey('game.Game')
+    player = models.ForeignKey(User)
+    commodity = models.ForeignKey(Commodity)
+
+    nb_scored_cards = models.PositiveSmallIntegerField()
+    actual_value = models.IntegerField()
+    score = models.PositiveIntegerField()
