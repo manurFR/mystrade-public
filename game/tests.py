@@ -328,6 +328,32 @@ class HandViewTest(TestCase):
         self.assertIn({'commodity_id': commodity3.id, 'name': 'c3', 'color': 'colC', 'nb_cards': 3, 'nb_submitted_cards': 3},
                       response.context['commodities_formset'].initial)
 
+    def test_submit_hand_is_not_allowed_when_you_re_not_a_player_in_this_game(self):
+        self.game.gameplayer_set.get(player = self.loginUser).delete() # make me not a player in this game
+
+        response = self.client.post("/game/{}/hand/submit/".format(self.game.id))
+        self.assertEqual(403, response.status_code)
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'admin', password = 'test')) # admin
+
+        response = self.client.post("/game/{}/hand/submit/".format(self.game.id))
+        self.assertEqual(403, response.status_code)
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test')) # game master
+
+        response = self.client.post("/game/{}/hand/submit/".format(self.game.id))
+        self.assertEqual(403, response.status_code)
+
+    def test_submit_hand_is_not_allowed_if_it_has_already_been_submitted(self):
+        gameplayer = self.game.gameplayer_set.get(player = self.loginUser)
+        gameplayer.submit_date = now()
+        gameplayer.save()
+
+        response = self.client.post("/game/{}/hand/submit/".format(self.game.id))
+        self.assertEqual(403, response.status_code)
+
     def test_submit_hand_save_submitted_commodities_and_submit_date(self):
         self.assertIsNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
 

@@ -24,8 +24,8 @@ def welcome(request):
     games = Game.objects.filter(Q(master=request.user) | Q(players=request.user)).distinct().order_by('-end_date')
     for game in games:
         game.list_of_players = [player.get_profile().name for player in game.players.all().order_by('id')]
+        game.hand_submitted = game.gameplayer_set.filter(submit_date__isnull = False, player = request.user).count() > 0
     return render(request, 'game/welcome.html', {'games': games})
-
 
 @login_required
 def hand(request, game_id):
@@ -68,6 +68,10 @@ def submit_hand(request, game_id):
     game = get_object_or_404(Game, id=game_id)
 
     if request.user not in game.players.all():
+        raise PermissionDenied
+
+    # one can submit one own's hand only once
+    if game.gameplayer_set.get(player = request.user).submit_date:
         raise PermissionDenied
 
     commodity_hand = CommodityInHand.objects.filter(game=game, player=request.user, nb_cards__gt=0).order_by('commodity__value', 'commodity__name')
