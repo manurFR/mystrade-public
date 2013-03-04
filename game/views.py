@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, F
 from django.forms.formsets import formset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -34,8 +34,19 @@ def hand(request, game_id):
     if request.user not in game.players.all():
         raise PermissionDenied
 
-    rule_hand = RuleInHand.objects.filter(game=game, player=request.user, abandon_date__isnull=True).order_by('rulecard__ref_name')
-    commodity_hand = CommodityInHand.objects.filter(game=game, player=request.user, nb_cards__gt=0).order_by('commodity__value', 'commodity__name')
+    # if the hand has been submitted, we will split the commodities between submitted and not submitted
+    hand_submitted = game.gameplayer_set.filter(submit_date__isnull = False, player = request.user).count() > 0
+
+    rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
+    if hand_submitted:
+        commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_submitted_cards__gt = 0).order_by('commodity__value', 'commodity__name')
+    else:
+        commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
+
+    commodity_hand_not_submitted = CommodityInHand.objects.filter(game = game, player = request.user,
+                                                                  nb_cards__gt = F('nb_submitted_cards')).order_by('commodity__value', 'commodity__name')
+    for not_submitted in commodity_hand_not_submitted:
+        not_submitted.nb_cards -= not_submitted.nb_submitted_cards
 
     free_informations = []
     for offer in Offer.objects.filter(free_information__isnull=False, trade_responded__game=game,
@@ -59,7 +70,8 @@ def hand(request, game_id):
             featured_rulecards.append(rule.rulecard.id)
 
     return render(request, 'game/hand.html',
-        {'game': game, 'rule_hand': rule_hand, 'commodity_hand': commodity_hand, 'former_rules': former_rules,
+        {'game': game, 'hand_submitted': hand_submitted, 'rule_hand': rule_hand, 'former_rules': former_rules,
+         'commodity_hand': commodity_hand, 'commodity_hand_not_submitted': commodity_hand_not_submitted,
          'free_informations': sorted(free_informations, key=lambda offer: offer['date'], reverse=True)})
 
 

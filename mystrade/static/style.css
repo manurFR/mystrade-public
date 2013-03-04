@@ -148,7 +148,7 @@ input[type="submit"] {
 	height: 200px;
 }
 
-.card.given {
+.card.dashed {
     border: 1px dashed #FFD773;
     color: #644700;
 }
