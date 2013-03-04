@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import datetime
-from django.utils.timezone import now
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
@@ -8,13 +7,29 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
+    depends_on = (("ruleset", "0001_initial"),)
+
     def forwards(self, orm):
-        # Changing field 'Game.end_date'
-        db.alter_column('game_game', 'end_date', self.gf('django.db.models.fields.DateTimeField')(default=now()))
+
+        # Changing field 'CommodityInHand.commodity'
+        db.alter_column('game_commodityinhand', 'commodity_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['ruleset.Commodity']))
+
+        # Changing field 'Game.ruleset'
+        db.alter_column('game_game', 'ruleset_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['ruleset.Ruleset']))
+
+        # Changing field 'RuleInHand.rulecard'
+        db.alter_column('game_ruleinhand', 'rulecard_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['ruleset.RuleCard']))
 
     def backwards(self, orm):
-        # Changing field 'Game.end_date'
-        db.alter_column('game_game', 'end_date', self.gf('django.db.models.fields.DateTimeField')(null=True))
+        raise RuntimeError("Cannot reverse this migration.")
+#        # Changing field 'CommodityInHand.commodity'
+#        db.alter_column('game_commodityinhand', 'commodity_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['scoring.Commodity']))
+#
+#        # Changing field 'Game.ruleset'
+#        db.alter_column('game_game', 'ruleset_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['scoring.Ruleset']))
+#
+#        # Changing field 'RuleInHand.rulecard'
+#        db.alter_column('game_ruleinhand', 'rulecard_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['scoring.RuleCard']))
 
     models = {
         'auth.group': {
@@ -55,7 +70,7 @@ class Migration(SchemaMigration):
         },
         'game.commodityinhand': {
             'Meta': {'object_name': 'CommodityInHand'},
-            'commodity': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.Commodity']"}),
+            'commodity': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.Commodity']"}),
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'nb_cards': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '0'}),
@@ -69,8 +84,8 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'master': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'mastering_games_set'", 'to': "orm['auth.User']"}),
             'players': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'playing_games_set'", 'symmetrical': 'False', 'through': "orm['game.GamePlayer']", 'to': "orm['auth.User']"}),
-            'rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['scoring.RuleCard']", 'symmetrical': 'False'}),
-            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.Ruleset']"}),
+            'rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['ruleset.RuleCard']", 'symmetrical': 'False'}),
+            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.Ruleset']"}),
             'start_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'})
         },
         'game.gameplayer': {
@@ -87,17 +102,17 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'ownership_date': ('django.db.models.fields.DateTimeField', [], {}),
             'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
-            'rulecard': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.RuleCard']"})
+            'rulecard': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.RuleCard']"})
         },
-        'scoring.commodity': {
+        'ruleset.commodity': {
             'Meta': {'object_name': 'Commodity'},
             'color': ('django.db.models.fields.CharField', [], {'default': "'white'", 'max_length': '20'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.Ruleset']"}),
+            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.Ruleset']"}),
             'value': ('django.db.models.fields.IntegerField', [], {'null': 'True'})
         },
-        'scoring.rulecard': {
+        'ruleset.rulecard': {
             'Meta': {'object_name': 'RuleCard'},
             'description': ('django.db.models.fields.TextField', [], {}),
             'glob': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'global'"}),
@@ -105,10 +120,10 @@ class Migration(SchemaMigration):
             'mandatory': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'public_name': ('django.db.models.fields.CharField', [], {'max_length': '50', 'blank': 'True'}),
             'ref_name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '20'}),
-            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.Ruleset']"}),
+            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.Ruleset']"}),
             'step': ('django.db.models.fields.IntegerField', [], {'null': 'True'})
         },
-        'scoring.ruleset': {
+        'ruleset.ruleset': {
             'Meta': {'object_name': 'Ruleset'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'module': ('django.db.models.fields.CharField', [], {'max_length': '20'}),

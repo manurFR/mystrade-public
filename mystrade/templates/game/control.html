@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load url from future %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.1.custom.min.css' %}" />
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
+    <script src="{% static 'jquery/jquery-ui-1.9.1.custom.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="header">Control board for game #{{ game }}
+        <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span></div>
+
+    {% if not game.is_active %}
+        <div>This game has ended on {{ game.end_date }} ({{ game.end_date|timesince }} ago).</div>
+        {% if not game.closing_date %}
+            <div>All trades have been blocked since that time. Please click on this button to cancel all unfinished trades,
+            calculate scores and definitely close the game.</div>
+            <div class="floatright">
+                <form action="{% url 'close_game' game.id %}" method="post">{% csrf_token %}
+                    <input type="submit" value="Close this game"/>
+                </form>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    <script>
+        $(function() {
+            $('input[type=submit]').button();
+        });
+    </script>
+{% endblock %}

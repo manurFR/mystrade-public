@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q, F
 from django.forms.formsets import formset_factory
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils.timezone import get_default_timezone
 
@@ -232,3 +232,26 @@ def select_rules(request):
                                              'mandatory': bool(card.mandatory)}
                                             for card in rulecards_queryset])
         return render(request, 'game/rules.html', {'formset': formset, 'session': request.session})
+
+#############################################################################
+##                          Control Board                                  ##
+#############################################################################
+
+@login_required
+def control_board(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+
+    if request.user != game.master and not request.user.is_staff:
+        raise PermissionDenied
+
+    return render(request, 'game/control.html', {'game': game})
+
+@login_required
+def close_game(request, game_id):
+
+    game = get_object_or_404(Game, id=game_id)
+
+    if request.user != game.master and not request.user.is_staff:
+        raise PermissionDenied
+
+    return render(request, 'game/control.html', {'game': game})

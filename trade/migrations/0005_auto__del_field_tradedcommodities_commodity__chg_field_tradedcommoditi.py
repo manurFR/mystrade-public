@@ -28,11 +28,6 @@ class Migration(SchemaMigration):
         # Changing field 'TradedCommodities.commodityinhand'
         db.alter_column('trade_tradedcommodities', 'commodityinhand', self.gf('django.db.models.fields.IntegerField')(null=True))
 
-#        # Adding field 'TradedCommodities.commodity'
-#        db.add_column('trade_tradedcommodities', 'commodity',
-#                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['game.CommodityInHand']),
-#                      keep_default=False)
-
         # Adding field 'TradedCommodities.commodity'
         db.add_column('trade_tradedcommodities', 'commodity',
                       self.gf('django.db.models.fields.IntegerField')(null=True),

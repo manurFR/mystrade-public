@@ -420,6 +420,26 @@ class HandViewTest(TestCase):
         self.assertEqual(self.loginUser, trade_replied_by_other_player.finalizer)
         self.assertIsNotNone(trade_replied_by_other_player.closing_date)
 
+class ControlBoardViewTest(TestCase):
+    fixtures = ['test_users.json']
+
+    def setUp(self):
+        _common_setUp(self)
+
+    def test_access_to_control_board_allowed_only_to_game_master_and_admins(self):
+        response = self.client.get("/game/{}/control/".format(self.game.id))
+        self.assertEqual(403, response.status_code)
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'admin', password = 'test'))
+        response = self.client.get("/game/{}/control/".format(self.game.id))
+        self.assertEqual(200, response.status_code)
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+        response = self.client.get("/game/{}/control/".format(self.game.id))
+        self.assertEqual(200, response.status_code)
+
 class TransactionalViewsTest(TransactionTestCase):
     fixtures = ['test_users.json']
 

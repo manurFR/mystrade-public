@@ -15,6 +15,8 @@ class Game(models.Model):
     creation_date = models.DateTimeField(default = now)
     start_date = models.DateTimeField(default = now)
     end_date = models.DateTimeField()
+    closing_date = models.DateTimeField("The date when the game has actually been closed, and the scores calculated, by the game master",
+                                        null = True)
 
     def __unicode__(self):
         return "{}".format(self.id)
