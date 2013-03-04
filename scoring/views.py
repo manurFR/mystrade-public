@@ -40,7 +40,7 @@ def choose_rulecards(request):
                         if hand[commodity] is None:
                             hand[commodity] = 0
                 hands.append(hand)
-            scores, scoresheets = tally_scores(hands, ruleset, selected_rules)
+            scores, scoresheets = tally_scores(hands, selected_rules)
             players = sorted([{'index': index+1, 'hand': hand, 'score': scores[index], 'scoresheet': scoresheets[index]} 
                                 for index, hand in enumerate(hands)],
                              key = operator.itemgetter('score'), reverse = True)

@@ -3,7 +3,7 @@ from django.test import TestCase
 from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.haggle import HAG04, HAG05, HAG06, HAG07, HAG08, HAG09, HAG10, \
     HAG11, HAG12, HAG13, HAG14, HAG15
-from scoring.models import Ruleset, RuleCard, Commodity
+from scoring.models import RuleCard, Commodity
 
 class ViewsTest(TestCase):
     def setUp(self):
@@ -100,13 +100,12 @@ class ViewsTest(TestCase):
 
 class ScoringTest(TestCase):
     def test_tally_scores(self):
-        haggle_ruleset = Ruleset.objects.get(pk = 1)
-        haggle_all_rulecards = RuleCard.objects.filter(ruleset = haggle_ruleset)
+        haggle_all_rulecards = RuleCard.objects.filter(ruleset__id = 1)
         hands = [_prepare_hand(yellow = 2, blue = 1, red = 3, orange = 3, white = 4),
                  _prepare_hand(yellow = 3, blue = 5, red = 3, orange = 0, white = 1),
                  _prepare_hand(yellow = 3, blue = 1, red = 1, orange = 7, white = 1),
                  _prepare_hand(yellow = 0, blue = 3, red = 4, orange = 2, white = 1)]
-        scores, scoresheets = tally_scores(hands, haggle_ruleset, [rule for rule in haggle_all_rulecards])
+        scores, scoresheets = tally_scores(hands, [rule for rule in haggle_all_rulecards])
         self.assertEqual(31, scores[0])
         self.assertEqual(32, scores[1])
         self.assertEqual(12, scores[2])
@@ -114,13 +113,12 @@ class ScoringTest(TestCase):
         self.assertEqual(4, len(scoresheets))
 
     def test_tally_scores_rules_subset(self):
-        haggle_ruleset = Ruleset.objects.get(pk = 1)
-        haggle_rulecards = RuleCard.objects.filter(ruleset = haggle_ruleset, public_name__in = ['4', '8', '10', '12', '13'])
+        haggle_rulecards = RuleCard.objects.filter(ruleset__id = 1, public_name__in = ['4', '8', '10', '12', '13'])
         hands = [_prepare_hand(yellow = 4, blue = 2, red = 2, orange = 3, white = 2),
                  _prepare_hand(yellow = 2, blue = 5, red = 0, orange = 0, white = 5),
                  _prepare_hand(yellow = 1, blue = 1, red = 1, orange = 7, white = 0),
                  _prepare_hand(yellow = 0, blue = 3, red = 4, orange = 2, white = 1)]
-        scores, scoresheets = tally_scores(hands, haggle_ruleset, [rule for rule in haggle_rulecards])
+        scores, scoresheets = tally_scores(hands, [rule for rule in haggle_rulecards])
         self.assertEqual(82, scores[0])
         self.assertEqual(12, scores[1])
         self.assertEqual(34, scores[2])

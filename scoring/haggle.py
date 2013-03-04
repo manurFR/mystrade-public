@@ -51,7 +51,6 @@ def HAG08(players):
 
         # Global rulecard #
     """
-    winner = None
     yellows = [player.commodity('Yellow')['scored_cards'] for player in players]
     for winning_number in range(max(yellows), 1, -1):
         if yellows.count(winning_number) == 1:
