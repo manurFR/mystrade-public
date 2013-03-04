@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from scoring.models import Ruleset, RuleCard
+from ruleset.models import Ruleset, RuleCard
 from utils.utils import roundTimeToMinute
 
 #############################################################################

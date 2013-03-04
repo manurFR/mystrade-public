@@ -12,7 +12,7 @@ from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards,
     prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
-from scoring.models import Ruleset, RuleCard, Commodity
+from ruleset.models import Ruleset, RuleCard, Commodity
 from trade.models import Offer, Trade
 
 def _common_setUp(self):

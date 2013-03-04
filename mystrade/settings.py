@@ -126,6 +126,7 @@ TEMPLATE_DIRS = (
 
 MYSTRADE_APPS = (
     'userprofile',
+    'ruleset',
     'scoring',
     'game',
     'trade',

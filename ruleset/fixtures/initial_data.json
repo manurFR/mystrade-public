@@ -1,7 +1,7 @@
 [
     {
         "pk": 1,
-        "model": "scoring.ruleset",
+        "model": "ruleset.ruleset",
         "fields": {
             "name": "Original Haggle (1969)",
             "module": "haggle"
@@ -9,7 +9,7 @@
     },
     {
         "pk": 1,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "1",
             "description": "Orange cards have a basic value of 4 and are equal to a red card and a yellow card.",
@@ -21,7 +21,7 @@
     },
     {
         "pk": 2,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "2",
             "description": "White cards have the highest basic value and are equal to a red card and a blue card.",
@@ -33,7 +33,7 @@
     },
     {
         "pk": 3,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "3",
             "description": "Blue cards have a basic value twice that of yellow and half that of orange.",
@@ -45,7 +45,7 @@
     },
     {
         "pk": 4,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "4",
             "description": "If a player has more than three white cards, all of his/her white cards lose their value.",
@@ -58,7 +58,7 @@
     },
 	{
         "pk": 5,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "5",
             "description": "A player can score only as many as orange cards as he/she has blue cards.",
@@ -71,7 +71,7 @@
     },
 	{
         "pk": 6,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "6",
             "description": "If a player has five or more blue cards, 10 points are deducted from every other player's score.",
@@ -84,7 +84,7 @@
     },
     {
         "pk": 7,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "7",
             "description": "A set of three red cards protects you from one set of five blue cards.",
@@ -97,7 +97,7 @@
     },   
     {
         "pk": 8,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "8",
             "description": "The player with the most yellow cards gets a bonus of the number of those cards squared. If two or more players tie for most yellow, the bonus is calculated instead for the player with the next highest number of yellows.",
@@ -110,7 +110,7 @@
     },
     {
         "pk": 9,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "9",
             "description": "If a player hands in seven or more cards of the same color, for each of these colors 10 points are deducted from his/her score.",
@@ -123,7 +123,7 @@
     },
     {
         "pk": 10,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "10",
             "description": "Each set of five different colors gives a bonus of 10 points.",
@@ -136,7 +136,7 @@
     },
     {
         "pk": 11,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "11",
             "description": "If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. A pyramid consists of four cards of one color, three cards of a second color, two cards of a third, and one card of a fourth color.",
@@ -149,7 +149,7 @@
     },
     {
         "pk": 12,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "12",
             "description": "The player with the most red cards double their value. In case of a tie, no player collects the extra value.",
@@ -162,7 +162,7 @@
     },
     {
         "pk": 13,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "13",
             "description": "Each set of two yellow cards doubles the value of one white card.",
@@ -175,7 +175,7 @@
     },
     {
         "pk": 14,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "14",
             "description": "Each set of three blue cards quadruples the value of one orange card.",
@@ -188,7 +188,7 @@
     },
     {
         "pk": 15,
-        "model": "scoring.rulecard",
+        "model": "ruleset.rulecard",
         "fields": {
             "public_name": "15",
             "description": "No more than thirteen cards in a hand can be scored. If more are handed in, the excess will be removed at random.",
@@ -201,7 +201,7 @@
     },
     {
         "pk": 1,
-        "model": "scoring.commodity",
+        "model": "ruleset.commodity",
         "fields": {
             "name": "Yellow",
             "ruleset": 1,
@@ -211,7 +211,7 @@
     },
     {
         "pk": 2,
-        "model": "scoring.commodity",
+        "model": "ruleset.commodity",
         "fields": {
             "name": "Blue",
             "ruleset": 1,
@@ -221,7 +221,7 @@
     },
     {
         "pk": 3,
-        "model": "scoring.commodity",
+        "model": "ruleset.commodity",
         "fields": {
             "name": "Red",
             "ruleset": 1,
@@ -231,7 +231,7 @@
     },
     {
         "pk": 4,
-        "model": "scoring.commodity",
+        "model": "ruleset.commodity",
         "fields": {
             "name": "Orange",
             "ruleset": 1,
@@ -241,7 +241,7 @@
     },
     {
         "pk": 5,
-        "model": "scoring.commodity",
+        "model": "ruleset.commodity",
         "fields": {
             "name": "White",
             "ruleset": 1,

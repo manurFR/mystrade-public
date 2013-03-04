@@ -6,7 +6,7 @@ from django.utils.timezone import get_default_timezone, now
 from django.test import TestCase
 from model_mommy import mommy
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
-from scoring.models import Ruleset, RuleCard, Commodity
+from ruleset.models import Ruleset, RuleCard, Commodity
 from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet, TradeForm
 from trade.models import Offer, Trade, TradedCommodities
 from trade.views import _prepare_offer_forms

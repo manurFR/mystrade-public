@@ -3,10 +3,9 @@ import operator
 from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
 from django.shortcuts import render
-
+from ruleset.models import Ruleset, RuleCard, Commodity
 from scoring.card_scoring import tally_scores
 from scoring.forms import RuleCardFormDisplay, RuleCardFormParse, HandsForm
-from scoring.models import RuleCard, Commodity, Ruleset
 
 
 @login_required

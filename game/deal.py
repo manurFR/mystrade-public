@@ -1,6 +1,6 @@
-from game.models import RuleInHand, CommodityInHand
 from random import shuffle
-from scoring.models import Commodity
+from ruleset.models import Commodity
+from game.models import RuleInHand, CommodityInHand
 
 RULECARDS_PER_PLAYER = 2
 COMMODITY_CARDS_PER_PLAYER = 10

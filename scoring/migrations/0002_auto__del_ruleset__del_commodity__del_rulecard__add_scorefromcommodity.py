@@ -7,13 +7,25 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
+    depends_on = (("ruleset", "0001_initial"),
+                  ("game",    "0013_auto__chg_field_game_end_date"))
+
     def forwards(self, orm):
+        # Deleting model 'Ruleset'
+        db.delete_table('scoring_ruleset')
+
+        # Deleting model 'Commodity'
+        db.delete_table('scoring_commodity')
+
+        # Deleting model 'RuleCard'
+        db.delete_table('scoring_rulecard')
+
         # Adding model 'ScoreFromCommodity'
         db.create_table('scoring_scorefromcommodity', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('game', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['game.Game'])),
             ('player', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('commodity', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['scoring.Commodity'])),
+            ('commodity', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['ruleset.Commodity'])),
             ('nb_scored_cards', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
             ('actual_value', self.gf('django.db.models.fields.IntegerField')()),
             ('score', self.gf('django.db.models.fields.PositiveIntegerField')()),
@@ -25,7 +37,7 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('game', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['game.Game'])),
             ('player', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('rulecard', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['scoring.RuleCard'])),
+            ('rulecard', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['ruleset.RuleCard'])),
             ('detail', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('score', self.gf('django.db.models.fields.PositiveIntegerField')()),
         ))
@@ -33,6 +45,37 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
+        # Adding model 'Ruleset'
+        db.create_table('scoring_ruleset', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('module', self.gf('django.db.models.fields.CharField')(max_length=20)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+        ))
+        db.send_create_signal('scoring', ['Ruleset'])
+
+        # Adding model 'Commodity'
+        db.create_table('scoring_commodity', (
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('color', self.gf('django.db.models.fields.CharField')(default='white', max_length=20)),
+            ('value', self.gf('django.db.models.fields.IntegerField')(null=True)),
+            ('ruleset', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['scoring.Ruleset'])),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+        ))
+        db.send_create_signal('scoring', ['Commodity'])
+
+        # Adding model 'RuleCard'
+        db.create_table('scoring_rulecard', (
+            ('public_name', self.gf('django.db.models.fields.CharField')(max_length=50, blank=True)),
+            ('step', self.gf('django.db.models.fields.IntegerField')(null=True)),
+            ('mandatory', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('description', self.gf('django.db.models.fields.TextField')()),
+            ('ruleset', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['scoring.Ruleset'])),
+            ('glob', self.gf('django.db.models.fields.BooleanField')(default=False, db_column='global')),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('ref_name', self.gf('django.db.models.fields.CharField')(max_length=20, unique=True)),
+        ))
+        db.send_create_signal('scoring', ['RuleCard'])
+
         # Deleting model 'ScoreFromCommodity'
         db.delete_table('scoring_scorefromcommodity')
 
@@ -84,8 +127,8 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'master': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'mastering_games_set'", 'to': "orm['auth.User']"}),
             'players': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'playing_games_set'", 'symmetrical': 'False', 'through': "orm['game.GamePlayer']", 'to': "orm['auth.User']"}),
-            'rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['scoring.RuleCard']", 'symmetrical': 'False'}),
-            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.Ruleset']"}),
+            'rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['ruleset.RuleCard']", 'symmetrical': 'False'}),
+            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.Ruleset']"}),
             'start_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'})
         },
         'game.gameplayer': {
@@ -95,15 +138,15 @@ class Migration(SchemaMigration):
             'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
             'submit_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True'})
         },
-        'scoring.commodity': {
+        'ruleset.commodity': {
             'Meta': {'object_name': 'Commodity'},
             'color': ('django.db.models.fields.CharField', [], {'default': "'white'", 'max_length': '20'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.Ruleset']"}),
+            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.Ruleset']"}),
             'value': ('django.db.models.fields.IntegerField', [], {'null': 'True'})
         },
-        'scoring.rulecard': {
+        'ruleset.rulecard': {
             'Meta': {'object_name': 'RuleCard'},
             'description': ('django.db.models.fields.TextField', [], {}),
             'glob': ('django.db.models.fields.BooleanField', [], {'default': 'False', 'db_column': "'global'"}),
@@ -111,10 +154,10 @@ class Migration(SchemaMigration):
             'mandatory': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'public_name': ('django.db.models.fields.CharField', [], {'max_length': '50', 'blank': 'True'}),
             'ref_name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '20'}),
-            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.Ruleset']"}),
+            'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.Ruleset']"}),
             'step': ('django.db.models.fields.IntegerField', [], {'null': 'True'})
         },
-        'scoring.ruleset': {
+        'ruleset.ruleset': {
             'Meta': {'object_name': 'Ruleset'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'module': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
@@ -123,7 +166,7 @@ class Migration(SchemaMigration):
         'scoring.scorefromcommodity': {
             'Meta': {'object_name': 'ScoreFromCommodity'},
             'actual_value': ('django.db.models.fields.IntegerField', [], {}),
-            'commodity': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.Commodity']"}),
+            'commodity': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.Commodity']"}),
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'nb_scored_cards': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
@@ -136,7 +179,7 @@ class Migration(SchemaMigration):
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
-            'rulecard': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.RuleCard']"}),
+            'rulecard': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.RuleCard']"}),
             'score': ('django.db.models.fields.PositiveIntegerField', [], {})
         }
     }

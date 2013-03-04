@@ -13,7 +13,7 @@ from django.utils.timezone import get_default_timezone
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
-from scoring.models import RuleCard
+from ruleset.models import RuleCard
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer, Trade
 

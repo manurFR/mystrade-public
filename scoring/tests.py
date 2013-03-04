@@ -1,9 +1,9 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
+from ruleset.models import RuleCard, Commodity
 from scoring.card_scoring import tally_scores, Scoresheet
-from scoring.haggle import HAG04, HAG05, HAG06, HAG07, HAG08, HAG09, HAG10, \
-    HAG11, HAG12, HAG13, HAG14, HAG15
-from scoring.models import RuleCard, Commodity
+from scoring.haggle import HAG04, HAG05, HAG06, HAG07, HAG08, HAG09, HAG10,\
+HAG11, HAG12, HAG13, HAG14, HAG15
 
 class ViewsTest(TestCase):
     def setUp(self):
