@@ -85,7 +85,7 @@ def submit_hand(request, game_id):
     if game.gameplayer_set.get(player = request.user).submit_date:
         raise PermissionDenied
 
-    commodity_hand = CommodityInHand.objects.filter(game=game, player=request.user, nb_cards__gt=0).order_by('commodity__value', 'commodity__name')
+    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
 
     if request.method == 'POST':
         CommodityCardsFormSet = formset_factory(GameCommodityCardFormParse)
@@ -109,7 +109,7 @@ def submit_hand(request, game_id):
 
                     # abort pending trades
                     for trade in Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game, finalizer__isnull = True):
-                        trade.abort(request.user)
+                        trade.abort(request.user, gameplayer.submit_date)
 
             except BaseException as ex:
                 logger.error("Error in submit_hand({})".format(game_id), exc_info = ex)
@@ -246,7 +246,18 @@ def close_game(request, game_id):
 
                     # abort pending trades
                     for trade in Trade.objects.filter(game = game, finalizer__isnull = True):
-                        trade.abort(request.user)
+                        trade.abort(request.user, game.closing_date)
+
+                    # automatically submit all commodity cards of players who haven't manually submitted their hand
+                    for gameplayer in GamePlayer.objects.filter(game = game, submit_date__isnull = True):
+                        for cih in CommodityInHand.objects.filter(game = game, nb_cards__gt = 0, player = gameplayer.player):
+                            cih.nb_submitted_cards = cih.nb_cards
+                            cih.save()
+                        gameplayer.submit_date = game.closing_date
+                        gameplayer.save()
+
+                    # TODO launch score calculation here. via tally_score() ?
+                    # TODO transactional test
 
             except BaseException as ex:
                 logger.error("Error in close_game({})".format(game_id), exc_info = ex)

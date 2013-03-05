@@ -35,7 +35,7 @@ class Trade(models.Model):
     creation_date = models.DateTimeField(default = now)
     closing_date = models.DateTimeField(null = True)
 
-    def abort(self, whodunit):
+    def abort(self, whodunit, closing_date):
         if whodunit == self.initiator:
             if self.status == 'INITIATED':
                 self.status = 'CANCELLED'
@@ -49,7 +49,7 @@ class Trade(models.Model):
         else:
             self.status = 'CANCELLED' # when the game is closed by the game master or an admin
         self.finalizer = whodunit
-        self.closing_date = now()
+        self.closing_date = closing_date
         self.save()
 
 class Offer(models.Model):

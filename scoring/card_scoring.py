@@ -1,4 +1,7 @@
 def tally_scores(hands, selected_rules):
+    """ hands = [{commodity1: <nb_cards>, commodity2: <nb_cards>, ...}, ...]
+        selected_rules = [rulecard1, rulecard2, ...]
+    """
     scoresheets = [Scoresheet(hand) for hand in hands]
     rules = sorted(selected_rules, key = lambda rule : rule.step)
     for rule in rules:

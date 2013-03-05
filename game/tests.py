@@ -488,20 +488,42 @@ class ControlBoardViewTest(TestCase):
 
         self._assertOperation_post(self.game_ended, "close")
 
+        game = Game.objects.get(pk = self.game_ended.id)
         trade1 = Trade.objects.get(pk = trade1.id)
         trade2 = Trade.objects.get(pk = trade2.id)
         trade3 = Trade.objects.get(pk = trade3.id)
 
         self.assertEqual('CANCELLED', trade1.status)
         self.assertEqual(self.loginUser, trade1.finalizer)
-        self.assertIsNotNone(trade1.closing_date)
+        self.assertEqual(game.closing_date, trade1.closing_date)
 
         self.assertEqual('CANCELLED', trade2.status)
         self.assertEqual(self.loginUser, trade2.finalizer)
-        self.assertIsNotNone(trade2.closing_date)
+        self.assertIsNotNone(game.closing_date, trade2.closing_date)
 
         self.assertEqual(self.test5, trade3.finalizer)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), trade3.closing_date)
+
+    def test_close_game_submits_the_commodity_cars_of_players_who_havent_manually_submitted(self):
+        test6 = User.objects.get(username='test6')
+        gp1 = mommy.make_one(GamePlayer, game = self.game_ended, player = self.test5)
+        gp2_submit_date = now() + datetime.timedelta(days = -1)
+        gp2 = mommy.make_one(GamePlayer, game = self.game_ended, player = test6, submit_date = gp2_submit_date)
+
+        cih1 = mommy.make_one(CommodityInHand, game = self.game_ended, player = self.test5, nb_cards = 6)
+        cih2 = mommy.make_one(CommodityInHand, game = self.game_ended, player = test6, nb_cards = 4, nb_submitted_cards = 3)
+
+        self._assertOperation_post(self.game_ended, "close")
+
+        gp1 = GamePlayer.objects.get(pk = gp1.id)
+        gp2 = GamePlayer.objects.get(pk = gp2.id)
+        cih1 = CommodityInHand.objects.get(pk = cih1.id)
+        cih2 = CommodityInHand.objects.get(pk = cih2.id)
+
+        self.assertIsNotNone(gp1.submit_date)
+        self.assertEqual(gp2_submit_date, gp2.submit_date)
+        self.assertEqual(6, cih1.nb_submitted_cards)
+        self.assertEqual(3, cih2.nb_submitted_cards)
 
     def _assertOperation_get(self, game, operation, status_code = 200):
         response = self.client.get("/game/{}/{}/".format(game.id, operation), follow = True)
