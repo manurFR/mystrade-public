@@ -8,7 +8,7 @@ from django.db.models import Q, F
 from django.forms.formsets import formset_factory
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
-from django.utils.timezone import get_default_timezone
+from django.utils.timezone import get_default_timezone, now
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse
@@ -251,6 +251,15 @@ def close_game(request, game_id):
     game = get_object_or_404(Game, id=game_id)
 
     if request.method == 'POST' and (request.user == game.master or request.user.is_staff):
-        return render(request, 'game/control.html', {'game': game})
+        if game.end_date <= now() and game.closing_date is None :
+            try:
+                with transaction.commit_on_success():
+
+                    pass
+            except BaseException as ex:
+                logger.error("Error in close_game({})".format(game_id), exc_info = ex)
+
+            return HttpResponseRedirect(reverse('control', args = [game_id]))
+
 
     raise PermissionDenied

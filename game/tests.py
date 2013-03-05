@@ -438,27 +438,44 @@ class ControlBoardViewTest(TestCase):
         self._assertOperation_get(self.game, "control")
 
     def test_close_game_allowed_only_to_game_master_and_admins(self):
-        self._assertOperation_post(self.game, "close", 403)
+        game = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -2))
+        self._assertOperation_post(game, "close")
 
         self.client.logout()
         self.assertTrue(self.client.login(username = 'admin', password = 'test'))
-        self._assertOperation_post(self.game, "close")
+        self._assertOperation_post(game, "close")
 
+        other_player = User.objects.get(username = 'test3')
+        mommy.make_one(GamePlayer, game = game, player = other_player)
         self.client.logout()
-        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
-        self._assertOperation_post(self.game, "close")
+        self.assertTrue(self.client.login(username = 'test3', password = 'test'))
+        self._assertOperation_post(game, "close", 403)
 
     def test_close_game_not_allowed_in_GET(self):
-        self.client.logout()
-        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
-        self._assertOperation_get(self.game, "close", 403)
+        game = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -2))
+        self._assertOperation_get(game, "close", 403)
+
+    def test_close_game_allowed_only_on_games_ended_but_not_already_closed(self):
+        game_not_ended = mommy.make_one(Game, master = self.loginUser, players = [],
+                                        end_date = now() + datetime.timedelta(days = 2))
+        self._assertOperation_post(game_not_ended, "close", 403)
+
+        game_closed = mommy.make_one(Game, master = self.loginUser, players = [],
+                                     end_date = now() + datetime.timedelta(days = -3),
+                                     closing_date = now() + datetime.timedelta(days = -2))
+        self._assertOperation_post(game_closed, "close", 403)
+
+        game_ended_but_not_closed = mommy.make_one(Game, master = self.loginUser, players = [],
+                                                   end_date = now() + datetime.timedelta(days = -3))
+        self._assertOperation_post(game_ended_but_not_closed, "close")
+
 
     def _assertOperation_get(self, game, operation, status_code = 200):
-        response = self.client.get("/game/{}/{}/".format(game.id, operation))
+        response = self.client.get("/game/{}/{}/".format(game.id, operation), follow = True)
         self.assertEqual(status_code, response.status_code)
 
     def _assertOperation_post(self, game, operation, status_code = 200):
-        response = self.client.post("/game/{}/{}/".format(game.id, operation))
+        response = self.client.post("/game/{}/{}/".format(game.id, operation), follow = True)
         self.assertEqual(status_code, response.status_code)
 
 class TransactionalViewsTest(TransactionTestCase):
