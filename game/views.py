@@ -241,17 +241,16 @@ def select_rules(request):
 def control_board(request, game_id):
     game = get_object_or_404(Game, id=game_id)
 
-    if request.user != game.master and not request.user.is_staff:
-        raise PermissionDenied
+    if request.user == game.master or request.user.is_staff:
+        return render(request, 'game/control.html', {'game': game})
 
-    return render(request, 'game/control.html', {'game': game})
+    raise PermissionDenied
 
 @login_required
 def close_game(request, game_id):
-
     game = get_object_or_404(Game, id=game_id)
 
-    if request.user != game.master and not request.user.is_staff:
-        raise PermissionDenied
+    if request.method == 'POST' and (request.user == game.master or request.user.is_staff):
+        return render(request, 'game/control.html', {'game': game})
 
-    return render(request, 'game/control.html', {'game': game})
+    raise PermissionDenied

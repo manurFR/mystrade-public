@@ -427,18 +427,39 @@ class ControlBoardViewTest(TestCase):
         _common_setUp(self)
 
     def test_access_to_control_board_allowed_only_to_game_master_and_admins(self):
-        response = self.client.get("/game/{}/control/".format(self.game.id))
-        self.assertEqual(403, response.status_code)
+        self._assertOperation_get(self.game, "control", 403)
 
         self.client.logout()
         self.assertTrue(self.client.login(username = 'admin', password = 'test'))
-        response = self.client.get("/game/{}/control/".format(self.game.id))
-        self.assertEqual(200, response.status_code)
+        self._assertOperation_get(self.game, "control")
 
         self.client.logout()
         self.assertTrue(self.client.login(username = 'test1', password = 'test'))
-        response = self.client.get("/game/{}/control/".format(self.game.id))
-        self.assertEqual(200, response.status_code)
+        self._assertOperation_get(self.game, "control")
+
+    def test_close_game_allowed_only_to_game_master_and_admins(self):
+        self._assertOperation_post(self.game, "close", 403)
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'admin', password = 'test'))
+        self._assertOperation_post(self.game, "close")
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+        self._assertOperation_post(self.game, "close")
+
+    def test_close_game_not_allowed_in_GET(self):
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+        self._assertOperation_get(self.game, "close", 403)
+
+    def _assertOperation_get(self, game, operation, status_code = 200):
+        response = self.client.get("/game/{}/{}/".format(game.id, operation))
+        self.assertEqual(status_code, response.status_code)
+
+    def _assertOperation_post(self, game, operation, status_code = 200):
+        response = self.client.post("/game/{}/{}/".format(game.id, operation))
+        self.assertEqual(status_code, response.status_code)
 
 class TransactionalViewsTest(TransactionTestCase):
     fixtures = ['test_users.json']

@@ -16,16 +16,18 @@
         <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span></div>
 
     {% if not game.is_active %}
-        <div>This game has ended on {{ game.end_date }} ({{ game.end_date|timesince }} ago).</div>
+        <div class="reminder">This game has ended on {{ game.end_date }} ({{ game.end_date|timesince }} ago).
         {% if not game.closing_date %}
-            <div>All trades have been blocked since that time. Please click on this button to cancel all unfinished trades,
-            calculate scores and definitely close the game.</div>
+            <p>All trades have been blocked since that time.<br/>
+            Please click on this button to cancel all unfinished trades, calculate scores and definitely close the game:</p>
             <div class="floatright">
                 <form action="{% url 'close_game' game.id %}" method="post">{% csrf_token %}
                     <input type="submit" value="Close this game"/>
                 </form>
             </div>
+            <br/><br/>
         {% endif %}
+        </div>
     {% endif %}
 
     <script>
