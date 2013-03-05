@@ -1,4 +1,3 @@
-import datetime
 import logging
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError, PermissionDenied
@@ -6,9 +5,9 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q, F
 from django.forms.formsets import formset_factory
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
-from django.utils.timezone import get_default_timezone, now
+from django.utils.timezone import now
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse
@@ -96,7 +95,7 @@ def submit_hand(request, game_id):
             try:
                 with transaction.commit_on_success():
                     gameplayer = GamePlayer.objects.get(game = game, player = request.user)
-                    gameplayer.submit_date = datetime.datetime.now(tz = get_default_timezone())
+                    gameplayer.submit_date = now()
                     gameplayer.save()
 
                     for commodity in commodity_hand:
@@ -110,19 +109,7 @@ def submit_hand(request, game_id):
 
                     # abort pending trades
                     for trade in Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game, finalizer__isnull = True):
-                        if trade.initiator == request.user:
-                            if trade.status == 'INITIATED':
-                                trade.status = 'CANCELLED'
-                            elif trade.status == 'REPLIED':
-                                trade.status = 'DECLINED'
-                        else:
-                            if trade.status == 'INITIATED':
-                                trade.status = 'DECLINED'
-                            elif trade.status == 'REPLIED':
-                                trade.status = 'CANCELLED'
-                        trade.finalizer = request.user
-                        trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
-                        trade.save()
+                        trade.abort(request.user)
 
             except BaseException as ex:
                 logger.error("Error in submit_hand({})".format(game_id), exc_info = ex)
@@ -256,6 +243,10 @@ def close_game(request, game_id):
                 with transaction.commit_on_success():
                     game.closing_date = now()
                     game.save()
+
+                    # abort pending trades
+                    for trade in Trade.objects.filter(game = game, finalizer__isnull = True):
+                        trade.abort(request.user)
 
             except BaseException as ex:
                 logger.error("Error in close_game({})".format(game_id), exc_info = ex)

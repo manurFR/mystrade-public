@@ -1,4 +1,3 @@
-import datetime
 import logging
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -8,7 +7,7 @@ from django.db.models import Q
 from django.forms.formsets import formset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from django.utils.timezone import get_default_timezone
+from django.utils.timezone import now
 from game.models import RuleInHand, CommodityInHand, Game, GamePlayer
 from trade.forms import DeclineReasonForm, TradeForm, RuleCardFormDisplay, TradeCommodityCardFormDisplay, OfferForm, RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet
 from trade.models import Trade, TradedCommodities, Offer
@@ -86,7 +85,7 @@ def cancel_trade(request, game_id, trade_id):
              (trade.status == 'REPLIED' and request.user == trade.responder))):
             trade.status = 'CANCELLED'
             trade.finalizer = request.user
-            trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
+            trade.closing_date = now()
             trade.save()
             return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
@@ -222,7 +221,7 @@ def accept_trade(request, game_id, trade_id):
                 with transaction.commit_on_success():
                     trade.status = 'ACCEPTED'
                     trade.finalizer = request.user
-                    trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
+                    trade.closing_date = now()
                     trade.save()
 
                     # Exchange rule cards
@@ -283,7 +282,7 @@ def decline_trade(request, game_id, trade_id):
                 trade.status = 'DECLINED'
                 trade.finalizer = request.user
                 trade.decline_reason = decline_reason_form.cleaned_data['decline_reason']
-                trade.closing_date = datetime.datetime.now(tz = get_default_timezone())
+                trade.closing_date = now()
                 trade.save()
                 return HttpResponseRedirect(reverse('trades', args = [game_id]))
 

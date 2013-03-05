@@ -425,6 +425,8 @@ class ControlBoardViewTest(TestCase):
 
     def setUp(self):
         _common_setUp(self)
+        self.game_ended = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -2))
+        pass
 
     def test_access_to_control_board_allowed_only_to_game_master_and_admins(self):
         self._assertOperation_get(self.game, "control", 403)
@@ -438,24 +440,22 @@ class ControlBoardViewTest(TestCase):
         self._assertOperation_get(self.game, "control")
 
     def test_close_game_allowed_only_to_game_master_and_admins(self):
-        game = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -2))
-        self._assertOperation_post(game, "close")
+        self._assertOperation_post(self.game_ended, "close")
 
-        game.closing_date = None
-        game.save()
+        self.game_ended.closing_date = None
+        self.game_ended.save()
         self.client.logout()
         self.assertTrue(self.client.login(username = 'admin', password = 'test'))
-        self._assertOperation_post(game, "close")
+        self._assertOperation_post(self.game_ended, "close")
 
         other_player = User.objects.get(username = 'test3')
-        mommy.make_one(GamePlayer, game = game, player = other_player)
+        mommy.make_one(GamePlayer, game = self.game_ended, player = other_player)
         self.client.logout()
         self.assertTrue(self.client.login(username = 'test3', password = 'test'))
-        self._assertOperation_post(game, "close", 403)
+        self._assertOperation_post(self.game_ended, "close", 403)
 
     def test_close_game_not_allowed_in_GET(self):
-        game = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -2))
-        self._assertOperation_get(game, "close", 403)
+        self._assertOperation_get(self.game_ended, "close", 403)
 
     def test_close_game_allowed_only_on_games_ended_but_not_already_closed(self):
         game_not_ended = mommy.make_one(Game, master = self.loginUser, players = [],
@@ -467,19 +467,41 @@ class ControlBoardViewTest(TestCase):
                                      closing_date = now() + datetime.timedelta(days = -2))
         self._assertOperation_post(game_closed, "close", 403)
 
-        game_ended_but_not_closed = mommy.make_one(Game, master = self.loginUser, players = [],
-                                                   end_date = now() + datetime.timedelta(days = -3))
-        self._assertOperation_post(game_ended_but_not_closed, "close")
+        self._assertOperation_post(self.game_ended, "close")
 
     def test_close_game_sets_the_game_closing_date(self):
-        game = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -5))
-        game = Game.objects.get(pk = game.id)
-        self.assertIsNone(game.closing_date)
+        self.assertIsNone(self.game_ended.closing_date)
 
-        self._assertOperation_post(game, "close")
+        self._assertOperation_post(self.game_ended, "close")
 
-        game = Game.objects.get(pk = game.id)
+        game = Game.objects.get(pk = self.game_ended.id)
         self.assertIsNotNone(game.closing_date)
+
+    def test_close_game_aborts_all_pending_trades(self):
+        trade1 = mommy.make_one(Trade, game = self.game_ended, initiator = self.test5, status = 'INITIATED',
+                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
+        trade2 = mommy.make_one(Trade, game = self.game_ended, initiator = self.test5, status = 'REPLIED',
+                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
+        trade3 = mommy.make_one(Trade, game = self.game_ended, initiator = self.test5, finalizer = self.test5,
+                                status = 'CANCELLED', initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+                                closing_date = datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()))
+
+        self._assertOperation_post(self.game_ended, "close")
+
+        trade1 = Trade.objects.get(pk = trade1.id)
+        trade2 = Trade.objects.get(pk = trade2.id)
+        trade3 = Trade.objects.get(pk = trade3.id)
+
+        self.assertEqual('CANCELLED', trade1.status)
+        self.assertEqual(self.loginUser, trade1.finalizer)
+        self.assertIsNotNone(trade1.closing_date)
+
+        self.assertEqual('CANCELLED', trade2.status)
+        self.assertEqual(self.loginUser, trade2.finalizer)
+        self.assertIsNotNone(trade2.closing_date)
+
+        self.assertEqual(self.test5, trade3.finalizer)
+        self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), trade3.closing_date)
 
     def _assertOperation_get(self, game, operation, status_code = 200):
         response = self.client.get("/game/{}/{}/".format(game.id, operation), follow = True)

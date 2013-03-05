@@ -61,7 +61,7 @@ class CreateTradeViewTest(TestCase):
 
     def test_create_trade_is_forbidden_if_you_have_submitted_your_hand(self):
         gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)
-        gameplayer.submit_date = datetime.datetime.now(tz = get_default_timezone())
+        gameplayer.submit_date = now()
         gameplayer.save()
 
         self._assertIsCreateTradeAllowed(self.game, False)
@@ -117,7 +117,7 @@ class CreateTradeViewTest(TestCase):
         ruleset = mommy.make_one(Ruleset)
         rulecard = mommy.make_one(RuleCard, ruleset = ruleset, ref_name = 'rulecard_1')
         rule_in_hand = RuleInHand.objects.create(game = self.game, player = self.loginUser,
-                                                 rulecard = rulecard, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+                                                 rulecard = rulecard, ownership_date = now())
         commodity = mommy.make_one(Commodity, ruleset = ruleset, name = 'commodity_1')
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = self.loginUser,
                                                            commodity = commodity, nb_cards = 2)
@@ -160,7 +160,7 @@ class ManageViewsTest(TestCase):
         _common_setUp(self)
 
     def test_trade_list(self):
-        right_now = datetime.datetime.now(tz = get_default_timezone())
+        right_now = now()
         trade_initiated = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
                                          initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
                                          creation_date = right_now - datetime.timedelta(days = 1))
@@ -428,7 +428,7 @@ class ManageViewsTest(TestCase):
         ruleset = mommy.make_one(Ruleset)
         rulecard = mommy.make_one(RuleCard, ruleset = ruleset)
         rule_in_hand = RuleInHand.objects.create(game = self.game, player = self.loginUser,
-                                                 rulecard = rulecard, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+                                                 rulecard = rulecard, ownership_date = now())
         commodity = mommy.make_one(Commodity, ruleset = ruleset, name = 'commodity_1')
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
                                                            commodity = commodity, nb_cards = 2)
@@ -496,9 +496,9 @@ class ManageViewsTest(TestCase):
         commodity1, commodity2, commodity3 = mommy.make_many(Commodity, 3)
 
         rih1 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
-                              ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+                              ownership_date = now())
         rih2 = mommy.make_one(RuleInHand, game = self.game, player = self.test5, rulecard = rulecard2,
-                              ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+                              ownership_date = now())
 
         cih1i = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity1,
                                nb_cards = 3)
@@ -642,15 +642,15 @@ class ManageViewsTest(TestCase):
         commodity1, commodity2 = mommy.make_many(Commodity, 2)
 
         rih1 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
-            ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+                              ownership_date = now())
         rih2 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
-            ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+                              ownership_date = now())
         rih3 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard3,
-            ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+                              ownership_date = now())
         cih1 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity1,
-            nb_cards = 3)
+                              nb_cards = 3)
         cih2 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity2,
-            nb_cards = 2)
+                              nb_cards = 2)
 
         # rulecard1 and 1 card of commodity1 are in the initator offer of a pending trade
         offer1 = mommy.make_one(Offer, rules = [rih1], commodities = [])
@@ -711,10 +711,10 @@ class ManageViewsTest(TestCase):
 
         rulecard_initiator = mommy.make_one(RuleCard, public_name = '7', description = 'rule description 7')
         rih_initiator = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard_initiator,
-                                       ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+                                       ownership_date = now())
         rulecard_responder = mommy.make_one(RuleCard, public_name = '8', description = 'rule description 8')
         rih_responder = mommy.make_one(RuleInHand, game = self.game, player = self.test5, rulecard = rulecard_responder,
-                                       ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+                                       ownership_date = now())
         offer_initiator = mommy.make_one(Offer, rules = [rih_initiator], commodities = [], free_information = 'this is sensitive')
         offer_responder = mommy.make_one(Offer, rules = [rih_responder], commodities = [], free_information = 'these are sensitive')
 
@@ -834,7 +834,7 @@ class TransactionalViewsTest(TransactionTestCase):
         # let's make the responder offer 1 commodity for which he doesn't have any cards
         #  (because it's the last save() in the process, so we can assert that everything else has been rollbacked)
         rih = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser,
-            ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+                             ownership_date = now())
         offer_initiator = mommy.make_one(Offer, rules = [rih], commodities = [])
 
         offer_responder = mommy.make_one(Offer, rules = [], commodities = [])
@@ -872,7 +872,7 @@ class FormsTest(TestCase):
 
     #noinspection PyUnusedLocal
     def test_a_rule_offered_by_the_initiator_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        rule_in_hand = mommy.make_one(RuleInHand, game = self.game, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+        rule_in_hand = mommy.make_one(RuleInHand, game = self.game, ownership_date = now())
         offer = mommy.make_one(Offer, rules = [rule_in_hand], commodities = [])
         pending_trade = mommy.make_one(Trade, game = self.game, status = 'INITIATED', initiator_offer = offer)
 
@@ -886,7 +886,7 @@ class FormsTest(TestCase):
 
     #noinspection PyUnusedLocal
     def test_a_rule_offered_by_the_responder_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        rule_in_hand = mommy.make_one(RuleInHand, game = self.game, ownership_date = datetime.datetime.now(tz = get_default_timezone()))
+        rule_in_hand = mommy.make_one(RuleInHand, game = self.game, ownership_date = now())
         offer = mommy.make_one(Offer, rules = [rule_in_hand], commodities = [])
         pending_trade = mommy.make_one(Trade, game = self.game, status = 'INITIATED', responder_offer = offer,
                                        initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
@@ -939,7 +939,7 @@ class FormsTest(TestCase):
     def test_a_trade_with_a_responder_who_has_already_submitted_his_hand_is_forbidden(self):
         ihavesubmitted = mommy.make_one(User, username = 'ihavesubmitted')
         ihavent = mommy.make_one(User, username = 'ihavent')
-        mommy.make_one(GamePlayer, game = self.game, player = ihavesubmitted, submit_date = datetime.datetime.now(tz = get_default_timezone()))
+        mommy.make_one(GamePlayer, game = self.game, player = ihavesubmitted, submit_date = now())
         mommy.make_one(GamePlayer, game = self.game, player = ihavent, submit_date = None)
 
         form = TradeForm(ihavent, self.game, {'responder': ihavesubmitted.id})

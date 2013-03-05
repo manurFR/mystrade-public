@@ -35,6 +35,23 @@ class Trade(models.Model):
     creation_date = models.DateTimeField(default = now)
     closing_date = models.DateTimeField(null = True)
 
+    def abort(self, whodunit):
+        if whodunit == self.initiator:
+            if self.status == 'INITIATED':
+                self.status = 'CANCELLED'
+            elif self.status == 'REPLIED':
+                self.status = 'DECLINED'
+        elif whodunit == self.responder:
+            if self.status == 'INITIATED':
+                self.status = 'DECLINED'
+            elif self.status == 'REPLIED':
+                self.status = 'CANCELLED'
+        else:
+            self.status = 'CANCELLED' # when the game is closed by the game master or an admin
+        self.finalizer = whodunit
+        self.closing_date = now()
+        self.save()
+
 class Offer(models.Model):
     rules = models.ManyToManyField(RuleInHand)
     commodities = models.ManyToManyField(CommodityInHand, through='TradedCommodities')
