@@ -254,8 +254,9 @@ def close_game(request, game_id):
         if game.end_date <= now() and game.closing_date is None :
             try:
                 with transaction.commit_on_success():
+                    game.closing_date = now()
+                    game.save()
 
-                    pass
             except BaseException as ex:
                 logger.error("Error in close_game({})".format(game_id), exc_info = ex)
 

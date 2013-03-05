@@ -441,6 +441,8 @@ class ControlBoardViewTest(TestCase):
         game = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -2))
         self._assertOperation_post(game, "close")
 
+        game.closing_date = None
+        game.save()
         self.client.logout()
         self.assertTrue(self.client.login(username = 'admin', password = 'test'))
         self._assertOperation_post(game, "close")
@@ -469,6 +471,15 @@ class ControlBoardViewTest(TestCase):
                                                    end_date = now() + datetime.timedelta(days = -3))
         self._assertOperation_post(game_ended_but_not_closed, "close")
 
+    def test_close_game_sets_the_game_closing_date(self):
+        game = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -5))
+        game = Game.objects.get(pk = game.id)
+        self.assertIsNone(game.closing_date)
+
+        self._assertOperation_post(game, "close")
+
+        game = Game.objects.get(pk = game.id)
+        self.assertIsNotNone(game.closing_date)
 
     def _assertOperation_get(self, game, operation, status_code = 200):
         response = self.client.get("/game/{}/{}/".format(game.id, operation), follow = True)
