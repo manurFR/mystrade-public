@@ -270,7 +270,7 @@ def close_game(request, game_id):
 
 def _score_calculation(game):
     hands, selected_rules = _prepare_calculation(game)
-    scores, scoresheets = tally_scores(hands, selected_rules)
+    scores, scoresheets = tally_scores(game)
 
 def _prepare_calculation(game):
     hands = []

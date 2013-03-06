@@ -64,12 +64,12 @@ def HAG09(scoresheet):
     """If a player hands in seven or more cards of the same color, 
        for each of these colors 10 points are deducted from his/her score.
 
-       Note: this rule deals with cards *handed in*, not scored. Hence the use of 'nb_submitted_cards'.
+       Note: this rule deals with cards *submitted*, not scored. Hence the use of 'nb_submitted_cards'.
     """
     for commodity in scoresheet.commodities:
         if commodity['nb_submitted_cards'] >= 7:
             scoresheet.register_rule('HAG09',
-                              '(9) Since {} {} cards where handed in (seven or more), 10 points are deducted.'.format(commodity['nb_submitted_cards'], commodity['name'].lower()),
+                              '(9) Since {} {} cards where submitted (seven or more), 10 points are deducted.'.format(commodity['nb_submitted_cards'], commodity['name'].lower()),
                               score = -10)
 
 def HAG10(scoresheet):
@@ -85,19 +85,20 @@ def HAG10(scoresheet):
             scoresheet.register_rule('HAG10', '(10) A set of five different colors gives a bonus of 10 points.', score = 10)
 
 def HAG11(scoresheet):
-    """If a \"pyramid\" is handed in with no other cards, the value of the hand is doubled. 
+    """If a \"pyramid\" is submitted with no other cards, the value of the hand is doubled.
        A pyramid consists of four cards of one color, three cards of a second color, 
        two cards of a third, and one card of a fourth color.
 
-       Note: this rule deals with cards *handed in*, not scored. Hence the use of 'nb_submitted_cards'.
+       Note: this rule deals with cards *submitted*, not scored. Hence the use of 'nb_submitted_cards'.
     """
     nb_colors = []
     for commodity in scoresheet.commodities:
-        nb_colors.append({ 'color': commodity['name'].lower(), 'nb_cards': commodity['nb_submitted_cards'] })
+        if commodity['nb_submitted_cards'] > 0:
+            nb_colors.append({ 'color': commodity['name'].lower(), 'nb_cards': commodity['nb_submitted_cards'] })
     nb_colors.sort(key = lambda item: item['nb_cards'])
-    if [item['nb_cards'] for item in nb_colors] == [0, 1, 2, 3, 4]:
+    if [item['nb_cards'] for item in nb_colors] == [1, 2, 3, 4]:
         scoresheet.register_rule('HAG11',
-                      '(11) A pyramid of 4 {} cards, 3 {} cards, 2 {} cards, 1 {} card and no other card doubles the score.'.format(nb_colors[4]['color'], nb_colors[3]['color'], nb_colors[2]['color'], nb_colors[1]['color']),
+                      '(11) A pyramid of 4 {} cards, 3 {} cards, 2 {} cards, 1 {} card and no other card doubles the score.'.format(nb_colors[3]['color'], nb_colors[2]['color'], nb_colors[1]['color'], nb_colors[0]['color']),
                       score = scoresheet.calculate_score())
 
 def HAG12(players):
@@ -134,7 +135,7 @@ def HAG14(scoresheet):
 
 def HAG15(scoresheet):
     """No more than thirteen cards in a hand can be scored.
-       If more are handed in, the excess will be removed at random.
+       If more are submitted, the excess will be removed at random.
     """
     total_scored_cards = 0
     present_colors = []
