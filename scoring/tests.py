@@ -124,11 +124,11 @@ class ScoringTest(TestCase):
         self.assertEqual(34, scores[2])
         self.assertEqual(43, scores[3])
         self.assertEqual(4, len(scoresheets))
-        self.assertEqual([{ 'name': 'Yellow', 'handed_cards': 4, 'scored_cards': 4, 'actual_value': 1, 'score': 4 },
-                          { 'name': 'Blue',   'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2, 'score': 4 },
-                          { 'name': 'Red',    'handed_cards': 2, 'scored_cards': 2, 'actual_value': 3, 'score': 6 },
-                          { 'name': 'Orange', 'handed_cards': 3, 'scored_cards': 3, 'actual_value': 4, 'score': 12 },
-                          { 'name': 'White',  'handed_cards': 2, 'scored_cards': 2, 'actual_value': 5, 'score': 10 }],
+        self.assertEqual([{ 'name': 'Yellow', 'nb_submitted_cards': 4, 'nb_scored_cards': 4, 'actual_value': 1, 'score': 4 },
+                          { 'name': 'Blue',   'nb_submitted_cards': 2, 'nb_scored_cards': 2, 'actual_value': 2, 'score': 4 },
+                          { 'name': 'Red',    'nb_submitted_cards': 2, 'nb_scored_cards': 2, 'actual_value': 3, 'score': 6 },
+                          { 'name': 'Orange', 'nb_submitted_cards': 3, 'nb_scored_cards': 3, 'actual_value': 4, 'score': 12 },
+                          { 'name': 'White',  'nb_submitted_cards': 2, 'nb_scored_cards': 2, 'actual_value': 5, 'score': 10 }],
                          scoresheets[0].commodities)
         self.assertEqual([{'cause': 'HAG10', 'detail': '(10) A set of five different colors gives a bonus of 10 points.', 'score': 10 },
                           {'cause': 'HAG10', 'detail': '(10) A set of five different colors gives a bonus of 10 points.', 'score': 10 },
@@ -140,13 +140,13 @@ class ScoringTest(TestCase):
     def test_calculate_score(self):
         class MockScoresheet(Scoresheet):
             def __init__(self, hand = None):
-                self._commodities = [{ 'name': 'Blue', 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2 },
-                                    { 'name': 'Red' , 'handed_cards': 4, 'scored_cards': 3, 'actual_value': 1 }]
+                self._commodities = [{ 'name': 'Blue', 'nb_submitted_cards': 2, 'nb_scored_cards': 2, 'actual_value': 2 },
+                                    { 'name': 'Red' , 'nb_submitted_cards': 4, 'nb_scored_cards': 3, 'actual_value': 1 }]
                 self._extra = [{'cause': 'HELLO', 'score': -5} , {'cause': 'WORLD', 'score': None}]
         scoresheet = MockScoresheet()
         self.assertEqual(2, scoresheet.calculate_score())
-        self.assertEqual([{ 'name': 'Blue', 'handed_cards': 2, 'scored_cards': 2, 'actual_value': 2, 'score': 4 },
-                          { 'name': 'Red' , 'handed_cards': 4, 'scored_cards': 3, 'actual_value': 1, 'score': 3 }], 
+        self.assertEqual([{ 'name': 'Blue', 'nb_submitted_cards': 2, 'nb_scored_cards': 2, 'actual_value': 2, 'score': 4 },
+                          { 'name': 'Red' , 'nb_submitted_cards': 4, 'nb_scored_cards': 3, 'actual_value': 1, 'score': 3 }],
                          scoresheet.commodities)
     
     def test_Scoresheet_init(self):
@@ -154,20 +154,20 @@ class ScoringTest(TestCase):
            This is a test of the 3 mandatory rulecards for the initial values.
         """
         scoresheet = _prepare_scoresheet(1, 1, 1, 1, 1)
-        self.assertEqual([{'name': 'Yellow', 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 1 },
-                          {'name': 'Blue',   'handed_cards': 1, 'scored_cards': 1, 'actual_value': 2 },
-                          {'name': 'Red',    'handed_cards': 1, 'scored_cards': 1, 'actual_value': 3 },
-                          {'name': 'Orange', 'handed_cards': 1, 'scored_cards': 1, 'actual_value': 4 },
-                          {'name': 'White',  'handed_cards': 1, 'scored_cards': 1, 'actual_value': 5 }],
+        self.assertEqual([{'name': 'Yellow', 'nb_submitted_cards': 1, 'nb_scored_cards': 1, 'actual_value': 1 },
+                          {'name': 'Blue',   'nb_submitted_cards': 1, 'nb_scored_cards': 1, 'actual_value': 2 },
+                          {'name': 'Red',    'nb_submitted_cards': 1, 'nb_scored_cards': 1, 'actual_value': 3 },
+                          {'name': 'Orange', 'nb_submitted_cards': 1, 'nb_scored_cards': 1, 'actual_value': 4 },
+                          {'name': 'White',  'nb_submitted_cards': 1, 'nb_scored_cards': 1, 'actual_value': 5 }],
                          scoresheet.commodities)
         self.assertEqual(15, scoresheet.calculate_score())
 
         scoresheet = _prepare_scoresheet(blue = 1, red = 2, orange = 3)
-        self.assertEqual([{'name': 'Yellow', 'handed_cards': 0, 'scored_cards': 0, 'actual_value': 1 },
-                          {'name': 'Blue',   'handed_cards': 1, 'scored_cards': 1, 'actual_value': 2 },
-                          {'name': 'Red',    'handed_cards': 2, 'scored_cards': 2, 'actual_value': 3 },
-                          {'name': 'Orange', 'handed_cards': 3, 'scored_cards': 3, 'actual_value': 4 },
-                          {'name': 'White',  'handed_cards': 0, 'scored_cards': 0, 'actual_value': 5 }],
+        self.assertEqual([{'name': 'Yellow', 'nb_submitted_cards': 0, 'nb_scored_cards': 0, 'actual_value': 1 },
+                          {'name': 'Blue',   'nb_submitted_cards': 1, 'nb_scored_cards': 1, 'actual_value': 2 },
+                          {'name': 'Red',    'nb_submitted_cards': 2, 'nb_scored_cards': 2, 'actual_value': 3 },
+                          {'name': 'Orange', 'nb_submitted_cards': 3, 'nb_scored_cards': 3, 'actual_value': 4 },
+                          {'name': 'White',  'nb_submitted_cards': 0, 'nb_scored_cards': 0, 'actual_value': 5 }],
                          scoresheet.commodities)
         self.assertEqual(20, scoresheet.calculate_score())
 
@@ -420,7 +420,7 @@ class HaggleTest(TestCase):
         """
         scoresheet = _prepare_scoresheet(5, 5, 5, 5, 15)
         HAG15(scoresheet)
-        total_scored_cards = sum(commodity['scored_cards'] for commodity in scoresheet.commodities)
+        total_scored_cards = sum(commodity['nb_scored_cards'] for commodity in scoresheet.commodities)
         self.assertEqual(13, total_scored_cards)
         self.assertEqual(1, len(scoresheet.extra))
         extra = scoresheet.extra[0]
@@ -438,10 +438,10 @@ class HaggleTest(TestCase):
 
 def _prepare_hand(yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
     return { Commodity.objects.get(ruleset = 1, name ='Yellow') : yellow,
-             Commodity.objects.get(ruleset = 1, name ='Blue') : blue,
-             Commodity.objects.get(ruleset = 1, name ='Red') : red,
+             Commodity.objects.get(ruleset = 1, name ='Blue')   : blue,
+             Commodity.objects.get(ruleset = 1, name ='Red')    : red,
              Commodity.objects.get(ruleset = 1, name ='Orange') : orange,
-             Commodity.objects.get(ruleset = 1, name ='White') : white }
+             Commodity.objects.get(ruleset = 1, name ='White')  : white }
 
 def _prepare_scoresheet(yellow = 0, blue = 0, red = 0, orange = 0, white = 0):
     return Scoresheet(_prepare_hand(yellow, blue, red, orange, white))

@@ -7,7 +7,6 @@ from ruleset.models import Ruleset, RuleCard, Commodity
 from scoring.card_scoring import tally_scores
 from scoring.forms import RuleCardFormDisplay, RuleCardFormParse, HandsForm
 
-
 @login_required
 def choose_rulecards(request):
     ruleset = Ruleset.objects.get(pk = 1)

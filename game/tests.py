@@ -12,7 +12,9 @@ from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards,
     prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
+from game.views import _prepare_calculation
 from ruleset.models import Ruleset, RuleCard, Commodity
+from scoring.card_scoring import tally_scores
 from trade.models import Offer, Trade
 
 def _common_setUp(self):
@@ -680,3 +682,39 @@ class DealTest(TestCase):
         for commodity in Commodity.objects.filter(ruleset = ruleset):
             nb_cards = CommodityInHand.objects.filter(game = game, commodity = commodity).aggregate(Sum('nb_cards'))
             self.assertEqual(10*6/5, nb_cards['nb_cards__sum'])
+
+class CalculateScoreTest(TestCase):
+    fixtures = ['test_users.json']
+
+    def test_prepare_calculation(self):
+        game = mommy.make_one(Game, players = [], rules = [], end_date = now())
+
+        rulecard1, rulecard2, rulecard3 = mommy.make_many(RuleCard, quantity = 3)
+        game.rules.add(rulecard1)
+        game.rules.add(rulecard2)
+
+        test1 = User.objects.get(username='test1')
+        mommy.make_one(GamePlayer, game = game, player = test1)
+        test2 = User.objects.get(username='test2')
+        mommy.make_one(GamePlayer, game = game, player = test2)
+        test3 = User.objects.get(username='test3')
+
+        commodity1, commodity2, commodity3 = mommy.make_many(Commodity, quantity = 3, value = 1)
+
+        cih11 = mommy.make_one(CommodityInHand, game = game, player = test1, commodity = commodity1, nb_submitted_cards = 1)
+        cih12 = mommy.make_one(CommodityInHand, game = game, player = test1, commodity = commodity2, nb_submitted_cards = 2)
+        cih21 = mommy.make_one(CommodityInHand, game = game, player = test2, commodity = commodity1, nb_submitted_cards = 3)
+        cih23 = mommy.make_one(CommodityInHand, game = game, player = test2, commodity = commodity3, nb_submitted_cards = 4)
+        cih32 = mommy.make_one(CommodityInHand, game = game, player = test3, commodity = commodity2, nb_submitted_cards = 3)
+
+        hands, selected_rules = _prepare_calculation(game)
+
+        self.assertEqual(2, len(hands))
+        self.assertIn({commodity1: 1, commodity2: 2}, hands)
+        self.assertIn({commodity1: 3, commodity3: 4}, hands)
+        self.assertNotIn({commodity2: 3}, hands)
+
+        self.assertEqual(2, len(selected_rules))
+        self.assertIn(rulecard1, selected_rules)
+        self.assertIn(rulecard2, selected_rules)
+        self.assertNotIn(rulecard3, selected_rules)

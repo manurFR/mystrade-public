@@ -13,6 +13,7 @@ from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from ruleset.models import RuleCard
+from scoring.card_scoring import tally_scores
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer, Trade
 
@@ -266,3 +267,15 @@ def close_game(request, game_id):
 
 
     raise PermissionDenied
+
+def _score_calculation(game):
+    hands, selected_rules = _prepare_calculation(game)
+    scores, scoresheets = tally_scores(hands, selected_rules)
+
+def _prepare_calculation(game):
+    hands = []
+    for gameplayer in GamePlayer.objects.filter(game = game):
+        hands.append(dict([(cih.commodity, cih.nb_submitted_cards) for cih in
+                          CommodityInHand.objects.filter(game = game, player = gameplayer.player, nb_submitted_cards__gt = 0)]))
+    selected_rules = list(game.rules.all())
+    return hands, selected_rules

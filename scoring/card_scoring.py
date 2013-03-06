@@ -1,5 +1,7 @@
 def tally_scores(hands, selected_rules):
-    """ hands = [{commodity1: <nb_cards>, commodity2: <nb_cards>, ...}, ...]
+    """ hands = [{commodity1: <nb_submitted_cards>, commodity2: <nb_submitted_cards>, ...}, # player 1
+                 {commodity1: <nb_submitted_cards>, commodity2: <nb_submitted_cards>, ...}, # player 2 etc.
+                 ...]
         selected_rules = [rulecard1, rulecard2, ...]
     """
     scoresheets = [Scoresheet(hand) for hand in hands]
@@ -13,11 +15,11 @@ def tally_scores(hands, selected_rules):
 class Scoresheet(object):
     def __init__(self, hand):
         self._commodities = []
-        for commodity, nb_cards in hand.iteritems():
-            self._commodities.append({'name': commodity.name,
-                                     'handed_cards': nb_cards,
-                                     'scored_cards': nb_cards,
-                                     'actual_value': commodity.value })
+        for commodity, nb_submitted_cards in hand.iteritems():
+            self._commodities.append({'name'                : commodity.name,
+                                      'nb_submitted_cards'  : nb_submitted_cards,
+                                      'nb_scored_cards'     : nb_submitted_cards,
+                                      'actual_value'        : commodity.value })
         self._extra = []
 
     def commodity(self, name):
@@ -32,7 +34,7 @@ class Scoresheet(object):
     def calculate_score(self):
         score = 0
         for commodity_item in self.commodities:
-            commodity_score = commodity_item['scored_cards'] * commodity_item['actual_value']
+            commodity_score = commodity_item['nb_scored_cards'] * commodity_item['actual_value']
             commodity_item['score'] = commodity_score
             score += commodity_score
         score += sum(item['score'] for item in self.extra if item['score'] is not None)
