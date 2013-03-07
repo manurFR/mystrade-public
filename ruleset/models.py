@@ -32,7 +32,7 @@ class RuleCard(models.Model):
         """ Should be overriden dynamically at post_init (see below). """
         raise NotImplementedError
 
-def bound_the_resolution_method_to_the_rulecard(**kwargs):
+def bind_the_resolution_method_to_the_rulecard(**kwargs):
     """ The name of the module is found in the ruleset ; the name of the method in this module is the ref_name of the rule card """
     instance = kwargs.get('instance')
     if instance.ref_name:
@@ -41,9 +41,9 @@ def bound_the_resolution_method_to_the_rulecard(**kwargs):
             if hasattr(module, instance.ref_name):
                 instance.perform = types.MethodType(getattr(module, instance.ref_name), instance)
         except (ImportError, ValueError):
-            pass # this allows us not to specify an existing Ruleset.module each we need a RuleCard in our tests
+            pass # so that our tests can feature a dummy or empty module name in Ruleset without failing
 
-post_init.connect(bound_the_resolution_method_to_the_rulecard, RuleCard)
+post_init.connect(bind_the_resolution_method_to_the_rulecard, RuleCard)
 
 class Commodity(models.Model):
     ruleset = models.ForeignKey(Ruleset)
