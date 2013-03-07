@@ -446,7 +446,7 @@ class HaggleTest(TestCase):
         rulecard = RuleCard.objects.get(ref_name = 'HAG15')
         scoresheet = _prepare_scoresheet(self.game, "p1", yellow = 5, blue = 5, red = 5, orange = 5, white = 15)
         rulecard.perform(scoresheet)
-        total_scored_cards = sum(commodity['nb_scored_cards'] for commodity in scoresheet.commodities)
+        total_scored_cards = sum(sfc.nb_scored_cards for sfc in scoresheet._scores_from_commodity)
         self.assertEqual(13, total_scored_cards)
         self.assertEqual(1, len(scoresheet.extra))
         extra = scoresheet.extra[0]
