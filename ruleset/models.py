@@ -1,5 +1,7 @@
 import importlib
+import types
 from django.db import models
+from django.db.models.signals import post_init
 
 class Ruleset(models.Model):
     name = models.CharField(max_length = 255)
@@ -26,15 +28,22 @@ class RuleCard(models.Model):
     def __unicode__(self):
         return "{} - ({}) {}".format(self.ref_name, self.public_name, self.description)
 
-    def perform(self, players):
-        if self.ref_name:
-            module = importlib.import_module('scoring.' + self.ruleset.module)
-            func = getattr(module, self.ref_name)
-            if self.glob:
-                func(players)
-            else:
-                for scoresheet in players:
-                    func(scoresheet)
+    def perform(self, scoresheet):
+        """ Should be overriden dynamically at post_init (see below). """
+        raise NotImplementedError
+
+def bound_the_resolution_method_to_the_rulecard(**kwargs):
+    """ The name of the module is found in the ruleset ; the name of the method in this module is the ref_name of the rule card """
+    instance = kwargs.get('instance')
+    if instance.ref_name:
+        try:
+            module = importlib.import_module('scoring.' + instance.ruleset.module)
+            if hasattr(module, instance.ref_name):
+                instance.perform = types.MethodType(getattr(module, instance.ref_name), instance)
+        except (ImportError, ValueError):
+            pass # this allows us not to specify an existing Ruleset.module each we need a RuleCard in our tests
+
+post_init.connect(bound_the_resolution_method_to_the_rulecard, RuleCard)
 
 class Commodity(models.Model):
     ruleset = models.ForeignKey(Ruleset)
