@@ -20,15 +20,11 @@ def tally_scores(game):
 class Scoresheet(object):
     def __init__(self, gameplayer):
         self.gameplayer = gameplayer
-        self._commodities = []
         self._scores_from_commodity = []
         for cih in CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player, nb_submitted_cards__gt = 0):
-            self._commodities.append({'name' : cih.commodity.name,
-                                      'nb_submitted_cards'  : cih.nb_submitted_cards,
-                                      'nb_scored_cards'     : cih.nb_submitted_cards,
-                                      'actual_value'        : cih.commodity.value})
             sfc = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = cih.commodity,
                                      nb_scored_cards = cih.nb_submitted_cards, actual_value = cih.commodity.value, score = 0)
+            sfc.name = cih.commodity.name.lower()
             sfc.nb_submitted_cards = cih.nb_submitted_cards # non persisted property added for ease of scoring
             self._scores_from_commodity.append(sfc)
         self._scores_from_rule = []
@@ -37,23 +33,23 @@ class Scoresheet(object):
         self.neutral_commodity = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = Commodity(),
                                                     nb_scored_cards = 0, actual_value = 0, score = 0)
 
-    def commodity(self, name):
+    def score_for_commodity(self, name):
         for sfc in self._scores_from_commodity:
-            if sfc.commodity.name == name:
+            if sfc.name == name.lower():
                 return sfc
         return self.neutral_commodity
 
     def nb_scored_cards(self, name):
-        return self.commodity(name).nb_scored_cards
+        return self.score_for_commodity(name).nb_scored_cards
 
     def actual_value(self, name):
-        return self.commodity(name).actual_value
+        return self.score_for_commodity(name).actual_value
 
     def set_nb_scored_cards(self, name, nb_scored_cards):
-        self.commodity(name).nb_scored_cards = nb_scored_cards
+        self.score_for_commodity(name).nb_scored_cards = nb_scored_cards
 
     def set_actual_value(self, name, actual_value):
-        self.commodity(name).actual_value = actual_value
+        self.score_for_commodity(name).actual_value = actual_value
 
     def register_rule(self, rulecard, detail = '', score = None):
         self._scores_from_rule.append(ScoreFromRule(game = self.gameplayer.game, player = self.gameplayer.player,
@@ -68,11 +64,11 @@ class Scoresheet(object):
             score += commodity_score
         score += sum(item['score'] for item in self.extra if item['score'] is not None)
         return score
-    
+
     @property
-    def commodities(self):
-        return self._commodities
-    
+    def scores_from_commodity(self):
+        return self._scores_from_commodity
+
     @property
     def extra(self):
         return self._extra

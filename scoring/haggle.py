@@ -66,20 +66,20 @@ def HAG09(self, scoresheet):
 
        Note: this rule deals with cards *submitted*, not scored. Hence the use of 'nb_submitted_cards'.
     """
-    for commodity in scoresheet._scores_from_commodity:
-        if commodity.nb_submitted_cards >= 7:
+    for sfc in scoresheet.scores_from_commodity:
+        if sfc.nb_submitted_cards >= 7:
             scoresheet.register_rule(self,
-                              '(9) Since {} {} cards where submitted (seven or more), 10 points are deducted.'.format(commodity.nb_submitted_cards, commodity.commodity.name.lower()),
+                              '(9) Since {} {} cards where submitted (seven or more), 10 points are deducted.'.format(sfc.nb_submitted_cards, sfc.name),
                               score = -10)
 
 def HAG10(self, scoresheet):
     """Each set of five different colors gives a bonus of 10 points."""
     min_color_number = None
     nb_colors = 0
-    for commodity in scoresheet._scores_from_commodity:
+    for sfc in scoresheet.scores_from_commodity:
         nb_colors += 1
-        if min_color_number is None or commodity.nb_scored_cards < min_color_number:
-            min_color_number = commodity.nb_scored_cards
+        if min_color_number is None or sfc.nb_scored_cards < min_color_number:
+            min_color_number = sfc.nb_scored_cards
     if min_color_number and nb_colors >= 5:
         for _i in range(min_color_number):
             scoresheet.register_rule(self, '(10) A set of five different colors gives a bonus of 10 points.', score = 10)
@@ -92,9 +92,9 @@ def HAG11(self, scoresheet):
        Note: this rule deals with cards *submitted*, not scored. Hence the use of 'nb_submitted_cards'.
     """
     nb_colors = []
-    for commodity in scoresheet._scores_from_commodity:
-        if commodity.nb_submitted_cards > 0:
-            nb_colors.append({ 'color': commodity.commodity.name.lower(), 'nb_cards': commodity.nb_submitted_cards })
+    for sfc in scoresheet.scores_from_commodity:
+        if sfc.nb_submitted_cards > 0:
+            nb_colors.append({ 'color': sfc.name, 'nb_cards': sfc.nb_submitted_cards })
     nb_colors.sort(key = lambda item: item['nb_cards'])
     if [item['nb_cards'] for item in nb_colors] == [1, 2, 3, 4]:
         scoresheet.register_rule(self,
@@ -139,10 +139,10 @@ def HAG15(self, scoresheet):
     """
     total_scored_cards = 0
     present_colors = []
-    for commodity in scoresheet._scores_from_commodity:
-        if commodity.nb_scored_cards > 0:
-            present_colors.append(commodity.commodity.name)
-            total_scored_cards += commodity.nb_scored_cards
+    for sfc in scoresheet.scores_from_commodity:
+        if sfc.nb_scored_cards > 0:
+            present_colors.append(sfc.name)
+            total_scored_cards += sfc.nb_scored_cards
     if total_scored_cards > 13:
         detail = '(15) Since {} cards had to be scored, {} have been discarded (to keep only 13 cards) : '.format(total_scored_cards, total_scored_cards - 13)
         discarded = {}
@@ -157,6 +157,6 @@ def HAG15(self, scoresheet):
                 present_colors.remove(selected_color)
             total_scored_cards -= 1
         for index, color in enumerate(discarded.iterkeys()):
-            detail += '{} {} card'.format(discarded[color], color.lower()) + ('s' if discarded[color] > 1 else '')
+            detail += '{} {} card'.format(discarded[color], color) + ('s' if discarded[color] > 1 else '')
             detail += ', ' if index < (len(discarded) - 1) else '.'
         scoresheet.register_rule(self, detail)
