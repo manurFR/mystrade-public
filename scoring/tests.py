@@ -8,7 +8,7 @@ from ruleset.models import RuleCard, Commodity, Ruleset
 from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.haggle import HAG04, HAG05, HAG06, HAG07, HAG08, HAG09, HAG10,\
 HAG11, HAG12, HAG13, HAG14, HAG15
-from scoring.models import ScoreFromCommodity
+from scoring.models import ScoreFromCommodity, ScoreFromRule
 
 class ViewsTest(TestCase):
     def setUp(self):
@@ -158,12 +158,8 @@ class ScoringTest(TestCase):
         self.assertEqual(2, scoresheets[0].nb_scored_cards('White'))
         self.assertEqual(5, scoresheets[0].actual_value('White'))
         self.assertEqual(10, scoresheets[0].score_for_commodity('White').score)
-        self.assertEqual([{'cause': 'HAG10', 'detail': '(10) A set of five different colors gives a bonus of 10 points.', 'score': 10 },
-                          {'cause': 'HAG10', 'detail': '(10) A set of five different colors gives a bonus of 10 points.', 'score': 10 },
-                          {'cause': 'HAG13', 'detail': '(13) A pair of yellow cards doubles the value of one white card.', 'score': 5 },
-                          {'cause': 'HAG13', 'detail': '(13) A pair of yellow cards doubles the value of one white card.', 'score': 5 },
-                          {'cause': 'HAG08', 'detail': '(8) Having the most yellow cards (4 cards) gives a bonus of 4x4 points.', 'score': 16 }],
-                         scoresheets[0].extra )
+        self.assertListEqual(['HAG10', 'HAG10', 'HAG13', 'HAG13', 'HAG08'], [sfr.rulecard.ref_name for sfr in scoresheets[0].scores_from_rule])
+        self.assertListEqual([10,      10,      5,       5,       16     ], [sfr.score for sfr in scoresheets[0].scores_from_rule])
 
     def test_calculate_score(self):
         class MockScoresheet(Scoresheet):
@@ -172,7 +168,10 @@ class ScoringTest(TestCase):
                     mommy.prepare_one(ScoreFromCommodity, commodity__name = 'Blue', nb_scored_cards = 2, actual_value = 2),
                     mommy.prepare_one(ScoreFromCommodity, commodity__name = 'Red',  nb_scored_cards = 3, actual_value = 1),
                 ]
-                self._extra = [{'cause': 'HELLO', 'score': -5} , {'cause': 'WORLD', 'score': None}]
+                self._scores_from_rule = [
+                    mommy.prepare_one(ScoreFromRule, score = -5),
+                    mommy.prepare_one(ScoreFromRule, score = None)
+                ]
         scoresheet = MockScoresheet()
         self.assertEqual(2, scoresheet.calculate_score())
 
@@ -211,16 +210,21 @@ class ScoringTest(TestCase):
         self.assertEqual(20, scoresheet.calculate_score())
 
     def test_register_rule(self):
-        rulecard = mommy.prepare_one(RuleCard, ref_name = 'rule_name')
+        rulecard = mommy.prepare_one(RuleCard)
         scoresheet = _prepare_scoresheet(self.game, "p1", blue = 1)
-        scoresheet.register_rule(rulecard, 'test', 10)
-        self.assertEqual([{'cause': 'rule_name', 'detail': 'test', 'score': 10}], scoresheet.extra)
+        scoresheet.register_score_from_rule(rulecard, 'test', 10)
+        self.assertEqual(rulecard, scoresheet.scores_from_rule[0].rulecard)
+        self.assertEqual('test', scoresheet.scores_from_rule[0].detail)
+        self.assertEqual(10, scoresheet.scores_from_rule[0].score)
 
     def test_register_rule_no_score(self):
-        rulecard = mommy.prepare_one(RuleCard, ref_name = 'HAG04')
+        rulecard = mommy.prepare_one(RuleCard)
         scoresheet = _prepare_scoresheet(self.game, "p1", blue = 1)
-        scoresheet.register_rule(rulecard, 'test')
-        self.assertEqual([{'cause': 'HAG04', 'detail': 'test', 'score': None}], scoresheet.extra)
+        scoresheet.register_score_from_rule(rulecard, 'test')
+        self.assertEqual(rulecard, scoresheet.scores_from_rule[0].rulecard)
+        self.assertEqual('test', scoresheet.scores_from_rule[0].detail)
+        self.assertIsNone(scoresheet.scores_from_rule[0].score)
+
 
 class HaggleTest(TestCase):
     def setUp(self):
@@ -480,19 +484,21 @@ class HaggleTest(TestCase):
         rulecard.perform(scoresheet)
         total_scored_cards = sum(sfc.nb_scored_cards for sfc in scoresheet._scores_from_commodity)
         self.assertEqual(13, total_scored_cards)
-        self.assertEqual(1, len(scoresheet.extra))
-        extra = scoresheet.extra[0]
-        self.assertEqual('HAG15', extra['cause'])
-        self.assertTrue(extra['detail'].startswith('(15) Since 35 cards had to be scored, 22 have been discarded'))
+        self.assertEqual(1, len(scoresheet.scores_from_rule))
+        sfr = scoresheet.scores_from_rule[0]
+        self.assertEqual('HAG15', sfr.rulecard.ref_name)
+        self.assertTrue(sfr.detail.startswith('(15) Since 35 cards had to be scored, 22 have been discarded'))
 
     def assertRuleApplied(self, scoresheet, rulecard, detail = '', score = None, times = 1):
         for _i in range(times):
-            self.assertIn({'cause': rulecard.ref_name, 'detail': detail, 'score': score}, scoresheet.extra)
-            scoresheet.extra.remove({'cause': rulecard.ref_name, 'detail': detail, 'score': score})
+            for sfr in scoresheet.scores_from_rule:
+                if sfr.rulecard == rulecard and sfr.detail == detail and sfr.score == score:
+                    break
+            else:
+                self.fail()
 
     def assertRuleNotApplied(self, scoresheet, rulecard):
-        for item in scoresheet.extra:
-            self.assertNotEqual(rulecard.ref_name, item['cause'])
+        self.assertNotIn(rulecard, [sfr.rulecard for sfr in scoresheet.scores_from_rule])
 
 def _prepare_hand(game, player, **commodities):
     try:

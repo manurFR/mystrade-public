@@ -1,5 +1,5 @@
 from game.models import GamePlayer, CommodityInHand
-from ruleset.models import Commodity
+from ruleset.models import Commodity, RuleCard
 from scoring.models import ScoreFromRule, ScoreFromCommodity
 
 def tally_scores(game):
@@ -28,13 +28,12 @@ class Scoresheet(object):
             sfc.nb_submitted_cards = cih.nb_submitted_cards # non persisted property added for ease of scoring
             self._scores_from_commodity.append(sfc)
         self._scores_from_rule = []
-        self._extra = []
 
         self.neutral_commodity = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = Commodity(),
                                                     nb_scored_cards = 0, actual_value = 0, score = 0)
 
     def score_for_commodity(self, name):
-        for sfc in self._scores_from_commodity:
+        for sfc in self.scores_from_commodity:
             if sfc.name == name.lower():
                 return sfc
         return self.neutral_commodity
@@ -51,18 +50,17 @@ class Scoresheet(object):
     def set_actual_value(self, name, actual_value):
         self.score_for_commodity(name).actual_value = actual_value
 
-    def register_rule(self, rulecard, detail = '', score = None):
+    def register_score_from_rule(self, rulecard, detail = '', score = None):
         self._scores_from_rule.append(ScoreFromRule(game = self.gameplayer.game, player = self.gameplayer.player,
                                                     rulecard = rulecard, detail = detail, score = score))
-        self._extra.append({'cause': rulecard.ref_name, 'detail': detail, 'score': score})
 
     def calculate_score(self):
         score = 0
-        for sfc in self._scores_from_commodity:
+        for sfc in self.scores_from_commodity:
             commodity_score = sfc.nb_scored_cards * sfc.actual_value
             sfc.score = commodity_score
             score += commodity_score
-        score += sum(item['score'] for item in self.extra if item['score'] is not None)
+        score += sum(sfr.score for sfr in self._scores_from_rule if sfr.score is not None)
         return score
 
     @property
@@ -70,5 +68,6 @@ class Scoresheet(object):
         return self._scores_from_commodity
 
     @property
-    def extra(self):
-        return self._extra
+    def scores_from_rule(self):
+        return self._scores_from_rule
+
