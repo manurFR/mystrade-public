@@ -1,11 +1,8 @@
 from game.models import GamePlayer, CommodityInHand
-from ruleset.models import Commodity, RuleCard
+from ruleset.models import Commodity
 from scoring.models import ScoreFromRule, ScoreFromCommodity
 
 def tally_scores(game):
-    if not game:
-        return [],[]
-
     scoresheets = [Scoresheet(gameplayer) for gameplayer in GamePlayer.objects.filter(game = game)]
 
     for rule in game.rules.filter(step__isnull = False).order_by('step'):

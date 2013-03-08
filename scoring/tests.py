@@ -4,10 +4,8 @@ from django.utils.timezone import now
 from django.utils.unittest.case import skip
 from model_mommy import mommy
 from game.models import Game, GamePlayer, CommodityInHand
-from ruleset.models import RuleCard, Commodity, Ruleset
+from ruleset.models import RuleCard, Commodity
 from scoring.card_scoring import tally_scores, Scoresheet
-from scoring.haggle import HAG04, HAG05, HAG06, HAG07, HAG08, HAG09, HAG10,\
-HAG11, HAG12, HAG13, HAG14, HAG15
 from scoring.models import ScoreFromCommodity, ScoreFromRule
 
 class ViewsTest(TestCase):
