@@ -99,7 +99,7 @@ def HAG11(self, scoresheet):
     if [item['nb_cards'] for item in nb_colors] == [1, 2, 3, 4]:
         scoresheet.register_score_from_rule(self,
                       '(11) A pyramid of 4 {} cards, 3 {} cards, 2 {} cards, 1 {} card and no other card doubles the score.'.format(nb_colors[3]['color'], nb_colors[2]['color'], nb_colors[1]['color'], nb_colors[0]['color']),
-                      score = scoresheet.calculate_score())
+                      score = scoresheet.total_score)
 
 def HAG12(self, scoresheets):
     """The player with the most red cards double their value.

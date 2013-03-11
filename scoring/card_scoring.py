@@ -12,7 +12,7 @@ def tally_scores(game):
             for scoresheet in scoresheets:
                 rule.perform(scoresheet)
 
-    return [scoresheet.calculate_score() for scoresheet in scoresheets], scoresheets
+    return scoresheets
 
 class Scoresheet(object):
     def __init__(self, gameplayer):
@@ -51,14 +51,14 @@ class Scoresheet(object):
         self._scores_from_rule.append(ScoreFromRule(game = self.gameplayer.game, player = self.gameplayer.player,
                                                     rulecard = rulecard, detail = detail, score = score))
 
-    def calculate_score(self):
-        score = 0
+    def _calculate_commodity_scores(self):
         for sfc in self.scores_from_commodity:
-            commodity_score = sfc.nb_scored_cards * sfc.actual_value
-            sfc.score = commodity_score
-            score += commodity_score
-        score += sum(sfr.score for sfr in self._scores_from_rule if sfr.score is not None)
-        return score
+            sfc.score = sfc.nb_scored_cards * sfc.actual_value
+        return sum(sfc.score for sfc in self.scores_from_commodity)
+
+    @property
+    def total_score(self):
+        return self._calculate_commodity_scores() + sum(sfr.score for sfr in self.scores_from_rule if sfr.score is not None)
 
     @property
     def scores_from_commodity(self):

@@ -269,8 +269,7 @@ def close_game(request, game_id):
     raise PermissionDenied
 
 def _score_calculation(game):
-    hands, selected_rules = _prepare_calculation(game)
-    scores, scoresheets = tally_scores(game)
+    scoresheets = tally_scores(game)
 
 def _prepare_calculation(game):
     hands = []
