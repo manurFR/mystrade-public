@@ -257,7 +257,10 @@ def close_game(request, game_id):
                         gameplayer.submit_date = game.closing_date
                         gameplayer.save()
 
-                    # TODO launch score calculation here. via tally_score() ?
+                    scoresheets = tally_scores(game)
+                    for scoresheet in scoresheets:
+                        scoresheet.persist()
+
                     # TODO transactional test
 
             except BaseException as ex:
@@ -267,14 +270,3 @@ def close_game(request, game_id):
 
 
     raise PermissionDenied
-
-def _score_calculation(game):
-    scoresheets = tally_scores(game)
-
-def _prepare_calculation(game):
-    hands = []
-    for gameplayer in GamePlayer.objects.filter(game = game):
-        hands.append(dict([(cih.commodity, cih.nb_submitted_cards) for cih in
-                          CommodityInHand.objects.filter(game = game, player = gameplayer.player, nb_submitted_cards__gt = 0)]))
-    selected_rules = list(game.rules.all())
-    return hands, selected_rules

@@ -9,7 +9,7 @@ class ScoreFromRule(models.Model):
     rulecard = models.ForeignKey(RuleCard)
 
     detail = models.CharField(max_length = 255)
-    score = models.PositiveIntegerField()
+    score = models.PositiveIntegerField(null = True)
 
 class ScoreFromCommodity(models.Model):
     game = models.ForeignKey(Game)

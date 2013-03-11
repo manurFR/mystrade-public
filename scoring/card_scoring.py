@@ -51,6 +51,13 @@ class Scoresheet(object):
         self._scores_from_rule.append(ScoreFromRule(game = self.gameplayer.game, player = self.gameplayer.player,
                                                     rulecard = rulecard, detail = detail, score = score))
 
+    def persist(self):
+        self._calculate_commodity_scores()
+        for sfc in self.scores_from_commodity:
+            sfc.save()
+        for sfr in self.scores_from_rule:
+            sfr.save()
+
     def _calculate_commodity_scores(self):
         for sfc in self.scores_from_commodity:
             sfc.score = sfc.nb_scored_cards * sfc.actual_value

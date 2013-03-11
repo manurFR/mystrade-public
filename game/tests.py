@@ -12,9 +12,8 @@ from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards,
     prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
-from game.views import _prepare_calculation
 from ruleset.models import Ruleset, RuleCard, Commodity
-from scoring.card_scoring import tally_scores
+from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.models import Offer, Trade
 
 def _common_setUp(self):
@@ -507,8 +506,8 @@ class ControlBoardViewTest(TestCase):
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), trade3.closing_date)
 
     def test_close_game_submits_the_commodity_cars_of_players_who_havent_manually_submitted(self):
-        test6 = User.objects.get(username='test6')
         gp1 = mommy.make_one(GamePlayer, game = self.game_ended, player = self.test5)
+        test6 = User.objects.get(username='test6')
         gp2_submit_date = now() + datetime.timedelta(days = -1)
         gp2 = mommy.make_one(GamePlayer, game = self.game_ended, player = test6, submit_date = gp2_submit_date)
 
@@ -526,6 +525,46 @@ class ControlBoardViewTest(TestCase):
         self.assertEqual(gp2_submit_date, gp2.submit_date)
         self.assertEqual(6, cih1.nb_submitted_cards)
         self.assertEqual(3, cih2.nb_submitted_cards)
+
+    def test_close_game_calculates_and_persists_the_final_score(self):
+        self.game_ended.rules.add(RuleCard.objects.get(ref_name = 'HAG04'))
+        self.game_ended.rules.add(RuleCard.objects.get(ref_name = 'HAG05'))
+
+        gp1 = mommy.make_one(GamePlayer, game = self.game_ended, player = self.test5)
+        test6 = User.objects.get(username='test6')
+        gp2 = mommy.make_one(GamePlayer, game = self.game_ended, player = test6)
+
+        cih1orange = mommy.make_one(CommodityInHand, game = self.game_ended, player = self.test5,
+                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Orange')) # value = 4
+        cih1blue   = mommy.make_one(CommodityInHand, game = self.game_ended, player = self.test5,
+                                    nb_cards = 2, commodity = Commodity.objects.get(name = 'Blue')) # value = 2
+        cih1white  = mommy.make_one(CommodityInHand, game = self.game_ended, player = self.test5,
+                                    nb_cards = 1, commodity = Commodity.objects.get(name = 'White')) # value = 5 or 0
+
+        cih2orange = mommy.make_one(CommodityInHand, game = self.game_ended, player = test6,
+                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Orange'))
+        cih2blue   = mommy.make_one(CommodityInHand, game = self.game_ended, player = test6,
+                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Blue'))
+        cih2white  = mommy.make_one(CommodityInHand, game = self.game_ended, player = test6,
+                                    nb_cards = 4, commodity = Commodity.objects.get(name = 'White'))
+
+        self._assertOperation_post(self.game_ended, "close")
+
+        self.assertEqual(8, ScoreFromCommodity.objects.get(game = self.game_ended, player = self.test5, commodity__name = 'Orange').score)
+        self.assertEqual(4, ScoreFromCommodity.objects.get(game = self.game_ended, player = self.test5, commodity__name = 'Blue').score)
+        self.assertEqual(5, ScoreFromCommodity.objects.get(game = self.game_ended, player = self.test5, commodity__name = 'White').score)
+
+        sfr1 = ScoreFromRule.objects.filter(game = self.game_ended, player = self.test5)
+        self.assertEqual(1, len(sfr1))
+        self.assertEqual('HAG05', sfr1[0].rulecard.ref_name)
+
+        self.assertEqual(12, ScoreFromCommodity.objects.get(game = self.game_ended, player = test6, commodity__name = 'Orange').score)
+        self.assertEqual(6, ScoreFromCommodity.objects.get(game = self.game_ended, player = test6, commodity__name = 'Blue').score)
+        self.assertEqual(0, ScoreFromCommodity.objects.get(game = self.game_ended, player = test6, commodity__name = 'White').score)
+
+        sfr2 = ScoreFromRule.objects.filter(game = self.game_ended, player = test6)
+        self.assertEqual(1, len(sfr2))
+        self.assertEqual('HAG04', sfr2[0].rulecard.ref_name)
 
     def _assertOperation_get(self, game, operation, status_code = 200):
         response = self.client.get("/game/{}/{}/".format(game.id, operation), follow = True)
@@ -682,39 +721,3 @@ class DealTest(TestCase):
         for commodity in Commodity.objects.filter(ruleset = ruleset):
             nb_cards = CommodityInHand.objects.filter(game = game, commodity = commodity).aggregate(Sum('nb_cards'))
             self.assertEqual(10*6/5, nb_cards['nb_cards__sum'])
-
-class CalculateScoreTest(TestCase):
-    fixtures = ['test_users.json']
-
-    def test_prepare_calculation(self):
-        game = mommy.make_one(Game, players = [], rules = [], end_date = now())
-
-        rulecard1, rulecard2, rulecard3 = mommy.make_many(RuleCard, quantity = 3)
-        game.rules.add(rulecard1)
-        game.rules.add(rulecard2)
-
-        test1 = User.objects.get(username='test1')
-        mommy.make_one(GamePlayer, game = game, player = test1)
-        test2 = User.objects.get(username='test2')
-        mommy.make_one(GamePlayer, game = game, player = test2)
-        test3 = User.objects.get(username='test3')
-
-        commodity1, commodity2, commodity3 = mommy.make_many(Commodity, quantity = 3, value = 1)
-
-        cih11 = mommy.make_one(CommodityInHand, game = game, player = test1, commodity = commodity1, nb_submitted_cards = 1)
-        cih12 = mommy.make_one(CommodityInHand, game = game, player = test1, commodity = commodity2, nb_submitted_cards = 2)
-        cih21 = mommy.make_one(CommodityInHand, game = game, player = test2, commodity = commodity1, nb_submitted_cards = 3)
-        cih23 = mommy.make_one(CommodityInHand, game = game, player = test2, commodity = commodity3, nb_submitted_cards = 4)
-        cih32 = mommy.make_one(CommodityInHand, game = game, player = test3, commodity = commodity2, nb_submitted_cards = 3)
-
-        hands, selected_rules = _prepare_calculation(game)
-
-        self.assertEqual(2, len(hands))
-        self.assertIn({commodity1: 1, commodity2: 2}, hands)
-        self.assertIn({commodity1: 3, commodity3: 4}, hands)
-        self.assertNotIn({commodity2: 3}, hands)
-
-        self.assertEqual(2, len(selected_rules))
-        self.assertIn(rulecard1, selected_rules)
-        self.assertIn(rulecard2, selected_rules)
-        self.assertNotIn(rulecard3, selected_rules)
