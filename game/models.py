@@ -24,6 +24,12 @@ class Game(models.Model):
     def is_active(self):
         return self.start_date <= now() <= self.end_date
 
+    def is_ended(self):
+        return self.closing_date is None and now() >= self.end_date
+
+    def is_closed(self):
+        return now() >= self.closing_date
+
 class GamePlayer(models.Model):
     game = models.ForeignKey(Game)
     player = models.ForeignKey(User)

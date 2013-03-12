@@ -50,8 +50,10 @@
                         {% else %}
                             <em>not player</em>
                         {% endif %}
-                    {% else %}
+                    {% elif game.is_ended %}
                         <em>game ended</em>
+                    {% elif game.is_closed %}
+                        <em>game closed</em>
                     {% endif %}
                 </div>
 			</div>
