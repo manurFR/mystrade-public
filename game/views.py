@@ -257,11 +257,10 @@ def close_game(request, game_id):
                         gameplayer.submit_date = game.closing_date
                         gameplayer.save()
 
+                    # calculate and save scores
                     scoresheets = tally_scores(game)
                     for scoresheet in scoresheets:
                         scoresheet.persist()
-
-                    # TODO transactional test
 
             except BaseException as ex:
                 logger.error("Error in close_game({})".format(game_id), exc_info = ex)
