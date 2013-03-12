@@ -261,7 +261,6 @@ def close_game(request, game_id):
                     scoresheets = tally_scores(game)
                     for scoresheet in scoresheets:
                         scoresheet.persist()
-
             except BaseException as ex:
                 logger.error("Error in close_game({})".format(game_id), exc_info = ex)
 

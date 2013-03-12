@@ -13,6 +13,7 @@ from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards,
 from game.forms import validate_number_of_players, validate_dates
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from ruleset.models import Ruleset, RuleCard, Commodity
+from scoring.card_scoring import Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.models import Offer, Trade
 
@@ -585,9 +586,9 @@ class TransactionalViewsTest(TransactionTestCase):
         commodity2 = mommy.make_one(Commodity, name = 'c2', color = 'colB')
 
         cih1 = mommy.make_one(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
-            nb_cards = 1, nb_submitted_cards = None)
+                              nb_cards = 1, nb_submitted_cards = None)
         cih2 = mommy.make_one(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
-            nb_cards = 2, nb_submitted_cards = None)
+                              nb_cards = 2, nb_submitted_cards = None)
 
         # set a nb_submitted_cards < 0 on the last form to make the view fail on the last iteration
         response = self.client.post("/game/{}/hand/submit/".format(self.game.id),
@@ -601,6 +602,44 @@ class TransactionalViewsTest(TransactionTestCase):
 
         for commodity in CommodityInHand.objects.filter(game = self.game, player = self.loginUser):
             self.assertIsNone(commodity.nb_submitted_cards)
+
+    def test_close_game_is_transactional(self):
+        def mock_persist(self):
+            mommy.make_one(ScoreFromCommodity, game = self.gameplayer.game, player = self.gameplayer.player)
+            mommy.make_one(ScoreFromRule, game = self.gameplayer.game, player = self.gameplayer.player)
+            raise RuntimeError
+        Scoresheet.persist = mock_persist
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test')) # login as game master
+
+        self.game.end_date = now() + datetime.timedelta(days = -1)
+        self.game.save()
+
+        cih = mommy.make_one(CommodityInHand, game = self.game, player = self.test5, commodity__value = 1, nb_cards = 1)
+
+        trade = mommy.make_one(Trade, game = self.game, status = 'INITIATED', initiator = self.test5,
+                               responder = User.objects.get(username = 'test6'),
+                               initiator_offer = mommy.make_one(Offer, rules = [], commodities = []), finalizer = None)
+
+        response = self.client.post("/game/{}/close/".format(self.game.id), follow = True)
+
+        self.assertEqual(200, response.status_code)
+
+        game = Game.objects.get(pk = self.game.id)
+        self.assertIsNone(game.closing_date)
+
+        trade = Trade.objects.get(pk = trade.id)
+        self.assertIsNone(trade.closing_date)
+
+        cih = CommodityInHand.objects.get(pk = cih.id)
+        self.assertIsNone(cih.nb_submitted_cards)
+
+        gameplayer = GamePlayer.objects.get(game = self.game, player = self.test5)
+        self.assertIsNone(gameplayer.submit_date)
+
+        self.assertEqual(0, ScoreFromCommodity.objects.filter(game = self.game).count())
+        self.assertEqual(0, ScoreFromRule.objects.filter(game = self.game).count())
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
