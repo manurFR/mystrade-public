@@ -14,6 +14,7 @@ from game.forms import CreateGameForm, validate_number_of_players, validate_date
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from ruleset.models import RuleCard
 from scoring.card_scoring import tally_scores
+from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer, Trade
 
@@ -73,7 +74,6 @@ def hand(request, game_id):
         {'game': game, 'hand_submitted': hand_submitted, 'rule_hand': rule_hand, 'former_rules': former_rules,
          'commodity_hand': commodity_hand, 'commodity_hand_not_submitted': commodity_hand_not_submitted,
          'free_informations': sorted(free_informations, key=lambda offer: offer['date'], reverse=True)})
-
 
 @login_required
 def submit_hand(request, game_id):
@@ -148,7 +148,6 @@ def create_game(request):
     else:
         form = CreateGameForm(request.user)
     return render(request, 'game/create.html', {'form': form})
-
 
 @permission_required('game.add_game')
 def select_rules(request):
@@ -230,6 +229,11 @@ def control_board(request, game_id):
     game = get_object_or_404(Game, id=game_id)
 
     if request.user == game.master or request.user.is_staff:
+        if game.is_closed(): # display score
+            for player in GamePlayer.objects.filter(game = game):
+                ScoreFromCommodity.objects.filter(game = game, player = player)
+                ScoreFromRule.objects.filter(game = game, player = player)
+
         return render(request, 'game/control.html', {'game': game})
 
     raise PermissionDenied

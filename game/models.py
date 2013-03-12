@@ -28,7 +28,7 @@ class Game(models.Model):
         return self.closing_date is None and now() >= self.end_date
 
     def is_closed(self):
-        return now() >= self.closing_date
+        return self.closing_date and now() >= self.closing_date
 
 class GamePlayer(models.Model):
     game = models.ForeignKey(Game)
