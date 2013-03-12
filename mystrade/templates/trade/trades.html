@@ -16,6 +16,19 @@
     <div class="header">Your trades for game #{{ game }} (ending in {{ game.end_date|timeuntil }})
         <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span></div>
 
+    {% if not game.is_active %}
+    <div class="reminder">
+        {% if game.is_ended %}
+            This game has ended. No more trades can be created or finalized.<br/>
+            The game master will close this game soon, so that scores are calculated.
+        {% elif game.is_closed %}
+            This game has been closed by the game master. No more trades can be created or finalized.<br/>
+            Scores have been calculated.
+        {% endif %}
+    </div>
+    <br/>
+    {% endif %}
+
     <div class="css_table">
         {% for trade in trades %}
             {% cycle 'even_color' 'odd_color' as color silent %}
@@ -40,9 +53,9 @@
                     {% endif %}
                 </div>
                 <div class="css_table-cell {{ color }}">
-                    {% if trade.status == 'INITIATED' and user == trade.responder %}
+                    {% if game.is_active and trade.status == 'INITIATED' and user == trade.responder %}
                         <a href="{% url 'show_trade' game.id trade.id %}"><span class="new">Reply</span></a>
-                    {% elif trade.status == 'REPLIED' and user == trade.initiator %}
+                    {% elif game.is_active and trade.status == 'REPLIED' and user == trade.initiator %}
                         <a href="{% url 'show_trade' game.id trade.id %}"><span class="new">Decide</span></a>
                     {% else %}
                         <a href="{% url 'show_trade' game.id trade.id %}">Show</a>

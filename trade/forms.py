@@ -9,8 +9,8 @@ class TradeForm(forms.Form):
 
     def __init__(self, me, game, *args, **kwargs):
         super(TradeForm, self).__init__(*args, **kwargs)
-        self.fields['responder'].queryset = Game.objects.get(id = game.id).players.exclude(id = me.id).exclude(
-                                                gameplayer__submit_date__isnull = False).order_by('id')
+        self.fields['responder'].queryset = User.objects.filter(gameplayer__game = game,
+                                            gameplayer__submit_date__isnull = True).exclude(id = me.id).order_by('id')
 
 class DeclineReasonForm(forms.Form):
     decline_reason = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
