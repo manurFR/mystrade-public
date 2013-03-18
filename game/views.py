@@ -13,7 +13,7 @@ from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from ruleset.models import RuleCard
-from scoring.card_scoring import tally_scores
+from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer, Trade
@@ -230,11 +230,16 @@ def control_board(request, game_id):
 
     if request.user == game.master or request.user.is_staff:
         if game.is_closed(): # display score
-            for player in GamePlayer.objects.filter(game = game):
-                ScoreFromCommodity.objects.filter(game = game, player = player)
-                ScoreFromRule.objects.filter(game = game, player = player)
+            scoresheets = []
+            for gameplayer in GamePlayer.objects.filter(game = game):
+                scoresheets.append(Scoresheet(gameplayer,
+                                              ScoreFromCommodity.objects.filter(game = game, player = gameplayer.player),
+                                              ScoreFromRule.objects.filter(game = game, player = gameplayer.player)))
 
-        return render(request, 'game/control.html', {'game': game})
+        return render(request, 'game/control.html', {'game': game,
+                                                     'scoresheets': sorted(scoresheets,
+                                                                           key = lambda scoresheet: scoresheet.total_score,
+                                                                           reverse = True)})
 
     raise PermissionDenied
 
