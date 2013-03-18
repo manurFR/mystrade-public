@@ -506,14 +506,14 @@ class ControlBoardViewTest(TestCase):
         self.assertEqual(self.test5, trade3.finalizer)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), trade3.closing_date)
 
-    def test_close_game_submits_the_commodity_cars_of_players_who_havent_manually_submitted(self):
+    def test_close_game_submits_the_commodity_cards_of_players_who_havent_manually_submitted(self):
         gp1 = mommy.make_one(GamePlayer, game = self.game_ended, player = self.test5)
         test6 = User.objects.get(username='test6')
         gp2_submit_date = now() + datetime.timedelta(days = -1)
         gp2 = mommy.make_one(GamePlayer, game = self.game_ended, player = test6, submit_date = gp2_submit_date)
 
-        cih1 = mommy.make_one(CommodityInHand, game = self.game_ended, player = self.test5, nb_cards = 6)
-        cih2 = mommy.make_one(CommodityInHand, game = self.game_ended, player = test6, nb_cards = 4, nb_submitted_cards = 3)
+        cih1 = mommy.make_one(CommodityInHand, game = self.game_ended, player = self.test5, nb_cards = 6, commodity__value = 1)
+        cih2 = mommy.make_one(CommodityInHand, game = self.game_ended, player = test6, nb_cards = 4, nb_submitted_cards = 3, commodity__value = 1)
 
         self._assertOperation_post(self.game_ended, "close")
 

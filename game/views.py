@@ -227,6 +227,7 @@ def select_rules(request):
 @login_required
 def control_board(request, game_id):
     game = get_object_or_404(Game, id=game_id)
+    data = {'game': game}
 
     if request.user == game.master or request.user.is_staff:
         if game.is_closed(): # display score
@@ -235,11 +236,10 @@ def control_board(request, game_id):
                 scoresheets.append(Scoresheet(gameplayer,
                                               ScoreFromCommodity.objects.filter(game = game, player = gameplayer.player),
                                               ScoreFromRule.objects.filter(game = game, player = gameplayer.player)))
+            scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
+            data['scoresheets'] = scoresheets
 
-        return render(request, 'game/control.html', {'game': game,
-                                                     'scoresheets': sorted(scoresheets,
-                                                                           key = lambda scoresheet: scoresheet.total_score,
-                                                                           reverse = True)})
+        return render(request, 'game/control.html', data)
 
     raise PermissionDenied
 
