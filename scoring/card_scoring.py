@@ -15,16 +15,23 @@ def tally_scores(game):
     return scoresheets
 
 class Scoresheet(object):
-    def __init__(self, gameplayer):
+    def __init__(self, gameplayer, scores_from_commodity = None, scores_from_rule = None):
         self.gameplayer = gameplayer
-        self._scores_from_commodity = []
-        for cih in CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player, nb_submitted_cards__gt = 0):
-            sfc = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = cih.commodity,
-                                     nb_scored_cards = cih.nb_submitted_cards, actual_value = cih.commodity.value, score = 0)
-            sfc.name = cih.commodity.name.lower()
-            sfc.nb_submitted_cards = cih.nb_submitted_cards # non persisted property added for ease of scoring
-            self._scores_from_commodity.append(sfc)
-        self._scores_from_rule = []
+
+        if scores_from_commodity:
+            self._scores_from_commodity = scores_from_commodity
+        else:
+            self._prepare_scores_from_commodities(gameplayer)
+
+        if scores_from_rule:
+            self._scores_from_rule = scores_from_rule
+        else:
+            self._scores_from_rule = []
+
+        # add non persisted properties for later ease of use
+        for sfc in self._scores_from_commodity:
+            sfc.name = sfc.commodity.name.lower()
+            sfc.nb_submitted_cards = sfc.nb_scored_cards
 
         self.neutral_commodity = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = Commodity(),
                                                     nb_scored_cards = 0, actual_value = 0, score = 0)
@@ -62,6 +69,13 @@ class Scoresheet(object):
         for sfc in self.scores_from_commodity:
             sfc.score = sfc.nb_scored_cards * sfc.actual_value
         return sum(sfc.score for sfc in self.scores_from_commodity)
+
+    def _prepare_scores_from_commodities(self, gameplayer):
+        self._scores_from_commodity = []
+        for cih in CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player, nb_submitted_cards__gt = 0):
+            sfc = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = cih.commodity,
+                                     nb_scored_cards = cih.nb_submitted_cards, actual_value = cih.commodity.value, score = 0)
+            self._scores_from_commodity.append(sfc)
 
     @property
     def total_score(self):

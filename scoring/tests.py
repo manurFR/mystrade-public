@@ -6,7 +6,6 @@ from model_mommy import mommy
 from game.models import Game, GamePlayer, CommodityInHand
 from ruleset.models import RuleCard, Commodity
 from scoring.card_scoring import tally_scores, Scoresheet
-from scoring.models import ScoreFromCommodity, ScoreFromRule
 
 class ViewsTest(TestCase):
     def setUp(self):
