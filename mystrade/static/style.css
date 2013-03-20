@@ -225,7 +225,7 @@ input[type="submit"] {
 	background-color: #FFD800;
 }
 
-.score {
+.points {
 	min-width: 4em;
 	text-align: right;
 }
@@ -277,4 +277,16 @@ a:hover, .dynamic_link:hover {
     color: #333333;
     font-style: italic;
     margin-left: -15px;
+}
+
+.score .first {
+    text-align: center;
+    margin: 0 300px;
+    border: 1px solid black;;
+}
+
+.score .second {
+    text-align: center;
+    margin-right: 400px;
+    border: 1px solid black;;
 }

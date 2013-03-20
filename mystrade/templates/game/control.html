@@ -30,12 +30,7 @@
         </div>
     {% elif game.is_closed %}
         <div class="reminder">This game was closed on {{ game.end_date }} ({{ game.end_date|timesince }} ago).</div>
-        {% for scoresheet in scoresheets %}
-            <div>
-                {{ scoresheet.gameplayer.player.get_profile.name }}: {{ scoresheet.total_score }}
-            </div>
-        {% endfor %}
-
+        {% include "scoring/score.html" %}
     {% endif %}
 
     <script>

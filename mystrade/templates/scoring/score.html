@@ -1,0 +1,8 @@
+<h3>Scores</h3>
+<div class="score">
+{% for scoresheet in scoresheets %}
+    <div {% if forloop.counter == 1 %}class="first"{% elif forloop.counter == 2 %}class="second"{% elif forloop.counter == 3 %}class="third"{% endif %}>
+        {{ forloop.counter }}. {{ scoresheet.gameplayer.player.get_profile.name }} &mdash; {{ scoresheet.total_score }} points
+    </div>
+{% endfor %}
+</div>

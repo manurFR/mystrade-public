@@ -29,18 +29,18 @@
 			{% for commodity in player.scoresheet.commodities %}
 			<div class="css_table-row">
 				<div class="css_table-cell {% cycle 'even_color' 'odd_color' as color %}">{{ commodity.name }} ({{ commodity.scored_cards }} cards x {{ commodity.actual_value }})</div>
-				<div class="css_table-cell {{ color }} score">{{ commodity.score|default_if_none:'' }}</div>
+				<div class="css_table-cell {{ color }} points">{{ commodity.score|default_if_none:'' }}</div>
 			</div>
 			{% endfor %}
 			{% for line in player.scoresheet.extra %}
 			<div class="css_table-row">
 				<div class="css_table-cell {% cycle color %}">{{ line.detail }}</div>
-				<div class="css_table-cell {{ color }} score">{{ line.score|default_if_none:'' }}</div>
+				<div class="css_table-cell {{ color }} points">{{ line.score|default_if_none:'' }}</div>
 			</div>
 			{% endfor %}
 			<div class="css_table-row">
 				<div class="css_table-cell odd_color"><strong>Total</strong></div>
-				<div class="css_table-cell odd_color score"><strong>{{ player.score }}</strong></div>
+				<div class="css_table-cell odd_color points"><strong>{{ player.score }}</strong></div>
 			</div>
 		</div>
 		<br/>
