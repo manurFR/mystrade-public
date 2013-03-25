@@ -278,15 +278,3 @@ a:hover, .dynamic_link:hover {
     font-style: italic;
     margin-left: -15px;
 }
-
-.score .first {
-    text-align: center;
-    margin: 0 300px;
-    border: 1px solid black;;
-}
-
-.score .second {
-    text-align: center;
-    margin-right: 400px;
-    border: 1px solid black;;
-}

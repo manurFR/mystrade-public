@@ -1,8 +1,35 @@
 <h3>Scores</h3>
-<div class="score">
-{% for scoresheet in scoresheets %}
-    <div {% if forloop.counter == 1 %}class="first"{% elif forloop.counter == 2 %}class="second"{% elif forloop.counter == 3 %}class="third"{% endif %}>
-        {{ forloop.counter }}. {{ scoresheet.gameplayer.player.get_profile.name }} &mdash; {{ scoresheet.total_score }} points
-    </div>
-{% endfor %}
-</div>
+<table class="scores">
+    {% for scoresheet in scoresheets %}
+        {% if forloop.counter == 1 %}
+            <tr>
+                <td>&nbsp;</td>
+                <td colspan="2" class="podium-box">
+                    <div id="first-player-header">Winner</div>
+                    <div id="first-player">{{ scoresheet.gameplayer.player.get_profile.name }} &mdash; {{ scoresheet.total_score }} points</div>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+        {% elif forloop.counter == 2 %}
+            <tr id="second-row">
+                <td colspan="2" class="podium-box second">
+                    <div id="second-player-header">#2</div>
+                    <div id="second-player">{{ scoresheet.gameplayer.player.get_profile.name }} &mdash; {{ scoresheet.total_score }} points</div>
+                </td>
+                {% elif forloop.counter == 3 %}
+                <td colspan="2" class="podium-box">
+                    <div id="third-player-header">#3</div>
+                    <div id="third-player">{{ scoresheet.gameplayer.player.get_profile.name }} &mdash; {{ scoresheet.total_score }} points</div>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td>&nbsp;</td>
+                <td colspan="2">
+                    #{{ forloop.counter }}. {{ scoresheet.gameplayer.player.get_profile.name }} &mdash; {{ scoresheet.total_score }} points
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+</table>

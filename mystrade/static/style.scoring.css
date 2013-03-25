@@ -1,0 +1,45 @@
+.scores {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    border-collapse: collapse;
+}
+
+.scores td {
+    width: 200px;
+    height: 30px;
+}
+
+.scores tr#second-row td {
+    width: 300px;
+}
+
+.scores .podium-box {
+    border: 1px solid black;
+    height: 50px;
+}
+
+.scores #first-player-header {
+    font-size: 1.6em;
+    font-weight: bold;
+}
+.scores #first-player {
+    font-size: 1.2em;
+}
+
+.scores #second-player-header {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+.scores #second-player {
+    font-size: 1.1em;
+}
+
+.scores #third-player-header {
+    font-size: 1.1em;
+    height: 1.3em;
+    font-weight: bold;
+}
+.scores #third-player {
+    font-size: 1em;
+}
