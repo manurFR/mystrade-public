@@ -43,3 +43,13 @@
 .scores #third-player {
     font-size: 1em;
 }
+
+.submitted-hand {
+    vertical-align: bottom;
+    margin: 5px 0;
+}
+
+.submitted-hand .minicard, .minicard.minimized {
+    width: 15px;
+    height: 30px;
+}

@@ -1,3 +1,5 @@
+{% load filters %}
+
 <h3>Scores</h3>
 <table class="scores">
     {% for scoresheet in scoresheets %}
@@ -6,7 +8,9 @@
                 <td>&nbsp;</td>
                 <td colspan="2" class="podium-box">
                     <div id="first-player-header">Winner</div>
-                    <div id="first-player">{{ scoresheet.gameplayer.player.get_profile.name }} &mdash; {{ scoresheet.total_score }} points</div>
+                    <div id="first-player"><a href="#player-{{ forloop.counter }}">
+                        {{ scoresheet.player_name }} &mdash; {{ scoresheet.total_score }} points</a>
+                    </div>
                 </td>
                 <td>&nbsp;</td>
             </tr>
@@ -14,22 +18,67 @@
             <tr id="second-row">
                 <td colspan="2" class="podium-box second">
                     <div id="second-player-header">#2</div>
-                    <div id="second-player">{{ scoresheet.gameplayer.player.get_profile.name }} &mdash; {{ scoresheet.total_score }} points</div>
+                    <div id="second-player"><a href="#player-{{ forloop.counter }}">
+                        {{ scoresheet.player_name }} &mdash; {{ scoresheet.total_score }} points</a>
+                    </div>
                 </td>
                 {% elif forloop.counter == 3 %}
                 <td colspan="2" class="podium-box">
                     <div id="third-player-header">#3</div>
-                    <div id="third-player">{{ scoresheet.gameplayer.player.get_profile.name }} &mdash; {{ scoresheet.total_score }} points</div>
+                    <div id="third-player"><a href="#player-{{ forloop.counter }}">
+                        {{ scoresheet.player_name }} &mdash; {{ scoresheet.total_score }} points</a>
+                    </div>
                 </td>
             </tr>
         {% else %}
             <tr>
                 <td>&nbsp;</td>
                 <td colspan="2">
-                    #{{ forloop.counter }}. {{ scoresheet.gameplayer.player.get_profile.name }} &mdash; {{ scoresheet.total_score }} points
+                    #{{ forloop.counter }}. <a href="#player-{{ forloop.counter }}">
+                        {{ scoresheet.player_name }} &mdash; {{ scoresheet.total_score }} points</a>
                 </td>
                 <td>&nbsp;</td>
             </tr>
         {% endif %}
     {% endfor %}
 </table>
+
+<h3>Details</h3>
+
+{% for scoresheet in scoresheets %}
+    <a name="player-{{ forloop.counter }}"></a>
+    {{ scoresheet.player_name }}
+    <div class="css_table">
+            <div class="css_table-row">
+                <div class="css_table-cell {% cycle 'even_color' 'odd_color' as color %}"><em>submitted cards</em></div>
+                <div class="css_table-cell {{ color }}"><em>unit value</em></div>
+                <div class="css_table-cell {{ color }}"><em>total points</em></div>
+            </div>
+        {% for sfc in scoresheet.scores_from_commodity %}
+            <div class="css_table-row">
+                <div class="css_table-cell {% cycle color %}">
+                    {% for copy in sfc.nb_submitted_cards|as_range %}
+                        <span class="minicard minimized
+                        {% if copy >= sfc.nb_scored_cards %} excluded" data-tip="{{ sfc.commodity.name }} &mdash; not scored"
+                        {% else %}" data-tip="{{ sfc.commodity.name }} &mdash; scored"{% endif %}
+                        style="background-color: {{ sfc.commodity.color }}">&nbsp;</span>
+                    {% endfor %}
+                </div>
+                <div class="css_table-cell {{ color }} points">x {{ sfc.actual_value|default_if_none:'' }}</div>
+                <div class="css_table-cell {{ color }} points">{{ sfc.score|default_if_none:'' }}</div>
+            </div>
+        {% endfor %}
+        {#% for line in player.scoresheet.extra %#}
+        <!--    <div class="css_table-row">
+                <div class="css_table-cell {% cycle color %}">{{ line.detail }}</div>
+                <div class="css_table-cell {{ color }} points">{{ line.score|default_if_none:'' }}</div>
+            </div> -->
+        {#% endfor %#}
+        <!-- <div class="css_table-row">
+            <div class="css_table-cell odd_color"><strong>Total</strong></div>
+            <div class="css_table-cell odd_color points"><strong>{{ player.score }}</strong></div>
+        </div> -->
+    </div>
+    <br/>
+{% endfor %}
+

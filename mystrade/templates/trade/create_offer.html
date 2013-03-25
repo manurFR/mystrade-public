@@ -49,7 +49,7 @@
                     <div class="card_copies">
                         {% for copy in form.nb_cards.value|as_range %}
                             <span class="minicard clickable
-                            {% if copy >= form.nb_tradable_cards.value %} reserved" data-tip="Reserved for a pending trade"
+                            {% if copy >= form.nb_tradable_cards.value %} excluded" data-tip="Reserved for a pending trade"
                             {% elif form.nb_traded_cards.value > copy %} clicked"
                             {% else %}"{% endif %}
                             style="background-color: {{ form.color.value }}">&nbsp;</span>

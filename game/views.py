@@ -234,7 +234,7 @@ def control_board(request, game_id):
             scoresheets = []
             for gameplayer in GamePlayer.objects.filter(game = game):
                 scoresheets.append(Scoresheet(gameplayer,
-                                              ScoreFromCommodity.objects.filter(game = game, player = gameplayer.player),
+                                              ScoreFromCommodity.objects.filter(game = game, player = gameplayer.player).order_by('commodity'),
                                               ScoreFromRule.objects.filter(game = game, player = gameplayer.player)))
             scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
             data['scoresheets'] = scoresheets

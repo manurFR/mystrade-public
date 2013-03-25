@@ -176,7 +176,7 @@ input[type="submit"] {
     height: 50px;
 }
 
-.reserved {
+.excluded {
     background: url(stripe.png);
 }
 
@@ -218,7 +218,7 @@ input[type="submit"] {
 }
 
 .odd_color {
-	background-color: #FFA500;
+	background-color: #DEB21E;
 }
 
 .even_color:hover, .odd_color:hover {
