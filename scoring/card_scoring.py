@@ -31,10 +31,9 @@ class Scoresheet(object):
         # add non persisted properties for later ease of use
         for sfc in self._scores_from_commodity:
             sfc.name = sfc.commodity.name.lower()
-            sfc.nb_submitted_cards = sfc.nb_scored_cards
 
         self.neutral_commodity = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = Commodity(),
-                                                    nb_scored_cards = 0, actual_value = 0, score = 0)
+                                                    nb_submitted_cards = 0, nb_scored_cards = 0, actual_value = 0, score = 0)
 
     def score_for_commodity(self, name):
         for sfc in self.scores_from_commodity:
@@ -74,7 +73,8 @@ class Scoresheet(object):
         self._scores_from_commodity = []
         for cih in CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player, nb_submitted_cards__gt = 0):
             sfc = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = cih.commodity,
-                                     nb_scored_cards = cih.nb_submitted_cards, actual_value = cih.commodity.value, score = 0)
+                                     nb_submitted_cards = cih.nb_submitted_cards, nb_scored_cards = cih.nb_submitted_cards,
+                                     actual_value = cih.commodity.value, score = 0)
             self._scores_from_commodity.append(sfc)
 
     @property
@@ -89,3 +89,5 @@ class Scoresheet(object):
     def scores_from_rule(self):
         return self._scores_from_rule
 
+    def player_name(self):
+        return self.gameplayer.player.get_profile().name

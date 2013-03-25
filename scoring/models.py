@@ -16,6 +16,7 @@ class ScoreFromCommodity(models.Model):
     player = models.ForeignKey(User)
     commodity = models.ForeignKey(Commodity)
 
+    nb_submitted_cards = models.PositiveSmallIntegerField()
     nb_scored_cards = models.PositiveSmallIntegerField()
     actual_value = models.IntegerField()
     score = models.IntegerField()
