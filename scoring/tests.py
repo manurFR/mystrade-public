@@ -1,108 +1,10 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils.timezone import now
-from django.utils.unittest.case import skip
 from model_mommy import mommy
 from game.models import Game, GamePlayer, CommodityInHand
 from ruleset.models import RuleCard, Commodity
 from scoring.card_scoring import tally_scores, Scoresheet
-
-class ViewsTest(TestCase):
-    def setUp(self):
-        self.testUser = User.objects.create_user('test', 'test@aaa.com', 'test')
-        self.client.login(username = 'test', password = 'test')
-
-    def test_display_rulecards(self):
-        response = self.client.get("/scoring/")
-        self.assertTemplateUsed(response, 'scoring/choose_rulecards.html')
-
-    @skip("scoring page to be removed")
-    def test_choose_some_rulecards(self):
-        response = self.client.post("/scoring/",
-                                    {'rulecards-TOTAL_FORMS': 15, 'rulecards-INITIAL_FORMS': 15,
-                                     'rulecards-0-card_id': 1, 'rulecards-0-selected_rule': 'on',
-                                     'rulecards-1-card_id': 2, 'rulecards-1-selected_rule': 'on',
-                                     'rulecards-2-card_id': 3, 'rulecards-2-selected_rule': 'on',
-                                     'rulecards-3-card_id': 4,
-                                     'rulecards-4-card_id': 5,
-                                     'rulecards-5-card_id': 6,
-                                     'rulecards-6-card_id': 7,
-                                     'rulecards-7-card_id': 8,
-                                     'rulecards-8-card_id': 9,
-                                     'rulecards-9-card_id': 10, 'rulecards-9-selected_rule': 'on',
-                                     'rulecards-10-card_id': 11,
-                                     'rulecards-11-card_id': 12,
-                                     'rulecards-12-card_id': 13, 'rulecards-12-selected_rule': 'on',
-                                     'rulecards-13-card_id': 14,
-                                     'rulecards-14-card_id': 15,
-                                     'hands-TOTAL_FORMS': 0, 'hands-INITIAL_FORMS': 0
-                                    })
-
-        self.assertEqual(200, response.status_code)
-        self.assertTemplateUsed(response, 'scoring/result.html')
-        self.assertEqual(['1', '2', '3', '10', '13'], [card.public_name for card in response.context['rules']])
-
-    @skip("scoring page to be removed")
-    def test_mandatory_cards(self):
-        response = self.client.post("/scoring/",
-                                    {'rulecards-TOTAL_FORMS': 15, 'rulecards-INITIAL_FORMS': 15,
-                                     'rulecards-0-card_id': 1,
-                                     'rulecards-1-card_id': 2,
-                                     'rulecards-2-card_id': 3,
-                                     'rulecards-3-card_id': 4,
-                                     'rulecards-4-card_id': 5,
-                                     'rulecards-5-card_id': 6,
-                                     'rulecards-6-card_id': 7,
-                                     'rulecards-7-card_id': 8,
-                                     'rulecards-8-card_id': 9,
-                                     'rulecards-9-card_id': 10,
-                                     'rulecards-10-card_id': 11,
-                                     'rulecards-11-card_id': 12,
-                                     'rulecards-12-card_id': 13,
-                                     'rulecards-13-card_id': 14,
-                                     'rulecards-14-card_id': 15,
-                                     'hands-TOTAL_FORMS': 0, 'hands-INITIAL_FORMS': 0
-                                    })
-
-        self.assertEqual(200, response.status_code)
-        self.assertTemplateUsed(response, 'scoring/result.html')
-        self.assertEqual(['1', '2', '3'], [card.public_name for card in response.context['rules']])
-
-    @skip("scoring page to be removed")
-    def test_specify_hands(self):
-        response = self.client.post("/scoring/",
-                                    {'rulecards-TOTAL_FORMS': 0, 'rulecards-INITIAL_FORMS': 0,
-                                     'hands-TOTAL_FORMS': 2, 'hands-INITIAL_FORMS': 2,
-                                     'hands-0-yellow': 3,
-                                     'hands-0-blue': 0,
-                                     'hands-0-orange': 8,
-                                     'hands-1-yellow': 1,
-                                     'hands-1-blue': 2,
-                                     'hands-1-red': 3,
-                                     'hands-1-orange': 4,
-                                     'hands-1-white': 5
-                                    })
-
-        self.assertEqual(200, response.status_code)
-        self.assertTemplateUsed(response, 'scoring/result.html')
-        self.assertContains(response, "Yellow : 3, Blue : 0, Red : 0, Orange : 8, White : 0")
-        self.assertContains(response, "Yellow : 1, Blue : 2, Red : 3, Orange : 4, White : 5")
-
-    @skip("scoring page to be removed")
-    def test_specify_hands_only_empty_fields(self):
-        response = self.client.post("/scoring/",
-                                    {'rulecards-TOTAL_FORMS': 0, 'rulecards-INITIAL_FORMS': 0,
-                                     'hands-TOTAL_FORMS': 1, 'hands-INITIAL_FORMS': 1,
-                                     'hands-0-yellow': '',
-                                     'hands-0-blue': '',
-                                     'hands-0-red': '',
-                                     'hands-0-orange': '',
-                                     'hands-0-white': ''
-                                    })
-
-        self.assertEqual(200, response.status_code)
-        self.assertTemplateUsed(response, 'scoring/result.html')
-        self.assertContains(response, "Yellow : 0, Blue : 0, Red : 0, Orange : 0, White : 0")
 
 class ScoringTest(TestCase):
     def setUp(self):
@@ -219,7 +121,6 @@ class ScoringTest(TestCase):
         self.assertEqual(rulecard, scoresheet.scores_from_rule[0].rulecard)
         self.assertEqual('test', scoresheet.scores_from_rule[0].detail)
         self.assertIsNone(scoresheet.scores_from_rule[0].score)
-
 
 class HaggleTest(TestCase):
     def setUp(self):

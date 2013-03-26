@@ -52,7 +52,7 @@
                                 <a href="{% url 'submit_hand' game.id %}">Submit Hand and Finish</a>
                             {% endif %}
                         {% else %}
-                            <em>not player</em>
+                            &nbsp;
                         {% endif %}
                     {% elif game.is_ended %}
                         <em>game ended</em>

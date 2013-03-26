@@ -9,7 +9,6 @@ urlpatterns = patterns('',
     url(r'^welcome/$', 'django.views.generic.simple.redirect_to', {'url': '/game/'}),
     url(r'^logout$',   'django.contrib.auth.views.logout_then_login', name='logout'),
     url(r'^profile/',  include('userprofile.urls')),
-    url(r'^scoring/',  include('scoring.urls')),
     url(r'^game/',     include('game.urls')),
     url(r'^trade/',    include('trade.urls')),
 
