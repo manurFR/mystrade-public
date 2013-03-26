@@ -7,9 +7,9 @@
             <tr>
                 <td>&nbsp;</td>
                 <td colspan="2" class="podium-box">
-                    <div id="first-player-header">Winner</div>
-                    <div id="first-player"><a href="#player-{{ forloop.counter }}">
-                        {{ scoresheet.player_name }} &mdash; {{ scoresheet.total_score }} points</a>
+                    <div class="first-player-header">Winner</div>
+                    <div class="first-player"><a href="#player-{{ forloop.counter }}">
+                        <strong>{{ scoresheet.player_name }}</strong> &mdash; {{ scoresheet.total_score }} points</a>
                     </div>
                 </td>
                 <td>&nbsp;</td>
@@ -17,16 +17,16 @@
         {% elif forloop.counter == 2 %}
             <tr id="second-row">
                 <td colspan="2" class="podium-box second">
-                    <div id="second-player-header">#2</div>
-                    <div id="second-player"><a href="#player-{{ forloop.counter }}">
-                        {{ scoresheet.player_name }} &mdash; {{ scoresheet.total_score }} points</a>
+                    <div class="second-player-header">Second place</div>
+                    <div class="second-player"><a href="#player-{{ forloop.counter }}">
+                        <strong>{{ scoresheet.player_name }}</strong> &mdash; {{ scoresheet.total_score }} points</a>
                     </div>
                 </td>
                 {% elif forloop.counter == 3 %}
                 <td colspan="2" class="podium-box">
-                    <div id="third-player-header">#3</div>
-                    <div id="third-player"><a href="#player-{{ forloop.counter }}">
-                        {{ scoresheet.player_name }} &mdash; {{ scoresheet.total_score }} points</a>
+                    <div class="third-player-header">Third place</div>
+                    <div class="third-player"><a href="#player-{{ forloop.counter }}">
+                        <strong>{{ scoresheet.player_name }}</strong> &mdash; {{ scoresheet.total_score }} points</a>
                     </div>
                 </td>
             </tr>
@@ -35,7 +35,7 @@
                 <td>&nbsp;</td>
                 <td colspan="2">
                     #{{ forloop.counter }}. <a href="#player-{{ forloop.counter }}">
-                        {{ scoresheet.player_name }} &mdash; {{ scoresheet.total_score }} points</a>
+                    <strong>{{ scoresheet.player_name }}</strong> &mdash; {{ scoresheet.total_score }} points</a>
                 </td>
                 <td>&nbsp;</td>
             </tr>
@@ -47,37 +47,64 @@
 
 {% for scoresheet in scoresheets %}
     <a name="player-{{ forloop.counter }}"></a>
-    {{ scoresheet.player_name }}
-    <div class="css_table">
-            <div class="css_table-row">
-                <div class="css_table-cell {% cycle 'even_color' 'odd_color' as color %}"><em>submitted cards</em></div>
-                <div class="css_table-cell {{ color }}"><em>unit value</em></div>
-                <div class="css_table-cell {{ color }}"><em>total points</em></div>
-            </div>
-        {% for sfc in scoresheet.scores_from_commodity %}
-            <div class="css_table-row">
-                <div class="css_table-cell {% cycle color %}">
-                    {% for copy in sfc.nb_submitted_cards|as_range %}
-                        <span class="minicard minimized
-                        {% if copy >= sfc.nb_scored_cards %} excluded" data-tip="{{ sfc.commodity.name }} &mdash; not scored"
-                        {% else %}" data-tip="{{ sfc.commodity.name }} &mdash; scored"{% endif %}
-                        style="background-color: {{ sfc.commodity.color }}">&nbsp;</span>
-                    {% endfor %}
+    <div>
+        {% if forloop.counter == 1 %}
+            <span class="first-player-header">Winner: </span><span class="first-player">
+        {% elif forloop.counter == 2 %}
+            <span class="second-player-header">Second place: </span><span class="second-player">
+        {% elif forloop.counter == 3 %}
+            <span class="third-player-header">Third place: </span><span class="third-player">
+        {% else %}
+            #{{ forloop.counter }}. <span>
+        {% endif %}
+        <strong>{{ scoresheet.player_name }}</strong></span>
+    </div>
+    <br/>
+    <div class="scoresheet">
+        Commodity cards:
+        <div class="css_table">
+                <div class="css_table-row">
+                    <div class="css_table-cell {% cycle 'even_color' 'odd_color' as color %}"><em>submitted cards</em></div>
+                    <div class="css_table-cell {{ color }}"><em>unit value</em></div>
+                    <div class="css_table-cell {{ color }}"><em>total points</em></div>
                 </div>
-                <div class="css_table-cell {{ color }} points">x {{ sfc.actual_value|default_if_none:'' }}</div>
-                <div class="css_table-cell {{ color }} points">{{ sfc.score|default_if_none:'' }}</div>
+            {% for sfc in scoresheet.scores_from_commodity %}
+                <div class="css_table-row">
+                    <div class="css_table-cell {% cycle color %}">
+                        {% for copy in sfc.nb_submitted_cards|as_range %}
+                            <span class="minicard minimized
+                            {% if copy >= sfc.nb_scored_cards %} excluded" data-tip="{{ sfc.commodity.name }} &mdash; not scored"
+                            {% else %}" data-tip="{{ sfc.commodity.name }} &mdash; scored"{% endif %}
+                            style="background-color: {{ sfc.commodity.color }}">&nbsp;</span>
+                        {% endfor %}
+                    </div>
+                    <div class="css_table-cell {{ color }} points">x {{ sfc.actual_value|default_if_none:'' }}</div>
+                    <div class="css_table-cell {{ color }} points">{{ sfc.score|default_if_none:'' }}</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <br/>
+        {% if scoresheet.scores_from_rule %}
+            Applicable rules:
+            <div class="css_table">
+                <div class="css_table-row">
+                    <div class="css_table-cell {% cycle 'even_color' 'odd_color' as color %}"><em>rule</em></div>
+                    <div class="css_table-cell {{ color }}"><em>points</em></div>
+                </div>
+                {% for sfr in scoresheet.scores_from_rule %}
+                    <div class="css_table-row">
+                        <div class="css_table-cell {% cycle color %}">{{ sfr.detail }}</div>
+                        <div class="css_table-cell {{ color }} points">{{ sfr.score|default_if_none:'' }}</div>
+                    </div>
+                {% endfor %}
             </div>
-        {% endfor %}
-        {#% for line in player.scoresheet.extra %#}
-        <!--    <div class="css_table-row">
-                <div class="css_table-cell {% cycle color %}">{{ line.detail }}</div>
-                <div class="css_table-cell {{ color }} points">{{ line.score|default_if_none:'' }}</div>
-            </div> -->
-        {#% endfor %#}
-        <!-- <div class="css_table-row">
-            <div class="css_table-cell odd_color"><strong>Total</strong></div>
-            <div class="css_table-cell odd_color points"><strong>{{ player.score }}</strong></div>
-        </div> -->
+        {% else %}
+            <em>No applicable rules</em><br/>
+        {% endif %}
+
+        <br/>
+        Grand Total: <strong>{{ scoresheet.total_score }} points</strong>
     </div>
     <br/>
 {% endfor %}

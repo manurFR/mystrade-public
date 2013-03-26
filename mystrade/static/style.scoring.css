@@ -19,29 +19,39 @@
     height: 50px;
 }
 
-.scores #first-player-header {
+.first-player-header {
     font-size: 1.6em;
     font-weight: bold;
 }
-.scores #first-player {
+.first-player {
     font-size: 1.2em;
 }
 
-.scores #second-player-header {
+.second-player-header {
     font-size: 1.3em;
     font-weight: bold;
 }
-.scores #second-player {
+.second-player {
     font-size: 1.1em;
 }
 
-.scores #third-player-header {
+.third-player-header {
     font-size: 1.1em;
     height: 1.3em;
     font-weight: bold;
 }
-.scores #third-player {
+.third-player {
     font-size: 1em;
+}
+
+.scoresheet {
+    width: 90%;
+    margin-left: 15px;
+    padding: 10px;
+    background-color: #FFBF00;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
 }
 
 .submitted-hand {
