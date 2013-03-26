@@ -6,7 +6,7 @@
         {% if forloop.counter == 1 %}
             <tr>
                 <td>&nbsp;</td>
-                <td colspan="2" class="podium-box">
+                <td colspan="2" class="podium-box{% if rank == 1 %} me{% endif %}">
                     <div class="first-player-header">Winner</div>
                     <div class="first-player"><a href="#player-{{ forloop.counter }}">
                         <strong>{{ scoresheet.player_name }}</strong> &mdash; {{ scoresheet.total_score }} points</a>
@@ -16,14 +16,14 @@
             </tr>
         {% elif forloop.counter == 2 %}
             <tr id="second-row">
-                <td colspan="2" class="podium-box second">
+                <td colspan="2" class="podium-box{% if rank == 2 %} me{% endif %}">
                     <div class="second-player-header">Second place</div>
                     <div class="second-player"><a href="#player-{{ forloop.counter }}">
                         <strong>{{ scoresheet.player_name }}</strong> &mdash; {{ scoresheet.total_score }} points</a>
                     </div>
                 </td>
                 {% elif forloop.counter == 3 %}
-                <td colspan="2" class="podium-box">
+                <td colspan="2" class="podium-box{% if rank == 3 %} me{% endif %}">
                     <div class="third-player-header">Third place</div>
                     <div class="third-player"><a href="#player-{{ forloop.counter }}">
                         <strong>{{ scoresheet.player_name }}</strong> &mdash; {{ scoresheet.total_score }} points</a>
@@ -33,7 +33,7 @@
         {% else %}
             <tr>
                 <td>&nbsp;</td>
-                <td colspan="2">
+                <td colspan="2" {% if rank == forloop.counter %}class="me"{% endif %}>
                     #{{ forloop.counter }}. <a href="#player-{{ forloop.counter }}">
                     <strong>{{ scoresheet.player_name }}</strong> &mdash; {{ scoresheet.total_score }} points</a>
                 </td>
@@ -46,6 +46,7 @@
 <h3>Details</h3>
 
 {% for scoresheet in scoresheets %}
+<div {% if rank == forloop.counter %}class="me"{% endif %}>
     <a name="player-{{ forloop.counter }}"></a>
     <div>
         {% if forloop.counter == 1 %}
@@ -107,5 +108,6 @@
         Grand Total: <strong>{{ scoresheet.total_score }} points</strong>
     </div>
     <br/>
+</div>
 {% endfor %}
 

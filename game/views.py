@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def welcome(request):
-    games = Game.objects.filter(Q(master=request.user) | Q(players=request.user)).distinct().order_by('-end_date')
+    games = Game.objects.filter(Q(master=request.user) | Q(players=request.user)).distinct().order_by('-closing_date', '-end_date')
     for game in games:
         game.list_of_players = [player.get_profile().name for player in game.players.all().order_by('id')]
         game.hand_submitted = game.gameplayer_set.filter(submit_date__isnull = False, player = request.user).count() > 0
@@ -226,26 +226,43 @@ def select_rules(request):
 
 @login_required
 def control_board(request, game_id):
-    game = get_object_or_404(Game, id=game_id)
+    game = get_object_or_404(Game, id = game_id)
     data = {'game': game}
 
     if request.user == game.master or request.user.is_staff:
         if game.is_closed(): # display score
-            scoresheets = []
-            for gameplayer in GamePlayer.objects.filter(game = game):
-                scoresheets.append(Scoresheet(gameplayer,
-                                              ScoreFromCommodity.objects.filter(game = game, player = gameplayer.player).order_by('commodity'),
-                                              ScoreFromRule.objects.filter(game = game, player = gameplayer.player).order_by('rulecard')))
-            scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
-            data['scoresheets'] = scoresheets
+            data['scoresheets'] = _fetch_scoresheets(game)
 
         return render(request, 'game/control.html', data)
 
     raise PermissionDenied
 
 @login_required
+def player_score(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+
+    if request.user not in game.players.all() or not game.is_closed():
+        raise PermissionDenied
+
+    scoresheets = _fetch_scoresheets(game)
+    for index, scoresheet in enumerate(scoresheets, start = 1):
+        if scoresheet.gameplayer.player == request.user:
+            rank = index
+
+    return render(request, 'game/player_score.html', {'game': game, 'scoresheets': scoresheets, 'rank': rank})
+
+def _fetch_scoresheets(game):
+    scoresheets = []
+    for gameplayer in GamePlayer.objects.filter(game=game):
+        scoresheets.append(Scoresheet(gameplayer,
+                                      ScoreFromCommodity.objects.filter(game=game, player=gameplayer.player).order_by('commodity'),
+                                      ScoreFromRule.objects.filter(game=game, player=gameplayer.player).order_by('rulecard')))
+    scoresheets.sort(key=lambda scoresheet: scoresheet.total_score, reverse=True)
+    return scoresheets
+
+@login_required
 def close_game(request, game_id):
-    game = get_object_or_404(Game, id=game_id)
+    game = get_object_or_404(Game, id = game_id)
 
     if request.method == 'POST' and (request.user == game.master or request.user.is_staff):
         if game.end_date <= now() and game.closing_date is None :

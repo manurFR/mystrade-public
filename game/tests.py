@@ -428,7 +428,25 @@ class ControlBoardViewTest(TestCase):
     def setUp(self):
         _common_setUp(self)
         self.game_ended = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -2))
+        self.game_closed = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -2),
+                                          closing_date = now() + datetime.timedelta(days = -1))
+        mommy.make_one(GamePlayer, game = self.game_closed, player = self.loginUser)
+
         pass
+
+    def test_access_to_score_board_allowed_only_to_game_players(self):
+        self._assertOperation_get(self.game_closed, "score")
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'admin', password = 'test'))
+        self._assertOperation_get(self.game_closed, "score", 403)
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+        self._assertOperation_get(self.game_closed, "score", 403)
+
+    def test_access_to_score_board_allowed_only_to_closed_games(self):
+        self._assertOperation_get(self.game_ended, "score", 403)
 
     def test_access_to_control_board_allowed_only_to_game_master_and_admins(self):
         self._assertOperation_get(self.game, "control", 403)
