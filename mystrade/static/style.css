@@ -278,3 +278,7 @@ a:hover, .dynamic_link:hover {
     font-style: italic;
     margin-left: -15px;
 }
+
+.end_warning {
+    color: red;
+}

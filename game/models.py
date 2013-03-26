@@ -1,3 +1,4 @@
+import datetime
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q, Sum
@@ -29,6 +30,9 @@ class Game(models.Model):
 
     def is_closed(self):
         return self.closing_date and now() >= self.closing_date
+
+    def less_than_24_hours_remaining(self):
+        return self.end_date + datetime.timedelta(days = -1) <= now() <= self.end_date
 
 class GamePlayer(models.Model):
     game = models.ForeignKey(Game)

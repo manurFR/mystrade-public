@@ -32,7 +32,9 @@
 				</div>
 				<div class="css_table-cell {{ color }}"><span data-tip="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></div>
 				<div class="css_table-cell {{ color }}">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</div>
-				<div class="css_table-cell {{ color }}">{{ game.end_date|date:"SHORT_DATETIME_FORMAT" }}</div>
+				<div class="css_table-cell {{ color }}{% if game.less_than_24_hours_remaining and not game.hand_submitted %} end_warning{% endif %}">
+                    {{ game.end_date|date:"SHORT_DATETIME_FORMAT" }}
+                </div>
                 <div class="css_table-cell {{ color }}"> > </div>
                 <div class="css_table-cell {{ color }}">
                     {% if user in game.players.all %}<a href="{% url 'hand' game.id %}">Show Hand</a>
