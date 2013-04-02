@@ -177,7 +177,7 @@ input[type="submit"] {
 }
 
 .excluded {
-    background: url(stripe.png);
+    background: url(../stripe.png);
 }
 
 .clicked {
