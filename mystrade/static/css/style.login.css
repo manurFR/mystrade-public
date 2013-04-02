@@ -1,40 +1,37 @@
+/* line 3, ../../resources/scss/style.login.scss */
 .content {
-	background-color: #FFC840;
-	margin-top: 50px;
-	margin-left: auto;
-	margin-right: auto;
-  	padding: 10px;
-	border: 1px solid #FFD773;
-	border-radius: 10px;
-	-moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
-	width: 21em;
-  	text-align: center;
-}
+  background-color: #FFC840;
+  margin-top: 50px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px;
+  border: 1px solid #ffd773;
+  border-radius: 10px;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  width: 21em;
+  text-align: center; }
+  /* line 14, ../../resources/scss/style.login.scss */
+  .content table.login {
+    width: auto; }
+    /* line 17, ../../resources/scss/style.login.scss */
+    .content table.login td {
+      vertical-align: middle; }
 
-.content table.login {
-	width: auto;
-}
-
-.content table.login td {
-	vertical-align: middle;
-}
-
+/* line 24, ../../resources/scss/style.login.scss */
 .form-row .label {
-	color: #333333;
-	float: left;
-	font-size: 1em;
-	line-height: 2em;
-	padding-right: 0.5em;
-	text-align: right;
-	width: 9em;
-}
-
+  color: #333333;
+  float: left;
+  font-size: 1em;
+  line-height: 2em;
+  padding-right: 0.5em;
+  text-align: right;
+  width: 9em; }
+/* line 34, ../../resources/scss/style.login.scss */
 .form-row .input {
-	width:14em;
-}
+  width: 14em; }
 
+/* line 39, ../../resources/scss/style.login.scss */
 .submit-row {
-	padding-top: 1em;
-	padding-bottom: 0.5em;
-}
+  padding-top: 1em;
+  padding-bottom: 0.5em; }

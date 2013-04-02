@@ -1,0 +1,284 @@
+@import "common";
+
+body {
+    background-color: $backgroundColor;
+    width: 980px;
+    margin: 5px auto 0 auto;
+    font-family: 'Lucida Grande', Verdana, Arial, sans-serif;
+    font-size: 10pt;
+}
+
+a img, .icon {
+    border: 0px;
+    vertical-align: text-top;
+}
+
+.toplinks {
+  top: 2px;
+  text-align: right;
+  margin-bottom: -20px;
+  margin-right: 20px;
+}
+
+.logobox {
+  width: 422px;
+  top: 10px;
+
+  .motto {
+    position: relative;
+    top: -10px;
+    left: 15px;
+    font-family: "Garamond", "Times New Roman", serif;
+    font-size: 1.3em;
+    font-style: italic;
+    color: black;
+    letter-spacing: 7px;
+  }
+
+  a:hover {
+    text-decoration: none;
+  }
+}
+
+.content {
+  padding: 10px;
+}
+
+.fullwidth {
+  width: 960px;
+}
+
+.header {
+  line-height: 1.6em;
+  background-color: #FFE640;
+  padding-left: 2em;
+}
+
+.formtable {
+  tr {
+    line-height: 1.5em;
+  }
+
+  th {
+    width: 230px;
+    font-weight: normal;
+    padding-right: 1em;
+    text-align: right;
+    vertical-align: text-top;
+  }
+
+  label {
+    color: #333333;
+  }
+}
+
+.helptext {
+  font-size: 8pt;
+  font-style: italic;
+  color: $infoTextColor;
+}
+
+.brhelptext {
+  @extend .helptext;
+  display: block;
+  margin-top: -0.6em;
+}
+
+input[type="text"], input[type="password"], textarea, select {
+  border: $lightSolidBorder;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: normal;
+  background-color: #FAFFBD;
+  margin: 2px 0;
+  padding: 2px 3px;
+}
+
+select {
+  height: 2em;
+}
+select[multiple] {
+  height: auto;
+}
+
+input[type="submit"] {
+  background-color: #DDDDDD;
+}
+
+.submit-button {
+  margin-left: 250px;
+}
+
+.errors {
+  font-size: 0.8em;
+  color: $infoTextColor;
+}
+
+.done {
+  color: $infoTextColor;
+}
+
+.cancelled {
+  text-decoration: line-through;
+}
+
+.floatright {
+  float: right;
+  margin-right: 1em;
+  text-align: right;
+}
+
+.frame {
+  border: thin inset white;
+  padding: 2px;
+}
+
+.card {
+  position: relative;
+  padding: 5px;
+  border: $lightSolidBorder;
+  @include roundedBorder(5px);
+  text-align: center;
+  width: 225px;
+  height: 170px;
+}
+
+.card.with_button {
+  height: 200px;
+}
+
+.card.dashed {
+  border: $lightDashedBorder;
+  color: #644700;
+}
+
+.card_name {
+  font-size: 1.5em;
+  font-weight: bold;
+  padding: 3px;
+}
+
+.card_desc {
+  padding: 3px;
+}
+
+.card_copies {
+  margin-top: 30px;
+}
+
+.minicard {
+  display:inline-block;
+  @include roundedBorder(2px);
+  width: 25px;
+  height: 50px;
+}
+
+.excluded {
+  background: url(../stripe.png);
+}
+
+.clicked {
+  border: gray solid 3px;
+  @include roundedBorder(2px);
+}
+
+.card_select {
+  width: 220px;
+  text-align: center;
+}
+
+.css_table {
+  display: table;
+  border-spacing: 2px;
+}
+
+.css_table-row {
+  display: table-row;
+}
+
+.css_table-cell {
+  display: table-cell;
+  padding: 1px 4px;
+}
+
+.header-row {
+  text-align: center;
+  font-weight: bold;
+  padding: 1px 4px;
+  background-color: darken($backgroundColor, 4%);
+}
+
+.even_color {
+  background-color: lighten($backgroundColor, 10%);
+
+  &:hover {
+    background-color: #FFD800;
+  }
+}
+
+.odd_color {
+  background-color: darken($backgroundColor, 4%);
+
+  &:hover {
+  background-color: #FFD800;
+}
+}
+
+.points {
+  min-width: 4em;
+  text-align: right;
+}
+
+.align_to_bottom {
+  position: absolute;
+  bottom: 5px;
+}
+
+.reminder {
+  margin: 4px 4px 4px 10px;
+  padding: 3px;
+  border: thin dotted gray;
+  background-color: $infoPanelColor;
+}
+
+.new {
+  color: red;
+  font-weight: bold;
+}
+
+a, .dynamic_link {
+  color: #800024;
+  font-weight: normal;
+  text-decoration: none;
+}
+
+a:hover, .dynamic_link:hover {
+  text-decoration:underline;
+  cursor: pointer;
+}
+
+.ui-datepicker-trigger {
+  position: relative;
+  top: 4px;
+  left: 2px;
+}
+
+.free_information {
+  border: $lightSolidBorder;
+  @include roundedBorder(5px);
+  padding-left: 30px;
+  padding-top: 10px;
+}
+
+.free_information legend {
+  color: #333333;
+  font-style: italic;
+  margin-left: -15px;
+}
+
+.end_warning {
+  color: red;
+}

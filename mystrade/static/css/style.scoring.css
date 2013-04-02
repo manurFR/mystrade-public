@@ -1,75 +1,74 @@
+/* line 3, ../../resources/scss/style.scoring.scss */
 .scores {
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-    border-collapse: collapse;
-}
-
-.scores td {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  border-collapse: collapse; }
+  /* line 11, ../../resources/scss/style.scoring.scss */
+  .scores td {
     width: 200px;
-    height: 30px;
-}
-
-.scores tr#second-row td {
-    width: 300px;
-}
-
-.scores .podium-box {
+    height: 30px; }
+  /* line 16, ../../resources/scss/style.scoring.scss */
+  .scores tr#second-row td {
+    width: 300px; }
+  /* line 20, ../../resources/scss/style.scoring.scss */
+  .scores .podium-box {
     border: 1px solid black;
-    height: 50px;
-}
+    height: 50px; }
 
+/* line 26, ../../resources/scss/style.scoring.scss */
 .me {
-    background-color: #FFE640;
-}
+  background-color: #FFE640; }
 
+/* line 30, ../../resources/scss/style.scoring.scss */
 .first-player-header {
-    font-size: 1.6em;
-    font-weight: bold;
-}
+  font-size: 1.6em;
+  font-weight: bold; }
+
+/* line 35, ../../resources/scss/style.scoring.scss */
 .first-player {
-    font-size: 1.2em;
-}
+  font-size: 1.2em; }
 
+/* line 39, ../../resources/scss/style.scoring.scss */
 .second-player-header {
-    font-size: 1.3em;
-    font-weight: bold;
-}
+  font-size: 1.3em;
+  font-weight: bold; }
+
+/* line 44, ../../resources/scss/style.scoring.scss */
 .second-player {
-    font-size: 1.1em;
-}
+  font-size: 1.1em; }
 
+/* line 48, ../../resources/scss/style.scoring.scss */
 .third-player-header {
-    font-size: 1.1em;
-    height: 1.3em;
-    font-weight: bold;
-}
+  font-size: 1.1em;
+  height: 1.3em;
+  font-weight: bold; }
+
+/* line 54, ../../resources/scss/style.scoring.scss */
 .third-player {
-    font-size: 1em;
-}
+  font-size: 1em; }
 
+/* line 58, ../../resources/scss/style.scoring.scss */
 .scoresheet {
-    width: 90%;
-    margin-left: 15px;
-    padding: 10px;
-    background-color: #FFBF00;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-}
+  width: 90%;
+  margin-left: 15px;
+  padding: 10px;
+  background-color: #ffbf00;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px; }
 
+/* line 66, ../../resources/scss/style.scoring.scss */
 .submitted-hand {
-    vertical-align: bottom;
-    margin: 5px 0;
-}
-
-.submitted-hand .minicard, .minicard.minimized {
+  vertical-align: bottom;
+  margin: 5px 0; }
+  /* line 70, ../../resources/scss/style.scoring.scss */
+  .submitted-hand .minicard, .submitted-hand .minicard.minimized {
     width: 15px;
-    height: 30px;
-}
+    height: 30px; }
 
+/* line 76, ../../resources/scss/style.scoring.scss */
 .congrats {
-    margin-top: 20px;
-    text-align: center;
-    font-size: 1.3em;
-}
+  margin-top: 20px;
+  text-align: center;
+  font-size: 1.3em; }

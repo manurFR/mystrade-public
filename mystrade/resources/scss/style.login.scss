@@ -1,0 +1,42 @@
+@import "common";
+
+.content {
+  background-color: #FFC840;
+  margin-top: 50px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px;
+  border: $lightSolidBorder;
+  @include roundedBorder(10px);
+  width: 21em;
+  text-align: center;
+
+  table.login {
+    width: auto;
+
+    td {
+      vertical-align: middle;
+    }
+  }
+}
+
+.form-row {
+  .label {
+    color: #333333;
+    float: left;
+    font-size: 1em;
+    line-height: 2em;
+    padding-right: 0.5em;
+    text-align: right;
+    width: 9em;
+  }
+
+  .input {
+    width: 14em;
+  }
+}
+
+.submit-row {
+  padding-top: 1em;
+  padding-bottom: 0.5em;
+}
