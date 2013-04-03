@@ -11,3 +11,12 @@ $infoPanelColor: #FFBF00;
   -moz-border-radius: $radius;
   -webkit-border-radius: $radius;
 }
+
+@mixin font($family: null, $size: null, $weight: null, $style: null) {
+  font: {
+    @if $family != null { family: $family; }
+    @if $size != null { size: $size; }
+    @if $weight != null { weight: $weight; }
+    @if $style != null { style: $style; }
+  };
+}

@@ -25,30 +25,30 @@
   font-size: 1.6em;
   font-weight: bold; }
 
-/* line 35, ../../resources/scss/style.scoring.scss */
+/* line 34, ../../resources/scss/style.scoring.scss */
 .first-player {
   font-size: 1.2em; }
 
-/* line 39, ../../resources/scss/style.scoring.scss */
+/* line 38, ../../resources/scss/style.scoring.scss */
 .second-player-header {
   font-size: 1.3em;
   font-weight: bold; }
 
-/* line 44, ../../resources/scss/style.scoring.scss */
+/* line 42, ../../resources/scss/style.scoring.scss */
 .second-player {
   font-size: 1.1em; }
 
-/* line 48, ../../resources/scss/style.scoring.scss */
+/* line 46, ../../resources/scss/style.scoring.scss */
 .third-player-header {
   font-size: 1.1em;
-  height: 1.3em;
-  font-weight: bold; }
+  font-weight: bold;
+  height: 1.3em; }
 
-/* line 54, ../../resources/scss/style.scoring.scss */
+/* line 51, ../../resources/scss/style.scoring.scss */
 .third-player {
   font-size: 1em; }
 
-/* line 58, ../../resources/scss/style.scoring.scss */
+/* line 55, ../../resources/scss/style.scoring.scss */
 .scoresheet {
   width: 90%;
   margin-left: 15px;
@@ -58,16 +58,16 @@
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px; }
 
-/* line 66, ../../resources/scss/style.scoring.scss */
+/* line 63, ../../resources/scss/style.scoring.scss */
 .submitted-hand {
   vertical-align: bottom;
   margin: 5px 0; }
-  /* line 70, ../../resources/scss/style.scoring.scss */
+  /* line 67, ../../resources/scss/style.scoring.scss */
   .submitted-hand .minicard, .submitted-hand .minicard.minimized {
     width: 15px;
     height: 30px; }
 
-/* line 76, ../../resources/scss/style.scoring.scss */
+/* line 73, ../../resources/scss/style.scoring.scss */
 .congrats {
   margin-top: 20px;
   text-align: center;

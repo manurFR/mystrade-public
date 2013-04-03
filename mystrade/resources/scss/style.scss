@@ -4,8 +4,7 @@ body {
     background-color: $backgroundColor;
     width: 980px;
     margin: 5px auto 0 auto;
-    font-family: 'Lucida Grande', Verdana, Arial, sans-serif;
-    font-size: 10pt;
+    @include font(('Lucida Grande', Verdana, Arial, sans-serif), 10pt);
 }
 
 a img, .icon {
@@ -28,9 +27,7 @@ a img, .icon {
     position: relative;
     top: -10px;
     left: 15px;
-    font-family: "Garamond", "Times New Roman", serif;
-    font-size: 1.3em;
-    font-style: italic;
+    @include font(("Garamond", "Times New Roman", serif), 1.3em, $style: italic);
     color: black;
     letter-spacing: 7px;
   }
@@ -73,8 +70,7 @@ a img, .icon {
 }
 
 .helptext {
-  font-size: 8pt;
-  font-style: italic;
+  @include font($size: 8pt, $style: italic);
   color: $infoTextColor;
 }
 
@@ -89,9 +85,7 @@ input[type="text"], input[type="password"], textarea, select {
 }
 
 input, textarea, select {
-  font-family: inherit;
-  font-size: 10px;
-  font-weight: normal;
+  @include font($size: 10px, $weight: normal);
   background-color: #FAFFBD;
   margin: 2px 0;
   padding: 2px 3px;
@@ -113,7 +107,7 @@ input[type="submit"] {
 }
 
 .errors {
-  font-size: 0.8em;
+  @include font($size: 0.8em);
   color: $infoTextColor;
 }
 
@@ -144,20 +138,19 @@ input[type="submit"] {
   text-align: center;
   width: 225px;
   height: 170px;
-}
 
-.card.with_button {
-  height: 200px;
-}
+  &.with_button {
+    height: 200px;
+  }
 
-.card.dashed {
-  border: $lightDashedBorder;
-  color: #644700;
+  &.dashed {
+    border: $lightDashedBorder;
+    color: #644700;
+  }
 }
 
 .card_name {
-  font-size: 1.5em;
-  font-weight: bold;
+  @include font($size: 1.5em, $weight: bold);
   padding: 3px;
 }
 
@@ -206,7 +199,7 @@ input[type="submit"] {
 
 .header-row {
   text-align: center;
-  font-weight: bold;
+  @include font($weight: bold);
   padding: 1px 4px;
   background-color: darken($backgroundColor, 4%);
 }
@@ -246,17 +239,17 @@ input[type="submit"] {
 
 .new {
   color: red;
-  font-weight: bold;
+  @include font($weight: bold);
 }
 
 a, .dynamic_link {
   color: #800024;
-  font-weight: normal;
+  @include font($weight: normal);
   text-decoration: none;
 }
 
 a:hover, .dynamic_link:hover {
-  text-decoration:underline;
+  text-decoration: underline;
   cursor: pointer;
 }
 
@@ -271,14 +264,13 @@ a:hover, .dynamic_link:hover {
   @include roundedBorder(5px);
   padding-left: 30px;
   padding-top: 10px;
-}
 
-.free_information legend {
-  color: #333333;
-  font-style: italic;
-  margin-left: -15px;
+  legend {
+    color: #333333;
+    font-style: italic;
+    margin-left: -15px;
+  }
 }
-
 .end_warning {
   color: red;
 }

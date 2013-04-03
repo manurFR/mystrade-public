@@ -3,26 +3,26 @@ body {
   background-color: #ffb600;
   width: 980px;
   margin: 5px auto 0 auto;
-  font-family: 'Lucida Grande', Verdana, Arial, sans-serif;
+  font-family: "Lucida Grande", Verdana, Arial, sans-serif;
   font-size: 10pt; }
 
-/* line 11, ../../resources/scss/style.scss */
+/* line 10, ../../resources/scss/style.scss */
 a img, .icon {
   border: 0px;
   vertical-align: text-top; }
 
-/* line 16, ../../resources/scss/style.scss */
+/* line 15, ../../resources/scss/style.scss */
 .toplinks {
   top: 2px;
   text-align: right;
   margin-bottom: -20px;
   margin-right: 20px; }
 
-/* line 23, ../../resources/scss/style.scss */
+/* line 22, ../../resources/scss/style.scss */
 .logobox {
   width: 422px;
   top: 10px; }
-  /* line 27, ../../resources/scss/style.scss */
+  /* line 26, ../../resources/scss/style.scss */
   .logobox .motto {
     position: relative;
     top: -10px;
@@ -32,103 +32,102 @@ a img, .icon {
     font-style: italic;
     color: black;
     letter-spacing: 7px; }
-  /* line 38, ../../resources/scss/style.scss */
+  /* line 35, ../../resources/scss/style.scss */
   .logobox a:hover {
     text-decoration: none; }
 
-/* line 43, ../../resources/scss/style.scss */
+/* line 40, ../../resources/scss/style.scss */
 .content {
   padding: 10px; }
 
-/* line 47, ../../resources/scss/style.scss */
+/* line 44, ../../resources/scss/style.scss */
 .fullwidth {
   width: 960px; }
 
-/* line 51, ../../resources/scss/style.scss */
+/* line 48, ../../resources/scss/style.scss */
 .header {
   line-height: 1.6em;
   background-color: #FFE640;
   padding-left: 2em; }
 
-/* line 58, ../../resources/scss/style.scss */
+/* line 55, ../../resources/scss/style.scss */
 .formtable tr {
   line-height: 1.5em; }
-/* line 62, ../../resources/scss/style.scss */
+/* line 59, ../../resources/scss/style.scss */
 .formtable th {
   width: 230px;
   font-weight: normal;
   padding-right: 1em;
   text-align: right;
   vertical-align: text-top; }
-/* line 70, ../../resources/scss/style.scss */
+/* line 67, ../../resources/scss/style.scss */
 .formtable label {
   color: #333333; }
 
-/* line 75, ../../resources/scss/style.scss */
+/* line 72, ../../resources/scss/style.scss */
 .helptext, .brhelptext {
   font-size: 8pt;
   font-style: italic;
   color: #a67600; }
 
-/* line 81, ../../resources/scss/style.scss */
+/* line 77, ../../resources/scss/style.scss */
 .brhelptext {
   display: block;
   margin-top: -0.6em; }
 
-/* line 87, ../../resources/scss/style.scss */
+/* line 83, ../../resources/scss/style.scss */
 input[type="text"], input[type="password"], textarea, select {
   border: 1px solid #ffd773; }
 
-/* line 91, ../../resources/scss/style.scss */
+/* line 87, ../../resources/scss/style.scss */
 input, textarea, select {
-  font-family: inherit;
   font-size: 10px;
   font-weight: normal;
   background-color: #FAFFBD;
   margin: 2px 0;
   padding: 2px 3px; }
 
-/* line 100, ../../resources/scss/style.scss */
+/* line 94, ../../resources/scss/style.scss */
 select {
   height: 2em; }
 
-/* line 103, ../../resources/scss/style.scss */
+/* line 97, ../../resources/scss/style.scss */
 select[multiple] {
   height: auto; }
 
-/* line 107, ../../resources/scss/style.scss */
+/* line 101, ../../resources/scss/style.scss */
 input[type="submit"] {
   background-color: #DDDDDD; }
 
-/* line 111, ../../resources/scss/style.scss */
+/* line 105, ../../resources/scss/style.scss */
 .submit-button {
   margin-left: 250px; }
 
-/* line 115, ../../resources/scss/style.scss */
+/* line 109, ../../resources/scss/style.scss */
 .errors {
   font-size: 0.8em;
   color: #a67600; }
 
-/* line 120, ../../resources/scss/style.scss */
+/* line 114, ../../resources/scss/style.scss */
 .done {
   color: #a67600; }
 
-/* line 124, ../../resources/scss/style.scss */
+/* line 118, ../../resources/scss/style.scss */
 .cancelled {
   text-decoration: line-through; }
 
-/* line 128, ../../resources/scss/style.scss */
+/* line 122, ../../resources/scss/style.scss */
 .floatright {
   float: right;
   margin-right: 1em;
   text-align: right; }
 
-/* line 134, ../../resources/scss/style.scss */
+/* line 128, ../../resources/scss/style.scss */
 .frame {
   border: thin inset white;
   padding: 2px; }
 
-/* line 139, ../../resources/scss/style.scss */
+/* line 133, ../../resources/scss/style.scss */
 .card {
   position: relative;
   padding: 5px;
@@ -139,31 +138,29 @@ input[type="submit"] {
   text-align: center;
   width: 225px;
   height: 170px; }
+  /* line 142, ../../resources/scss/style.scss */
+  .card.with_button {
+    height: 200px; }
+  /* line 146, ../../resources/scss/style.scss */
+  .card.dashed {
+    border: 1px dashed #ffd773;
+    color: #644700; }
 
-/* line 149, ../../resources/scss/style.scss */
-.card.with_button {
-  height: 200px; }
-
-/* line 153, ../../resources/scss/style.scss */
-.card.dashed {
-  border: 1px dashed #ffd773;
-  color: #644700; }
-
-/* line 158, ../../resources/scss/style.scss */
+/* line 152, ../../resources/scss/style.scss */
 .card_name {
   font-size: 1.5em;
   font-weight: bold;
   padding: 3px; }
 
-/* line 164, ../../resources/scss/style.scss */
+/* line 157, ../../resources/scss/style.scss */
 .card_desc {
   padding: 3px; }
 
-/* line 168, ../../resources/scss/style.scss */
+/* line 161, ../../resources/scss/style.scss */
 .card_copies {
   margin-top: 30px; }
 
-/* line 172, ../../resources/scss/style.scss */
+/* line 165, ../../resources/scss/style.scss */
 .minicard {
   display: inline-block;
   border-radius: 2px;
@@ -172,97 +169,97 @@ input[type="submit"] {
   width: 25px;
   height: 50px; }
 
-/* line 179, ../../resources/scss/style.scss */
+/* line 172, ../../resources/scss/style.scss */
 .excluded {
   background: url(../stripe.png); }
 
-/* line 183, ../../resources/scss/style.scss */
+/* line 176, ../../resources/scss/style.scss */
 .clicked {
   border: gray solid 3px;
   border-radius: 2px;
   -moz-border-radius: 2px;
   -webkit-border-radius: 2px; }
 
-/* line 188, ../../resources/scss/style.scss */
+/* line 181, ../../resources/scss/style.scss */
 .card_select {
   width: 220px;
   text-align: center; }
 
-/* line 193, ../../resources/scss/style.scss */
+/* line 186, ../../resources/scss/style.scss */
 .css_table {
   display: table;
   border-spacing: 2px; }
 
-/* line 198, ../../resources/scss/style.scss */
+/* line 191, ../../resources/scss/style.scss */
 .css_table-row {
   display: table-row; }
 
-/* line 202, ../../resources/scss/style.scss */
+/* line 195, ../../resources/scss/style.scss */
 .css_table-cell {
   display: table-cell;
   padding: 1px 4px; }
 
-/* line 207, ../../resources/scss/style.scss */
+/* line 200, ../../resources/scss/style.scss */
 .header-row {
   text-align: center;
   font-weight: bold;
   padding: 1px 4px;
   background-color: #eba700; }
 
-/* line 214, ../../resources/scss/style.scss */
+/* line 207, ../../resources/scss/style.scss */
 .even_color {
   background-color: #ffc533; }
-  /* line 217, ../../resources/scss/style.scss */
+  /* line 210, ../../resources/scss/style.scss */
   .even_color:hover {
     background-color: #FFD800; }
 
-/* line 222, ../../resources/scss/style.scss */
+/* line 215, ../../resources/scss/style.scss */
 .odd_color {
   background-color: #eba700; }
-  /* line 225, ../../resources/scss/style.scss */
+  /* line 218, ../../resources/scss/style.scss */
   .odd_color:hover {
     background-color: #FFD800; }
 
-/* line 230, ../../resources/scss/style.scss */
+/* line 223, ../../resources/scss/style.scss */
 .points {
   min-width: 4em;
   text-align: right; }
 
-/* line 235, ../../resources/scss/style.scss */
+/* line 228, ../../resources/scss/style.scss */
 .align_to_bottom {
   position: absolute;
   bottom: 5px; }
 
-/* line 240, ../../resources/scss/style.scss */
+/* line 233, ../../resources/scss/style.scss */
 .reminder {
   margin: 4px 4px 4px 10px;
   padding: 3px;
   border: thin dotted gray;
   background-color: #ffbf00; }
 
-/* line 247, ../../resources/scss/style.scss */
+/* line 240, ../../resources/scss/style.scss */
 .new {
   color: red;
   font-weight: bold; }
 
-/* line 252, ../../resources/scss/style.scss */
+/* line 245, ../../resources/scss/style.scss */
 a, .dynamic_link {
   color: #800024;
   font-weight: normal;
   text-decoration: none; }
 
-/* line 258, ../../resources/scss/style.scss */
+/* line 251, ../../resources/scss/style.scss */
 a:hover, .dynamic_link:hover {
   text-decoration: underline;
   cursor: pointer; }
 
-/* line 263, ../../resources/scss/style.scss */
+/* line 256, ../../resources/scss/style.scss */
 .ui-datepicker-trigger {
   position: relative;
   top: 4px;
   left: 2px; }
 
-/* line 269, ../../resources/scss/style.scss */
+/* line 262, ../../resources/scss/style.scss */
 .free_information {
   border: 1px solid #ffd773;
   border-radius: 5px;
@@ -270,13 +267,12 @@ a:hover, .dynamic_link:hover {
   -webkit-border-radius: 5px;
   padding-left: 30px;
   padding-top: 10px; }
+  /* line 268, ../../resources/scss/style.scss */
+  .free_information legend {
+    color: #333333;
+    font-style: italic;
+    margin-left: -15px; }
 
-/* line 276, ../../resources/scss/style.scss */
-.free_information legend {
-  color: #333333;
-  font-style: italic;
-  margin-left: -15px; }
-
-/* line 282, ../../resources/scss/style.scss */
+/* line 274, ../../resources/scss/style.scss */
 .end_warning {
   color: red; }

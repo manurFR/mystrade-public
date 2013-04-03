@@ -28,31 +28,28 @@
 }
 
 .first-player-header {
-  font-size: 1.6em;
-  font-weight: bold;
+  @include font($size: 1.6em, $weight: bold);
 }
 
 .first-player {
-  font-size: 1.2em;
+  @include font($size: 1.2em);
 }
 
 .second-player-header {
-  font-size: 1.3em;
-  font-weight: bold;
+  @include font($size: 1.3em, $weight: bold);
 }
 
 .second-player {
-  font-size: 1.1em;
+  @include font($size: 1.1em);
 }
 
 .third-player-header {
-  font-size: 1.1em;
+  @include font($size: 1.1em, $weight: bold);
   height: 1.3em;
-  font-weight: bold;
 }
 
 .third-player {
-  font-size: 1em;
+  @include font($size: 1em);
 }
 
 .scoresheet {
