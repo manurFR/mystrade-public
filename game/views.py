@@ -1,6 +1,7 @@
 import logging
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q, F
@@ -223,6 +224,7 @@ def select_rules(request):
 #############################################################################
 ##                          Control Board                                  ##
 #############################################################################
+TRADES_PAGINATION = 10
 
 @login_required
 def control_board(request, game_id):
@@ -232,6 +234,16 @@ def control_board(request, game_id):
     if request.user == game.master or request.user.is_staff:
         if game.is_closed(): # display score
             data['scoresheets'] = _fetch_scoresheets(game)
+
+        paginator = Paginator(Trade.objects.filter(game = game).order_by('-closing_date', '-creation_date'), TRADES_PAGINATION)
+        page = request.GET.get('page')
+        try:
+            trades = paginator.page(page)
+        except PageNotAnInteger:
+            trades = paginator.page(1) # If page is not an integer, deliver first page.
+        except EmptyPage:
+            trades = paginator.page(paginator.num_pages) # If page is out of range, deliver last page of results.
+        data['trades'] = trades
 
         return render(request, 'game/control.html', data)
 

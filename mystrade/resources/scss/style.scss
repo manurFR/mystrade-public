@@ -186,7 +186,9 @@ input[type="submit"] {
 .css_table {
   display: table;
   border-spacing: 2px;
+
 }
+
 
 .css_table-row {
   display: table-row;
@@ -216,8 +218,12 @@ input[type="submit"] {
   background-color: darken($backgroundColor, 4%);
 
   &:hover {
-  background-color: #FFD800;
+    background-color: #FFD800;
+  }
 }
+
+.pagination {
+  @include font($size: 0.8em);
 }
 
 .points {
