@@ -186,9 +186,7 @@ input[type="submit"] {
 .css_table {
   display: table;
   border-spacing: 2px;
-
 }
-
 
 .css_table-row {
   display: table-row;
@@ -224,6 +222,7 @@ input[type="submit"] {
 
 .pagination {
   @include font($size: 0.8em);
+  text-align: center;
 }
 
 .points {
@@ -269,7 +268,7 @@ a:hover, .dynamic_link:hover {
   border: $lightSolidBorder;
   @include roundedBorder(5px);
   padding-left: 30px;
-  padding-top: 10px;
+  padding-top: 110px;
 
   legend {
     color: #333333;

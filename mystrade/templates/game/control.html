@@ -35,44 +35,56 @@
         {% include "scoring/score.html" %}
     {% endif %}
 
-    <div class="header">Trades</div>
-    <br/>
-    <div class="css_table">
-        <div class="css_table-row header-row">
-            <div class="css_table-cell">from</div>
-            <div class="css_table-cell">to</div>
-            <div class="css_table-cell">status</div>
-            <div class="css_table-cell">initiated</div>
-            <div class="css_table-cell">closed</div>
-        </div>
-    {% for trade in trades %}
-        {% cycle 'even_color' 'odd_color' as color silent %}
-        <div class="css_table-row{% if trade.status == 'ACCEPTED' or trade.status == 'DECLINED' %} done{% elif trade.status == 'CANCELLED' %} cancelled{% endif %}">
-            <div class="css_table-cell {{ color }}">{{ trade.initiator.get_profile.name }}</div>
-            <div class="css_table-cell {{ color }}">{{ trade.responder.get_profile.name }}</div>
-            <div class="css_table-cell {{ color }}">
-                {{ trade.status }}
-                {% if trade.status == 'CANCELLED' or trade.status == 'DECLINED' %}by {% include "common/name_or_you.html" with who=trade.finalizer %}{% endif %}
-            </div>
-            <div class="css_table-cell {{ color }}">{{ trade.creation_date|timesince }}</div>
-            <div class="css_table-cell {{ color }}">{{ trade.closing_date|timesince }}</div>
-        </div>
-    {% endfor %}
-    </div>
+    <h3>Trades</h3>
+    {% if trades %}
+    <table>
+        <thead>
+            <tr class="header-row">
+                <th>from</th>
+                <th>to</th>
+                <th>status</th>
+                <th>initiated</th>
+                <th>closed</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for trade in trades %}
+            {% cycle 'even_color' 'odd_color' as color silent %}
+            <tr{% if trade.status == 'ACCEPTED' or trade.status == 'DECLINED' %} class="done"{% elif trade.status == 'CANCELLED' %} class="cancelled"{% endif %}">
+                <td class="css_table-cell {{ color }}">{{ trade.initiator.get_profile.name }}</td>
+                <td class="css_table-cell {{ color }}">{{ trade.responder.get_profile.name }}</td>
+                <td class="css_table-cell {{ color }}">
+                    {{ trade.status }}
+                    {% if trade.status == 'CANCELLED' or trade.status == 'DECLINED' %}by {% include "common/name_or_you.html" with who=trade.finalizer %}{% endif %}
+                </td>
+                <td class="css_table-cell {{ color }}">{{ trade.creation_date }}</td>
+                <td class="css_table-cell {{ color }}">{% if trade.closing_date %}{{ trade.closing_date }}{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
 
-    <div class="pagination">
-        {% if trades.has_previous %}
-            <a href="?page={{ trades.previous_page_number }}">previous</a>
-        {% endif %}
+        <tfoot>
+            <tr class="pagination">
+                <td colspan="5">
+                    {% if trades.has_previous %}
+                        <a href="?page={{ trades.previous_page_number }}">&lt;</a>
+                    {% endif %}
 
-        <span class="current">
-                Page {{ trades.number }} of {{ trades.paginator.num_pages }}
-            </span>
+                    <span class="current">
+                        Page {{ trades.number }} of {{ trades.paginator.num_pages }}
+                    </span>
 
-        {% if trades.has_next %}
-            <a href="?page={{ trades.next_page_number }}">next</a>
-        {% endif %}
-    </div>
+                    {% if trades.has_next %}
+                        <a href="?page={{ trades.next_page_number }}">&gt;</a>
+                    {% endif %}
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+    {% else %}
+        <div class="helptext">No trades yet.</div>
+    {% endif %}
+
     <br/>
 
     <script>

@@ -235,7 +235,8 @@ def control_board(request, game_id):
         if game.is_closed(): # display score
             data['scoresheets'] = _fetch_scoresheets(game)
 
-        paginator = Paginator(Trade.objects.filter(game = game).order_by('-closing_date', '-creation_date'), TRADES_PAGINATION)
+        paginator = Paginator(Trade.objects.filter(game = game).order_by('-closing_date', '-creation_date'),
+                              per_page = TRADES_PAGINATION, orphans = 1)
         page = request.GET.get('page')
         try:
             trades = paginator.page(page)
