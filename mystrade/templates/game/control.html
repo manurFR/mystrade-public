@@ -59,6 +59,7 @@
                 </td>
                 <td class="css_table-cell {{ color }}">{{ trade.creation_date }}</td>
                 <td class="css_table-cell {{ color }}">{% if trade.closing_date %}{{ trade.closing_date }}{% endif %}</td>
+                <td class="css_table-cell {{ color }}"><a href="{% url 'show_trade' game.id trade.id %}">Show trade</a></td>
             </tr>
         {% endfor %}
         </tbody>

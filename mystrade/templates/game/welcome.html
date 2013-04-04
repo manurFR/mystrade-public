@@ -42,7 +42,12 @@
                         {% else %}<a href="{% url 'hand' game.id %}">Show Hand</a>{% endif %}
                     {% elif user == game.master or user.is_staff %}<a href="{% url 'control' game.id %}">Control Board</a>{% endif %}
                 </div>
-                <div class="css_table-cell {{ color }}"><a href="{% url 'trades' game.id %}">Show Trades</a></div>
+
+                <div class="css_table-cell {{ color }}">
+                    {% if user in game.players.all %}
+                        <a href="{% url 'trades' game.id %}">Show Trades</a>
+                    {% endif %}
+                </div>
                 <div class="css_table-cell {{ color }}" style="text-align: center;">
                     {% if game.is_active %}
                         {% if user in game.players.all %}
