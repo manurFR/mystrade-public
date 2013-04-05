@@ -232,8 +232,12 @@ def control_board(request, game_id):
     data = {'game': game}
 
     if request.user == game.master or request.user.is_staff:
-        if game.is_closed(): # display score
+        if game.is_closed():
             data['scoresheets'] = _fetch_scoresheets(game)
+        elif game.is_active():
+            scoresheets = tally_scores(game) # but don't persist them
+            scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
+            data['scoresheets'] = scoresheets
 
         paginator = Paginator(Trade.objects.filter(game = game).order_by('-closing_date', '-creation_date'),
                               per_page = TRADES_PAGINATION, orphans = 1)
@@ -270,7 +274,7 @@ def _fetch_scoresheets(game):
         scoresheets.append(Scoresheet(gameplayer,
                                       ScoreFromCommodity.objects.filter(game=game, player=gameplayer.player).order_by('commodity'),
                                       ScoreFromRule.objects.filter(game=game, player=gameplayer.player).order_by('rulecard')))
-    scoresheets.sort(key=lambda scoresheet: scoresheet.total_score, reverse=True)
+    scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
     return scoresheets
 
 @login_required
@@ -304,6 +308,5 @@ def close_game(request, game_id):
                 logger.error("Error in close_game({})".format(game_id), exc_info = ex)
 
             return HttpResponseRedirect(reverse('control', args = [game_id]))
-
 
     raise PermissionDenied

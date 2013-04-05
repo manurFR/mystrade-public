@@ -59,15 +59,10 @@
   -webkit-border-radius: 5px; }
 
 /* line 63, ../../resources/scss/style.scoring.scss */
-.submitted-hand {
-  vertical-align: bottom;
-  margin: 5px 0; }
-  /* line 67, ../../resources/scss/style.scoring.scss */
-  .submitted-hand .minicard, .submitted-hand .minicard.minimized {
-    width: 15px;
-    height: 30px; }
+.minicard {
+  border: 1px solid black; }
 
-/* line 73, ../../resources/scss/style.scoring.scss */
+/* line 67, ../../resources/scss/style.scoring.scss */
 .congrats {
   margin-top: 20px;
   text-align: center;

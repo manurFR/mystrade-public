@@ -12,6 +12,10 @@ $infoPanelColor: #FFBF00;
   -webkit-border-radius: $radius;
 }
 
+@mixin blackBorder() {
+  border: 1px solid black;
+}
+
 @mixin font($family: null, $size: null, $weight: null, $style: null) {
   font: {
     @if $family != null { family: $family; }

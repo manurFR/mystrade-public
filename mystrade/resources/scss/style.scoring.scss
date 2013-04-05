@@ -18,7 +18,7 @@
   }
 
   .podium-box {
-    border: 1px solid black;
+    @include blackBorder;
     height: 50px;
   }
 }
@@ -60,14 +60,8 @@
   @include roundedBorder(5px);
 }
 
-.submitted-hand {
-  vertical-align: bottom;
-  margin: 5px 0;
-
-  .minicard, .minicard.minimized {
-    width: 15px;
-    height: 30px;
-  }
+.minicard {
+  @include blackBorder;
 }
 
 .congrats {

@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="header">Control board for game #{{ game }}
+    <div class="header">Control board for game #{{ game }}{% if game.is_active %} (ending in {{ game.end_date|timeuntil }}){% endif %}
         <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span></div>
 
     {% if game.is_ended %}
@@ -32,7 +32,7 @@
         </div>
     {% elif game.is_closed %}
         <div class="reminder">This game was closed on {{ game.end_date }} ({{ game.end_date|timesince }} ago).</div>
-        {% include "scoring/score.html" %}
+        {% include "scoring/score.html"  with specification="Final" %}
     {% endif %}
 
     <h3>Trades</h3>
@@ -57,8 +57,8 @@
                     {{ trade.status }}
                     {% if trade.status == 'CANCELLED' or trade.status == 'DECLINED' %}by {% include "common/name_or_you.html" with who=trade.finalizer %}{% endif %}
                 </td>
-                <td class="css_table-cell {{ color }}">{{ trade.creation_date }}</td>
-                <td class="css_table-cell {{ color }}">{% if trade.closing_date %}{{ trade.closing_date }}{% endif %}</td>
+                <td class="css_table-cell {{ color }}">{{ trade.creation_date|date:"SHORT_DATETIME_FORMAT" }}</td>
+                <td class="css_table-cell {{ color }}">{% if trade.closing_date|date:"SHORT_DATETIME_FORMAT" %}{{ trade.closing_date }}{% endif %}</td>
                 <td class="css_table-cell {{ color }}"><a href="{% url 'show_trade' game.id trade.id %}">Show trade</a></td>
             </tr>
         {% endfor %}
@@ -84,6 +84,10 @@
     </table>
     {% else %}
         <div class="helptext">No trades yet.</div>
+    {% endif %}
+
+    {% if game.is_active %}
+        {% include "scoring/score.html" with specification="Current" %}
     {% endif %}
 
     <br/>

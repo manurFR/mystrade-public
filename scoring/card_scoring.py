@@ -20,8 +20,16 @@ class Scoresheet(object):
 
         if scores_from_commodity:
             self._scores_from_commodity = scores_from_commodity
-        else:
+        elif gameplayer.submit_date:
             self._prepare_scores_from_commodities(gameplayer)
+        else:
+            self._scores_from_commodity = []
+            for cih in CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player):
+                sfc = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = cih.commodity,
+                                         nb_submitted_cards = cih.nb_cards, nb_scored_cards = cih.nb_cards,
+                                         actual_value = cih.commodity.value, score = 0)
+                self._scores_from_commodity.append(sfc)
+
 
         if scores_from_rule:
             self._scores_from_rule = scores_from_rule
@@ -89,5 +97,6 @@ class Scoresheet(object):
     def scores_from_rule(self):
         return self._scores_from_rule
 
+    @property
     def player_name(self):
         return self.gameplayer.player.get_profile().name

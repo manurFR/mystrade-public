@@ -1,6 +1,6 @@
 {% load filters %}
 
-<h3>Scores</h3>
+<h3>{{ specification }} Scores</h3>
 <table class="scores">
     {% for scoresheet in scoresheets %}
         {% if forloop.counter == 1 %}
@@ -43,7 +43,7 @@
     {% endfor %}
 </table>
 
-<h3>Details</h3>
+<h3>{{ specification }} Score Details</h3>
 
 {% for scoresheet in scoresheets %}
 <div {% if rank == forloop.counter %}class="me"{% endif %}>
@@ -73,7 +73,7 @@
                 <div class="css_table-row">
                     <div class="css_table-cell {% cycle color %}">
                         {% for copy in sfc.nb_submitted_cards|as_range %}
-                            <span class="minicard minimized
+                            <span class="minicard
                             {% if copy >= sfc.nb_scored_cards %} excluded" data-tip="{{ sfc.commodity.name }} &mdash; not scored"
                             {% else %}" data-tip="{{ sfc.commodity.name }} &mdash; scored"{% endif %}
                             style="background-color: {{ sfc.commodity.color }}">&nbsp;</span>

@@ -432,9 +432,7 @@ class ControlBoardViewTest(TestCase):
                                           closing_date = now() + datetime.timedelta(days = -1))
         mommy.make_one(GamePlayer, game = self.game_closed, player = self.loginUser)
 
-        pass
-
-    def test_access_to_score_board_allowed_only_to_game_players(self):
+    def test_access_to_score_page_allowed_only_to_game_players(self):
         self._assertOperation_get(self.game_closed, "score")
 
         self.client.logout()
@@ -445,7 +443,7 @@ class ControlBoardViewTest(TestCase):
         self.assertTrue(self.client.login(username = 'test1', password = 'test'))
         self._assertOperation_get(self.game_closed, "score", 403)
 
-    def test_access_to_score_board_allowed_only_to_closed_games(self):
+    def test_access_to_score_page_allowed_only_to_closed_games(self):
         self._assertOperation_get(self.game_ended, "score", 403)
 
     def test_access_to_control_board_allowed_only_to_game_master_and_admins(self):
@@ -546,26 +544,11 @@ class ControlBoardViewTest(TestCase):
         self.assertEqual(3, cih2.nb_submitted_cards)
 
     def test_close_game_calculates_and_persists_the_final_score(self):
-        self.game_ended.rules.add(RuleCard.objects.get(ref_name = 'HAG04'))
-        self.game_ended.rules.add(RuleCard.objects.get(ref_name = 'HAG05'))
+        self._prepare_game_for_scoring(self.game_ended)
 
-        gp1 = mommy.make_one(GamePlayer, game = self.game_ended, player = self.test5)
         test6 = User.objects.get(username='test6')
+        gp1 = mommy.make_one(GamePlayer, game = self.game_ended, player = self.test5)
         gp2 = mommy.make_one(GamePlayer, game = self.game_ended, player = test6)
-
-        cih1orange = mommy.make_one(CommodityInHand, game = self.game_ended, player = self.test5,
-                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Orange')) # value = 4
-        cih1blue   = mommy.make_one(CommodityInHand, game = self.game_ended, player = self.test5,
-                                    nb_cards = 2, commodity = Commodity.objects.get(name = 'Blue')) # value = 2
-        cih1white  = mommy.make_one(CommodityInHand, game = self.game_ended, player = self.test5,
-                                    nb_cards = 1, commodity = Commodity.objects.get(name = 'White')) # value = 5 or 0
-
-        cih2orange = mommy.make_one(CommodityInHand, game = self.game_ended, player = test6,
-                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Orange'))
-        cih2blue   = mommy.make_one(CommodityInHand, game = self.game_ended, player = test6,
-                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Blue'))
-        cih2white  = mommy.make_one(CommodityInHand, game = self.game_ended, player = test6,
-                                    nb_cards = 4, commodity = Commodity.objects.get(name = 'White'))
 
         self._assertOperation_post(self.game_ended, "close")
 
@@ -584,6 +567,48 @@ class ControlBoardViewTest(TestCase):
         sfr2 = ScoreFromRule.objects.filter(game = self.game_ended, player = test6)
         self.assertEqual(1, len(sfr2))
         self.assertEqual('HAG04', sfr2[0].rulecard.ref_name)
+
+    def test_control_board_shows_tentative_score_during_game(self):
+        self._prepare_game_for_scoring(self.game)
+
+        test6 = User.objects.get(username='test6')
+
+        # a trap we shouldn't fall in
+        mommy.make_one(ScoreFromCommodity, game = self.game, player = self.test5, commodity = Commodity.objects.get(name = 'Orange'),
+                       nb_submitted_cards = 3, nb_scored_cards = 3, actual_value = 4, score = 12)
+        mommy.make_one(ScoreFromCommodity, game = self.game, player = test6, commodity = Commodity.objects.get(name = 'Orange'),
+                       nb_submitted_cards = 1, nb_scored_cards = 1, actual_value = 4, score = 4)
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+        response = self.client.get("/game/{}/{}/".format(self.game.id, "control"), follow = True)
+        self.assertEqual(200, response.status_code)
+
+        scoresheets = response.context['scoresheets']
+        self.assertEqual(8, len(scoresheets))
+        self.assertEqual('test6', scoresheets[0].player_name)
+        self.assertEqual(18, scoresheets[0].total_score)
+        self.assertEqual('test5', scoresheets[1].player_name)
+        self.assertEqual(17, scoresheets[1].total_score) # only two orange cards scored because of HAG05
+
+    def _prepare_game_for_scoring(self, game):
+        game.rules.add(RuleCard.objects.get(ref_name = 'HAG04'))
+        game.rules.add(RuleCard.objects.get(ref_name = 'HAG05'))
+
+        cih1orange = mommy.make_one(CommodityInHand, game = game, player = self.test5,
+                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Orange')) # value = 4
+        cih1blue   = mommy.make_one(CommodityInHand, game = game, player = self.test5,
+                                    nb_cards = 2, commodity = Commodity.objects.get(name = 'Blue')) # value = 2
+        cih1white  = mommy.make_one(CommodityInHand, game = game, player = self.test5,
+                                    nb_cards = 1, commodity = Commodity.objects.get(name = 'White')) # value = 5 or 0
+
+        test6 = User.objects.get(username='test6')
+        cih2orange = mommy.make_one(CommodityInHand, game = game, player = test6,
+                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Orange'))
+        cih2blue   = mommy.make_one(CommodityInHand, game = game, player = test6,
+                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Blue'))
+        cih2white  = mommy.make_one(CommodityInHand, game = game, player = test6,
+                                    nb_cards = 4, commodity = Commodity.objects.get(name = 'White'))
 
     def _assertOperation_get(self, game, operation, status_code = 200):
         response = self.client.get("/game/{}/{}/".format(game.id, operation), follow = True)

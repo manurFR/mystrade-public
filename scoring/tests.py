@@ -65,7 +65,7 @@ class ScoringTest(TestCase):
         mommy.make_one(CommodityInHand, game = self.game, player = player, commodity__name = 'Blue', commodity__value = 2, nb_submitted_cards = 2)
         mommy.make_one(CommodityInHand, game = self.game, player = player, commodity__name = 'Red', commodity__value = 1, nb_submitted_cards = 3)
 
-        gameplayer = mommy.make_one(GamePlayer, game = self.game, player = player)
+        gameplayer = mommy.make_one(GamePlayer, game = self.game, player = player, submit_date = self.game.end_date)
 
         scoresheet = Scoresheet(gameplayer)
 
