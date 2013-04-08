@@ -32,9 +32,27 @@
         </div>
     {% elif game.is_closed %}
         <div class="reminder">This game was closed on {{ game.end_date }} ({{ game.end_date|timesince }} ago).</div>
+    {% endif %}
+
+    <h4>Table of Contents</h4>
+    <ul>
+        {% if game.is_active %}
+            <li><a href="#trades">Trades</a></li>
+            <li><a href="#scores">Current Scores</a></li>
+            <li><a href="#scoreDetails">Current Score Details</a></li>
+        {% elif game.is_closed %}
+            <li><a href="#scores">Final Scores</a></li>
+            <li><a href="#scoreDetails">Final Score Details</a></li>
+            <li><a href="#trades">Trades</a></li>
+        {% endif %}
+        <li><a href="#rules">Rules</a></li>
+    </ul>
+
+    {% if game.is_closed %}
         {% include "scoring/score.html"  with specification="Final" %}
     {% endif %}
 
+    <a name="trades"></a>
     <h3>Trades</h3>
     {% if trades %}
     <table>
@@ -90,6 +108,7 @@
         {% include "scoring/score.html" with specification="Current" %}
     {% endif %}
 
+    <a name="rules"></a>
     <h3>Rules in this game</h3>
     <div class="css_table">
         {% for card in game.rules.all %}

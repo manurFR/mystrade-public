@@ -1,6 +1,7 @@
 {% load filters %}
 {% load staticfiles %}
 
+<a name="scores"></a>
 <h3>{{ specification }} Scores</h3>
 {% if random_scoring %}
     <div class="reminder">These scores include at least one random element, that may or may not change the player's total and rank.
@@ -65,8 +66,8 @@
     {% endfor %}
 </table>
 
+<a name="scoreDetails"></a>
 <h3>{{ specification }} Score Details</h3>
-
 {% for scoresheet in scoresheets %}
 <div {% if rank == forloop.counter %}class="me"{% endif %}>
     <a name="player-{{ forloop.counter }}"></a>
