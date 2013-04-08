@@ -14,6 +14,7 @@
 	<body>
 		<div class="toplinks">
 			{% if user.is_authenticated %}
+                {{  user.get_profile.name }}&nbsp;&nbsp;&nbsp;
 				<a href="{% url 'profile' %}">Profile</a> |
 				<a href="{% url 'logout' %}">Log out</a>
 			{% else %}
