@@ -113,14 +113,16 @@ class ScoringTest(TestCase):
         self.assertEqual(rulecard, scoresheet.scores_from_rule[0].rulecard)
         self.assertEqual('test', scoresheet.scores_from_rule[0].detail)
         self.assertEqual(10, scoresheet.scores_from_rule[0].score)
+        self.assertFalse(scoresheet.is_random)
 
     def test_register_rule_no_score(self):
         rulecard = mommy.prepare_one(RuleCard)
         scoresheet = _prepare_scoresheet(self.game, "p1", blue = 1)
-        scoresheet.register_score_from_rule(rulecard, 'test')
+        scoresheet.register_score_from_rule(rulecard, 'test', is_random = True)
         self.assertEqual(rulecard, scoresheet.scores_from_rule[0].rulecard)
         self.assertEqual('test', scoresheet.scores_from_rule[0].detail)
         self.assertIsNone(scoresheet.scores_from_rule[0].score)
+        self.assertTrue(scoresheet.is_random)
 
 class HaggleTest(TestCase):
     def setUp(self):

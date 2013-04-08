@@ -159,4 +159,4 @@ def HAG15(self, scoresheet):
         for index, color in enumerate(discarded.iterkeys()):
             detail += '{} {} card'.format(discarded[color], color) + ('s' if discarded[color] > 1 else '')
             detail += ', ' if index < (len(discarded) - 1) else '.'
-        scoresheet.register_score_from_rule(self, detail)
+        scoresheet.register_score_from_rule(self, detail, is_random = True)

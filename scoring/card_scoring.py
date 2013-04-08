@@ -61,9 +61,13 @@ class Scoresheet(object):
     def set_actual_value(self, name, actual_value):
         self.score_for_commodity(name).actual_value = actual_value
 
-    def register_score_from_rule(self, rulecard, detail = '', score = None):
+    def register_score_from_rule(self, rulecard, detail = '', score = None, is_random = None):
         self._scores_from_rule.append(ScoreFromRule(game = self.gameplayer.game, player = self.gameplayer.player,
                                                     rulecard = rulecard, detail = detail, score = score))
+        # This will not be persisted, and thus will only serve in warning the game master of the non-determinism
+        # of the current scores' calculation on the his/her control board
+        if is_random is not None:
+            self._is_random = is_random
 
     def persist(self):
         self._calculate_commodity_scores()
@@ -100,3 +104,8 @@ class Scoresheet(object):
     @property
     def player_name(self):
         return self.gameplayer.player.get_profile().name
+
+    @property
+    def is_random(self):
+        return getattr(self, '_is_random', False)
+
