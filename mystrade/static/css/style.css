@@ -259,12 +259,16 @@ a:hover, .dynamic_link:hover {
   cursor: pointer; }
 
 /* line 261, ../../resources/scss/style.scss */
+.underline[data-tip] {
+  border-bottom: dotted 1px black; }
+
+/* line 265, ../../resources/scss/style.scss */
 .ui-datepicker-trigger {
   position: relative;
   top: 4px;
   left: 2px; }
 
-/* line 267, ../../resources/scss/style.scss */
+/* line 271, ../../resources/scss/style.scss */
 .free_information {
   border: 1px solid #ffd773;
   border-radius: 5px;
@@ -272,12 +276,12 @@ a:hover, .dynamic_link:hover {
   -webkit-border-radius: 5px;
   padding-left: 30px;
   padding-top: 110px; }
-  /* line 273, ../../resources/scss/style.scss */
+  /* line 277, ../../resources/scss/style.scss */
   .free_information legend {
     color: #333333;
     font-style: italic;
     margin-left: -15px; }
 
-/* line 279, ../../resources/scss/style.scss */
+/* line 283, ../../resources/scss/style.scss */
 .end_warning {
   color: red; }

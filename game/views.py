@@ -237,7 +237,14 @@ def control_board(request, game_id):
         elif game.is_active():
             scoresheets = tally_scores(game) # but don't persist them
             scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
+            random_scoring = False
+            for scoresheet in scoresheets:
+                if len([sfr for sfr in scoresheet.scores_from_rule if getattr(sfr, 'is_random', False)]) > 0:
+                    scoresheet.is_random = True
+                    random_scoring = True
             data['scoresheets'] = scoresheets
+            # means at least one line of score for one player can earn a different amount of points each time we calculate the score
+            data['random_scoring'] = random_scoring
 
         paginator = Paginator(Trade.objects.filter(game = game).order_by('-closing_date', '-creation_date'),
                               per_page = TRADES_PAGINATION, orphans = 1)
@@ -273,7 +280,7 @@ def _fetch_scoresheets(game):
     for gameplayer in GamePlayer.objects.filter(game=game):
         scoresheets.append(Scoresheet(gameplayer,
                                       ScoreFromCommodity.objects.filter(game=game, player=gameplayer.player).order_by('commodity'),
-                                      ScoreFromRule.objects.filter(game=game, player=gameplayer.player).order_by('rulecard')))
+                                      ScoreFromRule.objects.filter(game=game, player=gameplayer.player).order_by('rulecard__step', 'rulecard__public_name')))
     scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
     return scoresheets
 

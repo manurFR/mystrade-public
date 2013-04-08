@@ -24,12 +24,11 @@ class Scoresheet(object):
             self._prepare_scores_from_commodities(gameplayer)
         else:
             self._scores_from_commodity = []
-            for cih in CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player):
+            for cih in CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player, nb_cards__gt = 0).order_by('commodity__value', 'commodity__id'):
                 sfc = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = cih.commodity,
                                          nb_submitted_cards = cih.nb_cards, nb_scored_cards = cih.nb_cards,
                                          actual_value = cih.commodity.value, score = 0)
                 self._scores_from_commodity.append(sfc)
-
 
         if scores_from_rule:
             self._scores_from_rule = scores_from_rule
@@ -62,12 +61,12 @@ class Scoresheet(object):
         self.score_for_commodity(name).actual_value = actual_value
 
     def register_score_from_rule(self, rulecard, detail = '', score = None, is_random = None):
-        self._scores_from_rule.append(ScoreFromRule(game = self.gameplayer.game, player = self.gameplayer.player,
-                                                    rulecard = rulecard, detail = detail, score = score))
+        sfr = ScoreFromRule(game=self.gameplayer.game, player=self.gameplayer.player, rulecard=rulecard, detail=detail, score=score)
+        self._scores_from_rule.append(sfr)
         # This will not be persisted, and thus will only serve in warning the game master of the non-determinism
         # of the current scores' calculation on the his/her control board
-        if is_random is not None:
-            self._is_random = is_random
+        if is_random:
+            sfr.is_random = True
 
     def persist(self):
         self._calculate_commodity_scores()
@@ -83,7 +82,7 @@ class Scoresheet(object):
 
     def _prepare_scores_from_commodities(self, gameplayer):
         self._scores_from_commodity = []
-        for cih in CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player, nb_submitted_cards__gt = 0):
+        for cih in CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player, nb_submitted_cards__gt = 0).order_by('commodity__value', 'commodity__id'):
             sfc = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = cih.commodity,
                                      nb_submitted_cards = cih.nb_submitted_cards, nb_scored_cards = cih.nb_submitted_cards,
                                      actual_value = cih.commodity.value, score = 0)
@@ -104,8 +103,3 @@ class Scoresheet(object):
     @property
     def player_name(self):
         return self.gameplayer.player.get_profile().name
-
-    @property
-    def is_random(self):
-        return getattr(self, '_is_random', False)
-

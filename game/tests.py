@@ -568,7 +568,7 @@ class ControlBoardViewTest(TestCase):
         self.assertEqual(1, len(sfr2))
         self.assertEqual('HAG04', sfr2[0].rulecard.ref_name)
 
-    def test_control_board_shows_tentative_score_during_game(self):
+    def test_control_board_shows_current_scoring_during_game(self):
         self._prepare_game_for_scoring(self.game)
 
         test6 = User.objects.get(username='test6')
@@ -590,6 +590,28 @@ class ControlBoardViewTest(TestCase):
         self.assertEqual(18, scoresheets[0].total_score)
         self.assertEqual('test5', scoresheets[1].player_name)
         self.assertEqual(17, scoresheets[1].total_score) # only two orange cards scored because of HAG05
+
+    def test_control_board_warns_when_the_current_scoring_contains_random_scores(self):
+        self._prepare_game_for_scoring(self.game)
+
+        self.game.rules.add(RuleCard.objects.get(ref_name = 'HAG15')) # rule that leads to random scores when a hand has > 13 commodity cards
+        cih1red = mommy.make_one(CommodityInHand, game = self.game, player = self.test5,
+                                 nb_cards = 10, commodity = Commodity.objects.get(name = 'Red'))
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+        response = self.client.get("/game/{}/{}/".format(self.game.id, "control"), follow = True)
+        self.assertEqual(200, response.status_code)
+
+        self.assertTrue(response.context['random_scoring']) # the whole game scoring is tagged
+        for scoresheet in response.context['scoresheets']:
+            if scoresheet.player_name == 'test5':
+                self.assertTrue(getattr(scoresheet, 'is_random', False)) # the player's scoresheet is tagged
+                random_rule = False
+                for sfr in scoresheet.scores_from_rule:
+                    if getattr(sfr, 'is_random', False) and sfr.rulecard.ref_name == 'HAG15':
+                        random_rule = True
+                self.assertTrue(random_rule) # the score_from_rule line than introduces the randomization is tagged
 
     def _prepare_game_for_scoring(self, game):
         game.rules.add(RuleCard.objects.get(ref_name = 'HAG04'))

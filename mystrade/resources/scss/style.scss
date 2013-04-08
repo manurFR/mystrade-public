@@ -258,6 +258,10 @@ a:hover, .dynamic_link:hover {
   cursor: pointer;
 }
 
+.underline[data-tip] { // data-tips with a dotted underline
+  border-bottom: dotted 1px black;
+}
+
 .ui-datepicker-trigger {
   position: relative;
   top: 4px;

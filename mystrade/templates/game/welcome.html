@@ -30,7 +30,7 @@
 				    #{{ game.id }}, by
 					{% if game.master == user %}<strong>{% endif %}{% include "common/name_or_you.html" with who=game.master %}{% if game.master == user %}</strong>{% endif %}
 				</div>
-				<div class="css_table-cell {{ color }}"><span data-tip="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></div>
+				<div class="css_table-cell {{ color }}"><span class="underline" data-tip="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></div>
 				<div class="css_table-cell {{ color }}">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</div>
 				<div class="css_table-cell {{ color }}{% if game.less_than_24_hours_remaining and not game.hand_submitted %} end_warning{% endif %}">
                     {{ game.end_date|date:"SHORT_DATETIME_FORMAT" }}

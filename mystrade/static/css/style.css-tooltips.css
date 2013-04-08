@@ -8,7 +8,6 @@ https://github.com/AdamWhitcroft/CSS.Tooltips
 [data-tip] {
 	position:relative;
 	cursor:help;
-	border-bottom:dotted 1px black;
 }
 [data-tip]:before {
 	content:'';
