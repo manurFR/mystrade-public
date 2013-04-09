@@ -61,7 +61,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "5",
-            "description": "A player can score only as many as orange cards as he/she has blue cards.",
+            "description": "A player can score only as many orange cards as he/she has blue cards.",
             "mandatory": false,
             "ruleset": 1,
             "ref_name": "HAG05",
