@@ -1,9 +1,9 @@
 import datetime
 from django.core import mail
+from django.template import Template
 from django.test import TestCase
 from django.test.utils import override_settings
-from utils import roundTimeToMinute
-from utils import send_notification_email
+from utils import roundTimeToMinute, _send_notification_email
 
 class UtilsTest(TestCase):
     def test_roundTimeToMinute(self):
@@ -20,7 +20,8 @@ class UtilsTest(TestCase):
 
     @override_settings(EMAIL_SUBJECT_PREFIX = '[test] ', EMAIL_BCC_LIST = ['bcc@test.com'])
     def test_send_notification_email(self):
-        send_notification_email('my subject', 'First line.\nSecond line.', 'from@test.com', ['to1@test.com', 'to2@test.com'])
+        template = Template('my subject\nFirst {{ stuff }}.\nSecond {{ stuff }}.')
+        _send_notification_email(template, 'from@test.com', ['to1@test.com', 'to2@test.com'], data = {'stuff': 'line'})
 
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
@@ -31,16 +32,29 @@ class UtilsTest(TestCase):
         self.assertEqual(['bcc@test.com'], email.bcc)
 
     def test_send_notification_email_without_from_or_to_or_subject_doesnt_send_any_message(self):
-        send_notification_email('', 'First line.', 'from@test.com', ['to1@test.com', 'to2@test.com'])
+        template = Template('\nFirst line.\nSecond line.')
+        _send_notification_email(template, 'from@test.com', ['to1@test.com', 'to2@test.com'])
         self.assertEqual(0, len(mail.outbox))
 
-        send_notification_email('my subject', 'First line.', None, ['to1@test.com', 'to2@test.com'])
+        template = Template('my subject\nFirst line.\nSecond line.')
+        _send_notification_email(template, None, ['to1@test.com', 'to2@test.com'])
         self.assertEqual(0, len(mail.outbox))
 
-        send_notification_email('my subject', 'First line.', 'from@test.com', None)
+        _send_notification_email(template, 'from@test.com', None)
         self.assertEqual(0, len(mail.outbox))
 
-        send_notification_email('my subject', 'First line.', 'from@test.com', [])
+        _send_notification_email(template, 'from@test.com', [])
         self.assertEqual(0, len(mail.outbox))
+
+    @override_settings(EMAIL_SUBJECT_PREFIX = '[test] ')
+    def test_send_notification_email_a_template_with_only_a_subject_and_no_body_is_sent(self):
+        template = Template('my subject')
+        _send_notification_email(template, 'from@test.com', ['to1@test.com', 'to2@test.com'])
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual('[test] my subject', email.subject)
+        self.assertEqual('', email.body)
+        self.assertEqual('from@test.com', email.from_email)
+        self.assertEqual(['to1@test.com', 'to2@test.com'], email.to)
 
 
