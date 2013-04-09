@@ -60,7 +60,7 @@ def create_trade(request, game_id):
 
                 #noinspection PyUnusedLocal
                 trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
-                    responder = trade_form.cleaned_data['responder'])
+                                             responder = trade_form.cleaned_data['responder'])
                 return HttpResponseRedirect(reverse('trades', args = [game.id]))
             else:
                 offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, selected_commodities)
