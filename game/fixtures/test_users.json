@@ -13,7 +13,7 @@
             "groups": [],
             "user_permissions": [["add_game", "game", "game"]],
             "password": "pbkdf2_sha256$10000$ugaqIMpJCLqL$ICD7AbFkd1xruEUzRCfc7Wn5OykpQt3EbVXkFmf4bJA=",
-            "email": "",
+            "email": "test1@test.com",
             "date_joined": "2012-11-14T21:14:43.486Z"
         }
     },
@@ -31,7 +31,7 @@
             "groups": [],
             "user_permissions": [],
             "password": "pbkdf2_sha256$10000$cKGwnJ2Fw2DN$w73RWXIIEG4rpEaYsM7E/aHblltOxEGxW6iSwr0Fu84=",
-            "email": "",
+            "email": "test2@test.com",
             "date_joined": "2012-11-14T21:14:54Z"
         }
     },
@@ -49,7 +49,7 @@
             "groups": [],
             "user_permissions": [],
             "password": "pbkdf2_sha256$10000$Qe110chEVgXx$/h9v3IdKxiD2AgKcKHFKJXv6hQ3lG9xV4CKqK9K5e0Y=",
-            "email": "",
+            "email": "test3@test.com",
             "date_joined": "2012-11-14T21:16:06.794Z"
         }
     },
@@ -67,7 +67,7 @@
             "groups": [],
             "user_permissions": [],
             "password": "pbkdf2_sha256$10000$gfuMQraRYBX6$K7XS9VXSfzyypuS9cONAstm1t0f/5cFonHpXki/um7A=",
-            "email": "",
+            "email": "test4@test.com",
             "date_joined": "2012-11-14T21:16:15.139Z"
         }
     },
@@ -85,7 +85,7 @@
             "groups": [],
             "user_permissions": [],
             "password": "pbkdf2_sha256$10000$pkmAlZ316n1L$K5QRf1+cOUcmb22RO/d15mprtTUhjaCTt2V7i80+9Yc=",
-            "email": "",
+            "email": "test5@test.com",
             "date_joined": "2012-11-14T21:16:25.940Z"
         }
     },
@@ -103,7 +103,7 @@
             "groups": [],
             "user_permissions": [],
             "password": "pbkdf2_sha256$10000$lldGUIwveKF9$woG1SSqxUUe78ATix5m4OWxuDlRUe/3qVIV5Y06s5hQ=",
-            "email": "",
+            "email": "test6@test.com",
             "date_joined": "2012-11-14T21:16:35.504Z"
         }
     },
@@ -121,7 +121,7 @@
             "groups": [],
             "user_permissions": [],
             "password": "pbkdf2_sha256$10000$PyYHiS2oxbmA$dLdbqVEe9Hk6CNkof36pyvg2ByZ+Rg8Oe7gYnh7BcH8=",
-            "email": "",
+            "email": "test7@test.com",
             "date_joined": "2012-11-14T21:16:42.608Z"
         }
     },
@@ -139,7 +139,7 @@
             "groups": [],
             "user_permissions": [],
             "password": "pbkdf2_sha256$10000$l3RIL0Sdy17H$ivtardZX6ZL0AYOawLKRoJ1WOARl3Cyjus5xG6Mf2eA=",
-            "email": "",
+            "email": "test8@test.com",
             "date_joined": "2012-11-14T21:16:51.240Z"
         }
     },
@@ -157,7 +157,7 @@
             "groups": [],
             "user_permissions": [],
             "password": "pbkdf2_sha256$10000$lQjGRQ0IdsJk$iFkyorMeAoGo5LihMgp6v89po55IjK+faczx1mLb9KM=",
-            "email": "",
+            "email": "test9@test.com",
             "date_joined": "2012-11-14T21:16:59.278Z"
         }
     },
@@ -175,7 +175,7 @@
             "groups": [],
             "user_permissions": [],
             "password": "pbkdf2_sha256$10000$J5spRWoc4SNP$8Edtd1yppm6nrFmNj3pRW12jAWT3p+mjLL8nBaPFTqA=",
-            "email": "",
+            "email": "admin@test.com",
             "date_joined": "2012-11-14T21:16:59.278Z"
         }
     },

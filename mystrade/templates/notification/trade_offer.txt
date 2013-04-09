@@ -1,0 +1,9 @@
+Game #{{ game.id }}: You have been offered a trade by {{ trade.initiator.get_profile.name }}
+In game #{{ game.id }}, {{ trade.initiator.get_profile.name }} has offered you a new trade on {{ trade.creation_date|date:"SHORT_DATETIME_FORMAT" }},
+with the following elements:
+- {{ trade.initiator_offer.summary }}
+
+Please give your reply on the following page:
+{{ url }}
+
+{% include "notification/footer.txt" %}

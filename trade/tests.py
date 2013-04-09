@@ -1,5 +1,6 @@
 import datetime
 from django.contrib.auth.models import User
+from django.core import mail
 from django.forms.formsets import formset_factory
 from django.test import RequestFactory, Client, TransactionTestCase
 from django.utils.timezone import get_default_timezone, now
@@ -141,6 +142,15 @@ class CreateTradeViewTest(TestCase):
         self.assertEqual([rule_in_hand], list(trade.initiator_offer.rules.all()))
         self.assertEqual([commodity_in_hand], list(trade.initiator_offer.commodities.all()))
         self.assertEqual(1, trade.initiator_offer.tradedcommodities_set.all()[0].nb_traded_cards)
+
+        # notification email sent
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual('[MysTrade] Game #{}: You have been offered a trade by test2'.format(self.game.id), email.subject)
+        self.assertIn('In game #{}, test2 has offered you a new trade'.format(self.game.id), email.body)
+        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertEqual('test2@test.com', email.from_email)
+        self.assertEqual(['test4@test.com'], email.to)
 
     def test_create_trade_page_doesnt_show_commodities_with_no_cards(self):
         commodity1 = mommy.make_one(Commodity, name = 'Commodity#1')

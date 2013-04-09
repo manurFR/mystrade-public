@@ -11,6 +11,7 @@ from django.utils.timezone import now
 from game.models import RuleInHand, CommodityInHand, Game, GamePlayer
 from trade.forms import DeclineReasonForm, TradeForm, RuleCardFormDisplay, TradeCommodityCardFormDisplay, OfferForm, RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet
 from trade.models import Trade, TradedCommodities, Offer
+from utils import utils
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,12 @@ def create_trade(request, game_id):
                 #noinspection PyUnusedLocal
                 trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
                                              responder = trade_form.cleaned_data['responder'])
+
+                # email notification
+                utils.send_notification_email('trade_offer', trade.initiator.email, trade.responder.email,
+                                              {'game': game, 'trade': trade,
+                                               'url': request.build_absolute_uri(reverse('show_trade', args = [game.id, trade.id]))})
+
                 return HttpResponseRedirect(reverse('trades', args = [game.id]))
             else:
                 offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, selected_commodities)
