@@ -390,7 +390,7 @@ class ManageViewsTest(TestCase):
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
         self.assertEqual('[MysTrade] Game #{}: test2 has cancelled the trade'.format(self.game.id), email.subject)
-        self.assertIn('test2 has cancelled the trade including the following elements'.format(self.game.id), email.body)
+        self.assertIn('test2 has cancelled the trade including the following elements', email.body)
         self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
@@ -409,7 +409,7 @@ class ManageViewsTest(TestCase):
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
         self.assertEqual('[MysTrade] Game #{}: test2 has cancelled the trade'.format(self.game.id), email.subject)
-        self.assertIn('test2 has cancelled the trade including the following elements'.format(self.game.id), email.body)
+        self.assertIn('test2 has cancelled the trade including the following elements', email.body)
         self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
@@ -478,6 +478,14 @@ class ManageViewsTest(TestCase):
         self.assertEqual([rule_in_hand], list(trade.responder_offer.rules.all()))
         self.assertEqual([commodity_in_hand], list(trade.responder_offer.commodities.all()))
         self.assertEqual(2, trade.responder_offer.tradedcommodities_set.all()[0].nb_traded_cards)
+
+        # notification email sent
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual('[MysTrade] Game #{}: test2 has replied to your trade proposal'.format(self.game.id), email.subject)
+        self.assertIn('In game #{}, test2 has replied to your offer.'.format(self.game.id), email.body)
+        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertEqual(['test5@test.com'], email.to)
 
     def test_accept_trade_not_allowed_in_GET(self):
         response = self.client.get("/trade/{}/{}/accept/".format(self.game.id, 1))

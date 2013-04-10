@@ -64,9 +64,7 @@ def create_trade(request, game_id):
                                              responder = trade_form.cleaned_data['responder'])
 
                 # email notification
-                utils.send_notification_email('trade_offer', trade.responder.email,
-                                              {'game': game, 'trade': trade,
-                                               'url': request.build_absolute_uri(reverse('show_trade', args = [game.id, trade.id]))})
+                _trade_event_notification(request, trade)
 
                 return HttpResponseRedirect(reverse('trades', args = [game.id]))
             else:
@@ -96,13 +94,7 @@ def cancel_trade(request, game_id, trade_id):
             trade.save()
 
             # email notification
-            if request.user == trade.initiator:
-                recipient = trade.responder
-            else:
-                recipient = trade.initiator
-            utils.send_notification_email('trade_cancel', recipient.email,
-                                          {'game': trade.game, 'trade': trade,
-                                           'url': request.build_absolute_uri(reverse('show_trade', args = [trade.game.id, trade.id]))})
+            _trade_event_notification(request, trade)
 
             return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
@@ -147,6 +139,9 @@ def reply_trade(request, game_id, trade_id):
                 trade.status = 'REPLIED'
                 trade.responder_offer = offer
                 trade.save()
+
+                # email notification
+                _trade_event_notification(request, trade)
 
                 return HttpResponseRedirect(reverse('trades', args = [trade.game.id]))
             except FormInvalidException as ex:
@@ -304,6 +299,21 @@ def decline_trade(request, game_id, trade_id):
                 return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
     raise PermissionDenied
+
+def _trade_event_notification(request, trade):
+    notification_templates = {'INITIATED': 'trade_offer',
+                              'CANCELLED': 'trade_cancel',
+                              'REPLIED':   'trade_reply'}
+    template = notification_templates[trade.status]
+
+    if request.user == trade.initiator:
+        recipient = trade.responder
+    else:
+        recipient = trade.initiator
+
+    utils.send_notification_email(template, recipient.email,
+                                  {'game': trade.game, 'trade': trade,
+                                   'url': request.build_absolute_uri(reverse('show_trade', args = [trade.game.id, trade.id]))})
 
 class FormInvalidException(Exception):
     def __init__(self, forms, *args, **kwargs):
