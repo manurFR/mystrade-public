@@ -64,7 +64,7 @@ def create_trade(request, game_id):
                                              responder = trade_form.cleaned_data['responder'])
 
                 # email notification
-                utils.send_notification_email('trade_offer', trade.initiator.email, trade.responder.email,
+                utils.send_notification_email('trade_offer', trade.responder.email,
                                               {'game': game, 'trade': trade,
                                                'url': request.build_absolute_uri(reverse('show_trade', args = [game.id, trade.id]))})
 

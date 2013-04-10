@@ -21,26 +21,27 @@ def roundTimeToMinute(dt = None, roundToMinutes = 1):
     else:
         return dt + datetime.timedelta(minutes = roundToMinutes - dt.minute % roundToMinutes)
 
-def send_notification_email(template_name, from_email, to, data = None):
+def send_notification_email(template_name, to, data = None):
     """ Templates : the first line must be the subject, all subsequent lines the body. No line(s) of separation should be added.
             A template_name 'myfile' will need a template named 'templates/notification/myfile.txt'.
      """
-    _send_notification_email(get_template('notification/{}.txt'.format(template_name)), from_email, to, data)
+    try:
+        _send_notification_email(get_template('notification/{}.txt'.format(template_name)), to, data)
+    except BadHeaderError as err:
+        logger.error("BadHeaderError in send_notification_email({}, {}, {})".format(template_name, to, data), exc_info = err)
 
-def _send_notification_email(template, from_email, to, data = None):
-    if from_email and to:
+def _send_notification_email(template, to, data = None):
+    if to:
         if isinstance(to, basestring):
             to = [to]
         message = template.render(Context(data)).splitlines()
         subject = message[0]
         body = '\n'.join(message[1:])
         if subject:
-            try:
-                email = EmailMessage('{}{}'.format(settings.EMAIL_SUBJECT_PREFIX, subject),
-                                     body,
-                                     from_email = from_email,
-                                     to = to,
-                                     bcc = settings.EMAIL_BCC_LIST)
-                email.send()
-            except BadHeaderError as err:
-                logger.error("BadHeaderError in send_notification_email('{}', '{}', {}, {})".format(subject, message, from_email, to), exc_info = err)
+            email = EmailMessage('{}{}'.format(settings.EMAIL_SUBJECT_PREFIX, subject),
+                                 body,
+                                 from_email = settings.EMAIL_MYSTRADE,
+                                 to = to,
+                                 bcc = [settings.EMAIL_MYSTRADE])
+            email.send()
+

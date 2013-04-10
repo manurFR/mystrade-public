@@ -161,7 +161,7 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 EMAIL_SUBJECT_PREFIX = '[MysTrade] ' # for admins
 
-EMAIL_BCC_LIST = [admin[1] for admin in ADMINS]
+EMAIL_MYSTRADE = 'mystrade@manur.org'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

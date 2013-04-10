@@ -149,7 +149,6 @@ class CreateTradeViewTest(TestCase):
         self.assertEqual('[MysTrade] Game #{}: You have been offered a trade by test2'.format(self.game.id), email.subject)
         self.assertIn('In game #{}, test2 has offered you a new trade'.format(self.game.id), email.body)
         self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
-        self.assertEqual('test2@test.com', email.from_email)
         self.assertEqual(['test4@test.com'], email.to)
 
     def test_create_trade_page_doesnt_show_commodities_with_no_cards(self):
