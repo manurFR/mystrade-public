@@ -386,6 +386,14 @@ class ManageViewsTest(TestCase):
         self.assertEqual(self.loginUser, trade.finalizer)
         self.assertIsNotNone(trade.closing_date)
 
+        # notification email sent
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual('[MysTrade] Game #{}: test2 has cancelled the trade'.format(self.game.id), email.subject)
+        self.assertIn('test2 has cancelled the trade including the following elements'.format(self.game.id), email.body)
+        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertEqual(['test5@test.com'], email.to)
+
     def test_cancel_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_REPLIED(self):
         trade = self._prepare_trade('REPLIED', initiator = self.test5, responder = self.loginUser)
         response = self.client.post("/trade/{}/{}/cancel/".format(self.game.id, trade.id), follow = True)
@@ -396,6 +404,14 @@ class ManageViewsTest(TestCase):
         self.assertEqual("CANCELLED", trade.status)
         self.assertEqual(self.loginUser, trade.finalizer)
         self.assertIsNotNone(trade.closing_date)
+
+        # notification email sent
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual('[MysTrade] Game #{}: test2 has cancelled the trade'.format(self.game.id), email.subject)
+        self.assertIn('test2 has cancelled the trade including the following elements'.format(self.game.id), email.body)
+        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertEqual(['test5@test.com'], email.to)
 
     def test_reply_trade_not_allowed_in_GET(self):
         response = self.client.get("/trade/{}/{}/reply/".format(self.game.id, 1))

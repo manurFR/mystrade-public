@@ -94,6 +94,16 @@ def cancel_trade(request, game_id, trade_id):
             trade.finalizer = request.user
             trade.closing_date = now()
             trade.save()
+
+            # email notification
+            if request.user == trade.initiator:
+                recipient = trade.responder
+            else:
+                recipient = trade.initiator
+            utils.send_notification_email('trade_cancel', recipient.email,
+                                          {'game': trade.game, 'trade': trade,
+                                           'url': request.build_absolute_uri(reverse('show_trade', args = [trade.game.id, trade.id]))})
+
             return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
     raise PermissionDenied

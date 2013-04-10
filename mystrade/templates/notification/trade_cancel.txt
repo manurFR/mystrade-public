@@ -1,0 +1,9 @@
+Game #{{ game.id }}: {{ trade.finalizer.get_profile.name }} has cancelled the trade
+In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.finalizer.get_profile.name }} has cancelled the trade including the following elements:
+- {{ trade.initiator.get_profile.name }} offered {{ trade.initiator_offer.summary }}
+{% if trade.responder_offer %}- {{ trade.responder.get_profile.name }} offered {{ trade.responder_offer.summary }}{% endif %}
+
+Consult the cancelled trade on the following page:
+{{ url }}
+
+{% include "notification/footer.txt" %}
