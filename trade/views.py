@@ -32,6 +32,25 @@ def trades(request, game_id):
     return render(request, 'trade/trades.html', {'game': game, 'trades': trades, 'can_create_trade': can_create_trade})
 
 @login_required
+def show_trade(request, game_id, trade_id):
+    trade = get_object_or_404(Trade, id = trade_id)
+
+    if request.user != trade.initiator and request.user != trade.responder and request.user != trade.game.master \
+        and not request.user.is_staff:
+        raise PermissionDenied
+
+    if trade.status == 'INITIATED' and request.user == trade.responder:
+        offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, trade.game)
+        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
+                                                          'decline_reason_form': DeclineReasonForm(), 'offer_form': offer_form,
+                                                          'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
+    elif trade.status == 'REPLIED' and request.user == trade.initiator:
+        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
+                                                          'decline_reason_form': DeclineReasonForm()})
+    else:
+        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False})
+
+@login_required
 def create_trade(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
@@ -99,25 +118,6 @@ def cancel_trade(request, game_id, trade_id):
             return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
     raise PermissionDenied
-
-@login_required
-def show_trade(request, game_id, trade_id):
-    trade = get_object_or_404(Trade, id = trade_id)
-
-    if request.user != trade.initiator and request.user != trade.responder and request.user != trade.game.master\
-    and not request.user.is_staff:
-        raise PermissionDenied
-
-    if trade.status == 'INITIATED' and request.user == trade.responder:
-        offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, trade.game)
-        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
-                                                         'decline_reason_form': DeclineReasonForm(), 'offer_form': offer_form,
-                                                         'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
-    elif trade.status == 'REPLIED' and request.user == trade.initiator:
-        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
-                                                         'decline_reason_form': DeclineReasonForm()})
-    else:
-        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False})
 
 @login_required
 def reply_trade(request, game_id, trade_id):
@@ -232,6 +232,10 @@ def decline_trade(request, game_id, trade_id):
                 trade.decline_reason = decline_reason_form.cleaned_data['decline_reason']
                 trade.closing_date = now()
                 trade.save()
+
+                # email notification
+                _trade_event_notification(request, trade)
+
                 return HttpResponseRedirect(reverse('trades', args = [game_id]))
 
     raise PermissionDenied
@@ -307,7 +311,8 @@ def _trade_event_notification(request, trade):
     notification_templates = {'INITIATED': 'trade_offer',
                               'CANCELLED': 'trade_cancel',
                               'REPLIED':   'trade_reply',
-                              'ACCEPTED':  'trade_accept'}
+                              'ACCEPTED':  'trade_accept',
+                              'DECLINED':  'trade_decline'}
     template = notification_templates[trade.status]
 
     if request.user == trade.initiator:

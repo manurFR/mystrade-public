@@ -655,7 +655,7 @@ class ManageViewsTest(TestCase):
     def test_decline_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_INITIATED(self):
         trade = self._prepare_trade('INITIATED', initiator = self.test5, responder = self.loginUser)
         response = self.client.post("/trade/{}/{}/decline/".format(self.game.id, trade.id),
-                                    {'decline_reason': "that's my reason"}, follow = True)
+                                    {'decline_reason': "this is my reason"}, follow = True)
 
         self.assertEqual(200, response.status_code)
 
@@ -663,12 +663,21 @@ class ManageViewsTest(TestCase):
         self.assertEqual("DECLINED", trade.status)
         self.assertEqual(self.loginUser, trade.finalizer)
         self.assertIsNotNone(trade.closing_date)
-        self.assertEqual("that's my reason", trade.decline_reason)
+        self.assertEqual("this is my reason", trade.decline_reason)
+
+        # notification email sent
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual('[MysTrade] Game #{}: test2 has declined the trade'.format(self.game.id), email.subject)
+        self.assertIn('test2 has declined your offer.'.format(self.game.id), email.body)
+        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn("this is my reason", email.body)
+        self.assertEqual(['test5@test.com'], email.to)
 
     def test_decline_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_REPLIED(self):
         trade = self._prepare_trade('REPLIED')
         response = self.client.post("/trade/{}/{}/decline/".format(self.game.id, trade.id),
-                                    {'decline_reason': "that's my reason"}, follow = True)
+                                    {'decline_reason': "this is my reason"}, follow = True)
 
         self.assertEqual(200, response.status_code)
 
@@ -676,7 +685,16 @@ class ManageViewsTest(TestCase):
         self.assertEqual("DECLINED", trade.status)
         self.assertEqual(self.loginUser, trade.finalizer)
         self.assertIsNotNone(trade.closing_date)
-        self.assertEqual("that's my reason", trade.decline_reason)
+        self.assertEqual("this is my reason", trade.decline_reason)
+
+        # notification email sent
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual('[MysTrade] Game #{}: test2 has declined the trade'.format(self.game.id), email.subject)
+        self.assertIn('test2 has declined your offer.'.format(self.game.id), email.body)
+        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn("this is my reason", email.body)
+        self.assertEqual(['test5@test.com'], email.to)
 
     def test_prepare_offer_forms_sets_up_the_correct_cards_formset_with_cards_in_pending_trades_reserved(self):
         rulecard1, rulecard2, rulecard3 = mommy.make_many(RuleCard, 3)
