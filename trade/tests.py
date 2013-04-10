@@ -589,6 +589,14 @@ class ManageViewsTest(TestCase):
         self.assertEqual(1, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity2).nb_cards)
         self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity3).nb_cards)
 
+        # notification email sent
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual('[MysTrade] Game #{}: test2 has accepted the trade'.format(self.game.id), email.subject)
+        self.assertIn('test2 has accepted your offer.'.format(self.game.id), email.body)
+        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertEqual(['test5@test.com'], email.to)
+
     def test_decline_trade_not_allowed_in_GET(self):
         response = self.client.get("/trade/{}/{}/decline/".format(self.game.id, 1))
         self.assertEqual(403, response.status_code)
