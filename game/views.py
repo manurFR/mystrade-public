@@ -216,54 +216,29 @@ def select_rules(request):
                 deal_cards(game)
 
                 # email notification
-                all_players = sorted(game.players.all(), key = lambda player: player.get_profile().name)
+                all_players = {}
+                for player in game.players.all():
+                     all_players[player] = {'name': player.get_profile().name,
+                                            'url': request.build_absolute_uri(reverse('editprofile', args=[player.id]))}
+
                 if game.is_active():
-                    url = request.build_absolute_uri(reverse('trades', args = [game.id]))
+                     url = request.build_absolute_uri(reverse('trades', args = [game.id]))
                 else: # game not yet started
-                    url = request.build_absolute_uri(reverse('hand', args = [game.id]))
-                for player in all_players:
-                    opponents = []
-                    for opponent in all_players:
-                        if opponent != player:
-                            opponents.append({'name': opponent.get_profile().name,
-                                              'url': request.build_absolute_uri(reverse('editprofile', args=[opponent.id]))})
-                    rules = RuleInHand.objects.filter(game = game, player = player).order_by('rulecard__ref_name')
-                    commodities = CommodityInHand.objects.filter(game = game, player = player).order_by('commodity__name') # alphabetical sort to obfuscate the value order of the commodities
-                    utils.send_notification_email('game_create', player.email,
-                                                  {'game': game, 'opponents': opponents, 'rules': rules, 'commodities': commodities, 'url': url})
+                     url = request.build_absolute_uri(reverse('hand', args = [game.id]))
+
+                for player in all_players.iterkeys():
+                     opponents = dict(all_players) # make a copy
+                     del opponents[player]
+                     list_opponents = sorted(opponents.itervalues(), key = lambda opponent: opponent['name'])
+                     rules = RuleInHand.objects.filter(game = game, player = player).order_by('rulecard__ref_name')
+                     commodities = CommodityInHand.objects.filter(game = game, player = player).order_by('commodity__name') # alphabetical sort to obfuscate the value order of the commodities
+                     utils.send_notification_email('game_create', player.email,
+                                                   {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities, 'url': url})
 
                 # email notification for the admins
-                players = []
-                for player in all_players:
-                    players.append({'name': player.get_profile().name,
-                                    'url': request.build_absolute_uri(reverse('editprofile', args=[player.id]))})
                 utils.send_notification_email('game_create_admin', [admin[1] for admin in settings.ADMINS],
-                                              {'game': game, 'players': players, 'rules': selected_rules})
-
-                # # email notification
-                # all_players = {}
-                # for player in game.players.all():
-                #     all_players[player.id] = {'name': player.get_profile().name,
-                #                               'url': request.build_absolute_uri(reverse('editprofile', args=[player.id]))}
-                #
-                # if game.is_active():
-                #     url = request.build_absolute_uri(reverse('trades', args = [game.id]))
-                # else: # game not yet started
-                #     url = request.build_absolute_uri(reverse('hand', args = [game.id]))
-                #
-                # for player in all_players:
-                #     opponents = dict(all_players) # make a copy
-                #     del opponents[player.id]
-                #     list_opponents = sorted(opponents.itervalues(), key = lambda opponent: opponent.name)
-                #     rules = RuleInHand.objects.filter(game = game, player = player).order_by('rulecard__ref_name')
-                #     commodities = CommodityInHand.objects.filter(game = game, player = player).order_by('commodity__name') # alphabetical sort to obfuscate the value order of the commodities
-                #     utils.send_notification_email('game_create', player.email,
-                #                                   {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities, 'url': url})
-                #
-                # # email notification for the admins
-                # utils.send_notification_email('game_create_admin', [admin[1] for admin in settings.ADMINS],
-                #                               {'game': game, 'players': sorted(all_players.itervalues(), key = lambda player: player.name),
-                #                                'rules': selected_rules})
+                                               {'game': game, 'players': sorted(all_players.itervalues(), key = lambda player: player['name']),
+                                                'rules': selected_rules})
 
                 return HttpResponseRedirect(reverse('welcome'))
     else:

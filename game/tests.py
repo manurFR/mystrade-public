@@ -143,7 +143,7 @@ class GameAndWelcomeViewsTest(TestCase):
     def test_create_game_complete_save_and_clean_session(self):
         response = self.client.post("/game/create/", {'ruleset': 1,
                                                       'start_date': '11/10/2012 18:30',
-                                                      'end_date': '11/13/2500 00:15',
+                                                      'end_date': '11/13/2037 00:15',
                                                       'players': [player.id for player in self.testUsersNoCreate][:4]})
         self.assertRedirects(response, "/game/rules/")
         response = self.client.post("/game/rules/",
@@ -169,7 +169,7 @@ class GameAndWelcomeViewsTest(TestCase):
         created_game = Game.objects.get(master = self.testUserCanCreate.id)
         self.assertEqual(1, created_game.ruleset.id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
-        self.assertEqual(datetime.datetime(2500, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
+        self.assertEqual(datetime.datetime(2037, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
         self.assertEqual(list(self.testUsersNoCreate)[:4], list(created_game.players.all()))
         self.assertListEqual([1, 2, 3, 9], [rule.id for rule in created_game.rules.all()])
         self.assertFalse('ruleset' in self.client.session)
