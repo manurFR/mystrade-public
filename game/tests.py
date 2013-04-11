@@ -1,10 +1,12 @@
 import datetime
 
 from django.contrib.auth.models import User
+from django.core import mail
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Sum
 from django.test import TestCase, TransactionTestCase
+from django.test.utils import override_settings
 from django.utils.timezone import get_default_timezone, now
 from model_mommy import mommy
 
@@ -137,10 +139,11 @@ class GameAndWelcomeViewsTest(TestCase):
         self.assertTemplateUsed(response, 'game/rules.html')
         self.assertEqual("Please select at most 4 rule cards (including the mandatory ones)", response.context['error'])
 
+    @override_settings(ADMINS = (('admin', 'admin@mystrade.com'),))
     def test_create_game_complete_save_and_clean_session(self):
         response = self.client.post("/game/create/", {'ruleset': 1,
                                                       'start_date': '11/10/2012 18:30',
-                                                      'end_date': '11/13/2012 00:15',
+                                                      'end_date': '11/13/2500 00:15',
                                                       'players': [player.id for player in self.testUsersNoCreate][:4]})
         self.assertRedirects(response, "/game/rules/")
         response = self.client.post("/game/rules/",
@@ -166,7 +169,7 @@ class GameAndWelcomeViewsTest(TestCase):
         created_game = Game.objects.get(master = self.testUserCanCreate.id)
         self.assertEqual(1, created_game.ruleset.id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
-        self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
+        self.assertEqual(datetime.datetime(2500, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
         self.assertEqual(list(self.testUsersNoCreate)[:4], list(created_game.players.all()))
         self.assertListEqual([1, 2, 3, 9], [rule.id for rule in created_game.rules.all()])
         self.assertFalse('ruleset' in self.client.session)
@@ -174,6 +177,33 @@ class GameAndWelcomeViewsTest(TestCase):
         self.assertFalse('end_date' in self.client.session)
         self.assertFalse('players' in self.client.session)
         self.assertFalse('profiles' in self.client.session)
+
+        # notification emails sent
+        self.assertEqual(5, len(mail.outbox))
+        list_recipients = [msg.to[0] for msg in mail.outbox]
+
+        self.assertEqual(1, list_recipients.count('test2@test.com'))
+        emailTest2 = mail.outbox[list_recipients.index('test2@test.com')]
+        self.assertEqual('[MysTrade] Game #{} has been created by test1'.format(created_game.id), emailTest2.subject)
+        self.assertIn('Test1 has just created game #{}, and you\'ve been selected to join it !'.format(created_game.id), emailTest2.body)
+        self.assertNotRegexpMatches(emailTest2.body, '- test2 \(.*/profile/2/\)')
+        self.assertRegexpMatches(emailTest2.body, '- test3 \(.*/profile/3/\)')
+        self.assertRegexpMatches(emailTest2.body, '- test4 \(.*/profile/4/\)')
+        self.assertRegexpMatches(emailTest2.body, '- test5 \(.*/profile/5/\)')
+        self.assertEqual(2, emailTest2.body.count('- Rule'))
+        self.assertIn("The game has already started ! Start trading here:", emailTest2.body)
+        self.assertIn('/trade/{}'.format(created_game.id), emailTest2.body)
+
+        self.assertEqual(1, list_recipients.count('admin@mystrade.com'))
+        emailAdmin = mail.outbox[list_recipients.index('admin@mystrade.com')]
+        self.assertEqual('[MysTrade] Game #{} has been created by test1'.format(created_game.id), emailAdmin.subject)
+        self.assertIn('Test1 has just created game #{}.'.format(created_game.id), emailAdmin.body)
+        self.assertRegexpMatches(emailAdmin.body, '- test2 \(.*/profile/2/\)')
+        self.assertRegexpMatches(emailAdmin.body, '- test3 \(.*/profile/3/\)')
+        self.assertRegexpMatches(emailAdmin.body, '- test4 \(.*/profile/4/\)')
+        self.assertRegexpMatches(emailAdmin.body, '- test5 \(.*/profile/5/\)')
+        self.assertIn("The ruleset is: {}".format(created_game.ruleset.name), emailAdmin.body)
+        self.assertEqual(4, emailAdmin.body.count('- Rule'))
 
     def test_welcome_needs_login(self):
         response = self.client.get(reverse("welcome"))

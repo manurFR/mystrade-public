@@ -242,7 +242,7 @@ def decline_trade(request, game_id, trade_id):
 
 def _prepare_offer_forms(request, game, selected_rules = [], selected_commodities = {}):
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
-    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
+    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__name')
 
     RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra=0)
     rulecards_formset = RuleCardsFormSet(initial=sorted([{'card_id':       card.id,
@@ -269,7 +269,7 @@ def _prepare_offer_forms(request, game, selected_rules = [], selected_commoditie
 
 def _parse_offer_forms(request, game):
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
-    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
+    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__name')
 
     RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
     rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')

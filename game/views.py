@@ -1,4 +1,5 @@
 import logging
+from django.conf import settings
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -18,6 +19,7 @@ from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer, Trade
+from utils import utils
 
 logger = logging.getLogger(__name__)
 
@@ -40,13 +42,15 @@ def hand(request, game_id):
     hand_submitted = game.gameplayer_set.filter(submit_date__isnull = False, player = request.user).count() > 0
 
     rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
+
+    # commodities are ordered only alphabetically (by their name) in order to obfuscate their actual order in value
     if hand_submitted:
-        commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_submitted_cards__gt = 0).order_by('commodity__value', 'commodity__name')
+        commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_submitted_cards__gt = 0).order_by('commodity__name')
     else:
-        commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
+        commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__name')
 
     commodity_hand_not_submitted = CommodityInHand.objects.filter(game = game, player = request.user,
-                                                                  nb_cards__gt = F('nb_submitted_cards')).order_by('commodity__value', 'commodity__name')
+                                                                  nb_cards__gt = F('nb_submitted_cards')).order_by('commodity__name')
     for not_submitted in commodity_hand_not_submitted:
         not_submitted.nb_cards -= not_submitted.nb_submitted_cards
 
@@ -87,7 +91,7 @@ def submit_hand(request, game_id):
     if game.gameplayer_set.get(player = request.user).submit_date:
         raise PermissionDenied
 
-    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__value', 'commodity__name')
+    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__name')
 
     if request.method == 'POST':
         CommodityCardsFormSet = formset_factory(GameCommodityCardFormParse)
@@ -210,6 +214,56 @@ def select_rules(request):
 
                 # deal starting cards
                 deal_cards(game)
+
+                # email notification
+                all_players = sorted(game.players.all(), key = lambda player: player.get_profile().name)
+                if game.is_active():
+                    url = request.build_absolute_uri(reverse('trades', args = [game.id]))
+                else: # game not yet started
+                    url = request.build_absolute_uri(reverse('hand', args = [game.id]))
+                for player in all_players:
+                    opponents = []
+                    for opponent in all_players:
+                        if opponent != player:
+                            opponents.append({'name': opponent.get_profile().name,
+                                              'url': request.build_absolute_uri(reverse('editprofile', args=[opponent.id]))})
+                    rules = RuleInHand.objects.filter(game = game, player = player).order_by('rulecard__ref_name')
+                    commodities = CommodityInHand.objects.filter(game = game, player = player).order_by('commodity__name') # alphabetical sort to obfuscate the value order of the commodities
+                    utils.send_notification_email('game_create', player.email,
+                                                  {'game': game, 'opponents': opponents, 'rules': rules, 'commodities': commodities, 'url': url})
+
+                # email notification for the admins
+                players = []
+                for player in all_players:
+                    players.append({'name': player.get_profile().name,
+                                    'url': request.build_absolute_uri(reverse('editprofile', args=[player.id]))})
+                utils.send_notification_email('game_create_admin', [admin[1] for admin in settings.ADMINS],
+                                              {'game': game, 'players': players, 'rules': selected_rules})
+
+                # # email notification
+                # all_players = {}
+                # for player in game.players.all():
+                #     all_players[player.id] = {'name': player.get_profile().name,
+                #                               'url': request.build_absolute_uri(reverse('editprofile', args=[player.id]))}
+                #
+                # if game.is_active():
+                #     url = request.build_absolute_uri(reverse('trades', args = [game.id]))
+                # else: # game not yet started
+                #     url = request.build_absolute_uri(reverse('hand', args = [game.id]))
+                #
+                # for player in all_players:
+                #     opponents = dict(all_players) # make a copy
+                #     del opponents[player.id]
+                #     list_opponents = sorted(opponents.itervalues(), key = lambda opponent: opponent.name)
+                #     rules = RuleInHand.objects.filter(game = game, player = player).order_by('rulecard__ref_name')
+                #     commodities = CommodityInHand.objects.filter(game = game, player = player).order_by('commodity__name') # alphabetical sort to obfuscate the value order of the commodities
+                #     utils.send_notification_email('game_create', player.email,
+                #                                   {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities, 'url': url})
+                #
+                # # email notification for the admins
+                # utils.send_notification_email('game_create_admin', [admin[1] for admin in settings.ADMINS],
+                #                               {'game': game, 'players': sorted(all_players.itervalues(), key = lambda player: player.name),
+                #                                'rules': selected_rules})
 
                 return HttpResponseRedirect(reverse('welcome'))
     else:
