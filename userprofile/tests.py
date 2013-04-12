@@ -23,6 +23,7 @@ class ViewsTest(TestCase):
         self.testUser = User.objects.create_user('test', 'test@aaa.com', 'test')
         profile = self.testUser.get_profile()
         profile.bio = 'line\r\njump'
+        profile.send_notifications = True
         profile.save()
 
         self.client.login(username = 'test', password = 'test')
@@ -32,6 +33,7 @@ class ViewsTest(TestCase):
 
         self.assertContains(response, "test@aaa.com")
         self.assertContains(response, "line<br />jump")
+        self.assertContains(response, "Yes")
         self.assertTemplateUsed(response, 'userprofile/profile.html')
 
     def test_display_otherprofile(self):
@@ -41,18 +43,21 @@ class ViewsTest(TestCase):
         otherUser.save()
         profile = otherUser.get_profile()
         profile.contact = 'call me maybe'
+        profile.send_notifications = False
         profile.save()
 
         response = self.client.get("/profile/{}/".format(otherUser.id))
 
         self.assertContains(response, "Luke Skywalker")
         self.assertNotContains(response, "someone@bbb.com")
+        self.assertNotContains(response, "Yes")
         self.assertContains(response, "call me maybe")
         self.assertTemplateUsed(response, 'userprofile/otherprofile.html')
 
     def test_editprofile_change_user_and_profile(self):
         response = self.client.post("/profile/{}/".format(self.testUser.id),
                                     {'username': 'test', 'first_name': 'Leia', 'last_name': 'Organa',
+                                     'send_notifications': '',
                                      'email': 'test@aaa.com', 'bio': 'princess', 'contact': 'D2-R2'},
                                     follow = True)
 
@@ -62,6 +67,7 @@ class ViewsTest(TestCase):
         self.assertEqual("test@aaa.com", modifiedUser.email)
         self.assertEqual("princess", modifiedUser.get_profile().bio)
         self.assertEqual("D2-R2", modifiedUser.get_profile().contact)
+        self.assertFalse(modifiedUser.get_profile().send_notifications)
 
         self.assertTemplateUsed(response, 'userprofile/profile.html')
 

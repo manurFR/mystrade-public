@@ -5,6 +5,8 @@ from django.db.models.signals import post_save
 # Create your models here.
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
+
+    send_notifications = models.BooleanField("Send game notifications", help_text = "Check to receive email alerts about your trades and games")
     
     bio = models.TextField(blank = True, help_text = "Your presentation text")
     contact = models.TextField(blank = True, help_text = "Your email address will never be publicly displayed. Specify here how other players can reach you (IM, email, etc.)")
