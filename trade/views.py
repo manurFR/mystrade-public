@@ -320,7 +320,7 @@ def _trade_event_notification(request, trade):
     else:
         recipient = trade.initiator
 
-    utils.send_notification_email(template, recipient.email,
+    utils.send_notification_email(template, recipient,
                                   {'game': trade.game, 'trade': trade,
                                    'url': request.build_absolute_uri(reverse('show_trade', args = [trade.game.id, trade.id]))})
 

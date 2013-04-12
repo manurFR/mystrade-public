@@ -232,7 +232,7 @@ def select_rules(request):
                      list_opponents = sorted(opponents.itervalues(), key = lambda opponent: opponent['name'])
                      rules = RuleInHand.objects.filter(game = game, player = player).order_by('rulecard__ref_name')
                      commodities = CommodityInHand.objects.filter(game = game, player = player).order_by('commodity__name') # alphabetical sort to obfuscate the value order of the commodities
-                     utils.send_notification_email('game_create', player.email,
+                     utils.send_notification_email('game_create', player,
                                                    {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities, 'url': url})
 
                 # email notification for the admins
@@ -344,7 +344,7 @@ def close_game(request, game_id):
                     # email notification
                     scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
                     for rank, scoresheet in enumerate(scoresheets, 1):
-                        utils.send_notification_email('game_close', scoresheet.gameplayer.player.email,
+                        utils.send_notification_email('game_close', scoresheet.gameplayer.player,
                                                       {'game': game, 'rank': rank, 'nb_players': len(scoresheets), 'scoresheet': scoresheet,
                                                        'url': request.build_absolute_uri(reverse('player_score', args = [game.id]))})
 

@@ -183,6 +183,7 @@
         "pk": 1,
         "model": "userprofile.userprofile",
         "fields": {
+            "send_notifications": "True",
             "bio": "",
             "contact": "",
             "user": 1
@@ -192,6 +193,7 @@
         "pk": 2,
         "model": "userprofile.userprofile",
         "fields": {
+            "send_notifications": "True",
             "bio": "",
             "contact": "",
             "user": 2
@@ -201,6 +203,7 @@
         "pk": 3,
         "model": "userprofile.userprofile",
         "fields": {
+            "send_notifications": "True",
             "bio": "",
             "contact": "",
             "user": 3
@@ -210,6 +213,7 @@
         "pk": 4,
         "model": "userprofile.userprofile",
         "fields": {
+            "send_notifications": "True",
             "bio": "",
             "contact": "",
             "user": 4
@@ -219,6 +223,7 @@
         "pk": 5,
         "model": "userprofile.userprofile",
         "fields": {
+            "send_notifications": "True",
             "bio": "",
             "contact": "",
             "user": 5
@@ -228,6 +233,7 @@
         "pk": 6,
         "model": "userprofile.userprofile",
         "fields": {
+            "send_notifications": "True",
             "bio": "",
             "contact": "",
             "user": 6
@@ -237,6 +243,7 @@
         "pk": 7,
         "model": "userprofile.userprofile",
         "fields": {
+            "send_notifications": "True",
             "bio": "",
             "contact": "",
             "user": 7
@@ -246,6 +253,7 @@
         "pk": 8,
         "model": "userprofile.userprofile",
         "fields": {
+            "send_notifications": "True",
             "bio": "",
             "contact": "",
             "user": 8
@@ -255,6 +263,7 @@
         "pk": 9,
         "model": "userprofile.userprofile",
         "fields": {
+            "send_notifications": "True",
             "bio": "",
             "contact": "",
             "user": 9
@@ -264,6 +273,7 @@
         "pk": 10,
         "model": "userprofile.userprofile",
         "fields": {
+            "send_notifications": "True",
             "bio": "",
             "contact": "",
             "user": 10

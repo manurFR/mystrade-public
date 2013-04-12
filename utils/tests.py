@@ -1,8 +1,10 @@
 import datetime
+from django.contrib.auth.models import User
 from django.core import mail
 from django.template import Template
 from django.test import TestCase
 from django.test.utils import override_settings
+from model_mommy import mommy
 from utils import roundTimeToMinute, _send_notification_email
 
 class UtilsTest(TestCase):
@@ -21,17 +23,17 @@ class UtilsTest(TestCase):
     @override_settings(EMAIL_SUBJECT_PREFIX = '[test] ', EMAIL_MYSTRADE = 'mystrade@test.com')
     def test_send_notification_email(self):
         template = Template('my subject\nFirst {{ stuff }}.\nSecond {{ stuff }}.')
-        _send_notification_email(template, ['to1@test.com', 'to2@test.com'], data={'stuff': 'line'})
+        _send_notification_email(template, 'to1@test.com', data={'stuff': 'line'})
 
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
         self.assertEqual('[test] my subject', email.subject)
         self.assertEqual('First line.\nSecond line.', email.body)
         self.assertEqual('mystrade@test.com', email.from_email)
-        self.assertEqual(['to1@test.com', 'to2@test.com'], email.to)
+        self.assertEqual(['to1@test.com'], email.to)
         self.assertEqual(['mystrade@test.com'], email.bcc)
 
-    def test_send_notification_email_without_to_or_subject_doesnt_send_any_message(self):
+    def test_send_notification_email_without_subject_or_recipients_doesnt_send_any_message(self):
         template = Template('\nFirst line.\nSecond line.')
         _send_notification_email(template, ['to1@test.com', 'to2@test.com'])
         self.assertEqual(0, len(mail.outbox))
@@ -53,4 +55,39 @@ class UtilsTest(TestCase):
         self.assertEqual('', email.body)
         self.assertEqual(['to1@test.com', 'to2@test.com'], email.to)
 
+    def test_send_notification_email_can_include_a_mix_of_strings_and_Users_as_recipients(self):
+        user1 = self._prepare_user('user1@test.com', send_notifications = True)
 
+        template = Template('my subject\nmy body')
+        _send_notification_email(template, recipients = [user1, 'user2@test.com'])
+
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual(['user1@test.com', 'user2@test.com'], email.to)
+
+    def test_send_notification_email_with_Users_as_recipients_are_sent_if_they_have_accepted_notifications(self):
+        user1 = self._prepare_user('user1@test.com', send_notifications = True)
+        user2 = self._prepare_user('user2@test.com', send_notifications = False)
+
+        template = Template('my subject\nmy body')
+        _send_notification_email(template, recipients = [user1, user2])
+
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual(['user1@test.com'], email.to)
+
+    def test_send_notification_email_with_no_User_who_accepts_notification_sends_nothing(self):
+        user1 = self._prepare_user('user1@test.com', send_notifications = False)
+        user2 = self._prepare_user('user2@test.com', send_notifications = False)
+
+        template = Template('my subject\nmy body')
+        _send_notification_email(template, recipients = [user1, user2])
+
+        self.assertEqual(0, len(mail.outbox))
+
+    def _prepare_user(self, email, send_notifications):
+        user = mommy.make_one(User, email = email)
+        profile = user.get_profile()
+        profile.send_notifications = send_notifications
+        profile.save()
+        return user
