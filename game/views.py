@@ -340,6 +340,19 @@ def close_game(request, game_id):
                     scoresheets = tally_scores(game)
                     for scoresheet in scoresheets:
                         scoresheet.persist()
+
+                    # email notification
+                    scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
+                    for rank, scoresheet in enumerate(scoresheets, 1):
+                        utils.send_notification_email('game_close', scoresheet.gameplayer.player.email,
+                                                      {'game': game, 'rank': rank, 'nb_players': len(scoresheets), 'scoresheet': scoresheet,
+                                                       'url': request.build_absolute_uri(reverse('player_score', args = [game.id]))})
+
+                    # email notification for the admins
+                    utils.send_notification_email('game_close_admin', [admin[1] for admin in settings.ADMINS],
+                                                  {'game': game, 'scoresheets': scoresheets,
+                                                   'url': request.build_absolute_uri(reverse('control', args = [game.id]))})
+
             except BaseException as ex:
                 logger.error("Error in close_game({})".format(game_id), exc_info = ex)
 

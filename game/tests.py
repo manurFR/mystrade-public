@@ -573,12 +573,22 @@ class ControlBoardViewTest(TestCase):
         self.assertEqual(6, cih1.nb_submitted_cards)
         self.assertEqual(3, cih2.nb_submitted_cards)
 
+    @override_settings(ADMINS = (('admin', 'admin@mystrade.com'),))
     def test_close_game_calculates_and_persists_the_final_score(self):
         self._prepare_game_for_scoring(self.game_ended)
 
         test6 = User.objects.get(username='test6')
-        gp1 = mommy.make_one(GamePlayer, game = self.game_ended, player = self.test5)
-        gp2 = mommy.make_one(GamePlayer, game = self.game_ended, player = test6)
+        test7 = User.objects.get(username='test7')
+        test8 = User.objects.get(username='test8')
+        mommy.make_one(GamePlayer, game = self.game_ended, player = self.test5)
+        mommy.make_one(GamePlayer, game = self.game_ended, player = test6)
+        mommy.make_one(GamePlayer, game = self.game_ended, player = test7)
+        mommy.make_one(GamePlayer, game = self.game_ended, player = test8)
+
+        cih7blue   = mommy.make_one(CommodityInHand, game = self.game_ended, player = test7,
+                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Blue'))
+        cih8yellow = mommy.make_one(CommodityInHand, game = self.game_ended, player = test8,
+                                    nb_cards = 4, commodity = Commodity.objects.get(name = 'Yellow'))
 
         self._assertOperation_post(self.game_ended, "close")
 
@@ -597,6 +607,55 @@ class ControlBoardViewTest(TestCase):
         sfr2 = ScoreFromRule.objects.filter(game = self.game_ended, player = test6)
         self.assertEqual(1, len(sfr2))
         self.assertEqual('HAG04', sfr2[0].rulecard.ref_name)
+
+        # notification emails sent
+        self.assertEqual(5, len(mail.outbox))
+        list_recipients = [msg.to[0] for msg in mail.outbox]
+
+        self.assertEqual(1, list_recipients.count('test6@test.com'))
+        emailTest6 = mail.outbox[list_recipients.index('test6@test.com')]
+        self.assertEqual('[MysTrade] Game #{} has been closed by test2'.format(self.game_ended.id), emailTest6.subject)
+        self.assertIn('Test2 has closed game #{}'.format(self.game_ended.id), emailTest6.body)
+        self.assertIn('Congratulations, you are the winner !', emailTest6.body)
+        self.assertIn('You scored 18 points, divided as:', emailTest6.body)
+        self.assertIn('- 3 scored Orange cards x 4 = 12 points', emailTest6.body)
+        self.assertIn('- 3 scored Blue cards x 2 = 6 points', emailTest6.body)
+        self.assertIn('- 4 scored White cards x 0 = 0 points', emailTest6.body)
+        self.assertIn('- Rule : (4) Since there are 4 white cards (more than three), their value is set to zero.', emailTest6.body)
+        self.assertIn('/game/{}/score/'.format(self.game_ended.id), emailTest6.body)
+
+        self.assertEqual(1, list_recipients.count('test5@test.com'))
+        emailTest5 = mail.outbox[list_recipients.index('test5@test.com')]
+        self.assertEqual('[MysTrade] Game #{} has been closed by test2'.format(self.game_ended.id), emailTest5.subject)
+        self.assertIn('Test2 has closed game #{}'.format(self.game_ended.id), emailTest5.body)
+        self.assertIn('Congratulations, you are in the second place !', emailTest5.body)
+        self.assertIn('You scored 17 points, divided as:', emailTest5.body)
+        self.assertIn('- 2 scored Orange cards x 4 = 8 points', emailTest5.body)
+        self.assertIn('- 2 scored Blue cards x 2 = 4 points', emailTest5.body)
+        self.assertIn('- 1 scored White card x 5 = 5 points', emailTest5.body)
+        self.assertIn('- Rule : (5) Since there are 2 blue card(s), only 2 orange card(s) score.', emailTest5.body)
+        self.assertIn('/game/{}/score/'.format(self.game_ended.id), emailTest5.body)
+
+        self.assertEqual(1, list_recipients.count('test7@test.com'))
+        emailTest7 = mail.outbox[list_recipients.index('test7@test.com')]
+        self.assertIn('Congratulations, you are in the third place !', emailTest7.body)
+        self.assertIn('You scored 6 points', emailTest7.body)
+
+        self.assertEqual(1, list_recipients.count('test8@test.com'))
+        emailTest8 = mail.outbox[list_recipients.index('test8@test.com')]
+        self.assertIn('You\'re 4th of 4 players.', emailTest8.body)
+        self.assertIn('You scored 4 points', emailTest8.body)
+
+        self.assertEqual(1, list_recipients.count('admin@mystrade.com'))
+        emailAdmin = mail.outbox[list_recipients.index('admin@mystrade.com')]
+        self.assertEqual('[MysTrade] Game #{} has been closed by test2'.format(self.game_ended.id), emailAdmin.subject)
+        self.assertIn('Test2 has closed game #{}'.format(self.game_ended.id), emailAdmin.body)
+        self.assertIn('Final Scores:', emailAdmin.body)
+        self.assertIn('1st. test6 : 18 points', emailAdmin.body)
+        self.assertIn('2nd. test5 : 17 points', emailAdmin.body)
+        self.assertIn('3rd. test7 : 6 points', emailAdmin.body)
+        self.assertIn('4th. test8 : 4 points', emailAdmin.body)
+        self.assertIn('/game/{}/control/'.format(self.game_ended.id), emailAdmin.body)
 
     def test_control_board_shows_current_scoring_during_game(self):
         self._prepare_game_for_scoring(self.game)
