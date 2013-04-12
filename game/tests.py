@@ -29,7 +29,7 @@ def _common_setUp(self):
     self.client.login(username = 'test2', password = 'test')
 
 class GameAndWelcomeViewsTest(TestCase):
-    fixtures = ['test_users.json']
+    fixtures = ['test_users.json'] # from userprofile app
 
     def setUp(self):
         self.testUserCanCreate = User.objects.get(username = 'test1')
@@ -255,7 +255,7 @@ class GameModelsTest(TestCase):
         self.assertFalse(game.is_active())
 
 class HandViewTest(TestCase):
-    fixtures = ['test_users.json']
+    fixtures = ['test_users.json'] # from userprofile app
 
     def setUp(self):
         _common_setUp(self)
@@ -453,7 +453,7 @@ class HandViewTest(TestCase):
         self.assertIsNotNone(trade_replied_by_other_player.closing_date)
 
 class ControlBoardViewTest(TestCase):
-    fixtures = ['test_users.json']
+    fixtures = ['test_users.json'] # from userprofile app
 
     def setUp(self):
         _common_setUp(self)
@@ -730,7 +730,7 @@ class ControlBoardViewTest(TestCase):
         self.assertEqual(status_code, response.status_code)
 
 class TransactionalViewsTest(TransactionTestCase):
-    fixtures = ['test_users.json']
+    fixtures = ['test_users.json'] # from userprofile app
 
     def setUp(self):
         _common_setUp(self)

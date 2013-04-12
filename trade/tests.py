@@ -22,7 +22,7 @@ def _common_setUp(self):
     self.client.login(username = 'test2', password = 'test')
 
 class CreateTradeViewTest(TestCase):
-    fixtures = ['test_users.json']
+    fixtures = ['test_users.json'] # from userprofile app
 
     def setUp(self):
         _common_setUp(self)
@@ -163,7 +163,7 @@ class CreateTradeViewTest(TestCase):
         self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
 
 class ManageViewsTest(TestCase):
-    fixtures = ['test_users.json']
+    fixtures = ['test_users.json'] # from userprofile app
 
     def setUp(self):
         _common_setUp(self)
@@ -884,7 +884,7 @@ class ManageViewsTest(TestCase):
         self.assertEqual(403, response.status_code)
 
 class TransactionalViewsTest(TransactionTestCase):
-    fixtures = ['test_users.json']
+    fixtures = ['test_users.json'] # from userprofile app
 
     def setUp(self):
         _common_setUp(self)

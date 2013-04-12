@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="872794806">
-    <data-source source="LOCAL" name="Django default" product="" version="" jdbc-version="" driver-name="" driver-version="" uuid="534334f4-4e56-4444-a3b1-2999267f6c15">
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://127.0.0.1/mystrade</jdbc-url>
-      <user-name>django</user-name>
-      <user-password>dfcedfc0dfd8dfc5dfc6dfcbdfc4dfcedfd2dfdadf92df9a</user-password>
-      <default-dialect>PostgreSQL</default-dialect>
-      <libraries>
-        <library>
-          <url>file://$USER_HOME$/.IntelliJIdea12/config/jdbc-drivers/postgresql-driver-license.txt</url>
-        </library>
-        <library>
-          <url>jar://$USER_HOME$/.IntelliJIdea12/config/jdbc-drivers/postgresql-9.1-901.jdbc3.jar!/</url>
-        </library>
-      </libraries>
-    </data-source>
-  </component>
+  <component name="DataSourceManagerImpl" compressed="false" hash="872794806" />
 </project>
 
