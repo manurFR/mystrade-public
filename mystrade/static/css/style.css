@@ -252,23 +252,27 @@ a, .dynamic_link {
   color: #800024;
   font-weight: normal;
   text-decoration: none; }
+  /* line 255, ../../resources/scss/style.scss */
+  a.user, .dynamic_link.user {
+    font-weight: inherit;
+    color: darkgreen; }
 
-/* line 256, ../../resources/scss/style.scss */
+/* line 261, ../../resources/scss/style.scss */
 a:hover, .dynamic_link:hover {
   text-decoration: underline;
   cursor: pointer; }
 
-/* line 261, ../../resources/scss/style.scss */
+/* line 266, ../../resources/scss/style.scss */
 .underline[data-tip] {
   border-bottom: dotted 1px black; }
 
-/* line 265, ../../resources/scss/style.scss */
+/* line 270, ../../resources/scss/style.scss */
 .ui-datepicker-trigger {
   position: relative;
   top: 4px;
   left: 2px; }
 
-/* line 271, ../../resources/scss/style.scss */
+/* line 276, ../../resources/scss/style.scss */
 .free_information {
   border: 1px solid #ffd773;
   border-radius: 5px;
@@ -276,12 +280,12 @@ a:hover, .dynamic_link:hover {
   -webkit-border-radius: 5px;
   padding-left: 30px;
   padding-top: 110px; }
-  /* line 277, ../../resources/scss/style.scss */
+  /* line 282, ../../resources/scss/style.scss */
   .free_information legend {
     color: #333333;
     font-style: italic;
     margin-left: -15px; }
 
-/* line 283, ../../resources/scss/style.scss */
+/* line 288, ../../resources/scss/style.scss */
 .end_warning {
   color: red; }

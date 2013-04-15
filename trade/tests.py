@@ -196,7 +196,7 @@ class ManageViewsTest(TestCase):
         self.assertContains(response, "done 3 days ago")
         self.assertContains(response, "declined by <strong>you</strong> 4 days ago")
         self.assertContains(response, "offered 5 days ago")
-        self.assertContains(response, "response submitted by test5")
+        self.assertRegexpMatches(response.content, "response submitted by <a href=\".*\" class=\"user\">test5</a>")
 
     def test_show_trade_only_allowed_for_authorized_players(self):
         """ Authorized players are : - the initiator
@@ -235,7 +235,7 @@ class ManageViewsTest(TestCase):
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
-        self.assertContains(response, 'form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<button type="button" id="reply">Reply with your offer</button>')
         self.assertNotContains(response, '<form action="/trade/{}/{}/reply/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
@@ -276,11 +276,11 @@ class ManageViewsTest(TestCase):
         self.assertContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_with_trade_CANCELLED(self):
-        trade = self._prepare_trade('CANCELLED')
+        trade = self._prepare_trade('CANCELLED', finalizer = self.test5)
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
-        self.assertNotContains(response, 'form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<form action="/trade/{}/{}/accept/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
         self.assertNotContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
@@ -291,7 +291,7 @@ class ManageViewsTest(TestCase):
 
         trade = self._prepare_trade('INITIATED')
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
-        self.assertNotContains(response, 'form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
 
         trade.responder = self.loginUser
         trade.save()
@@ -301,15 +301,15 @@ class ManageViewsTest(TestCase):
         trade.status = 'REPLIED'
         trade.save()
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
-        self.assertNotContains(response, 'form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, 'form action="/trade/{}/{}/accept/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, 'form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{}/{}/accept/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_decline_reason_displayed_in_show_trade_when_DECLINED(self):
         trade = self._prepare_trade('DECLINED', finalizer = self.test5)
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
-        self.assertContains(response, "declined by test5")
+        self.assertRegexpMatches(response.content, "declined by <a href=\".*\" class=\"user\">test5</a>")
         self.assertNotContains(response, "with the following reason given:")
 
         trade.decline_reason = "Because I do not need it"
@@ -317,7 +317,7 @@ class ManageViewsTest(TestCase):
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
-        self.assertContains(response, "declined by test5")
+        self.assertRegexpMatches(response.content, "declined by <a href=\".*\" class=\"user\">test5</a>")
         self.assertContains(response, "with the following reason given:")
         self.assertContains(response, "Because I do not need it")
 
@@ -813,6 +813,7 @@ class ManageViewsTest(TestCase):
 
         # CANCELLED : same as REPLIED
         trade.status = 'CANCELLED'
+        trade.finalizer = self.loginUser
         trade.save()
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))

@@ -1,1 +1,1 @@
-{% if who == user %}<strong>you</strong>{% else %}{{ who.get_profile.name }}{% endif %}
+{% load url from future %}{% if who == user %}<strong>you</strong>{% else %}<a href="{% url 'otherprofile' who.id %}" class="user">{{ who.get_profile.name }}</a>{% endif %}

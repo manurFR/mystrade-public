@@ -81,7 +81,7 @@
         {% else %}
             #{{ forloop.counter }}. <span>
         {% endif %}
-        <strong>{{ scoresheet.player_name }}</strong></span>
+        <strong>{% include "common/name_or_you.html" with who=scoresheet.gameplayer.player %}</strong></span>
     </div>
     <br/>
     <div class="scoresheet">

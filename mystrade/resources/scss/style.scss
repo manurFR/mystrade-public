@@ -251,6 +251,11 @@ a, .dynamic_link {
   color: #800024;
   @include font($weight: normal);
   text-decoration: none;
+
+  &.user {
+    font-weight: inherit;
+    color: darkgreen;
+  }
 }
 
 a:hover, .dynamic_link:hover {
