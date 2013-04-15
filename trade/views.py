@@ -5,8 +5,7 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q
 from django.forms.formsets import formset_factory
-from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.timezone import now
 from game.models import RuleInHand, CommodityInHand, Game, GamePlayer
 from trade.forms import DeclineReasonForm, TradeForm, RuleCardFormDisplay, TradeCommodityCardFormDisplay, OfferForm, RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet
@@ -85,7 +84,7 @@ def create_trade(request, game_id):
                 # email notification
                 _trade_event_notification(request, trade)
 
-                return HttpResponseRedirect(reverse('trades', args = [game.id]))
+                return redirect('trades', game.id)
             else:
                 offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, selected_commodities)
         except FormInvalidException as ex:
@@ -115,7 +114,7 @@ def cancel_trade(request, game_id, trade_id):
             # email notification
             _trade_event_notification(request, trade)
 
-            return HttpResponseRedirect(reverse('trades', args = [game_id]))
+            return redirect('trades', game_id)
 
     raise PermissionDenied
 
@@ -143,7 +142,7 @@ def reply_trade(request, game_id, trade_id):
                 # email notification
                 _trade_event_notification(request, trade)
 
-                return HttpResponseRedirect(reverse('trades', args = [trade.game.id]))
+                return redirect('trades', trade.game.id)
             except FormInvalidException as ex:
                 rulecards_formset = ex.forms['rulecards_formset']
                 commodities_formset = ex.forms['commodities_formset']
@@ -214,7 +213,7 @@ def accept_trade(request, game_id, trade_id):
                 # if anything crappy happens, rollback the transaction and do nothing else except logging
                 logger.error("Error in accept_trace({}, {})".format(game_id, trade_id), exc_info = ex)
 
-            return HttpResponseRedirect(reverse('trades', args = [game_id]))
+            return redirect('trades', game_id)
 
     raise PermissionDenied
 
@@ -236,7 +235,7 @@ def decline_trade(request, game_id, trade_id):
                 # email notification
                 _trade_event_notification(request, trade)
 
-                return HttpResponseRedirect(reverse('trades', args = [game_id]))
+                return redirect('trades', game_id)
 
     raise PermissionDenied
 

@@ -7,8 +7,7 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q, F
 from django.forms.formsets import formset_factory
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
 
 from game.deal import deal_cards
@@ -120,7 +119,7 @@ def submit_hand(request, game_id):
             except BaseException as ex:
                 logger.error("Error in submit_hand({})".format(game_id), exc_info = ex)
 
-            return HttpResponseRedirect(reverse('welcome'))
+            return redirect('welcome')
         else:
             pass # no reason to come here
     else:
@@ -149,7 +148,7 @@ def create_game(request):
             request.session['end_date'] = form.cleaned_data['end_date']
             request.session['players'] = list(form.cleaned_data['players'].all()) # convert from Queryset to list
             request.session['profiles'] = [user.get_profile() for user in request.session['players']]
-            return HttpResponseRedirect(reverse('select_rules'))
+            return redirect('select_rules')
     else:
         form = CreateGameForm(request.user)
     return render(request, 'game/create.html', {'form': form})
@@ -158,7 +157,7 @@ def create_game(request):
 def select_rules(request):
     if 'ruleset' not in request.session or 'start_date' not in request.session\
        or 'end_date' not in request.session or 'players' not in request.session:
-        return HttpResponseRedirect(reverse('create_game'))
+        return redirect('create_game')
 
     ruleset = request.session['ruleset']
     start_date = request.session['start_date']
@@ -169,7 +168,7 @@ def select_rules(request):
         validate_dates(start_date, end_date)
         validate_number_of_players(players, ruleset)
     except ValidationError:
-        return HttpResponseRedirect(reverse('create_game'))
+        return redirect('create_game')
 
     rulecards_queryset = RuleCard.objects.filter(ruleset=ruleset).order_by('ref_name')
 
@@ -240,7 +239,7 @@ def select_rules(request):
                                                {'game': game, 'players': sorted(all_players.itervalues(), key = lambda player: player['name']),
                                                 'rules': selected_rules})
 
-                return HttpResponseRedirect(reverse('welcome'))
+                return redirect('welcome')
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra=0)
         formset = RuleCardsFormSet(initial=[{'card_id': card.id,
@@ -356,6 +355,6 @@ def close_game(request, game_id):
             except BaseException as ex:
                 logger.error("Error in close_game({})".format(game_id), exc_info = ex)
 
-            return HttpResponseRedirect(reverse('control', args = [game_id]))
+            return redirect('control', game_id)
 
     raise PermissionDenied
