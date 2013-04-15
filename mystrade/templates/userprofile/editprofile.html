@@ -4,7 +4,7 @@
 {% load widget_tweaks %}
 
 {% block content %}
-	<form action="{% url 'userprofile.views.editprofile' user.id %}" method="POST">{% csrf_token %}
+	<form action="{% url 'editprofile' %}" method="POST">{% csrf_token %}
 		<table class="fullwidth formtable">
 			<tr>
 				<td colspan="2" class="header">Edit profile

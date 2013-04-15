@@ -219,7 +219,7 @@ def select_rules(request):
                 all_players = {}
                 for player in game.players.all():
                      all_players[player] = {'name': player.get_profile().name,
-                                            'url': request.build_absolute_uri(reverse('editprofile', args=[player.id]))}
+                                            'url': request.build_absolute_uri(reverse('otherprofile', args=[player.id]))}
 
                 if game.is_active():
                      url = request.build_absolute_uri(reverse('trades', args = [game.id]))

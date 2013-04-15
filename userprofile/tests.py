@@ -28,7 +28,7 @@ class ViewsTest(TestCase):
 
         self.client.login(username = 'test', password = 'test')
 
-    def test_display_profile(self):
+    def test_display_own_profile(self):
         response = self.client.get("/profile/")
 
         self.assertContains(response, "test@aaa.com")
@@ -36,7 +36,12 @@ class ViewsTest(TestCase):
         self.assertContains(response, "Yes")
         self.assertTemplateUsed(response, 'userprofile/profile.html')
 
-    def test_display_otherprofile(self):
+    def test_display_profile_with_own_id_is_redirected(self):
+        response = self.client.get("/profile/{}/".format(self.testUser.id))
+
+        self.assertRedirects(response, "/profile/")
+
+    def test_display_profile_for_other_player(self):
         otherUser = User.objects.create_user('someone', 'someone@bbb.com', 'password')
         otherUser.first_name = 'luke'
         otherUser.last_name = 'skywalker'
@@ -55,7 +60,7 @@ class ViewsTest(TestCase):
         self.assertTemplateUsed(response, 'userprofile/otherprofile.html')
 
     def test_editprofile_change_user_and_profile(self):
-        response = self.client.post("/profile/{}/".format(self.testUser.id),
+        response = self.client.post("/profile/edit/",
                                     {'username': 'test', 'first_name': 'Leia', 'last_name': 'Organa',
                                      'send_notifications': '',
                                      'email': 'test@aaa.com', 'bio': 'princess', 'contact': 'D2-R2'},
@@ -74,17 +79,17 @@ class ViewsTest(TestCase):
     def test_editprofile_bad_password_confirmation(self):
         expectedMessage = "The two password fields didn't match."
 
-        response = self.client.post("/profile/{}/".format(self.testUser.id),
+        response = self.client.post("/profile/edit/",
                                     {'new_password1': 'pass1', 'new_password2': ''},
                                     follow = True)
         self.assertFormError(response, 'user_form', 'new_password2', expectedMessage)
 
-        response = self.client.post("/profile/{}/".format(self.testUser.id),
+        response = self.client.post("/profile/edit/",
                                     {'new_password1': '', 'new_password2': 'pass2'},
                                     follow = True)
         self.assertFormError(response, 'user_form', 'new_password2', expectedMessage)
 
-        response = self.client.post("/profile/{}/".format(self.testUser.id),
+        response = self.client.post("/profile/edit/",
                                     {'new_password1': 'pass1', 'new_password2': 'pass2'},
                                     follow = True)
         self.assertFormError(response, 'user_form', 'new_password2', expectedMessage)

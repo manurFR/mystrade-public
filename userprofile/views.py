@@ -1,15 +1,20 @@
-# Create your views here.
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from userprofile.forms import UserProfileForm, UserForm
 
 @login_required
-def editprofile(request, user_id):
-    if int(user_id) != request.user.id:
-        return render(request, 'userprofile/otherprofile.html', {'user' : get_object_or_404(User, pk = user_id)})
+def profile(request, user_id = None):
+    if user_id:
+        if int(user_id) == request.user.id:
+            return redirect('profile') # without our own's user_id
+        else:
+            return render(request, 'userprofile/otherprofile.html', {'user_displayed': get_object_or_404(User, pk=user_id)})
+    else:
+        return render(request, 'userprofile/profile.html')
+
+@login_required
+def editprofile(request):
     if request.method == 'POST':
         user_form = UserForm(data = request.POST, instance = request.user)
         userprofile_form = UserProfileForm(data = request.POST, instance = request.user.get_profile())
@@ -19,9 +24,9 @@ def editprofile(request, user_id):
                 user.set_password(user_form.cleaned_data['new_password1'])
             user.save()
             userprofile_form.save()
-            return HttpResponseRedirect(reverse('profile'))
+            return redirect('profile')
     else:
         user_form = UserForm(instance = request.user)
         userprofile_form = UserProfileForm(instance = request.user.get_profile())
-    return render(request, 'userprofile/editprofile.html', 
-                  {'user_form': user_form, 'userprofile_form': userprofile_form})
+
+    return render(request, 'userprofile/editprofile.html', {'user_form': user_form, 'userprofile_form': userprofile_form})

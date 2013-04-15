@@ -8,8 +8,7 @@
 			<td colspan="2" class="header">
 				Your details : {{ user.get_profile.name|title }}
 				<span class="floatright">
-					<a href="{% url 'userprofile.views.editprofile' user.id %}">
-						<img src="{% static "pencil.png" %}" height="16" width="16" alt=""/>Edit</a>
+					<a href="{% url 'editprofile' %}"><img src="{% static "pencil.png" %}" height="16" width="16" alt=""/>Edit</a>
 				</span>
 			</td>
 		</tr>
