@@ -28,7 +28,34 @@ def _common_setUp(self):
     self.test5 = User.objects.get(username = 'test5')
     self.client.login(username = 'test2', password = 'test')
 
-class GameAndWelcomeViewsTest(TestCase):
+class WelcomePageViewTest(TestCase):
+    fixtures = ['test_users.json'] # from userprofile app
+
+    def setUp(self):
+        _common_setUp(self)
+
+    def test_welcome_needs_login(self):
+        response = self.client.get(reverse("welcome"))
+        self.assertEqual(200, response.status_code)
+
+        self.client.logout()
+        response = self.client.get(reverse("welcome"))
+        self.assertEqual(302, response.status_code)
+
+    def test_welcome_games_query(self):
+        game_mastered = mommy.make_one(Game, master = self.loginUser, players = [],
+                                       end_date = datetime.datetime(2022, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
+        mommy.make_one(GamePlayer, game = game_mastered, player = self.test5)
+        other_game = mommy.make_one(Game, master = self.test5, players = [],
+                               end_date = datetime.datetime(2022, 11, 5, 12, 0, 0, tzinfo = get_default_timezone()))
+
+        response = self.client.get(reverse("welcome"))
+
+        self.assertEqual(200, response.status_code)
+        self.assertItemsEqual([self.game, game_mastered], list(response.context['games']))
+        self.assertNotIn(other_game, response.context['games'])
+
+class GameCreationViewsTest(TestCase):
     fixtures = ['test_users.json'] # from userprofile app
 
     def setUp(self):
@@ -205,33 +232,6 @@ class GameAndWelcomeViewsTest(TestCase):
         self.assertIn("The ruleset is: {}".format(created_game.ruleset.name), emailAdmin.body)
         self.assertEqual(4, emailAdmin.body.count('- Rule'))
 
-    def test_welcome_needs_login(self):
-        response = self.client.get(reverse("welcome"))
-        self.assertEqual(200, response.status_code)
-
-        self.client.logout()
-        response = self.client.get(reverse("welcome"))
-        self.assertEqual(302, response.status_code)
-
-    def test_welcome_games_query(self):
-        ruleset = Ruleset.objects.get(id = 1)
-        game1 = Game.objects.create(ruleset = ruleset, master = self.testUserCanCreate,
-                                    end_date = datetime.datetime(2022, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
-        for user in self.testUsersNoCreate: GamePlayer.objects.create(game = game1, player = user)
-        game2 = Game.objects.create(ruleset = ruleset, master = self.testUsersNoCreate[0],
-                                    end_date = datetime.datetime(2022, 11, 3, 12, 0, 0, tzinfo = get_default_timezone()))
-        GamePlayer.objects.create(game = game2, player = self.testUserCanCreate)
-        GamePlayer.objects.create(game = game2, player = self.testUsersNoCreate[1])
-        game3 = Game.objects.create(ruleset = ruleset, master = self.testUsersNoCreate[0],
-                                    end_date = datetime.datetime(2022, 11, 5, 12, 0, 0, tzinfo = get_default_timezone()))
-        GamePlayer.objects.create(game = game3, player = self.testUsersNoCreate[1])
-        GamePlayer.objects.create(game = game3, player = self.testUsersNoCreate[2])
-
-        response = self.client.get(reverse("welcome"))
-        self.assertEqual(200, response.status_code)
-        self.assertListEqual([game2, game1], list(response.context['games']))
-        self.assertNotIn(game3, response.context['games'])
-
 class GameModelsTest(TestCase):
     def test_game_is_active_if_start_and_end_date_enclose_now(self):
         start_date = now() + datetime.timedelta(days = -10)
@@ -253,6 +253,47 @@ class GameModelsTest(TestCase):
         game = mommy.make_one(Game, players = [], start_date = start_date, end_date = end_date)
 
         self.assertFalse(game.is_active())
+
+class GamePageViewTest(TestCase):
+    fixtures = ['test_users.json'] # from userprofile app
+
+    def setUp(self):
+        _common_setUp(self)
+
+    def test_returns_a_404_if_the_game_id_doesnt_exist(self):
+        response = self.client.get("/game/999999999/")
+        self.assertEqual(404, response.status_code)
+
+    def test_access_to_game_page_forbidden_for_users_not_related_to_the_game_except_admins(self):
+        self._assertGetGamePage(self.game)
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'admin', password = 'test'))
+        self._assertGetGamePage(self.game)
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+        self._assertGetGamePage(self.game)
+
+        mommy.make_one(User, username = 'unrelated', password = 'pbkdf2_sha256$10000$ugaqIMpJCLqL$ICD7AbFkd1xruEUzRCfc7Wn5OykpQt3EbVXkFmf4bJA=',
+                       is_staff = False) # SHA256 hash for password 'test'
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'unrelated', password = 'test'))
+        self._assertGetGamePage(self.game, 403)
+
+    def test_game_page_shows_starting_and_finishing_dates(self):
+        # before starting
+        game1 = mommy.make_one(Game, master = self.loginUser, players = [], start_date = now() + datetime.timedelta(days = 2),
+                               end_date = now() + datetime.timedelta(days = 4))
+
+        response = self.client.get("/game/{}/".format(game1.id))
+        # self.assertContains(response, "(starting in 2 days, ending in 4 days)")
+        # TODO create a MockDateTime and monkeypatch before calling the page (and recover the real datetime in a finally block)
+
+    def _assertGetGamePage(self, game, status_code = 200):
+        response = self.client.get("/game/{}/".format(game.id), follow = True)
+        self.assertEqual(status_code, response.status_code)
+        return response
 
 class HandViewTest(TestCase):
     fixtures = ['test_users.json'] # from userprofile app

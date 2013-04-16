@@ -25,7 +25,8 @@
         will be aborted.
     </div>
 
-    <form action="{% url 'submit_hand' game.id %}" method="post">{% csrf_token %}
+    <form action="{% url 'submit_hand' game.id %}" method="post">
+{% csrf_token %}
         <h4>Deselect the commodities you want to exclude (click on the cards)</h4>
         <div class="css_table">
             {{ commodities_formset.management_form }}

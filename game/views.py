@@ -30,6 +30,18 @@ def welcome(request):
         game.hand_submitted = game.gameplayer_set.filter(submit_date__isnull = False, player = request.user).count() > 0
     return render(request, 'game/welcome.html', {'games': games})
 
+#############################################################################
+##                            Game Views                                   ##
+#############################################################################
+@login_required
+def game(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+
+    if request.user not in game.players.all() and request.user != game.master and not request.user.is_staff:
+        raise PermissionDenied
+
+    return render(request, 'game/game.html', {'game': game})
+
 @login_required
 def hand(request, game_id):
     game = get_object_or_404(Game, id=game_id)
@@ -135,7 +147,7 @@ def submit_hand(request, game_id):
     return render(request, 'game/submit_hand.html', {'game': game, 'commodities_formset': commodities_formset})
 
 #############################################################################
-##                              Games                                      ##
+##                           Create Game                                   ##
 #############################################################################
 
 @permission_required('game.add_game')
