@@ -81,3 +81,10 @@ class CommodityInHand(models.Model):
             Q(offer__trade_responded__isnull=False, offer__trade_responded__finalizer__isnull=True))
                                 .aggregate(Sum('nb_traded_cards'))['nb_traded_cards__sum']
                                 or 0) # if there are no records to aggregate
+
+class Message(models.Model):
+    game = models.ForeignKey(Game)
+    sender = models.ForeignKey(User)
+
+    content = models.CharField(max_length = 255)
+    posting_date = models.DateTimeField(default = now)
