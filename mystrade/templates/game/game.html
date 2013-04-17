@@ -17,4 +17,8 @@
             {% else %}<div class="game-player"><a href="{% url 'otherprofile' player.id %}">{{ player.get_profile.name }}</a></div>{% endif %}
         {% endfor %}
     </div>
+
+    {% if rih %}
+        You own {{ rih|length }} rule card{{ rih|length|pluralize }}.
+    {% endif %}
 {% endblock %}

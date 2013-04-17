@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.forms.formsets import formset_factory
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.timezone import now
+from game.helpers import rules_currently_in_hand
 from game.models import RuleInHand, CommodityInHand, Game, GamePlayer
 from trade.forms import DeclineReasonForm, TradeForm, RuleCardFormDisplay, TradeCommodityCardFormDisplay, OfferForm, RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet
 from trade.models import Trade, TradedCommodities, Offer
@@ -240,7 +241,7 @@ def decline_trade(request, game_id, trade_id):
     raise PermissionDenied
 
 def _prepare_offer_forms(request, game, selected_rules = [], selected_commodities = {}):
-    rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
+    rule_hand = rules_currently_in_hand(game, request.user)
     commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__name')
 
     RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra=0)
@@ -267,7 +268,7 @@ def _prepare_offer_forms(request, game, selected_rules = [], selected_commoditie
     return offer_form, rulecards_formset, commodities_formset
 
 def _parse_offer_forms(request, game):
-    rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
+    rule_hand = rules_currently_in_hand(game, request.user)
     commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__name')
 
     RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)

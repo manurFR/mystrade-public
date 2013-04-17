@@ -265,15 +265,15 @@ class GamePageViewTest(TestCase):
         self.assertEqual(404, response.status_code)
 
     def test_access_to_game_page_forbidden_for_users_not_related_to_the_game_except_admins(self):
-        self._assertGetGamePage(self.game)
+        self._assertGetGamePage()
 
         self.client.logout()
         self.assertTrue(self.client.login(username = 'admin', password = 'test'))
-        self._assertGetGamePage(self.game)
+        self._assertGetGamePage()
 
         self.client.logout()
         self.assertTrue(self.client.login(username = 'test1', password = 'test'))
-        self._assertGetGamePage(self.game)
+        self._assertGetGamePage()
 
         self.client.logout()
         self.assertTrue(self.client.login(username = 'unrelated_user', password = 'test'))
@@ -312,7 +312,24 @@ class GamePageViewTest(TestCase):
         response = self.client.get("/game/{}/".format(game4.id))
         self.assertContains(response, "(started 4 days ago, closed 1 day ago)")
 
-    def _assertGetGamePage(self, game, status_code = 200):
+    def test_game_page_shows_nb_of_rule_cards_owned_to_players(self):
+        rih1 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now())
+        rih2 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now())
+        rih3 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now(), abandon_date = now())
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "You own 2 rule cards")
+
+    def test_game_page_doesnt_show_nb_of_rule_cards_to_game_master(self):
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+        response = self._assertGetGamePage()
+
+        self.assertNotContains(response, "You own 0 rule cards")
+
+    def _assertGetGamePage(self, game = None, status_code = 200):
+        if game is None:
+            game = self.game
         response = self.client.get("/game/{}/".format(game.id), follow = True)
         self.assertEqual(status_code, response.status_code)
         return response

@@ -12,7 +12,8 @@ from django.utils.timezone import now
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse
-from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
+from game.helpers import rules_currently_in_hand
+from game.models import Game, CommodityInHand, GamePlayer, RuleInHand
 from ruleset.models import RuleCard
 from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
@@ -42,7 +43,9 @@ def game(request, game_id):
     if request.user not in players and request.user != game.master and not request.user.is_staff:
         raise PermissionDenied
 
-    return render(request, 'game/game.html', {'game': game, 'players': players})
+    rih = rules_currently_in_hand(game, request.user)
+
+    return render(request, 'game/game.html', {'game': game, 'players': players, 'rih': rih})
 
 @login_required
 def hand(request, game_id):
@@ -54,7 +57,7 @@ def hand(request, game_id):
     # if the hand has been submitted, we will split the commodities between submitted and not submitted
     hand_submitted = game.gameplayer_set.filter(submit_date__isnull = False, player = request.user).count() > 0
 
-    rule_hand = RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = True).order_by('rulecard__ref_name')
+    rule_hand = rules_currently_in_hand(game, request.user)
 
     # commodities are ordered only alphabetically (by their name) in order to obfuscate their actual order in value
     if hand_submitted:
@@ -82,7 +85,7 @@ def hand(request, game_id):
 
     featured_rulecards = [rh.rulecard.id for rh in rule_hand]
     former_rules = []
-    for rule in RuleInHand.objects.filter(game=game, player=request.user, abandon_date__isnull=False).order_by('rulecard__ref_name'):
+    for rule in RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = False).order_by('rulecard__ref_name'):
         if rule.rulecard.id not in featured_rulecards: # add only rulecards that are not currently in the hand and no duplicates
             former_rules.append({'public_name': rule.rulecard.public_name,
                                  'description': rule.rulecard.description})
@@ -243,7 +246,7 @@ def select_rules(request):
                      opponents = dict(all_players) # make a copy
                      del opponents[player]
                      list_opponents = sorted(opponents.itervalues(), key = lambda opponent: opponent['name'])
-                     rules = RuleInHand.objects.filter(game = game, player = player).order_by('rulecard__ref_name')
+                     rules = rules_currently_in_hand(game, player)
                      commodities = CommodityInHand.objects.filter(game = game, player = player).order_by('commodity__name') # alphabetical sort to obfuscate the value order of the commodities
                      utils.send_notification_email('game_create', player,
                                                    {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities, 'url': url})
