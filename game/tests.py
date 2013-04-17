@@ -21,7 +21,7 @@ from trade.models import Offer, Trade
 
 def _common_setUp(self):
     self.game = mommy.make_one(Game, master = User.objects.get(username='test1'), players = [], end_date = now() + datetime.timedelta(days = 7))
-    for player in User.objects.exclude(username = 'test1').exclude(username = 'admin'):
+    for player in User.objects.exclude(username = 'test1').exclude(username = 'admin').exclude(username = 'unrelated_user'):
         mommy.make_one(GamePlayer, game = self.game, player = player)
     self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
     self.loginUser = User.objects.get(username = 'test2')
@@ -275,20 +275,42 @@ class GamePageViewTest(TestCase):
         self.assertTrue(self.client.login(username = 'test1', password = 'test'))
         self._assertGetGamePage(self.game)
 
-        mommy.make_one(User, username = 'unrelated', password = 'pbkdf2_sha256$10000$ugaqIMpJCLqL$ICD7AbFkd1xruEUzRCfc7Wn5OykpQt3EbVXkFmf4bJA=',
-                       is_staff = False) # SHA256 hash for password 'test'
         self.client.logout()
-        self.assertTrue(self.client.login(username = 'unrelated', password = 'test'))
+        self.assertTrue(self.client.login(username = 'unrelated_user', password = 'test'))
         self._assertGetGamePage(self.game, 403)
 
     def test_game_page_shows_starting_and_finishing_dates(self):
-        # before starting
-        game1 = mommy.make_one(Game, master = self.loginUser, players = [], start_date = now() + datetime.timedelta(days = 2),
-                               end_date = now() + datetime.timedelta(days = 4))
+        # Note: we add a couple of seconds to each date in the future because otherwise the timeuntil filter would sadly go
+        #  from "2 days" to "1 day, 23 hours" between the instant the games' models are created and the few milliseconds it
+        #  takes to call the template rendering. Sed fugit interea tempus fugit irreparabile, singula dum capti circumvectamur amore.
+
+        # before start_date
+        game1 = mommy.make_one(Game, master = self.loginUser, players = [], start_date = now() + datetime.timedelta(days = 2, seconds = 2),
+                               end_date = now() + datetime.timedelta(days = 4, seconds = 2))
 
         response = self.client.get("/game/{}/".format(game1.id))
-        # self.assertContains(response, "(starting in 2 days, ending in 4 days)")
-        # TODO create a MockDateTime and monkeypatch before calling the page (and recover the real datetime in a finally block)
+        self.assertContains(response, "(starting in 2 days, ending in 4 days)")
+
+        # during the game
+        game2 = mommy.make_one(Game, master = self.loginUser, players = [], start_date = now() + datetime.timedelta(days = -2),
+                               end_date = now() + datetime.timedelta(days = 4, seconds = 2))
+
+        response = self.client.get("/game/{}/".format(game2.id))
+        self.assertContains(response, "(started 2 days ago, ending in 4 days)")
+
+        # after end_date
+        game3 = mommy.make_one(Game, master = self.loginUser, players = [], start_date = now() + datetime.timedelta(days = -4),
+                               end_date = now() + datetime.timedelta(days = -2))
+
+        response = self.client.get("/game/{}/".format(game3.id))
+        self.assertContains(response, "(started 4 days ago, ended 2 days ago)")
+
+        # after closing_date
+        game4 = mommy.make_one(Game, master = self.loginUser, players = [], start_date = now() + datetime.timedelta(days = -4),
+                               end_date = now() + datetime.timedelta(days = -2), closing_date = now() + datetime.timedelta(days = -1))
+
+        response = self.client.get("/game/{}/".format(game4.id))
+        self.assertContains(response, "(started 4 days ago, closed 1 day ago)")
 
     def _assertGetGamePage(self, game, status_code = 200):
         response = self.client.get("/game/{}/".format(game.id), follow = True)

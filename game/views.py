@@ -37,10 +37,12 @@ def welcome(request):
 def game(request, game_id):
     game = get_object_or_404(Game, id=game_id)
 
-    if request.user not in game.players.all() and request.user != game.master and not request.user.is_staff:
+    players = sorted(game.players.all(), key = lambda player: player.get_profile().name)
+
+    if request.user not in players and request.user != game.master and not request.user.is_staff:
         raise PermissionDenied
 
-    return render(request, 'game/game.html', {'game': game})
+    return render(request, 'game/game.html', {'game': game, 'players': players})
 
 @login_required
 def hand(request, game_id):

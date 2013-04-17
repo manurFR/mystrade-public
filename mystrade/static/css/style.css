@@ -248,31 +248,41 @@ input[type="submit"] {
   font-weight: bold; }
 
 /* line 250, ../../resources/scss/style.scss */
+.game-player {
+  display: inline;
+  border: 1px solid #ffd773;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  padding: 0 3px;
+  margin: 0 2px; }
+
+/* line 258, ../../resources/scss/style.scss */
 a, .dynamic_link {
   color: #800024;
   font-weight: normal;
   text-decoration: none; }
-  /* line 255, ../../resources/scss/style.scss */
-  a.user, .dynamic_link.user {
+  /* line 263, ../../resources/scss/style.scss */
+  a.game-player, .dynamic_link.game-player {
     font-weight: inherit;
     color: darkgreen; }
 
-/* line 261, ../../resources/scss/style.scss */
+/* line 269, ../../resources/scss/style.scss */
 a:hover, .dynamic_link:hover {
   text-decoration: underline;
   cursor: pointer; }
 
-/* line 266, ../../resources/scss/style.scss */
+/* line 274, ../../resources/scss/style.scss */
 .underline[data-tip] {
   border-bottom: dotted 1px black; }
 
-/* line 270, ../../resources/scss/style.scss */
+/* line 278, ../../resources/scss/style.scss */
 .ui-datepicker-trigger {
   position: relative;
   top: 4px;
   left: 2px; }
 
-/* line 276, ../../resources/scss/style.scss */
+/* line 284, ../../resources/scss/style.scss */
 .free_information {
   border: 1px solid #ffd773;
   border-radius: 5px;
@@ -280,12 +290,12 @@ a:hover, .dynamic_link:hover {
   -webkit-border-radius: 5px;
   padding-left: 30px;
   padding-top: 110px; }
-  /* line 282, ../../resources/scss/style.scss */
+  /* line 290, ../../resources/scss/style.scss */
   .free_information legend {
     color: #333333;
     font-style: italic;
     margin-left: -15px; }
 
-/* line 288, ../../resources/scss/style.scss */
+/* line 297, ../../resources/scss/style.scss */
 .end_warning {
   color: red; }

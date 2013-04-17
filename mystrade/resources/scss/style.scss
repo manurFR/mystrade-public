@@ -247,12 +247,20 @@ input[type="submit"] {
   @include font($weight: bold);
 }
 
+.game-player {
+  display: inline;
+  border: $lightSolidBorder;
+  @include roundedBorder(5px);
+  padding: 0 3px;
+  margin: 0 2px;
+}
+
 a, .dynamic_link {
   color: #800024;
   @include font($weight: normal);
   text-decoration: none;
 
-  &.user {
+  &.game-player {
     font-weight: inherit;
     color: darkgreen;
   }
@@ -285,6 +293,8 @@ a:hover, .dynamic_link:hover {
     margin-left: -15px;
   }
 }
+
 .end_warning {
   color: red;
 }
+

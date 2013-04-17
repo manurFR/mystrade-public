@@ -1,1 +1,4 @@
-{% load url from future %}{% if who == user %}<strong>you</strong>{% else %}<a href="{% url 'otherprofile' who.id %}" class="user">{{ who.get_profile.name }}</a>{% endif %}
+{% spaceless %}
+{% load url from future %}
+<div class="game-player">{% if who == user %}<strong>you</strong>{% else %}<a href="{% url 'otherprofile' who.id %}">{{ who.get_profile.name }}</a>{% endif %}</div>
+{% endspaceless %}

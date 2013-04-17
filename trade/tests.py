@@ -14,7 +14,7 @@ from trade.views import _prepare_offer_forms
 
 def _common_setUp(self):
     self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [], end_date = now() + datetime.timedelta(days = 7))
-    for player in User.objects.exclude(username = 'test1').exclude(username = 'admin'):
+    for player in User.objects.exclude(username = 'test1').exclude(username = 'admin').exclude(username = 'unrelated_user'):
         mommy.make_one(GamePlayer, game = self.game, player = player)
     self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
     self.loginUser = User.objects.get(username = 'test2')
@@ -192,11 +192,11 @@ class ManageViewsTest(TestCase):
         response = self.client.get("/trade/{}/".format(self.game.id))
 
         self.assertContains(response, "submitted 1 day ago")
-        self.assertContains(response, "cancelled by <strong>you</strong> 2 days ago")
+        self.assertContains(response, "cancelled by <div class=\"game-player\"><strong>you</strong></div> 2 days ago")
         self.assertContains(response, "done 3 days ago")
-        self.assertContains(response, "declined by <strong>you</strong> 4 days ago")
+        self.assertContains(response, "declined by <div class=\"game-player\"><strong>you</strong></div> 4 days ago")
         self.assertContains(response, "offered 5 days ago")
-        self.assertRegexpMatches(response.content, "response submitted by <a href=\".*\" class=\"user\">test5</a>")
+        self.assertRegexpMatches(response.content, "response submitted by <div class=\"game-player\"><a href=\".*\">test5</a></div>")
 
     def test_show_trade_only_allowed_for_authorized_players(self):
         """ Authorized players are : - the initiator
@@ -309,7 +309,7 @@ class ManageViewsTest(TestCase):
         trade = self._prepare_trade('DECLINED', finalizer = self.test5)
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
-        self.assertRegexpMatches(response.content, "declined by <a href=\".*\" class=\"user\">test5</a>")
+        self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\"><a href=\".*\">test5</a>")
         self.assertNotContains(response, "with the following reason given:")
 
         trade.decline_reason = "Because I do not need it"
@@ -317,7 +317,7 @@ class ManageViewsTest(TestCase):
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
-        self.assertRegexpMatches(response.content, "declined by <a href=\".*\" class=\"user\">test5</a>")
+        self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\"><a href=\".*\">test5</a>")
         self.assertContains(response, "with the following reason given:")
         self.assertContains(response, "Because I do not need it")
 

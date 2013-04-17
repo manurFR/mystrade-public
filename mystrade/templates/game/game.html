@@ -2,10 +2,19 @@
 {% load url from future %}
 
 {% block content %}
-<div class="header">Game #{{ game }}
-    {% if game.is_active %} (started {{ game.start_date|timesince }} ago, ending in {{ game.end_date|timeuntil }})
-    {% elif game.is_closed %} (started {{ game.start_date|timesince }} ago, closed {{ game.closing_date|timesince }} ago)
-    {% elif game.is_ended %} (started {{ game.start_date|timesince }} ago, ended {{ game.end_date|timesince }} ago)
-    {% else %} (starting in {{ game.start_date|timeuntil }}, ending in {{ game.end_date|timeuntil }}){% endif %}
-    <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span></div>
+    <div class="header">Game #{{ game }}
+        {% if game.is_active %} (started {{ game.start_date|timesince }} ago, ending in {{ game.end_date|timeuntil }})
+        {% elif game.is_closed %} (started {{ game.start_date|timesince }} ago, closed {{ game.closing_date|timesince }} ago)
+        {% elif game.is_ended %} (started {{ game.start_date|timesince }} ago, ended {{ game.end_date|timesince }} ago)
+        {% else %} (starting in {{ game.start_date|timeuntil }}, ending in {{ game.end_date|timeuntil }}){% endif %}
+        <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span>
+    </div>
+
+    <div class="reminder">
+        This game's players:
+        {% for player in players %}
+            {% if player == user %}<div class="game-player">{{ player.get_profile.name }} (you)</div>
+            {% else %}<div class="game-player"><a href="{% url 'otherprofile' player.id %}">{{ player.get_profile.name }}</a></div>{% endif %}
+        {% endfor %}
+    </div>
 {% endblock %}
