@@ -318,14 +318,26 @@ class GamePageViewTest(TestCase):
         rih3 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now(), abandon_date = now())
 
         response = self._assertGetGamePage()
-        self.assertContains(response, "You own 2 rule cards")
+        self.assertContains(response, "You own 2 rule cards, and 0 commodities")
 
-    def test_game_page_doesnt_show_nb_of_rule_cards_to_game_master(self):
+    def test_game_page_doesnt_show_nb_of_rule_cards_nor_of_commodities_to_game_master(self):
         self.client.logout()
         self.assertTrue(self.client.login(username = 'test1', password = 'test'))
-        response = self._assertGetGamePage()
 
+        response = self._assertGetGamePage()
         self.assertNotContains(response, "You own 0 rule cards")
+        self.assertNotContains(response, "and 0 commodities")
+
+    def test_game_page_show_nb_of_commodities_owned_to_players(self):
+        cih1 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 1)
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "You own 0 rule cards, and 1 commodity")
+
+        cih2 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 4, nb_submitted_cards = 2)
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "and 5 commodities")
 
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:

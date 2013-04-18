@@ -12,7 +12,7 @@ from django.utils.timezone import now
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse
-from game.helpers import rules_currently_in_hand
+from game.helpers import rules_currently_in_hand, rules_formerly_in_hand, commodities_in_hand
 from game.models import Game, CommodityInHand, GamePlayer, RuleInHand
 from ruleset.models import RuleCard
 from scoring.card_scoring import tally_scores, Scoresheet
@@ -43,9 +43,12 @@ def game(request, game_id):
     if request.user not in players and request.user != game.master and not request.user.is_staff:
         raise PermissionDenied
 
-    rih = rules_currently_in_hand(game, request.user)
+    rules = rules_currently_in_hand(game, request.user)
+    commodities = commodities_in_hand(game, request.user)
+    nb_commodities = sum([cih.nb_cards for cih in commodities])
 
-    return render(request, 'game/game.html', {'game': game, 'players': players, 'rih': rih})
+    return render(request, 'game/game.html', {'game': game, 'players': players, 'rules': rules,
+                                              'commodities': commodities, 'nb_commodities': nb_commodities})
 
 @login_required
 def hand(request, game_id):
@@ -63,7 +66,7 @@ def hand(request, game_id):
     if hand_submitted:
         commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_submitted_cards__gt = 0).order_by('commodity__name')
     else:
-        commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__name')
+        commodity_hand = commodities_in_hand(game, request.user)
 
     commodity_hand_not_submitted = CommodityInHand.objects.filter(game = game, player = request.user,
                                                                   nb_cards__gt = F('nb_submitted_cards')).order_by('commodity__name')
@@ -85,7 +88,7 @@ def hand(request, game_id):
 
     featured_rulecards = [rh.rulecard.id for rh in rule_hand]
     former_rules = []
-    for rule in RuleInHand.objects.filter(game = game, player = request.user, abandon_date__isnull = False).order_by('rulecard__ref_name'):
+    for rule in rules_formerly_in_hand(game, request.user):
         if rule.rulecard.id not in featured_rulecards: # add only rulecards that are not currently in the hand and no duplicates
             former_rules.append({'public_name': rule.rulecard.public_name,
                                  'description': rule.rulecard.description})
@@ -107,7 +110,7 @@ def submit_hand(request, game_id):
     if game.gameplayer_set.get(player = request.user).submit_date:
         raise PermissionDenied
 
-    commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_cards__gt = 0).order_by('commodity__name')
+    commodity_hand = commodities_in_hand(game, request.user)
 
     if request.method == 'POST':
         CommodityCardsFormSet = formset_factory(GameCommodityCardFormParse)
@@ -247,7 +250,7 @@ def select_rules(request):
                      del opponents[player]
                      list_opponents = sorted(opponents.itervalues(), key = lambda opponent: opponent['name'])
                      rules = rules_currently_in_hand(game, player)
-                     commodities = CommodityInHand.objects.filter(game = game, player = player).order_by('commodity__name') # alphabetical sort to obfuscate the value order of the commodities
+                     commodities = commodities_in_hand(game, player)
                      utils.send_notification_email('game_create', player,
                                                    {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities, 'url': url})
 
@@ -346,7 +349,7 @@ def close_game(request, game_id):
 
                     # automatically submit all commodity cards of players who haven't manually submitted their hand
                     for gameplayer in GamePlayer.objects.filter(game = game, submit_date__isnull = True):
-                        for cih in CommodityInHand.objects.filter(game = game, nb_cards__gt = 0, player = gameplayer.player):
+                        for cih in commodities_in_hand(game, gameplayer.player):
                             cih.nb_submitted_cards = cih.nb_cards
                             cih.save()
                         gameplayer.submit_date = game.closing_date

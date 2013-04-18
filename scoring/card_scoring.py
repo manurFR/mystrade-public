@@ -1,3 +1,4 @@
+from game.helpers import commodities_in_hand
 from game.models import GamePlayer, CommodityInHand
 from ruleset.models import Commodity
 from scoring.models import ScoreFromRule, ScoreFromCommodity
@@ -24,7 +25,7 @@ class Scoresheet(object):
             self._prepare_scores_from_commodities(gameplayer)
         else:
             self._scores_from_commodity = []
-            for cih in CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player, nb_cards__gt = 0).order_by('commodity__value', 'commodity__id'):
+            for cih in commodities_in_hand(gameplayer.game, gameplayer.player):
                 sfc = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = cih.commodity,
                                          nb_submitted_cards = cih.nb_cards, nb_scored_cards = cih.nb_cards,
                                          actual_value = cih.commodity.value, score = 0)

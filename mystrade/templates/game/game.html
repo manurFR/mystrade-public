@@ -18,7 +18,7 @@
         {% endfor %}
     </div>
 
-    {% if rih %}
-        You own {{ rih|length }} rule card{{ rih|length|pluralize }}.
+    {% if rules or commodities %}
+        You own {{ rules|length }} rule card{{ rules|length|pluralize }}, and {{ nb_commodities }} commodit{{ nb_commodities|pluralize:"y,ies" }}.
     {% endif %}
 {% endblock %}
