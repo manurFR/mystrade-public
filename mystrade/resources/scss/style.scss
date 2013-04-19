@@ -220,6 +220,10 @@ input[type="submit"] {
   }
 }
 
+.middle-align {
+  vertical-align: middle;
+}
+
 .pagination {
   @include font($size: 0.8em);
   text-align: center;
@@ -253,6 +257,10 @@ input[type="submit"] {
   @include roundedBorder(5px);
   padding: 0 3px;
   margin: 0 2px;
+
+  &:hover {
+    background-color: $lightBackgroundColor;
+  }
 }
 
 a, .dynamic_link {

@@ -1,10 +1,10 @@
 $backgroundColor: #FFB600;
 $infoTextColor: #A67600;
-
-$lightSolidBorder: 1px solid #FFD773;
-$lightDashedBorder: 1px dashed #FFD773;
-
+$lightBackgroundColor: #FFD773;
 $infoPanelColor: #FFBF00;
+
+$lightSolidBorder: 1px solid $lightBackgroundColor;
+$lightDashedBorder: 1px dashed $lightBackgroundColor;
 
 @mixin roundedBorder($radius) {
   border-radius: $radius;

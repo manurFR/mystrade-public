@@ -4,7 +4,6 @@
 {% load url from future %}
 
 {% block styles %}
-    <link rel="stylesheet" href="{% static 'css/style.scoring.css' %}" type="text/css"/>
     <link rel="stylesheet" href="{% static 'css/style.css-tooltips.css' %}" />
 {% endblock %}
 
@@ -26,11 +25,20 @@
     </div>
 
     {% if rules or commodities %}
-        You own {{ rules|length }} rule card{{ rules|length|pluralize }}, and {{ nb_commodities }} commodit{{ nb_commodities|pluralize:"y,ies" }}{% if nb_commodities == 0 %}.{% else %}:
-        {% for cih in commodities %}
-            {% for copy in cih.nb_cards|as_range %}
-                <span class="minicard" data-tip="{{ cih.commodity.name }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
-            {% endfor %}
-        {% endfor %}{% endif %}
+        <div class="css_table">
+            <div class="css_table-row">
+                <div class="css_table-cell">
+                    You own {{ rules|length }} rule card{{ rules|length|pluralize }}, and {{ nb_commodities }} commodit{{ nb_commodities|pluralize:"y,ies" }}{% if nb_commodities == 0 %}.{% else %}:<br/>
+                    {% for cih in commodities %}
+                        {% for copy in cih.nb_cards|as_range %}
+                            <span class="minicard" data-tip="{{ cih.commodity.name }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
+                        {% endfor %}
+                    {% endfor %}{% endif %}
+                </div>
+                <div class="css_table-cell middle-align">
+                    <a href="{% url 'hand' game.id %}" class="floatright">&gt; show more</a>
+                </div>
+            </div>
+        </div>
     {% endif %}
 {% endblock %}

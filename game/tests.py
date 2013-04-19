@@ -327,17 +327,23 @@ class GamePageViewTest(TestCase):
         response = self._assertGetGamePage()
         self.assertNotContains(response, "You own 0 rule cards")
         self.assertNotContains(response, "and 0 commodities")
+        self.assertNotContains(response, "<span class=\"minicard\"")
 
-    def test_game_page_show_nb_of_commodities_owned_to_players(self):
-        cih1 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 1)
+    def test_game_page_show_commodities_owned_to_players(self):
+        cih1 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Blue"),
+                              nb_cards = 1)
 
         response = self._assertGetGamePage()
         self.assertContains(response, "You own 0 rule cards, and 1 commodity")
+        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
 
-        cih2 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 4, nb_submitted_cards = 2)
+        cih2 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Red"),
+                              nb_cards = 4, nb_submitted_cards = 2)
 
         response = self._assertGetGamePage()
         self.assertContains(response, "and 5 commodities")
+        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
+        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 4)
 
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
