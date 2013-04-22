@@ -1,0 +1,37 @@
+{% load url from future %}
+
+<div class="css_table">
+    {% for trade in trades %}
+        {% cycle 'even_color' 'odd_color' as color silent %}
+        <div class="css_table-row{% if trade.status == 'ACCEPTED' or trade.status == 'DECLINED' %} done{% elif trade.status == 'CANCELLED' %} cancelled{% endif %}">
+            <div class="css_table-cell {{ color }}">
+                Trade proposed by <strong>{% include "common/name_or_you.html" with who=trade.initiator %}</strong>
+                ({{ trade.initiator_offer.summary }})
+                to <strong>{% include "common/name_or_you.html" with who=trade.responder %}</strong>
+                {% if trade.responder_offer %}({{ trade.responder_offer.summary }}){% endif %}
+            </div>
+            <div class="css_table-cell {{ color }}">
+                {% if trade.status == 'INITIATED' %}
+                    {% if trade.initiator == user %}submitted{% else %}offered{% endif %} {{ trade.creation_date|timesince }} ago
+                {% elif trade.status == 'CANCELLED' %}
+                    cancelled by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
+                {% elif trade.status == 'REPLIED' %}
+                    response submitted by {% include "common/name_or_you.html" with who=trade.responder %}
+                {% elif trade.status == 'ACCEPTED' %}
+                    done {{ trade.closing_date|timesince }} ago
+                {% elif trade.status == 'DECLINED' %}
+                    declined by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
+                {% endif %}
+            </div>
+            <div class="css_table-cell {{ color }}">
+                {% if game.is_active and trade.status == 'INITIATED' and user == trade.responder %}
+                    <a href="{% url 'show_trade' game.id trade.id %}"><span class="new">Reply</span></a>
+                {% elif game.is_active and trade.status == 'REPLIED' and user == trade.initiator %}
+                    <a href="{% url 'show_trade' game.id trade.id %}"><span class="new">Decide</span></a>
+                {% else %}
+                    <a href="{% url 'show_trade' game.id trade.id %}">Show</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>

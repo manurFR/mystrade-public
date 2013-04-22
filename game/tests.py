@@ -345,6 +345,56 @@ class GamePageViewTest(TestCase):
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 4)
 
+    def test_game_page_show_pending_trades_with_less_than_3_pending_trades(self):
+        trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
+                                initiator_offer = self.dummy_offer)
+        trade2 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                status = 'REPLIED',   creation_date = now() + datetime.timedelta(days = -2),
+                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
+        trade3 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                status = 'DECLINED',  creation_date = now() + datetime.timedelta(days = -3),
+                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = [])) # not pending
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "Pending trades")
+        self.assertContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade1.id))
+        self.assertContains(response, "trade/{}/{}/\"><span class=\"new\">Decide".format(self.game.id, trade2.id))
+        self.assertNotContains(response, "trade/{}/{}/\">".format(self.game.id, trade3.id))
+
+    def test_game_page_show_last_3_pending_trades_when_more_than_three_are_pending(self):
+        trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
+                                initiator_offer = self.dummy_offer)
+        trade2 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -2),
+                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
+        trade3 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -3),
+                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
+        trade4 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -4),
+                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "Last 3 pending trades")
+        self.assertContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade1.id))
+        self.assertContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade2.id))
+        self.assertContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade3.id))
+        self.assertNotContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade4.id))
+
+    def test_game_page_doesnt_show_pending_trades_to_game_master(self):
+        trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
+                                initiator_offer = self.dummy_offer)
+
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+
+        response = self._assertGetGamePage()
+        self.assertNotContains(response, "Pending trades")
+        self.assertNotContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade1.id))
+
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
             game = self.game

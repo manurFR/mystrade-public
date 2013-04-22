@@ -25,6 +25,7 @@
     </div>
 
     {% if rules or commodities %}
+        <strong>Hand</strong>
         <div class="css_table">
             <div class="css_table-row">
                 <div class="css_table-cell">
@@ -35,10 +36,20 @@
                         {% endfor %}
                     {% endfor %}{% endif %}
                 </div>
-                <div class="css_table-cell middle-align">
-                    <a href="{% url 'hand' game.id %}" class="floatright">&gt; show more</a>
-                </div>
             </div>
         </div>
+        <a href="{% url 'hand' game.id %}">&gt; show more</a><br/>
+        <br/>
     {% endif %}
+
+    {% if user in game.players.all %}
+        <strong>{% if pending_trades|length > 3 %}Last 3 pending trades{% else %}Pending trades{% endif %}</strong><br/>
+        {% if pending_trades %}
+            {% include "trade/trades_table.html" with trades=pending_trades|slice:":3" %}
+        {% else %}
+            <div class="helptext">No pending trades.</div>
+        {% endif %}
+        <a href="{% url 'trades' game.id %}">&gt; show more (or create a new trade proposal)</a>
+    {% endif %}
+
 {% endblock %}

@@ -43,12 +43,20 @@ def game(request, game_id):
     if request.user not in players and request.user != game.master and not request.user.is_staff:
         raise PermissionDenied
 
-    rules = rules_currently_in_hand(game, request.user)
-    commodities = commodities_in_hand(game, request.user)
-    nb_commodities = sum([cih.nb_cards for cih in commodities])
+    context =  {'game': game, 'players': players}
 
-    return render(request, 'game/game.html', {'game': game, 'players': players, 'rules': rules,
-                                              'commodities': commodities, 'nb_commodities': nb_commodities})
+    if request.user in players:
+        rules = rules_currently_in_hand(game, request.user)
+        commodities = commodities_in_hand(game, request.user)
+        nb_commodities = sum([cih.nb_cards for cih in commodities])
+
+        pending_trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game,
+                                              status__in = ['INITIATED', 'REPLIED']).order_by('-creation_date')
+
+        context.update({'rules': rules, 'commodities': commodities, 'nb_commodities': nb_commodities,
+                        'pending_trades': pending_trades})
+
+    return render(request, 'game/game.html', context)
 
 @login_required
 def hand(request, game_id):
