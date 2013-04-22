@@ -22,6 +22,12 @@
             {% if player == user %}<div class="game-player">{{ player.get_profile.name }} (you)</div>
             {% else %}<div class="game-player"><a href="{% url 'otherprofile' player.id %}">{{ player.get_profile.name }}</a></div>{% endif %}
         {% endfor %}
+
+        {% if user in game.players.all and game.is_active and not hand_submitted %}
+            <br/>
+            <div class="floatright"><a href="{% url 'submit_hand' game.id %}">&gt; Click here to submit your hand and finish now.</a></div>
+            <br/>
+        {% endif %}
     </div>
 
     {% if rules or commodities %}
@@ -49,7 +55,7 @@
         {% else %}
             <div class="helptext">No pending trades.</div>
         {% endif %}
-        <a href="{% url 'trades' game.id %}">&gt; show more (or create a new trade proposal)</a>
+        <a href="{% url 'trades' game.id %}">&gt; show more{% if game.is_active and not hand_submitted %} (or create a new trade proposal){% endif %}</a>
     {% endif %}
 
 {% endblock %}

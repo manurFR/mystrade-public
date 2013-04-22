@@ -225,33 +225,37 @@ input[type="submit"] {
   vertical-align: middle; }
 
 /* line 227, ../../resources/scss/style.scss */
+.centered {
+  text-align: center; }
+
+/* line 231, ../../resources/scss/style.scss */
 .pagination {
   font-size: 0.8em;
   text-align: center; }
 
-/* line 232, ../../resources/scss/style.scss */
+/* line 236, ../../resources/scss/style.scss */
 .points {
   min-width: 4em;
   text-align: right; }
 
-/* line 237, ../../resources/scss/style.scss */
+/* line 241, ../../resources/scss/style.scss */
 .align_to_bottom {
   position: absolute;
   bottom: 5px; }
 
-/* line 242, ../../resources/scss/style.scss */
+/* line 246, ../../resources/scss/style.scss */
 .reminder {
   margin: 4px 4px 4px 10px;
   padding: 3px;
   border: thin dotted gray;
   background-color: #ffbf00; }
 
-/* line 249, ../../resources/scss/style.scss */
+/* line 253, ../../resources/scss/style.scss */
 .new {
   color: red;
   font-weight: bold; }
 
-/* line 254, ../../resources/scss/style.scss */
+/* line 258, ../../resources/scss/style.scss */
 .game-player {
   display: inline;
   border: 1px solid #ffd773;
@@ -260,36 +264,36 @@ input[type="submit"] {
   -webkit-border-radius: 5px;
   padding: 0 3px;
   margin: 0 2px; }
-  /* line 261, ../../resources/scss/style.scss */
+  /* line 265, ../../resources/scss/style.scss */
   .game-player:hover {
     background-color: #ffd773; }
 
-/* line 266, ../../resources/scss/style.scss */
+/* line 270, ../../resources/scss/style.scss */
 a, .dynamic_link {
   color: #800024;
   font-weight: normal;
   text-decoration: none; }
-  /* line 271, ../../resources/scss/style.scss */
+  /* line 275, ../../resources/scss/style.scss */
   a.game-player, .dynamic_link.game-player {
     font-weight: inherit;
     color: darkgreen; }
 
-/* line 277, ../../resources/scss/style.scss */
+/* line 281, ../../resources/scss/style.scss */
 a:hover, .dynamic_link:hover {
   text-decoration: underline;
   cursor: pointer; }
 
-/* line 282, ../../resources/scss/style.scss */
+/* line 286, ../../resources/scss/style.scss */
 .underline[data-tip] {
   border-bottom: dotted 1px black; }
 
-/* line 286, ../../resources/scss/style.scss */
+/* line 290, ../../resources/scss/style.scss */
 .ui-datepicker-trigger {
   position: relative;
   top: 4px;
   left: 2px; }
 
-/* line 292, ../../resources/scss/style.scss */
+/* line 296, ../../resources/scss/style.scss */
 .free_information {
   border: 1px solid #ffd773;
   border-radius: 5px;
@@ -297,12 +301,12 @@ a:hover, .dynamic_link:hover {
   -webkit-border-radius: 5px;
   padding-left: 30px;
   padding-top: 110px; }
-  /* line 298, ../../resources/scss/style.scss */
+  /* line 302, ../../resources/scss/style.scss */
   .free_information legend {
     color: #333333;
     font-style: italic;
     margin-left: -15px; }
 
-/* line 305, ../../resources/scss/style.scss */
+/* line 309, ../../resources/scss/style.scss */
 .end_warning {
   color: red; }

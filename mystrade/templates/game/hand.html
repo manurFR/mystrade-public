@@ -4,7 +4,7 @@
 
 {% block content %}
 	<div class="header">Your hand for game #{{ game }} (ending in {{ game.end_date|timeuntil }})
-        <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span></div>
+        <span class="floatright">&lt; <a href="{% url 'game' game.id %}">Back</a></span></div>
 	<h4>Rules owned</h4>
 	<div class="css_table">
 		{% for card in rule_hand %}

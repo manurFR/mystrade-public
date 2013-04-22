@@ -28,7 +28,10 @@ def welcome(request):
     games = Game.objects.filter(Q(master=request.user) | Q(players=request.user)).distinct().order_by('-closing_date', '-end_date')
     for game in games:
         game.list_of_players = [player.get_profile().name for player in game.players.all().order_by('id')]
-        game.hand_submitted = game.gameplayer_set.filter(submit_date__isnull = False, player = request.user).count() > 0
+        try:
+            game.hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None
+        except GamePlayer.DoesNotExist:
+            game.hand_submitted = False
     return render(request, 'game/welcome.html', {'games': games})
 
 #############################################################################
@@ -53,8 +56,10 @@ def game(request, game_id):
         pending_trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game,
                                               status__in = ['INITIATED', 'REPLIED']).order_by('-creation_date')
 
+        hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None
+
         context.update({'rules': rules, 'commodities': commodities, 'nb_commodities': nb_commodities,
-                        'pending_trades': pending_trades})
+                        'pending_trades': pending_trades, 'hand_submitted': hand_submitted})
 
     return render(request, 'game/game.html', context)
 
@@ -147,7 +152,7 @@ def submit_hand(request, game_id):
             except BaseException as ex:
                 logger.error("Error in submit_hand({})".format(game_id), exc_info = ex)
 
-            return redirect('welcome')
+            return redirect('game', game.id)
         else:
             pass # no reason to come here
     else:
@@ -267,7 +272,7 @@ def select_rules(request):
                                                {'game': game, 'players': sorted(all_players.itervalues(), key = lambda player: player['name']),
                                                 'rules': selected_rules})
 
-                return redirect('welcome')
+                return redirect('game', game.id)
     else:
         RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra=0)
         formset = RuleCardsFormSet(initial=[{'card_id': card.id,

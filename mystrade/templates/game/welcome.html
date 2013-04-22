@@ -24,47 +24,41 @@
 				<div class="css_table-cell">End date</div>
 			</div>
 			{% for game in games %}
-            {% cycle 'even_color' 'odd_color' as color silent %}
+            {% cycle 'even_color' 'odd_color' as backcolor silent %}
 			<div class="css_table-row">
-				<div class="css_table-cell {{ color }}">
+				<div class="css_table-cell {{ backcolor }}">
 				    #{{ game.id }}, by
 					{% if game.master == user %}<strong>{% endif %}{% include "common/name_or_you.html" with who=game.master %}{% if game.master == user %}</strong>{% endif %}
 				</div>
-				<div class="css_table-cell {{ color }}"><span class="underline" data-tip="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></div>
-				<div class="css_table-cell {{ color }}">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</div>
-				<div class="css_table-cell {{ color }}{% if game.less_than_24_hours_remaining and not game.hand_submitted %} end_warning{% endif %}">
+				<div class="css_table-cell {{ backcolor }}"><span class="underline" data-tip="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></div>
+				<div class="css_table-cell {{ backcolor }}">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</div>
+				<div class="css_table-cell {{ backcolor }}{% if game.less_than_24_hours_remaining and not game.hand_submitted %} end_warning{% endif %}">
                     {{ game.end_date|date:"SHORT_DATETIME_FORMAT" }}
                 </div>
-                <div class="css_table-cell {{ color }}"> > </div>
-                <div class="css_table-cell {{ color }}">
+                <div class="css_table-cell {{ backcolor }}"> > </div>
+                <div class="css_table-cell {{ backcolor }} centered{% if not game.is_active %} inactive{% endif %}">
                     {% if user in game.players.all %}
                         {% if game.is_closed %}<a href="{% url 'player_score' game.id %}">Show Score</a>
-                        {% else %}<a href="{% url 'hand' game.id %}">Show Hand</a>{% endif %}
-                    {% elif user == game.master or user.is_staff %}<a href="{% url 'control' game.id %}">Control Board</a>{% endif %}
-                </div>
-
-                <div class="css_table-cell {{ color }}">
-                    {% if user in game.players.all %}
-                        <a href="{% url 'trades' game.id %}">Show Trades</a>
+                        {% else %}<a href="{% url 'game' game.id %}">
+                            {% if game.is_active and not game.hand_submitted %}Play !{% else %}Show Game{% endif %}
+                        </a>{% endif %}
+                    {% elif user == game.master or user.is_staff %}
+                        <a href="{% url 'control' game.id %}">Control Board</a> | <a href="{% url 'game' game.id %}">Game Page</a>
                     {% endif %}
                 </div>
-                <div class="css_table-cell {{ color }}" style="text-align: center;">
+                <div class="css_table-cell">
                     {% if game.is_active %}
-                        {% if user in game.players.all %}
-                            {% if game.hand_submitted %}
-                                <em>hand submitted</em>
-                            {% else %}
-                                <a href="{% url 'submit_hand' game.id %}">Submit Hand and Finish</a>
-                            {% endif %}
+                        {% if user in game.players.all and game.hand_submitted %}
+                            <span class="helptext">hand submitted</span>
                         {% else %}
                             &nbsp;
                         {% endif %}
                     {% elif game.is_ended %}
-                        <em>game ended</em>
+                        <span class="helptext">game ended</span>
                     {% elif game.is_closed %}
-                        <em>game closed</em>
+                        <span class="helptext">game closed</span>
                     {% else %}
-                        <em>not started</em>
+                        <span class="helptext">not started</span>
                     {% endif %}
                 </div>
 			</div>

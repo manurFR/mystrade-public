@@ -224,6 +224,10 @@ input[type="submit"] {
   vertical-align: middle;
 }
 
+.centered {
+  text-align: center;
+}
+
 .pagination {
   @include font($size: 0.8em);
   text-align: center;

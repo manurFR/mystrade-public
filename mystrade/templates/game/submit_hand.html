@@ -14,7 +14,7 @@
 
 {% block content %}
     <div class="header">Submit your hand in game #{{ game }}
-        <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span></div>
+        <span class="floatright">&lt; <a href="{% url 'game' game.id %}">Back</a></span></div>
     <div class="reminder">
         This game will end on {{ game.end_date }} ({{ game.end_date|timeuntil }} from now on).<br/>
         At this moment, <strong>all</strong> your commodity cards will automatically be submitted back to the game master for scoring.<br/>
