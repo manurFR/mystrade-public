@@ -50,13 +50,20 @@ def game(request, game_id):
 
     if request.user in players:
         rules = rules_currently_in_hand(game, request.user)
-        commodities = commodities_in_hand(game, request.user)
+
+        commodities = list(commodities_in_hand(game, request.user))
+        hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None
+        if hand_submitted:
+            for cih in commodities:
+                if cih.nb_submitted_cards == 0:
+                    commodities.remove(cih)
+                else:
+                    cih.nb_cards = cih.nb_submitted_cards
+
         nb_commodities = sum([cih.nb_cards for cih in commodities])
 
         pending_trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game,
                                               status__in = ['INITIATED', 'REPLIED']).order_by('-creation_date')
-
-        hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None
 
         context.update({'rules': rules, 'commodities': commodities, 'nb_commodities': nb_commodities,
                         'pending_trades': pending_trades, 'hand_submitted': hand_submitted})

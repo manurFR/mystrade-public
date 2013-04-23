@@ -191,9 +191,10 @@ class GameCreationViewsTest(TestCase):
                                      'form-13-card_id': 14,
                                      'form-14-card_id': 15
                                     })
-        self.assertRedirects(response, "/game/")
 
         created_game = Game.objects.get(master = self.testUserCanCreate.id)
+        self.assertRedirects(response, "/game/{}/".format(created_game.id))
+
         self.assertEqual(1, created_game.ruleset.id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
         self.assertEqual(datetime.datetime(2037, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
@@ -318,7 +319,7 @@ class GamePageViewTest(TestCase):
         rih3 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now(), abandon_date = now())
 
         response = self._assertGetGamePage()
-        self.assertContains(response, "You own 2 rule cards, and 0 commodities")
+        self.assertContains(response, "You own 2 rule cards")
 
     def test_game_page_doesnt_show_nb_of_rule_cards_nor_of_commodities_to_game_master(self):
         self.client.logout()
@@ -334,16 +335,37 @@ class GamePageViewTest(TestCase):
                               nb_cards = 1)
 
         response = self._assertGetGamePage()
-        self.assertContains(response, "You own 0 rule cards, and 1 commodity")
+        self.assertContains(response, "You own 0 rule cards")
+        self.assertContains(response, "1 commodity")
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
 
         cih2 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Red"),
                               nb_cards = 4, nb_submitted_cards = 2)
 
         response = self._assertGetGamePage()
-        self.assertContains(response, "and 5 commodities")
+        self.assertContains(response, "5 commodities")
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 4)
+
+    def test_game_page_show_only_submitted_commodities_to_players_who_have_submitted_their_hand(self):
+        gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)
+        gameplayer.submit_date = now() +  datetime.timedelta(days = -2)
+        gameplayer.save()
+
+        cih1 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Blue"),
+                              nb_cards = 3, nb_submitted_cards = 1)
+        cih2 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Red"),
+                              nb_cards = 2, nb_submitted_cards = 2)
+        cih3 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Orange"),
+                              nb_cards = 1, nb_submitted_cards = 0)
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "you have submitted")
+        self.assertContains(response, "3 commodities")
+
+        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
+        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 2)
+        self.assertNotContains(response, "<span class=\"minicard\" data-tip=\"Orange\" style=\"background-color: orange\">&nbsp;</span>")
 
     def test_game_page_show_pending_trades_with_less_than_3_pending_trades(self):
         trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
