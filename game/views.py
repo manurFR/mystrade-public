@@ -11,7 +11,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
 
 from game.deal import deal_cards
-from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse
+from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse, MessageForm
 from game.helpers import rules_currently_in_hand, rules_formerly_in_hand, commodities_in_hand
 from game.models import Game, CommodityInHand, GamePlayer, RuleInHand
 from ruleset.models import RuleCard
@@ -46,7 +46,7 @@ def game(request, game_id):
     if request.user not in players and request.user != game.master and not request.user.is_staff:
         raise PermissionDenied
 
-    context =  {'game': game, 'players': players}
+    context =  {'game': game, 'players': players, 'message_form': MessageForm()}
 
     if request.user in players:
         rules = rules_currently_in_hand(game, request.user)
@@ -69,6 +69,21 @@ def game(request, game_id):
                         'pending_trades': pending_trades, 'hand_submitted': hand_submitted})
 
     return render(request, 'game/game.html', context)
+
+@login_required
+def post_message(request, game_id):
+    if request.method != 'POST':
+        raise PermissionDenied
+
+    game = get_object_or_404(Game, id=game_id)
+
+    message_form = MessageForm(data = request.POST)
+    if message_form.is_valid():
+        print message_form.cleaned_data['message']
+    else:
+        print 'invalid'
+
+    return redirect('game', game.id)
 
 @login_required
 def hand(request, game_id):

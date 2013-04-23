@@ -2,6 +2,7 @@
 {% load filters %}
 {% load staticfiles %}
 {% load url from future %}
+{% load widget_tweaks %}
 
 {% block styles %}
     <link rel="stylesheet" href="{% static 'css/style.css-tooltips.css' %}" />
@@ -58,5 +59,18 @@
         {% endif %}
         <a href="{% url 'trades' game.id %}">&gt; show more{% if game.is_active and not hand_submitted %} (or create a new trade proposal){% endif %}</a>
     {% endif %}
+
+    <br/><br/>
+    <div class="header">Messages</div>
+
+    <form action="{% url 'post_message' game.id %}" method="POST">{% csrf_token %}
+        <table class="fullwidth formtable">
+            <tr>
+                <th>{{ message_form.message.label_tag }} :</th>
+                <td>{{ message_form.message|attr:"cols:75"|attr:"rows:6" }}&nbsp;<span class="errors">{{ message_form.message.errors.as_text }}</span>
+                    <span class="brhelptext">{{ message_form.message.help_text }}</span></td>
+            </tr>
+        </table>
+    </form>
 
 {% endblock %}

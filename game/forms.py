@@ -52,3 +52,6 @@ class GameCommodityCardFormDisplay(GameCommodityCardFormParse):
     name = forms.CharField()
     nb_cards = forms.IntegerField()
     color = forms.CharField()
+
+class MessageForm(forms.Form):
+    message = forms.CharField(max_length = 255, widget=forms.Textarea, label = "Post message", help_text = "255 characters max.")
