@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from game.models import Message
 from ruleset.models import Ruleset, RuleCard
 from utils.utils import roundTimeToMinute
 
@@ -54,4 +55,4 @@ class GameCommodityCardFormDisplay(GameCommodityCardFormParse):
     color = forms.CharField()
 
 class MessageForm(forms.Form):
-    message = forms.CharField(max_length = 255, widget=forms.Textarea, label = "Post message", help_text = "255 characters max.")
+    message = forms.CharField(max_length = Message.MAX_LENGTH, widget=forms.Textarea, required = False, label = "Add message")

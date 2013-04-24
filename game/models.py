@@ -83,8 +83,10 @@ class CommodityInHand(models.Model):
                                 or 0) # if there are no records to aggregate
 
 class Message(models.Model):
+    MAX_LENGTH = 255
+
     game = models.ForeignKey(Game)
     sender = models.ForeignKey(User)
 
-    content = models.CharField(max_length = 255)
+    content = models.CharField(max_length = MAX_LENGTH)
     posting_date = models.DateTimeField(default = now)

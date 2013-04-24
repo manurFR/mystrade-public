@@ -13,7 +13,7 @@ from model_mommy import mommy
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
     prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates
-from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
+from game.models import Game, RuleInHand, CommodityInHand, GamePlayer, Message
 from ruleset.models import Ruleset, RuleCard, Commodity
 from scoring.card_scoring import Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
@@ -416,6 +416,25 @@ class GamePageViewTest(TestCase):
         response = self._assertGetGamePage()
         self.assertNotContains(response, "Pending trades")
         self.assertNotContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade1.id))
+
+    def test_game_page_post_a_message(self):
+        self.assertEqual(0, Message.objects.count())
+
+        response = self.client.post("/game/{}/".format(self.game.id), {'message': 'test message represents'})
+        self.assertEqual(200, response.status_code)
+
+        self.assertEqual(1, Message.objects.count())
+        try:
+            msg = Message.objects.get(game = self.game, sender = self.loginUser)
+            self.assertEqual('test message represents', msg.content)
+        except Message.DoesNotExist:
+            self.fail("Message was not created for expected game and sender")
+
+    def test_game_page_posting_a_message_fails_for_more_than_255_characters(self):
+        response = self.client.post("/game/{}/".format(self.game.id), {'message': 'A'*300})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, Message.objects.count())
+        self.assertContains(response, '<span class="errors">* Ensure this value has at most 255 characters (it has 300).</span>')
 
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
