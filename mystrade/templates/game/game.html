@@ -31,36 +31,71 @@
         {% endif %}
     </div>
 
-    {% if rules or commodities %}
-        <strong>Hand</strong>
-        <div class="css_table">
-            <div class="css_table-row">
-                <div class="css_table-cell">
-                    You own {{ rules|length }} rule card{{ rules|length|pluralize }}, and{% if hand_submitted %} you have submitted{% endif %}
-                    {{ nb_commodities }} commodit{{ nb_commodities|pluralize:"y,ies" }}{% if nb_commodities == 0 %}.{% else %}:<br/>
-                    {% for cih in commodities %}
-                        {% for copy in cih.nb_cards|as_range %}
-                            <span class="minicard" data-tip="{{ cih.commodity.name }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
-                        {% endfor %}
-                    {% endfor %}{% endif %}
+    {% if user in game.players.all %}
+    <div class="containerForColumns">
+        <div class="leftOfTwoColumns">
+            <strong>Hand</strong>
+            <div class="css_table">
+                <div class="css_table-row">
+                    <div class="css_table-cell">
+                        You own {{ rules|length }} rule card{{ rules|length|pluralize }}, and{% if hand_submitted %} you have submitted{% endif %}
+                        {{ nb_commodities }} commodit{{ nb_commodities|pluralize:"y,ies" }}{% if nb_commodities == 0 %}.{% else %}:<br/>
+                        {% for cih in commodities %}
+                            {% for copy in cih.nb_cards|as_range %}
+                                <span class="minicard" data-tip="{{ cih.commodity.name }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
+                            {% endfor %}
+                        {% endfor %}{% endif %}
+                    </div>
                 </div>
             </div>
+            <a href="{% url 'hand' game.id %}">&gt; show more</a><br/>
         </div>
-        <a href="{% url 'hand' game.id %}">&gt; show more</a><br/>
-        <br/>
+
+        <div class="rightOfTwoColumns">
+            <strong>{% if pending_trades|length > 3 %}Last 3 pending trades{% else %}Pending trades{% endif %}</strong><br/>
+            {% if pending_trades %}
+                <div class="css_table">
+                    {% for trade in pending_trades|slice:":3" %}
+                        {% cycle 'even_color' 'odd_color' as color silent %}
+                        <div class="css_table-row{% if trade.status == 'ACCEPTED' or trade.status == 'DECLINED' %} done{% elif trade.status == 'CANCELLED' %} cancelled{% endif %}">
+                            <div class="css_table-cell {{ color }}">
+                                From <strong>{% include "common/name_or_you.html" with who=trade.initiator %}</strong>
+                                to <strong>{% include "common/name_or_you.html" with who=trade.responder %}</strong>
+                            </div>
+                            <div class="css_table-cell {{ color }}">
+                                {% if trade.status == 'INITIATED' %}
+                                    offered {{ trade.creation_date|timesince }} ago
+                                {% elif trade.status == 'CANCELLED' %}
+                                    cancelled by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
+                                {% elif trade.status == 'REPLIED' %}
+                                    response submitted by {% include "common/name_or_you.html" with who=trade.responder %}
+                                {% elif trade.status == 'ACCEPTED' %}
+                                    done {{ trade.closing_date|timesince }} ago
+                                {% elif trade.status == 'DECLINED' %}
+                                    declined by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
+                                {% endif %}
+                            </div>
+                            <div class="css_table-cell {{ color }}">
+                                {% if game.is_active and trade.status == 'INITIATED' and user == trade.responder %}
+                                    <a href="{% url 'show_trade' game.id trade.id %}"><span class="new">Reply</span></a>
+                                {% elif game.is_active and trade.status == 'REPLIED' and user == trade.initiator %}
+                                    <a href="{% url 'show_trade' game.id trade.id %}"><span class="new">Decide</span></a>
+                                {% else %}
+                                    <a href="{% url 'show_trade' game.id trade.id %}">Show</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="helptext">No pending trades.</div>
+            {% endif %}
+            <a href="{% url 'trades' game.id %}">&gt; show more{% if game.is_active and not hand_submitted %} (or create a new trade proposal){% endif %}</a>
+        </div>
+    </div>
     {% endif %}
 
-    {% if user in game.players.all %}
-        <strong>{% if pending_trades|length > 3 %}Last 3 pending trades{% else %}Pending trades{% endif %}</strong><br/>
-        {% if pending_trades %}
-            {% include "trade/trades_table.html" with trades=pending_trades|slice:":3" %}
-        {% else %}
-            <div class="helptext">No pending trades.</div>
-        {% endif %}
-        <a href="{% url 'trades' game.id %}">&gt; show more{% if game.is_active and not hand_submitted %} (or create a new trade proposal){% endif %}</a>
-    {% endif %}
-
-    <br/><br/>
+    <br/>
     <div class="header">Messages</div>
 
     <form action="{% url 'post_message' game.id %}" method="POST">{% csrf_token %}

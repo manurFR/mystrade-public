@@ -51,6 +51,20 @@ a img, .icon {
   padding-left: 2em;
 }
 
+.containerForColumns {
+  overflow: auto;
+  width: 100%;
+}
+
+.leftOfTwoColumns {
+  width: 50%;
+  float: left;
+}
+
+.rightOfTwoColumns {
+  margin-left: 50%;
+}
+
 .formtable {
   tr {
     line-height: 1.5em;
