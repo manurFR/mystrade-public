@@ -436,6 +436,21 @@ class GamePageViewTest(TestCase):
         self.assertEqual(0, Message.objects.count())
         self.assertContains(response, '<span class="errors">* Ensure this value has at most 255 characters (it has 300).</span>')
 
+    def test_game_page_message_with_markdown_are_interpreted(self):
+        response = self.client.post("/game/{}/".format(self.game.id),
+                                    {'message': 'Hi *this* is __a test__ and [a link](http://example.net/)'})
+        self.assertEqual(200, response.status_code)
+
+        self.assertEqual('Hi <em>this</em> is <strong>a test</strong> and <a href=\"http://example.net/\">a link</a>',
+                         Message.objects.get(game = self.game, sender = self.loginUser).content)
+
+    def test_game_page_bleach_strips_unwanted_tags_and_attributes(self):
+        response = self.client.post("/game/{}/".format(self.game.id),
+                                    {'message': '<script>var i=3;</script>Hi an <em class="test">image</em><img src="http://blah.jpg"/>'})
+        self.assertEqual(200, response.status_code)
+
+        self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)
+
     def test_game_page_displays_messages_for_the_game(self):
         mommy.make_one(Message, game = self.game, sender = self.loginUser, content = 'Show me maybe')
         mommy.make_one(Message, game = mommy.make_one(Game, rules=[], players=[], end_date = now() + datetime.timedelta(days = 2)),

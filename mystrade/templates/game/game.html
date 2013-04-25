@@ -107,6 +107,7 @@
     <table style="margin: auto">
         <tr style="line-height: 8pt">
             <td><strong>{{ message_form.message.label_tag }}:</strong>
+                <span class="helptext">(<a href="https://github.com/fletcher/MultiMarkdown/blob/master/Documentation/Markdown%20Syntax.md">Markdown</a> allowed)</span>
                 <div class="helptext floatright"><span id="charactersLeft">{{ maxMessageLength }}</span> characters left</div</td>
             <td>&nbsp;</td>
         </tr>
@@ -122,7 +123,7 @@
         <tr>
             <td>
                 <div class="message_sender">{% include "common/name_or_you.html" with who=msg.sender %} said:</div>
-                <div class="message_content">{{ msg.content|striptags|linebreaksbr }}</div>
+                <div class="message_content">{{ msg.content|safe|linebreaksbr }}</div>
                 <div class="helptext floatright message_date">{{ msg.posting_date|timesince }} ago</div>
             </td>
             <td>&nbsp;</td>

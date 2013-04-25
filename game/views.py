@@ -1,4 +1,5 @@
 import logging
+import bleach
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError, PermissionDenied
@@ -9,6 +10,7 @@ from django.db.models import Q, F
 from django.forms.formsets import formset_factory
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
+import markdown
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse, MessageForm
@@ -71,7 +73,9 @@ def game(request, game_id):
     if request.method == 'POST':
         message_form = MessageForm(data = request.POST)
         if message_form.is_valid() and len(message_form.cleaned_data['message']) > 0:
-            Message.objects.create(game = game, sender = request.user, content = message_form.cleaned_data['message'])
+                # bleach allowed tags : 'a','abbr','acronym','b','blockquote','code','em','i','li','ol','strong', 'ul'
+            secure_message = bleach.clean(markdown.markdown(message_form.cleaned_data['message']), strip = True)
+            Message.objects.create(game = game, sender = request.user, content = secure_message)
             message_form = MessageForm()
         # else keep the bound message_form to display the erroneous message
     else:
