@@ -73,10 +73,13 @@ def game(request, game_id):
         if message_form.is_valid() and len(message_form.cleaned_data['message']) > 0:
             Message.objects.create(game = game, sender = request.user, content = message_form.cleaned_data['message'])
             message_form = MessageForm()
+        # else keep the bound message_form to display the erroneous message
     else:
         message_form = MessageForm()
 
-    context['message_form'] = message_form
+    messages = Message.objects.filter(game = game).order_by('-posting_date')
+
+    context.update({'message_form': message_form, 'messages': messages})
 
     return render(request, 'game/game.html', context)
 

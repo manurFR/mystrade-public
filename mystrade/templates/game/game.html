@@ -104,22 +104,32 @@
     <br/>
     <div class="header">Messages</div>
 
-    <form action="{% url 'game' game.id %}" method="POST">{% csrf_token %}
-        <table>
-            <tr style="line-height: 8pt">
-                <th>&nbsp;</th>
-                <td style="text-align: right" class="helptext"><span id="charactersLeft">{{ maxMessageLength }}</span> characters left</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <th style="vertical-align: top">{{ message_form.message.label_tag }} :</th>
+    <table style="margin: auto">
+        <tr style="line-height: 8pt">
+            <td><strong>{{ message_form.message.label_tag }}:</strong>
+                <div class="helptext floatright"><span id="charactersLeft">{{ maxMessageLength }}</span> characters left</div</td>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <form action="{% url 'game' game.id %}" method="POST">{% csrf_token %}
                 <td>{{ message_form.message|attr:"cols:80"|attr:"rows:4" }}&nbsp;
                     <span class="errors">{{ message_form.message.errors.as_text }}</span>
                 </td>
                 <td style="vertical-align: bottom"><input type="submit" value="Post"/></td>
-            </tr>
-        </table>
-    </form>
+            </form>
+        </tr>
+        {% for msg in messages %}
+        <tr>
+            <td>
+                <div class="message_sender">{% include "common/name_or_you.html" with who=msg.sender %} said:</div>
+                <div class="message_content">{{ msg.content|striptags|linebreaksbr }}</div>
+                <div class="helptext floatright message_date">{{ msg.posting_date|timesince }} ago</div>
+            </td>
+            <td>&nbsp;</td>
+        </tr>
+        {% endfor %}
+    </table>
+
 
     <script>
         $(function() {

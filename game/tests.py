@@ -436,6 +436,15 @@ class GamePageViewTest(TestCase):
         self.assertEqual(0, Message.objects.count())
         self.assertContains(response, '<span class="errors">* Ensure this value has at most 255 characters (it has 300).</span>')
 
+    def test_game_page_displays_messages_for_the_game(self):
+        mommy.make_one(Message, game = self.game, sender = self.loginUser, content = 'Show me maybe')
+        mommy.make_one(Message, game = mommy.make_one(Game, rules=[], players=[], end_date = now() + datetime.timedelta(days = 2)),
+                       sender = self.loginUser, content = 'Do not display')
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "<div class=\"message_content\">Show me maybe</div>")
+        self.assertNotContains(response, "<div class=\"message_content\">Do not display</div>")
+
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
             game = self.game

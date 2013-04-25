@@ -324,3 +324,17 @@ a:hover, .dynamic_link:hover {
 /* line 323, ../../resources/scss/style.scss */
 .end_warning {
   color: red; }
+
+/* line 327, ../../resources/scss/style.scss */
+.message_content {
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  background-color: #ffbd1a;
+  padding: 4px;
+  margin: 3px;
+  font-size: 0.9em; }
+
+/* line 335, ../../resources/scss/style.scss */
+.message_date {
+  margin-bottom: 5px; }
