@@ -102,13 +102,13 @@
     {% endif %}
 
     <br/>
-    <div class="header">Messages</div>
+    <div class="header">Message Wall</div>
 
     <table style="margin: auto">
-        <tr style="line-height: 8pt">
+        <tr>
             <td><strong>{{ message_form.message.label_tag }}:</strong>
                 <span class="helptext">(<a href="https://github.com/fletcher/MultiMarkdown/blob/master/Documentation/Markdown%20Syntax.md">Markdown</a> allowed)</span>
-                <div class="helptext floatright"><span id="charactersLeft">{{ maxMessageLength }}</span> characters left</div</td>
+                <div class="lowerhelptext floatright"><span id="charactersLeft">{{ maxMessageLength }}</span> characters left</div></td>
             <td>&nbsp;</td>
         </tr>
         <tr>
@@ -119,6 +119,12 @@
                 <td style="vertical-align: bottom"><input type="submit" value="Post"/></td>
             </form>
         </tr>
+        <tr><td colspan="3" class="small-height">&nbsp;</td></tr>
+
+        {% if messages.has_previous %}
+            <tr><td><a href="?page={{ messages.previous_page_number }}">&lt; more recent messages</a></td><td>&nbsp;</td></tr>
+            <tr class="small-height"><td colspan="3">&nbsp;</td></tr>
+        {% endif %}
         {% for msg in messages %}
         <tr>
             <td>
@@ -129,6 +135,10 @@
             <td>&nbsp;</td>
         </tr>
         {% endfor %}
+        {% if messages.has_next %}
+            <tr><td><span class="floatright"><a href="?page={{ messages.next_page_number }}">show more &gt;</a></span></td>
+                <td>&nbsp;</td></tr>
+        {% endif %}
     </table>
 
 
@@ -137,7 +147,7 @@
             $('input[type=submit]').button();
         });
 
-        var maxlength = {{ maxMessageLength }}
+        var maxlength = {{ maxMessageLength }};
         $('#id_message').attr('maxlength', maxlength); // direct support for HTML5-enabled browsers
 
         $('#id_message').on('keyup', function() {

@@ -460,6 +460,21 @@ class GamePageViewTest(TestCase):
         self.assertContains(response, "<div class=\"message_content\">Show me maybe</div>")
         self.assertNotContains(response, "<div class=\"message_content\">Do not display</div>")
 
+    def test_game_page_messages_are_paginated(self):
+        # 10 messages per page, extensible to 13 to accomodate 1 to 3 last messages we don't want alone on a last page
+        mommy.make_many(Message, quantity = 13, game = self.game, sender = self.loginUser, content = 'my test msg')
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 13)
+
+        mommy.make_one(Message, game = self.game, sender = self.loginUser, content = 'my test msg')
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10)
+
+        response = self.client.get("/game/{}/?page=2".format(self.game.id), follow = True)
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 4)
+
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
             game = self.game

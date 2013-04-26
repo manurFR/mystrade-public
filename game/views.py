@@ -39,6 +39,8 @@ def welcome(request):
 #############################################################################
 ##                            Game Views                                   ##
 #############################################################################
+MESSAGES_PAGINATION = 10
+
 @login_required
 def game(request, game_id):
     game = get_object_or_404(Game, id=game_id)
@@ -82,8 +84,16 @@ def game(request, game_id):
         message_form = MessageForm()
 
     messages = Message.objects.filter(game = game).order_by('-posting_date')
+    paginator = Paginator(messages, per_page = MESSAGES_PAGINATION, orphans = 3)
+    page = request.GET.get('page')
+    try:
+        displayed_messages = paginator.page(page)
+    except PageNotAnInteger:
+        displayed_messages = paginator.page(1) # If page is not an integer, deliver first page.
+    except EmptyPage:
+        displayed_messages = paginator.page(paginator.num_pages) # If page is out of range, deliver last page of results.
 
-    context.update({'message_form': message_form, 'messages': messages})
+    context.update({'message_form': message_form, 'messages': displayed_messages})
 
     return render(request, 'game/game.html', context)
 

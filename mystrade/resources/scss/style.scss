@@ -83,15 +83,25 @@ a img, .icon {
   }
 }
 
+td.small-height {
+  line-height: 8pt;
+}
+
 .helptext {
   @include font($size: 8pt, $style: italic);
   color: $infoTextColor;
 }
 
-.brhelptext {
+.upperhelptext {
   @extend .helptext;
   display: block;
   margin-top: -0.6em;
+}
+
+.lowerhelptext {
+  @extend .helptext;
+  display: block;
+  margin-top: 0.4em;
 }
 
 input[type="text"], input[type="password"], textarea, select {
