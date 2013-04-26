@@ -337,11 +337,35 @@ a:hover, .dynamic_link:hover {
 .message_content {
   @include roundedBorder(5px);
   background-color: lighten($backgroundColor, 5%);
-  padding: 4px;
+  padding: 4px 4px 4px 14px;
   margin: 3px;
+  width: 600px;
   font-size: 0.9em;
+
+  &.admin {
+    background: darken($backgroundColor, 8%);
+    position: relative;
+    padding-bottom: 15px;
+
+    img {
+      margin-left: -65px;
+    }
+
+    p {
+      position: absolute;
+      top: 0;
+      width: 95%;
+    }
+  }
 }
 
 .message_date {
   margin-bottom: 5px;
+}
+
+textarea {
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;         /* Opera/IE 8+ */
+  width: 100%;
 }

@@ -475,6 +475,13 @@ class GamePageViewTest(TestCase):
         response = self.client.get("/game/{}/?page=2".format(self.game.id), follow = True)
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 4)
 
+    def test_game_page_messages_from_the_game_master_stand_out(self):
+        msg = mommy.make_one(Message, game = self.game, sender = User.objects.get(username = 'test1'), content = 'some message')
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "(<strong>game master</strong>)")
+        self.assertContains(response, "<div class=\"message_content admin\">")
+
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
             game = self.game

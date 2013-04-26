@@ -340,10 +340,34 @@ a:hover, .dynamic_link:hover {
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   background-color: #ffbd1a;
-  padding: 4px;
+  padding: 4px 4px 4px 14px;
   margin: 3px;
+  width: 600px;
   font-size: 0.9em; }
+  /* line 345, ../../resources/scss/style.scss */
+  .message_content.admin {
+    background: #d69900;
+    position: relative;
+    padding-bottom: 15px; }
+    /* line 350, ../../resources/scss/style.scss */
+    .message_content.admin img {
+      margin-left: -65px; }
+    /* line 354, ../../resources/scss/style.scss */
+    .message_content.admin p {
+      position: absolute;
+      top: 0;
+      width: 95%; }
 
-/* line 345, ../../resources/scss/style.scss */
+/* line 362, ../../resources/scss/style.scss */
 .message_date {
   margin-bottom: 5px; }
+
+/* line 366, ../../resources/scss/style.scss */
+textarea {
+  -webkit-box-sizing: border-box;
+  /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;
+  /* Firefox, other Gecko */
+  box-sizing: border-box;
+  /* Opera/IE 8+ */
+  width: 100%; }

@@ -113,13 +113,12 @@
         </tr>
         <tr>
             <form action="{% url 'game' game.id %}" method="POST">{% csrf_token %}
-                <td>{{ message_form.message|attr:"cols:80"|attr:"rows:4" }}&nbsp;
+                <td>{{ message_form.message|attr:"rows:3" }}&nbsp;
                     <span class="errors">{{ message_form.message.errors.as_text }}</span>
                 </td>
-                <td style="vertical-align: bottom"><input type="submit" value="Post"/></td>
+                <td style="vertical-align: top"><input type="submit" value="Post"/></td>
             </form>
         </tr>
-        <tr><td colspan="3" class="small-height">&nbsp;</td></tr>
 
         {% if messages.has_previous %}
             <tr><td><a href="?page={{ messages.previous_page_number }}">&lt; more recent messages</a></td><td>&nbsp;</td></tr>
@@ -128,8 +127,17 @@
         {% for msg in messages %}
         <tr>
             <td>
-                <div class="message_sender">{% include "common/name_or_you.html" with who=msg.sender %} said:</div>
+                <div class="message_sender">{% include "common/name_or_you.html" with who=msg.sender %}
+                    {% if msg.sender == game.master %} (<strong>game master</strong>) {% endif %}
+                    said:</div>
+                {% if msg.sender == game.master %}
+                <div class="message_content admin">
+                    <img src="{% static 'tie.png' %}" alt=""/>
+                    <p>{{ msg.content|safe|linebreaksbr }}</p>
+                </div>
+                {% else %}
                 <div class="message_content">{{ msg.content|safe|linebreaksbr }}</div>
+                {% endif %}
                 <div class="helptext floatright message_date">{{ msg.posting_date|timesince }} ago</div>
             </td>
             <td>&nbsp;</td>
