@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.forms.formsets import formset_factory
 from django.test import RequestFactory, Client, TransactionTestCase
-from django.utils.timezone import get_default_timezone, now
+from django.utils.timezone import now
 from django.test import TestCase
 from model_mommy import mommy
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
@@ -13,10 +13,10 @@ from trade.models import Offer, Trade, TradedCommodities
 from trade.views import _prepare_offer_forms
 
 def _common_setUp(self):
-    self.game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [], end_date = now() + datetime.timedelta(days = 7))
+    self.game = mommy.make(Game, master = User.objects.get(username = 'test1'), end_date = now() + datetime.timedelta(days = 7))
     for player in User.objects.exclude(username = 'test1').exclude(username = 'admin').exclude(username = 'unrelated_user'):
-        mommy.make_one(GamePlayer, game = self.game, player = player)
-    self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
+        mommy.make(GamePlayer, game = self.game, player = player)
+    self.dummy_offer = mommy.make(Offer)
     self.loginUser = User.objects.get(username = 'test2')
     self.test5 = User.objects.get(username = 'test5')
     self.client.login(username = 'test2', password = 'test')
@@ -69,7 +69,7 @@ class CreateTradeViewTest(TestCase):
 
     def test_create_trade_only_allowed_for_the_game_players(self):
         # most notably: the game master, the admins (when not in the players' list) and the users not in this game are denied
-        game = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = 7))
+        game = mommy.make(Game, master = self.loginUser, end_date = now() + datetime.timedelta(days = 7))
         self._assertIsCreateTradeAllowed(game, False)
 
         self.client.logout()
@@ -80,7 +80,7 @@ class CreateTradeViewTest(TestCase):
         self.assertTrue(self.client.login(username = 'admin', password = 'test'))
         self._assertIsCreateTradeAllowed(game, False)
 
-        mommy.make_one(GamePlayer, game = game, player = User.objects.get(username = 'admin'))
+        mommy.make(GamePlayer, game = game, player = User.objects.get(username = 'admin'))
         self._assertIsCreateTradeAllowed(game, True)
 
     def _assertIsCreateTradeAllowed(self, game, create_allowed, list_allowed = True):
@@ -115,11 +115,11 @@ class CreateTradeViewTest(TestCase):
             self.assertEqual(403, response.status_code)
 
     def test_create_trade_complete_save(self):
-        ruleset = mommy.make_one(Ruleset)
-        rulecard = mommy.make_one(RuleCard, ruleset = ruleset, ref_name = 'rulecard_1')
+        ruleset = mommy.make(Ruleset)
+        rulecard = mommy.make(RuleCard, ruleset = ruleset, ref_name = 'rulecard_1')
         rule_in_hand = RuleInHand.objects.create(game = self.game, player = self.loginUser,
                                                  rulecard = rulecard, ownership_date = now())
-        commodity = mommy.make_one(Commodity, ruleset = ruleset, name = 'commodity_1')
+        commodity = mommy.make(Commodity, ruleset = ruleset, name = 'commodity_1')
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = self.loginUser,
                                                            commodity = commodity, nb_cards = 2)
         response = self.client.post("/trade/{}/create/".format(self.game.id),
@@ -152,8 +152,8 @@ class CreateTradeViewTest(TestCase):
         self.assertEqual(['test4@test.com'], email.to)
 
     def test_create_trade_page_doesnt_show_commodities_with_no_cards(self):
-        commodity1 = mommy.make_one(Commodity, name = 'Commodity#1')
-        commodity2 = mommy.make_one(Commodity, name = 'Commodity#2')
+        commodity1 = mommy.make(Commodity, name = 'Commodity#1')
+        commodity2 = mommy.make(Commodity, name = 'Commodity#2')
         cih1 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 1)
         cih2 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity2, nb_cards = 0)
 
@@ -170,23 +170,23 @@ class ManageViewsTest(TestCase):
 
     def test_trade_list(self):
         right_now = now()
-        trade_initiated = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
-                                         initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+        trade_initiated = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
+                                         initiator_offer = mommy.make(Offer),
                                          creation_date = right_now - datetime.timedelta(days = 1))
-        trade_cancelled = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
-                                         initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+        trade_cancelled = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
+                                         initiator_offer = mommy.make(Offer),
                                          closing_date = right_now - datetime.timedelta(days = 2), finalizer = self.loginUser)
-        trade_accepted = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
-                                        initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+        trade_accepted = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
+                                        initiator_offer = mommy.make(Offer),
                                         closing_date = right_now - datetime.timedelta(days = 3))
-        trade_declined = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, status = 'DECLINED',
-                                        initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+        trade_declined = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'DECLINED',
+                                        initiator_offer = mommy.make(Offer),
                                         closing_date = right_now - datetime.timedelta(days = 4), finalizer = self.loginUser)
-        trade_offered = mommy.make_one(Trade, game = self.game, responder = self.loginUser, status = 'INITIATED',
-                                       initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+        trade_offered = mommy.make(Trade, game = self.game, responder = self.loginUser, status = 'INITIATED',
+                                       initiator_offer = mommy.make(Offer),
                                        creation_date = right_now - datetime.timedelta(days = 5))
-        trade_replied = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
-                                       status = 'REPLIED', initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+        trade_replied = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                       status = 'REPLIED', initiator_offer = mommy.make(Offer),
                                        creation_date = right_now - datetime.timedelta(days = 6))
 
         response = self.client.get("/trade/{}/".format(self.game.id))
@@ -254,7 +254,7 @@ class ManageViewsTest(TestCase):
 
     def test_buttons_in_show_trade_for_the_responder_when_REPLIED(self):
         trade = self._prepare_trade('REPLIED', initiator = self.test5, responder = self.loginUser,
-                                    responder_offer = mommy.make_one(Offer, rules = [], commodities = []))
+                                    responder_offer = mommy.make(Offer))
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
@@ -266,7 +266,7 @@ class ManageViewsTest(TestCase):
         self.assertNotContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_for_the_initiator_when_REPLIED(self):
-        trade = self._prepare_trade('REPLIED', responder_offer = mommy.make_one(Offer, rules = [], commodities = []))
+        trade = self._prepare_trade('REPLIED', responder_offer = mommy.make(Offer))
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
@@ -450,11 +450,11 @@ class ManageViewsTest(TestCase):
         self.assertFormError(response, 'offer_form', None, 'At least one card should be offered.')
 
     def test_reply_trade_complete_save(self):
-        ruleset = mommy.make_one(Ruleset)
-        rulecard = mommy.make_one(RuleCard, ruleset = ruleset)
+        ruleset = mommy.make(Ruleset)
+        rulecard = mommy.make(RuleCard, ruleset = ruleset)
         rule_in_hand = RuleInHand.objects.create(game = self.game, player = self.loginUser,
                                                  rulecard = rulecard, ownership_date = now())
-        commodity = mommy.make_one(Commodity, ruleset = ruleset, name = 'commodity_1')
+        commodity = mommy.make(Commodity, ruleset = ruleset, name = 'commodity_1')
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
                                                            commodity = commodity, nb_cards = 2)
 
@@ -525,35 +525,33 @@ class ManageViewsTest(TestCase):
         self._assertOperationNotAllowed(trade.id, 'accept')
 
     def test_accept_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_REPLIED(self):
-        rulecard1, rulecard2 = mommy.make_many(RuleCard, 2)
-        commodity1, commodity2, commodity3 = mommy.make_many(Commodity, 3)
+        rulecard1, rulecard2 = mommy.make(RuleCard, _quantity = 2)
+        commodity1, commodity2, commodity3 = mommy.make(Commodity, _quantity = 3)
 
-        rih1 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
-                              ownership_date = now())
-        rih2 = mommy.make_one(RuleInHand, game = self.game, player = self.test5, rulecard = rulecard2,
-                              ownership_date = now())
+        rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1)
+        rih2 = mommy.make(RuleInHand, game = self.game, player = self.test5, rulecard = rulecard2)
 
-        cih1i = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity1,
+        cih1i = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity1,
                                nb_cards = 3)
-        cih1r = mommy.make_one(CommodityInHand, game = self.game, player = self.test5, commodity = commodity1,
+        cih1r = mommy.make(CommodityInHand, game = self.game, player = self.test5, commodity = commodity1,
                                nb_cards = 3)
-        cih2i = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity2,
+        cih2i = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity2,
                                nb_cards = 2)
-        cih3r = mommy.make_one(CommodityInHand, game = self.game, player = self.test5, commodity = commodity3,
+        cih3r = mommy.make(CommodityInHand, game = self.game, player = self.test5, commodity = commodity3,
                                nb_cards = 2)
 
         # the initiaor offers rulecard1, 2 commodity1 and 1 commodity2
-        offer_initiator = mommy.make_one(Offer, rules = [rih1], commodities = [])
-        tc1i = mommy.make_one(TradedCommodities, offer = offer_initiator, commodityinhand = cih1i, nb_traded_cards = 2)
+        offer_initiator = mommy.make(Offer, rules = [rih1])
+        tc1i = mommy.make(TradedCommodities, offer = offer_initiator, commodityinhand = cih1i, nb_traded_cards = 2)
         offer_initiator.tradedcommodities_set.add(tc1i)
-        tc2i = mommy.make_one(TradedCommodities, offer = offer_initiator, commodityinhand = cih2i, nb_traded_cards = 1)
+        tc2i = mommy.make(TradedCommodities, offer = offer_initiator, commodityinhand = cih2i, nb_traded_cards = 1)
         offer_initiator.tradedcommodities_set.add(tc2i)
 
         # the responder offers rulecard2, 1 commodity1 and 2 commodity3
-        offer_responder = mommy.make_one(Offer, rules = [rih2], commodities = [])
-        tc1r = mommy.make_one(TradedCommodities, offer = offer_responder, commodityinhand = cih1r, nb_traded_cards = 1)
+        offer_responder = mommy.make(Offer, rules = [rih2])
+        tc1r = mommy.make(TradedCommodities, offer = offer_responder, commodityinhand = cih1r, nb_traded_cards = 1)
         offer_responder.tradedcommodities_set.add(tc1r)
-        tc3r = mommy.make_one(TradedCommodities, offer = offer_responder, commodityinhand = cih3r, nb_traded_cards = 2)
+        tc3r = mommy.make(TradedCommodities, offer = offer_responder, commodityinhand = cih3r, nb_traded_cards = 2)
         offer_responder.tradedcommodities_set.add(tc3r)
 
         trade = self._prepare_trade('REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
@@ -697,33 +695,30 @@ class ManageViewsTest(TestCase):
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_prepare_offer_forms_sets_up_the_correct_cards_formset_with_cards_in_pending_trades_reserved(self):
-        rulecard1, rulecard2, rulecard3 = mommy.make_many(RuleCard, 3)
-        commodity1, commodity2 = mommy.make_many(Commodity, 2)
+        rulecard1, rulecard2, rulecard3 = mommy.make(RuleCard, _quantity = 3)
+        commodity1, commodity2 = mommy.make(Commodity, _quantity = 2)
 
-        rih1 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
-                              ownership_date = now())
-        rih2 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
-                              ownership_date = now())
-        rih3 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard3,
-                              ownership_date = now())
-        cih1 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity1,
+        rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1)
+        rih2 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2)
+        rih3 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard3)
+        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity1,
                               nb_cards = 3)
-        cih2 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity2,
+        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity2,
                               nb_cards = 2)
 
         # rulecard1 and 1 card of commodity1 are in the initator offer of a pending trade
-        offer1 = mommy.make_one(Offer, rules = [rih1], commodities = [])
-        tc1 = mommy.make_one(TradedCommodities, offer = offer1, commodityinhand = cih1, nb_traded_cards = 1)
+        offer1 = mommy.make(Offer, rules = [rih1])
+        tc1 = mommy.make(TradedCommodities, offer = offer1, commodityinhand = cih1, nb_traded_cards = 1)
         offer1.tradedcommodities_set.add(tc1)
         trade1 = self._prepare_trade('INITIATED', initiator_offer = offer1)
         # rulecard2 and 1 card of commodity1 were in the initiator offer of a finalized trade
-        offer2 = mommy.make_one(Offer, rules = [rih2], commodities = [])
-        tc2 = mommy.make_one(TradedCommodities, offer = offer2, commodityinhand = cih1, nb_traded_cards = 1)
+        offer2 = mommy.make(Offer, rules = [rih2])
+        tc2 = mommy.make(TradedCommodities, offer = offer2, commodityinhand = cih1, nb_traded_cards = 1)
         offer2.tradedcommodities_set.add(tc2)
         trade2 = self._prepare_trade('CANCELLED', initiator_offer = offer2, finalizer = self.loginUser)
         # rulecard3 and 1 card of commodity 2 are in the responder offer of a pending trade
-        offer3 = mommy.make_one(Offer, rules = [rih3], commodities = [])
-        tc3 = mommy.make_one(TradedCommodities, offer = offer3, commodityinhand = cih2, nb_traded_cards = 1)
+        offer3 = mommy.make(Offer, rules = [rih3])
+        tc3 = mommy.make(TradedCommodities, offer = offer3, commodityinhand = cih2, nb_traded_cards = 1)
         offer3.tradedcommodities_set.add(tc3)
         trade1 = self._prepare_trade('REPLIED', initiator = self.test5, responder = self.loginUser, responder_offer = offer3)
 
@@ -768,14 +763,12 @@ class ManageViewsTest(TestCase):
         clientTest5 = Client()
         self.assertTrue(clientTest5.login(username = 'test5', password = 'test'))
 
-        rulecard_initiator = mommy.make_one(RuleCard, public_name = '7', description = 'rule description 7')
-        rih_initiator = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard_initiator,
-                                       ownership_date = now())
-        rulecard_responder = mommy.make_one(RuleCard, public_name = '8', description = 'rule description 8')
-        rih_responder = mommy.make_one(RuleInHand, game = self.game, player = self.test5, rulecard = rulecard_responder,
-                                       ownership_date = now())
-        offer_initiator = mommy.make_one(Offer, rules = [rih_initiator], commodities = [], free_information = 'this is sensitive')
-        offer_responder = mommy.make_one(Offer, rules = [rih_responder], commodities = [], free_information = 'these are sensitive')
+        rulecard_initiator = mommy.make(RuleCard, public_name = '7', description = 'rule description 7')
+        rih_initiator = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard_initiator)
+        rulecard_responder = mommy.make(RuleCard, public_name = '8', description = 'rule description 8')
+        rih_responder = mommy.make(RuleInHand, game = self.game, player = self.test5, rulecard = rulecard_responder)
+        offer_initiator = mommy.make(Offer, rules = [rih_initiator], free_information = 'this is sensitive')
+        offer_responder = mommy.make(Offer, rules = [rih_responder], free_information = 'these are sensitive')
 
         # INITIATED : the initiator should see the sensitive elements of his offer, the responder should not
         trade = self._prepare_trade('INITIATED', initiator_offer = offer_initiator)
@@ -877,7 +870,7 @@ class ManageViewsTest(TestCase):
         if initiator is None: initiator = self.loginUser
         if responder is None: responder = self.test5
         if initiator_offer is None: initiator_offer = self.dummy_offer
-        return mommy.make_one(Trade, game = self.game, initiator = initiator, responder = responder, finalizer = finalizer,
+        return mommy.make(Trade, game = self.game, initiator = initiator, responder = responder, finalizer = finalizer,
                               status = status, initiator_offer = initiator_offer, responder_offer = responder_offer)
 
     def _assertOperationNotAllowed(self, trade_id, operation):
@@ -893,16 +886,15 @@ class TransactionalViewsTest(TransactionTestCase):
     def test_accept_trade_cards_exchange_is_transactional(self):
         # let's make the responder offer 1 commodity for which he doesn't have any cards
         #  (because it's the last save() in the process, so we can assert that everything else has been rollbacked)
-        rih = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser,
-                             ownership_date = now())
-        offer_initiator = mommy.make_one(Offer, rules = [rih], commodities = [])
+        rih = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
+        offer_initiator = mommy.make(Offer, rules = [rih])
 
-        offer_responder = mommy.make_one(Offer, rules = [], commodities = [])
-        cih = mommy.make_one(CommodityInHand, game = self.game, player = self.test5, nb_cards = 0)
-        tc = mommy.make_one(TradedCommodities, offer = offer_responder, commodityinhand = cih, nb_traded_cards = 1)
+        offer_responder = mommy.make(Offer)
+        cih = mommy.make(CommodityInHand, game = self.game, player = self.test5, nb_cards = 0)
+        tc = mommy.make(TradedCommodities, offer = offer_responder, commodityinhand = cih, nb_traded_cards = 1)
         offer_responder.tradedcommodities_set.add(tc)
 
-        trade = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                status = 'REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
 
         response = self.client.post("/trade/{}/{}/accept/".format(self.game.id, trade.id), follow = True)
@@ -928,13 +920,13 @@ class TransactionalViewsTest(TransactionTestCase):
 class FormsTest(TestCase):
 
     def setUp(self):
-        self.game = mommy.make_one(Game, players = [], end_date = now() + datetime.timedelta(days = 7))
+        self.game = mommy.make(Game, end_date = now() + datetime.timedelta(days = 7))
 
     #noinspection PyUnusedLocal
     def test_a_rule_offered_by_the_initiator_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        rule_in_hand = mommy.make_one(RuleInHand, game = self.game, ownership_date = now())
-        offer = mommy.make_one(Offer, rules = [rule_in_hand], commodities = [])
-        pending_trade = mommy.make_one(Trade, game = self.game, status = 'INITIATED', initiator_offer = offer)
+        rule_in_hand = mommy.make(RuleInHand, game = self.game)
+        offer = mommy.make(Offer, rules = [rule_in_hand])
+        pending_trade = mommy.make(Trade, game = self.game, status = 'INITIATED', initiator_offer = offer)
 
         RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
         rulecards_formset = RuleCardsFormSet({'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
@@ -946,10 +938,10 @@ class FormsTest(TestCase):
 
     #noinspection PyUnusedLocal
     def test_a_rule_offered_by_the_responder_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        rule_in_hand = mommy.make_one(RuleInHand, game = self.game, ownership_date = now())
-        offer = mommy.make_one(Offer, rules = [rule_in_hand], commodities = [])
-        pending_trade = mommy.make_one(Trade, game = self.game, status = 'INITIATED', responder_offer = offer,
-                                       initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
+        rule_in_hand = mommy.make(RuleInHand, game = self.game)
+        offer = mommy.make(Offer, rules = [rule_in_hand])
+        pending_trade = mommy.make(Trade, game = self.game, status = 'INITIATED', responder_offer = offer,
+                                       initiator_offer = mommy.make(Offer))
 
         RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
         rulecards_formset = RuleCardsFormSet({'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
@@ -961,11 +953,10 @@ class FormsTest(TestCase):
 
     #noinspection PyUnusedLocal
     def test_commodities_offered_by_the_initiator_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        commodity_in_hand = mommy.make_one(CommodityInHand, game = self.game, nb_cards = 1)
-        # see https://github.com/vandersonmota/model_mommy/issues/25
-        offer = mommy.make_one(Offer, rules = [], commodities = [])
-        traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodityinhand = commodity_in_hand, offer = offer)
-        pending_trade = mommy.make_one(Trade, game = commodity_in_hand.game, status = 'INITIATED', initiator_offer = offer)
+        commodity_in_hand = mommy.make(CommodityInHand, game = self.game, nb_cards = 1)
+        offer = mommy.make(Offer)
+        traded_commodities = mommy.make(TradedCommodities, nb_traded_cards = 1, commodityinhand = commodity_in_hand, offer = offer)
+        pending_trade = mommy.make(Trade, game = commodity_in_hand.game, status = 'INITIATED', initiator_offer = offer)
 
         CommodityCardsFormSet = formset_factory(TradeCommodityCardFormParse, formset = BaseCommodityCardFormSet)
         commodities_formset = CommodityCardsFormSet({'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
@@ -979,12 +970,11 @@ class FormsTest(TestCase):
 
     #noinspection PyUnusedLocal
     def test_commodities_offered_by_the_responder_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        commodity_in_hand = mommy.make_one(CommodityInHand, game = self.game, nb_cards = 2)
-        # see https://github.com/vandersonmota/model_mommy/issues/25
-        offer = mommy.make_one(Offer, rules = [], commodities = [])
-        traded_commodities = mommy.make_one(TradedCommodities, nb_traded_cards = 1, commodityinhand = commodity_in_hand, offer = offer)
-        pending_trade = mommy.make_one(Trade, game = commodity_in_hand.game, status = 'INITIATED', responder_offer = offer,
-                                       initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
+        commodity_in_hand = mommy.make(CommodityInHand, game = self.game, nb_cards = 2)
+        offer = mommy.make(Offer)
+        traded_commodities = mommy.make(TradedCommodities, nb_traded_cards = 1, commodityinhand = commodity_in_hand, offer = offer)
+        pending_trade = mommy.make(Trade, game = commodity_in_hand.game, status = 'INITIATED', responder_offer = offer,
+                                       initiator_offer = mommy.make(Offer))
 
         CommodityCardsFormSet = formset_factory(TradeCommodityCardFormParse, formset = BaseCommodityCardFormSet)
         commodities_formset = CommodityCardsFormSet({'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
@@ -997,10 +987,10 @@ class FormsTest(TestCase):
         self.assertIn("A commodity card in a pending trade can not be offered in another trade.", commodities_formset._non_form_errors)
 
     def test_a_trade_with_a_responder_who_has_already_submitted_his_hand_is_forbidden(self):
-        ihavesubmitted = mommy.make_one(User, username = 'ihavesubmitted')
-        ihavent = mommy.make_one(User, username = 'ihavent')
-        mommy.make_one(GamePlayer, game = self.game, player = ihavesubmitted, submit_date = now())
-        mommy.make_one(GamePlayer, game = self.game, player = ihavent, submit_date = None)
+        ihavesubmitted = mommy.make(User, username = 'ihavesubmitted')
+        ihavent = mommy.make(User, username = 'ihavent')
+        mommy.make(GamePlayer, game = self.game, player = ihavesubmitted, submit_date = now())
+        mommy.make(GamePlayer, game = self.game, player = ihavent, submit_date = None)
 
         form = TradeForm(ihavent, self.game, {'responder': ihavesubmitted.id})
         self.assertFalse(form.is_valid())

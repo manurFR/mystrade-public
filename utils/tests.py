@@ -86,7 +86,7 @@ class UtilsTest(TestCase):
         self.assertEqual(0, len(mail.outbox))
 
     def _prepare_user(self, email, send_notifications):
-        user = mommy.make_one(User, email = email)
+        user = mommy.make(User, email = email)
         profile = user.get_profile()
         profile.send_notifications = send_notifications
         profile.save()

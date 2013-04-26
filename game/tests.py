@@ -314,9 +314,9 @@ class GamePageViewTest(TestCase):
         self.assertContains(response, "(started 4 days ago, closed 1 day ago)")
 
     def test_game_page_shows_nb_of_rule_cards_owned_to_players(self):
-        rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now())
-        rih2 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now())
-        rih3 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now(), abandon_date = now())
+        rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
+        rih2 = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
+        rih3 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, abandon_date = now())
 
         response = self._assertGetGamePage()
         self.assertContains(response, "You own 2 rule cards")

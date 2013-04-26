@@ -8,7 +8,7 @@ from scoring.card_scoring import tally_scores, Scoresheet
 
 class ScoringTest(TestCase):
     def setUp(self):
-        self.game = mommy.make_one(Game, players = [], rules = [], end_date = now())
+        self.game = mommy.make(Game)
 
     def test_tally_scores_all_rules(self):
         for rule in RuleCard.objects.filter(ruleset__id = 1):
@@ -61,11 +61,11 @@ class ScoringTest(TestCase):
         self.assertListEqual([10,      10,      5,       5,       16     ], [sfr.score for sfr in scoresheets[0].scores_from_rule])
 
     def test_calculate_commodity_scores(self):
-        player = mommy.make_one(User, username = 'test')
-        mommy.make_one(CommodityInHand, game = self.game, player = player, commodity__name = 'Blue', commodity__value = 2, nb_submitted_cards = 2)
-        mommy.make_one(CommodityInHand, game = self.game, player = player, commodity__name = 'Red', commodity__value = 1, nb_submitted_cards = 3)
+        player = mommy.make(User, username = 'test')
+        mommy.make(CommodityInHand, game = self.game, player = player, commodity__name = 'Blue', commodity__value = 2, nb_submitted_cards = 2)
+        mommy.make(CommodityInHand, game = self.game, player = player, commodity__name = 'Red', commodity__value = 1, nb_submitted_cards = 3)
 
-        gameplayer = mommy.make_one(GamePlayer, game = self.game, player = player, submit_date = self.game.end_date)
+        gameplayer = mommy.make(GamePlayer, game = self.game, player = player, submit_date = self.game.end_date)
 
         scoresheet = Scoresheet(gameplayer)
 
@@ -126,7 +126,7 @@ class ScoringTest(TestCase):
 
 class HaggleTest(TestCase):
     def setUp(self):
-        self.game = mommy.make_one(Game, players = [], rules = [], end_date = now())
+        self.game = mommy.make(Game)
 
     def test_haggle_HAG04(self):
         """If a player has more than three white cards, all of his/her white cards lose their value."""
@@ -404,12 +404,12 @@ def _prepare_hand(game, player, **commodities):
         gameplayer = GamePlayer.objects.get(game = game, player = p)
         CommodityInHand.objects.filter(game = game, player = p).delete()
     except User.DoesNotExist:
-        p = mommy.make_one(User, username = player)
-        gameplayer = mommy.make_one(GamePlayer, game = game, player = p)
+        p = mommy.make(User, username = player)
+        gameplayer = mommy.make(GamePlayer, game = game, player = p)
 
     for name, nb_submitted_cards in commodities.iteritems():
         commodity = Commodity.objects.get(ruleset = 1, name__iexact = name)
-        mommy.make_one(CommodityInHand, game = game, player = p, commodity = commodity,
+        mommy.make(CommodityInHand, game = game, player = p, commodity = commodity,
                        nb_cards = nb_submitted_cards, nb_submitted_cards = nb_submitted_cards)
     return gameplayer
 
