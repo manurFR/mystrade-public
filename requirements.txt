@@ -6,6 +6,6 @@ django-extensions
 Werkzeug
 #pygraphviz  # doesn't work: need to do 'sudo apt-get install python-pygraphviz' manually
 django-debug-toolbar
-model_mommy==0.8.1
+model_mommy
 markdown
 bleach

@@ -20,10 +20,10 @@ from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.models import Offer, Trade
 
 def _common_setUp(self):
-    self.game = mommy.make_one(Game, master = User.objects.get(username='test1'), players = [], end_date = now() + datetime.timedelta(days = 7))
+    self.game = mommy.make(Game, master = User.objects.get(username='test1'), end_date = now() + datetime.timedelta(days = 7))
     for player in User.objects.exclude(username = 'test1').exclude(username = 'admin').exclude(username = 'unrelated_user'):
-        mommy.make_one(GamePlayer, game = self.game, player = player)
-    self.dummy_offer = mommy.make_one(Offer, rules = [], commodities = [])
+        mommy.make(GamePlayer, game = self.game, player = player)
+    self.dummy_offer = mommy.make(Offer)
     self.loginUser = User.objects.get(username = 'test2')
     self.test5 = User.objects.get(username = 'test5')
     self.client.login(username = 'test2', password = 'test')
@@ -43,10 +43,10 @@ class WelcomePageViewTest(TestCase):
         self.assertEqual(302, response.status_code)
 
     def test_welcome_games_query(self):
-        game_mastered = mommy.make_one(Game, master = self.loginUser, players = [],
+        game_mastered = mommy.make(Game, master = self.loginUser,
                                        end_date = datetime.datetime(2022, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
-        mommy.make_one(GamePlayer, game = game_mastered, player = self.test5)
-        other_game = mommy.make_one(Game, master = self.test5, players = [],
+        mommy.make(GamePlayer, game = game_mastered, player = self.test5)
+        other_game = mommy.make(Game, master = self.test5,
                                end_date = datetime.datetime(2022, 11, 5, 12, 0, 0, tzinfo = get_default_timezone()))
 
         response = self.client.get(reverse("welcome"))
@@ -237,21 +237,21 @@ class GameModelsTest(TestCase):
     def test_game_is_active_if_start_and_end_date_enclose_now(self):
         start_date = now() + datetime.timedelta(days = -10)
         end_date = now() + datetime.timedelta(days = 10)
-        game = mommy.make_one(Game, players = [], start_date = start_date, end_date = end_date)
+        game = mommy.make(Game, start_date = start_date, end_date = end_date)
 
         self.assertTrue(game.is_active())
 
     def test_game_is_not_active_if_start_date_has_not_yet_happened(self):
         start_date = now() + datetime.timedelta(days = 2)
         end_date = now() + datetime.timedelta(days = 10)
-        game = mommy.make_one(Game, players = [], start_date = start_date, end_date = end_date)
+        game = mommy.make(Game, start_date = start_date, end_date = end_date)
 
         self.assertFalse(game.is_active())
 
     def test_game_is_not_active_if_end_date_is_over(self):
         start_date = now() + datetime.timedelta(days = -10)
         end_date = now() + datetime.timedelta(days = -3)
-        game = mommy.make_one(Game, players = [], start_date = start_date, end_date = end_date)
+        game = mommy.make(Game, start_date = start_date, end_date = end_date)
 
         self.assertFalse(game.is_active())
 
@@ -286,37 +286,37 @@ class GamePageViewTest(TestCase):
         #  takes to call the template rendering. Sed fugit interea tempus fugit irreparabile, singula dum capti circumvectamur amore.
 
         # before start_date
-        game1 = mommy.make_one(Game, master = self.loginUser, players = [], start_date = now() + datetime.timedelta(days = 2, seconds = 2),
+        game1 = mommy.make(Game, master = self.loginUser, start_date = now() + datetime.timedelta(days = 2, seconds = 2),
                                end_date = now() + datetime.timedelta(days = 4, seconds = 2))
 
         response = self.client.get("/game/{}/".format(game1.id))
         self.assertContains(response, "(starting in 2 days, ending in 4 days)")
 
         # during the game
-        game2 = mommy.make_one(Game, master = self.loginUser, players = [], start_date = now() + datetime.timedelta(days = -2),
+        game2 = mommy.make(Game, master = self.loginUser, start_date = now() + datetime.timedelta(days = -2),
                                end_date = now() + datetime.timedelta(days = 4, seconds = 2))
 
         response = self.client.get("/game/{}/".format(game2.id))
         self.assertContains(response, "(started 2 days ago, ending in 4 days)")
 
         # after end_date
-        game3 = mommy.make_one(Game, master = self.loginUser, players = [], start_date = now() + datetime.timedelta(days = -4),
+        game3 = mommy.make(Game, master = self.loginUser, start_date = now() + datetime.timedelta(days = -4),
                                end_date = now() + datetime.timedelta(days = -2))
 
         response = self.client.get("/game/{}/".format(game3.id))
         self.assertContains(response, "(started 4 days ago, ended 2 days ago)")
 
         # after closing_date
-        game4 = mommy.make_one(Game, master = self.loginUser, players = [], start_date = now() + datetime.timedelta(days = -4),
+        game4 = mommy.make(Game, master = self.loginUser, start_date = now() + datetime.timedelta(days = -4),
                                end_date = now() + datetime.timedelta(days = -2), closing_date = now() + datetime.timedelta(days = -1))
 
         response = self.client.get("/game/{}/".format(game4.id))
         self.assertContains(response, "(started 4 days ago, closed 1 day ago)")
 
     def test_game_page_shows_nb_of_rule_cards_owned_to_players(self):
-        rih1 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now())
-        rih2 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now())
-        rih3 = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now(), abandon_date = now())
+        rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now())
+        rih2 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now())
+        rih3 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, ownership_date = now(), abandon_date = now())
 
         response = self._assertGetGamePage()
         self.assertContains(response, "You own 2 rule cards")
@@ -331,7 +331,7 @@ class GamePageViewTest(TestCase):
         self.assertNotContains(response, "<span class=\"minicard\"")
 
     def test_game_page_show_commodities_owned_to_players(self):
-        cih1 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Blue"),
+        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Blue"),
                               nb_cards = 1)
 
         response = self._assertGetGamePage()
@@ -339,7 +339,7 @@ class GamePageViewTest(TestCase):
         self.assertContains(response, "1 commodity")
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
 
-        cih2 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Red"),
+        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Red"),
                               nb_cards = 4, nb_submitted_cards = 2)
 
         response = self._assertGetGamePage()
@@ -352,11 +352,11 @@ class GamePageViewTest(TestCase):
         gameplayer.submit_date = now() +  datetime.timedelta(days = -2)
         gameplayer.save()
 
-        cih1 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Blue"),
+        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Blue"),
                               nb_cards = 3, nb_submitted_cards = 1)
-        cih2 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Red"),
+        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Red"),
                               nb_cards = 2, nb_submitted_cards = 2)
-        cih3 = mommy.make_one(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Orange"),
+        cih3 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Orange"),
                               nb_cards = 1, nb_submitted_cards = 0)
 
         response = self._assertGetGamePage()
@@ -368,15 +368,15 @@ class GamePageViewTest(TestCase):
         self.assertNotContains(response, "<span class=\"minicard\" data-tip=\"Orange\" style=\"background-color: orange\">&nbsp;</span>")
 
     def test_game_page_show_pending_trades_with_less_than_3_pending_trades(self):
-        trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                 status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
                                 initiator_offer = self.dummy_offer)
-        trade2 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+        trade2 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                 status = 'REPLIED',   creation_date = now() + datetime.timedelta(days = -2),
-                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
-        trade3 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                initiator_offer = mommy.make(Offer))
+        trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                 status = 'DECLINED',  creation_date = now() + datetime.timedelta(days = -3),
-                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = [])) # not pending
+                                initiator_offer = mommy.make(Offer)) # not pending
 
         response = self._assertGetGamePage()
         self.assertContains(response, "Pending trades")
@@ -385,18 +385,18 @@ class GamePageViewTest(TestCase):
         self.assertNotContains(response, "trade/{}/{}/\">".format(self.game.id, trade3.id))
 
     def test_game_page_show_last_3_pending_trades_when_more_than_three_are_pending(self):
-        trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                 status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
                                 initiator_offer = self.dummy_offer)
-        trade2 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+        trade2 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                 status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -2),
-                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
-        trade3 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                initiator_offer = mommy.make(Offer))
+        trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                 status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -3),
-                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
-        trade4 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                initiator_offer = mommy.make(Offer))
+        trade4 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                 status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -4),
-                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
+                                initiator_offer = mommy.make(Offer))
 
         response = self._assertGetGamePage()
         self.assertContains(response, "Last 3 pending trades")
@@ -406,7 +406,7 @@ class GamePageViewTest(TestCase):
         self.assertNotContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade4.id))
 
     def test_game_page_doesnt_show_pending_trades_to_game_master(self):
-        trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                 status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
                                 initiator_offer = self.dummy_offer)
 
@@ -452,8 +452,8 @@ class GamePageViewTest(TestCase):
         self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)
 
     def test_game_page_displays_messages_for_the_game(self):
-        mommy.make_one(Message, game = self.game, sender = self.loginUser, content = 'Show me maybe')
-        mommy.make_one(Message, game = mommy.make_one(Game, rules=[], players=[], end_date = now() + datetime.timedelta(days = 2)),
+        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'Show me maybe')
+        mommy.make(Message, game = mommy.make(Game, end_date = now() + datetime.timedelta(days = 2)),
                        sender = self.loginUser, content = 'Do not display')
 
         response = self._assertGetGamePage()
@@ -462,12 +462,12 @@ class GamePageViewTest(TestCase):
 
     def test_game_page_messages_are_paginated(self):
         # 10 messages per page, extensible to 13 to accomodate 1 to 3 last messages we don't want alone on a last page
-        mommy.make_many(Message, quantity = 13, game = self.game, sender = self.loginUser, content = 'my test msg')
+        mommy.make(Message, _quantity = 13, game = self.game, sender = self.loginUser, content = 'my test msg')
 
         response = self._assertGetGamePage()
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 13)
 
-        mommy.make_one(Message, game = self.game, sender = self.loginUser, content = 'my test msg')
+        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg')
 
         response = self._assertGetGamePage()
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10)
@@ -476,7 +476,7 @@ class GamePageViewTest(TestCase):
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 4)
 
     def test_game_page_messages_from_the_game_master_stand_out(self):
-        msg = mommy.make_one(Message, game = self.game, sender = User.objects.get(username = 'test1'), content = 'some message')
+        msg = mommy.make(Message, game = self.game, sender = User.objects.get(username = 'test1'), content = 'some message')
 
         response = self._assertGetGamePage()
         self.assertContains(response, "(<strong>game master</strong>)")
@@ -496,8 +496,8 @@ class HandViewTest(TestCase):
         _common_setUp(self)
 
     def test_show_hand_doesnt_show_commodities_with_no_cards(self):
-        commodity1 = mommy.make_one(Commodity, name = 'Commodity#1')
-        commodity2 = mommy.make_one(Commodity, name = 'Commodity#2')
+        commodity1 = mommy.make(Commodity, name = 'Commodity#1')
+        commodity2 = mommy.make(Commodity, name = 'Commodity#2')
         cih1 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 1)
         cih2 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity2, nb_cards = 0)
 
@@ -507,17 +507,17 @@ class HandViewTest(TestCase):
         self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
 
     def test_show_hand_displays_free_informations_from_ACCEPTED_trades(self):
-        offer1_from_me_as_initiator = mommy.make_one(Offer, rules = [], commodities = [], free_information = "I don't need to see that 1")
-        offer1_from_other_as_responder = mommy.make_one(Offer, rules = [], commodities = [], free_information = "Show me this 1")
-        trade1 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5, status = 'ACCEPTED',
+        offer1_from_me_as_initiator = mommy.make(Offer, free_information = "I don't need to see that 1")
+        offer1_from_other_as_responder = mommy.make(Offer, free_information = "Show me this 1")
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5, status = 'ACCEPTED',
                                 initiator_offer = offer1_from_me_as_initiator, responder_offer = offer1_from_other_as_responder)
 
-        offer2_from_other_as_initiator = mommy.make_one(Offer, rules = [], commodities = [], free_information = "Show me this 2")
-        trade2 = mommy.make_one(Trade, game = self.game, initiator = self.test5, responder = self.loginUser, status = 'ACCEPTED',
+        offer2_from_other_as_initiator = mommy.make(Offer, free_information = "Show me this 2")
+        trade2 = mommy.make(Trade, game = self.game, initiator = self.test5, responder = self.loginUser, status = 'ACCEPTED',
                                 initiator_offer = offer2_from_other_as_initiator, responder_offer = self.dummy_offer)
 
-        offer3_from_other_as_responder = mommy.make_one(Offer, rules = [], commodities = [], free_information = "I don't need to see that 3")
-        trade3 = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5, status = 'DECLINED',
+        offer3_from_other_as_responder = mommy.make(Offer, free_information = "I don't need to see that 3")
+        trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5, status = 'DECLINED',
                                 initiator_offer = self.dummy_offer, responder_offer = offer3_from_other_as_responder)
 
         response = self.client.get("/game/{}/hand/".format(self.game.id))
@@ -528,17 +528,17 @@ class HandViewTest(TestCase):
         self.assertNotContains(response, "I don't need to see that 3")
 
     def test_show_hand_doesnt_display_free_informations_from_ACCEPTED_trades_of_other_games(self):
-        other_game = mommy.make_one(Game, master = User.objects.get(username = 'test1'), players = [], end_date = now() + datetime.timedelta(days = 7))
-        for player in User.objects.exclude(username = 'test1'): mommy.make_one(GamePlayer, game = other_game, player = player)
+        other_game = mommy.make(Game, master = User.objects.get(username = 'test1'), end_date = now() + datetime.timedelta(days = 7))
+        for player in User.objects.exclude(username = 'test1'): mommy.make(GamePlayer, game = other_game, player = player)
 
-        initiator_offer1 = mommy.make_one(Offer, rules = [], commodities = [])
-        responder_offer1 = mommy.make_one(Offer, rules = [], commodities = [], free_information = "There is no point showing this")
-        trade = mommy.make_one(Trade, game = other_game, initiator = self.loginUser, responder = self.test5,
+        initiator_offer1 = mommy.make(Offer)
+        responder_offer1 = mommy.make(Offer, free_information = "There is no point showing this")
+        trade = mommy.make(Trade, game = other_game, initiator = self.loginUser, responder = self.test5,
                                status = 'ACCEPTED', initiator_offer = initiator_offer1, responder_offer = responder_offer1)
 
-        initiator_offer2 = mommy.make_one(Offer, rules = [], commodities = [], free_information = "There is no point showing that")
-        responder_offer2 = mommy.make_one(Offer, rules = [], commodities = [])
-        trade = mommy.make_one(Trade, game = other_game, initiator = self.test5, responder = self.loginUser,
+        initiator_offer2 = mommy.make(Offer, free_information = "There is no point showing that")
+        responder_offer2 = mommy.make(Offer)
+        trade = mommy.make(Trade, game = other_game, initiator = self.test5, responder = self.loginUser,
                                status = 'ACCEPTED', initiator_offer = initiator_offer2, responder_offer = responder_offer2)
 
         response = self.client.get("/game/{}/hand/".format(self.game.id))
@@ -547,18 +547,18 @@ class HandViewTest(TestCase):
         self.assertNotContains(response, "There is no point showing that")
 
     def test_show_hand_displays_former_rulecards_given_in_trades(self):
-        rulecard1 = mommy.make_one(RuleCard, public_name = 'C1', description = 'Desc1')
-        rulecard2 = mommy.make_one(RuleCard, public_name = 'C2', description = 'Desc2')
-        rih1_former = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
+        rulecard1 = mommy.make(RuleCard, public_name = 'C1', description = 'Desc1')
+        rulecard2 = mommy.make(RuleCard, public_name = 'C2', description = 'Desc2')
+        rih1_former = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
                                      ownership_date = datetime.datetime(2013, 01, 10, 18, 30, tzinfo = get_default_timezone()),
                                      abandon_date = datetime.datetime(2012, 01, 11, 10, 45, tzinfo = get_default_timezone()))
-        rih1_former_duplicate = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
+        rih1_former_duplicate = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
                                                ownership_date = datetime.datetime(2013, 01, 12, 16, 00, tzinfo = get_default_timezone()),
                                                abandon_date = datetime.datetime(2012, 01, 13, 18, 00, tzinfo = get_default_timezone()))
-        rih2_current = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
+        rih2_current = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
                                       ownership_date = datetime.datetime(2013, 01, 15, 15, 25, tzinfo = get_default_timezone()),
                                       abandon_date = None)
-        rih2_former_but_copy_of_current = mommy.make_one(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
+        rih2_former_but_copy_of_current = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
                                                          ownership_date = datetime.datetime(2013, 01, 12, 12, 00, tzinfo = get_default_timezone()),
                                                          abandon_date = datetime.datetime(2013, 01, 13, 8, 5, tzinfo = get_default_timezone()))
 
@@ -573,15 +573,15 @@ class HandViewTest(TestCase):
         self.assertEqual([{'public_name': 'C1', 'description': 'Desc1'}], response.context['former_rules'])
 
     def test_submit_hand_displays_the_commodities(self):
-        commodity1 = mommy.make_one(Commodity, name = 'c1', color = 'colA')
-        commodity2 = mommy.make_one(Commodity, name = 'c2', color = 'colB')
-        commodity3 = mommy.make_one(Commodity, name = 'c3', color = 'colC')
+        commodity1 = mommy.make(Commodity, name = 'c1', color = 'colA')
+        commodity2 = mommy.make(Commodity, name = 'c2', color = 'colB')
+        commodity3 = mommy.make(Commodity, name = 'c3', color = 'colC')
 
-        cih1 = mommy.make_one(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
+        cih1 = mommy.make(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
                               nb_cards = 1, nb_submitted_cards = None)
-        cih2 = mommy.make_one(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
+        cih2 = mommy.make(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
                               nb_cards = 2, nb_submitted_cards = None)
-        cih3 = mommy.make_one(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
+        cih3 = mommy.make(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
                               nb_cards = 3, nb_submitted_cards = None)
 
         response = self.client.get("/game/{}/hand/submit/".format(self.game.id))
@@ -624,15 +624,15 @@ class HandViewTest(TestCase):
     def test_submit_hand_save_submitted_commodities_and_submit_date(self):
         self.assertIsNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
 
-        commodity1 = mommy.make_one(Commodity, name = 'c1', color = 'colA')
-        commodity2 = mommy.make_one(Commodity, name = 'c2', color = 'colB')
-        commodity3 = mommy.make_one(Commodity, name = 'c3', color = 'colC')
+        commodity1 = mommy.make(Commodity, name = 'c1', color = 'colA')
+        commodity2 = mommy.make(Commodity, name = 'c2', color = 'colB')
+        commodity3 = mommy.make(Commodity, name = 'c3', color = 'colC')
 
-        cih1 = mommy.make_one(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
+        cih1 = mommy.make(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
                               nb_cards = 1, nb_submitted_cards = None)
-        cih2 = mommy.make_one(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
+        cih2 = mommy.make(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
                               nb_cards = 2, nb_submitted_cards = None)
-        cih3 = mommy.make_one(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
+        cih3 = mommy.make(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
                               nb_cards = 3, nb_submitted_cards = None)
 
         response = self.client.post("/game/{}/hand/submit/".format(self.game.id),
@@ -651,16 +651,16 @@ class HandViewTest(TestCase):
         self.assertIsNotNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
 
     def test_submit_hand_cancels_or_declines_pending_trades(self):
-        trade_initiated_by_me = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+        trade_initiated_by_me = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
                                                initiator_offer = self.dummy_offer, status = 'INITIATED')
-        trade_initiated_by_other_player = mommy.make_one(Trade, game = self.game, initiator = self.test5, responder = self.loginUser,
-                                                         initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+        trade_initiated_by_other_player = mommy.make(Trade, game = self.game, initiator = self.test5, responder = self.loginUser,
+                                                         initiator_offer = mommy.make(Offer),
                                                          status = 'INITIATED')
-        trade_replied_by_me = mommy.make_one(Trade, game = self.game, initiator = self.test5, responder = self.loginUser,
-                                             initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+        trade_replied_by_me = mommy.make(Trade, game = self.game, initiator = self.test5, responder = self.loginUser,
+                                             initiator_offer = mommy.make(Offer),
                                              status = 'REPLIED')
-        trade_replied_by_other_player = mommy.make_one(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
-                                                       initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+        trade_replied_by_other_player = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+                                                       initiator_offer = mommy.make(Offer),
                                                        status = 'REPLIED')
 
         response = self.client.post("/game/{}/hand/submit/".format(self.game.id),
@@ -692,10 +692,10 @@ class ControlBoardViewTest(TestCase):
 
     def setUp(self):
         _common_setUp(self)
-        self.game_ended = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -2))
-        self.game_closed = mommy.make_one(Game, master = self.loginUser, players = [], end_date = now() + datetime.timedelta(days = -2),
+        self.game_ended = mommy.make(Game, master = self.loginUser, end_date = now() + datetime.timedelta(days = -2))
+        self.game_closed = mommy.make(Game, master = self.loginUser, end_date = now() + datetime.timedelta(days = -2),
                                           closing_date = now() + datetime.timedelta(days = -1))
-        mommy.make_one(GamePlayer, game = self.game_closed, player = self.loginUser)
+        mommy.make(GamePlayer, game = self.game_closed, player = self.loginUser)
 
     def test_access_to_score_page_allowed_only_to_game_players(self):
         self._assertOperation_get(self.game_closed, "score")
@@ -732,7 +732,7 @@ class ControlBoardViewTest(TestCase):
         self._assertOperation_post(self.game_ended, "close")
 
         other_player = User.objects.get(username = 'test3')
-        mommy.make_one(GamePlayer, game = self.game_ended, player = other_player)
+        mommy.make(GamePlayer, game = self.game_ended, player = other_player)
         self.client.logout()
         self.assertTrue(self.client.login(username = 'test3', password = 'test'))
         self._assertOperation_post(self.game_ended, "close", 403)
@@ -741,12 +741,10 @@ class ControlBoardViewTest(TestCase):
         self._assertOperation_get(self.game_ended, "close", 403)
 
     def test_close_game_allowed_only_on_games_ended_but_not_already_closed(self):
-        game_not_ended = mommy.make_one(Game, master = self.loginUser, players = [],
-                                        end_date = now() + datetime.timedelta(days = 2))
+        game_not_ended = mommy.make(Game, master = self.loginUser, end_date = now() + datetime.timedelta(days = 2))
         self._assertOperation_post(game_not_ended, "close", 403)
 
-        game_closed = mommy.make_one(Game, master = self.loginUser, players = [],
-                                     end_date = now() + datetime.timedelta(days = -3),
+        game_closed = mommy.make(Game, master = self.loginUser, end_date = now() + datetime.timedelta(days = -3),
                                      closing_date = now() + datetime.timedelta(days = -2))
         self._assertOperation_post(game_closed, "close", 403)
 
@@ -761,12 +759,12 @@ class ControlBoardViewTest(TestCase):
         self.assertIsNotNone(game.closing_date)
 
     def test_close_game_aborts_all_pending_trades(self):
-        trade1 = mommy.make_one(Trade, game = self.game_ended, initiator = self.test5, status = 'INITIATED',
-                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
-        trade2 = mommy.make_one(Trade, game = self.game_ended, initiator = self.test5, status = 'REPLIED',
-                                initiator_offer = mommy.make_one(Offer, rules = [], commodities = []))
-        trade3 = mommy.make_one(Trade, game = self.game_ended, initiator = self.test5, finalizer = self.test5,
-                                status = 'CANCELLED', initiator_offer = mommy.make_one(Offer, rules = [], commodities = []),
+        trade1 = mommy.make(Trade, game = self.game_ended, initiator = self.test5, status = 'INITIATED',
+                                initiator_offer = mommy.make(Offer))
+        trade2 = mommy.make(Trade, game = self.game_ended, initiator = self.test5, status = 'REPLIED',
+                                initiator_offer = mommy.make(Offer))
+        trade3 = mommy.make(Trade, game = self.game_ended, initiator = self.test5, finalizer = self.test5,
+                                status = 'CANCELLED', initiator_offer = mommy.make(Offer),
                                 closing_date = datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()))
 
         self._assertOperation_post(self.game_ended, "close")
@@ -788,13 +786,13 @@ class ControlBoardViewTest(TestCase):
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), trade3.closing_date)
 
     def test_close_game_submits_the_commodity_cards_of_players_who_havent_manually_submitted(self):
-        gp1 = mommy.make_one(GamePlayer, game = self.game_ended, player = self.test5)
+        gp1 = mommy.make(GamePlayer, game = self.game_ended, player = self.test5)
         test6 = User.objects.get(username='test6')
         gp2_submit_date = now() + datetime.timedelta(days = -1)
-        gp2 = mommy.make_one(GamePlayer, game = self.game_ended, player = test6, submit_date = gp2_submit_date)
+        gp2 = mommy.make(GamePlayer, game = self.game_ended, player = test6, submit_date = gp2_submit_date)
 
-        cih1 = mommy.make_one(CommodityInHand, game = self.game_ended, player = self.test5, nb_cards = 6, commodity__value = 1)
-        cih2 = mommy.make_one(CommodityInHand, game = self.game_ended, player = test6, nb_cards = 4, nb_submitted_cards = 3, commodity__value = 1)
+        cih1 = mommy.make(CommodityInHand, game = self.game_ended, player = self.test5, nb_cards = 6, commodity__value = 1)
+        cih2 = mommy.make(CommodityInHand, game = self.game_ended, player = test6, nb_cards = 4, nb_submitted_cards = 3, commodity__value = 1)
 
         self._assertOperation_post(self.game_ended, "close")
 
@@ -815,14 +813,14 @@ class ControlBoardViewTest(TestCase):
         test6 = User.objects.get(username='test6')
         test7 = User.objects.get(username='test7')
         test8 = User.objects.get(username='test8')
-        mommy.make_one(GamePlayer, game = self.game_ended, player = self.test5)
-        mommy.make_one(GamePlayer, game = self.game_ended, player = test6)
-        mommy.make_one(GamePlayer, game = self.game_ended, player = test7)
-        mommy.make_one(GamePlayer, game = self.game_ended, player = test8)
+        mommy.make(GamePlayer, game = self.game_ended, player = self.test5)
+        mommy.make(GamePlayer, game = self.game_ended, player = test6)
+        mommy.make(GamePlayer, game = self.game_ended, player = test7)
+        mommy.make(GamePlayer, game = self.game_ended, player = test8)
 
-        cih7blue   = mommy.make_one(CommodityInHand, game = self.game_ended, player = test7,
+        cih7blue   = mommy.make(CommodityInHand, game = self.game_ended, player = test7,
                                     nb_cards = 3, commodity = Commodity.objects.get(name = 'Blue'))
-        cih8yellow = mommy.make_one(CommodityInHand, game = self.game_ended, player = test8,
+        cih8yellow = mommy.make(CommodityInHand, game = self.game_ended, player = test8,
                                     nb_cards = 4, commodity = Commodity.objects.get(name = 'Yellow'))
 
         self._assertOperation_post(self.game_ended, "close")
@@ -898,9 +896,9 @@ class ControlBoardViewTest(TestCase):
         test6 = User.objects.get(username='test6')
 
         # a trap we shouldn't fall in
-        mommy.make_one(ScoreFromCommodity, game = self.game, player = self.test5, commodity = Commodity.objects.get(name = 'Orange'),
+        mommy.make(ScoreFromCommodity, game = self.game, player = self.test5, commodity = Commodity.objects.get(name = 'Orange'),
                        nb_submitted_cards = 3, nb_scored_cards = 3, actual_value = 4, score = 12)
-        mommy.make_one(ScoreFromCommodity, game = self.game, player = test6, commodity = Commodity.objects.get(name = 'Orange'),
+        mommy.make(ScoreFromCommodity, game = self.game, player = test6, commodity = Commodity.objects.get(name = 'Orange'),
                        nb_submitted_cards = 1, nb_scored_cards = 1, actual_value = 4, score = 4)
 
         self.client.logout()
@@ -919,7 +917,7 @@ class ControlBoardViewTest(TestCase):
         self._prepare_game_for_scoring(self.game)
 
         self.game.rules.add(RuleCard.objects.get(ref_name = 'HAG15')) # rule that leads to random scores when a hand has > 13 commodity cards
-        cih1red = mommy.make_one(CommodityInHand, game = self.game, player = self.test5,
+        cih1red = mommy.make(CommodityInHand, game = self.game, player = self.test5,
                                  nb_cards = 10, commodity = Commodity.objects.get(name = 'Red'))
 
         self.client.logout()
@@ -941,19 +939,19 @@ class ControlBoardViewTest(TestCase):
         game.rules.add(RuleCard.objects.get(ref_name = 'HAG04'))
         game.rules.add(RuleCard.objects.get(ref_name = 'HAG05'))
 
-        cih1orange = mommy.make_one(CommodityInHand, game = game, player = self.test5,
+        cih1orange = mommy.make(CommodityInHand, game = game, player = self.test5,
                                     nb_cards = 3, commodity = Commodity.objects.get(name = 'Orange')) # value = 4
-        cih1blue   = mommy.make_one(CommodityInHand, game = game, player = self.test5,
+        cih1blue   = mommy.make(CommodityInHand, game = game, player = self.test5,
                                     nb_cards = 2, commodity = Commodity.objects.get(name = 'Blue')) # value = 2
-        cih1white  = mommy.make_one(CommodityInHand, game = game, player = self.test5,
+        cih1white  = mommy.make(CommodityInHand, game = game, player = self.test5,
                                     nb_cards = 1, commodity = Commodity.objects.get(name = 'White')) # value = 5 or 0
 
         test6 = User.objects.get(username='test6')
-        cih2orange = mommy.make_one(CommodityInHand, game = game, player = test6,
+        cih2orange = mommy.make(CommodityInHand, game = game, player = test6,
                                     nb_cards = 3, commodity = Commodity.objects.get(name = 'Orange'))
-        cih2blue   = mommy.make_one(CommodityInHand, game = game, player = test6,
+        cih2blue   = mommy.make(CommodityInHand, game = game, player = test6,
                                     nb_cards = 3, commodity = Commodity.objects.get(name = 'Blue'))
-        cih2white  = mommy.make_one(CommodityInHand, game = game, player = test6,
+        cih2white  = mommy.make(CommodityInHand, game = game, player = test6,
                                     nb_cards = 4, commodity = Commodity.objects.get(name = 'White'))
 
     def _assertOperation_get(self, game, operation, status_code = 200):
@@ -971,12 +969,12 @@ class TransactionalViewsTest(TransactionTestCase):
         _common_setUp(self)
 
     def test_submit_hand_is_transactional(self):
-        commodity1 = mommy.make_one(Commodity, name = 'c1', color = 'colA')
-        commodity2 = mommy.make_one(Commodity, name = 'c2', color = 'colB')
+        commodity1 = mommy.make(Commodity, name = 'c1', color = 'colA')
+        commodity2 = mommy.make(Commodity, name = 'c2', color = 'colB')
 
-        cih1 = mommy.make_one(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
+        cih1 = mommy.make(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
                               nb_cards = 1, nb_submitted_cards = None)
-        cih2 = mommy.make_one(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
+        cih2 = mommy.make(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
                               nb_cards = 2, nb_submitted_cards = None)
 
         # set a nb_submitted_cards < 0 on the last form to make the view fail on the last iteration
@@ -994,8 +992,8 @@ class TransactionalViewsTest(TransactionTestCase):
 
     def test_close_game_is_transactional(self):
         def mock_persist(self):
-            mommy.make_one(ScoreFromCommodity, game = self.gameplayer.game, player = self.gameplayer.player)
-            mommy.make_one(ScoreFromRule, game = self.gameplayer.game, player = self.gameplayer.player)
+            mommy.make(ScoreFromCommodity, game = self.gameplayer.game, player = self.gameplayer.player)
+            mommy.make(ScoreFromRule, game = self.gameplayer.game, player = self.gameplayer.player)
             raise RuntimeError
         Scoresheet.persist = mock_persist
 
@@ -1005,11 +1003,11 @@ class TransactionalViewsTest(TransactionTestCase):
         self.game.end_date = now() + datetime.timedelta(days = -1)
         self.game.save()
 
-        cih = mommy.make_one(CommodityInHand, game = self.game, player = self.test5, commodity__value = 1, nb_cards = 1)
+        cih = mommy.make(CommodityInHand, game = self.game, player = self.test5, commodity__value = 1, nb_cards = 1)
 
-        trade = mommy.make_one(Trade, game = self.game, status = 'INITIATED', initiator = self.test5,
+        trade = mommy.make(Trade, game = self.game, status = 'INITIATED', initiator = self.test5,
                                responder = User.objects.get(username = 'test6'),
-                               initiator_offer = mommy.make_one(Offer, rules = [], commodities = []), finalizer = None)
+                               initiator_offer = mommy.make(Offer), finalizer = None)
 
         response = self.client.post("/game/{}/close/".format(self.game.id), follow = True)
 
@@ -1060,9 +1058,9 @@ class DealTest(TestCase):
         self.rules = []
         self.commodities = []
         for i in range(6):
-            self.users.append(mommy.make_one(User, username = i))
-            self.rules.append(mommy.make_one(RuleCard, ref_name = i))
-            self.commodities.append(mommy.make_one(Commodity, name = i))
+            self.users.append(mommy.make(User, username = i))
+            self.rules.append(mommy.make(RuleCard, ref_name = i))
+            self.commodities.append(mommy.make(Commodity, name = i))
 
     def test_prepare_deck(self):
         deck = prepare_deck(self.rules, nb_copies = 2)
@@ -1128,7 +1126,7 @@ class DealTest(TestCase):
 
     def test_deal_cards(self):
         ruleset = Ruleset.objects.get(id = 1)
-        game = mommy.make_one(Game, ruleset = ruleset, players = [], rules = self.rules, end_date = now() + datetime.timedelta(days = 7))
+        game = mommy.make(Game, ruleset = ruleset, rules = self.rules, end_date = now() + datetime.timedelta(days = 7))
         for player in self.users:
             GamePlayer.objects.create(game = game, player = player)
         deal_cards(game)
