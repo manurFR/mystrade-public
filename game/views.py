@@ -43,7 +43,7 @@ MESSAGES_PAGINATION = 10
 
 @login_required
 def game(request, game_id):
-    game = get_object_or_404(Game, id=game_id)
+    game = get_object_or_404(Game, id = game_id)
 
     players = sorted(game.players.all(), key = lambda player: player.get_profile().name)
 
@@ -98,8 +98,27 @@ def game(request, game_id):
     return render(request, 'game/game.html', context)
 
 @login_required
+def delete_message(request, game_id, message_id):
+    game = get_object_or_404(Game, id = game_id)
+    message = get_object_or_404(Message, id = message_id, game = game)
+
+    if request.method != 'POST' or message.sender != request.user:
+        raise PermissionDenied
+
+    if not message.in_grace_period:
+        raise PermissionDenied
+
+    message.delete()
+
+    return redirect('game', game.id)
+
+#############################################################################
+##                            Hand Views                                   ##
+#############################################################################
+
+@login_required
 def hand(request, game_id):
-    game = get_object_or_404(Game, id=game_id)
+    game = get_object_or_404(Game, id = game_id)
 
     if request.user not in game.players.all():
         raise PermissionDenied

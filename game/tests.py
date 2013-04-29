@@ -278,7 +278,7 @@ class GamePageViewTest(TestCase):
 
         self.client.logout()
         self.assertTrue(self.client.login(username = 'unrelated_user', password = 'test'))
-        self._assertGetGamePage(self.game, 403)
+        self._assertGetGamePage(status_code = 403)
 
     def test_game_page_shows_starting_and_finishing_dates(self):
         # Note: we add a couple of seconds to each date in the future because otherwise the timeuntil filter would sadly go
@@ -481,6 +481,40 @@ class GamePageViewTest(TestCase):
         response = self._assertGetGamePage()
         self.assertContains(response, "(<strong>game master</strong>)")
         self.assertContains(response, "<div class=\"message_content admin\">")
+
+    def test_delete_message_forbidden_when_youre_not_the_original_sender(self):
+        msg = mommy.make(Message, game = self.game, sender = User.objects.get(username = 'test1'))
+
+        response = self.client.post("/game/{}/deletemessage/{}/".format(self.game.id, msg.id), follow = True)
+        self.assertEqual(403, response.status_code)
+
+    def test_delete_message_forbidden_when_not_in_POST(self):
+        msg = mommy.make(Message, game = self.game, sender = self.loginUser)
+
+        response = self.client.get("/game/{}/deletemessage/{}/".format(self.game.id, msg.id), follow = True)
+        self.assertEqual(403, response.status_code)
+
+    def test_delete_message_returns_404_when_the_message_doesnt_exists(self):
+        response = self.client.post("/game/{}/deletemessage/987654321/".format(self.game.id), follow = True)
+        self.assertEqual(404, response.status_code)
+
+    def test_delete_message_forbidden_when_grace_period_has_expired(self):
+        msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -120))
+
+        response = self.client.post("/game/{}/deletemessage/{}/".format(self.game.id, msg.id))
+        self.assertEqual(403, response.status_code)
+
+    def test_delete_message_works_for_the_sender_during_the_grace_period(self):
+        msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -10))
+
+        response = self.client.post("/game/{}/deletemessage/{}/".format(self.game.id, msg.id), follow = True)
+        self.assertEqual(200, response.status_code)
+
+        try:
+            Message.objects.get(id = msg.id)
+            self.fail("Message should have been deleted")
+        except Message.DoesNotExist:
+            pass
 
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:

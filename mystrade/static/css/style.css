@@ -371,3 +371,19 @@ textarea {
   box-sizing: border-box;
   /* Opera/IE 8+ */
   width: 100%; }
+
+/* line 373, ../../resources/scss/style.scss */
+.form-button {
+  display: inline; }
+  /* line 376, ../../resources/scss/style.scss */
+  .form-button input[type=submit] {
+    height: 16px;
+    width: 16px;
+    border: none;
+    background: transparent 0 0 no-repeat; }
+    /* line 382, ../../resources/scss/style.scss */
+    .form-button input[type=submit].modify {
+      background-image: url("../pencil.png"); }
+    /* line 386, ../../resources/scss/style.scss */
+    .form-button input[type=submit].delete {
+      background-image: url("../trash.png"); }

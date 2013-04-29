@@ -1,5 +1,5 @@
 Django==1.4.1
-psycopg2
+psycopg2 # needs "sudo apt-get install libpq-dev python-dev" before
 django-widget-tweaks
 South
 django-extensions

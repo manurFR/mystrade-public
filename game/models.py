@@ -84,9 +84,14 @@ class CommodityInHand(models.Model):
 
 class Message(models.Model):
     MAX_LENGTH = 255
+    GRACE_PERIOD = 20 # in minutes
 
     game = models.ForeignKey(Game)
     sender = models.ForeignKey(User)
 
     content = models.CharField(max_length = MAX_LENGTH)
     posting_date = models.DateTimeField(default = now)
+
+    @property
+    def in_grace_period(self):
+        return now() <= self.posting_date + datetime.timedelta(minutes = self.GRACE_PERIOD)

@@ -116,7 +116,7 @@
                 <td>{{ message_form.message|attr:"rows:3" }}&nbsp;
                     <span class="errors">{{ message_form.message.errors.as_text }}</span>
                 </td>
-                <td style="vertical-align: top"><input type="submit" value="Post"/></td>
+                <td style="vertical-align: top"><input type="submit" class="post-button" value="Post"/></td>
             </form>
         </tr>
 
@@ -129,7 +129,18 @@
             <td>
                 <div class="message_sender">{% include "common/name_or_you.html" with who=msg.sender %}
                     {% if msg.sender == game.master %} (<strong>game master</strong>) {% endif %}
-                    said:</div>
+                    said:
+                    {% if msg.sender == user and msg.in_grace_period %}
+                        <span class="floatright">
+                            <form method='POST' action="{% url 'delete_message' game.id msg.id %}" class="form-button">{% csrf_token %}
+                                <span data-tip="Modify"><input type="submit" class="modify" value=""/></span>
+                            </form>
+                            <form method='POST' action="{% url 'delete_message' game.id msg.id %}" class="form-button">{% csrf_token %}
+                                <span data-tip="Suppress"><input type="submit" class="delete" value=""/></span>
+                            </form>
+                        </span>
+                    {% endif %}
+                </div>
                 {% if msg.sender == game.master %}
                 <div class="message_content admin">
                     <img src="{% static 'tie.png' %}" alt=""/>
@@ -152,7 +163,7 @@
 
     <script>
         $(function() {
-            $('input[type=submit]').button();
+            $('input.post-button').button();
         });
 
         var maxlength = {{ maxMessageLength }};

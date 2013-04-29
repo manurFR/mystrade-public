@@ -369,3 +369,22 @@ textarea {
   box-sizing: border-box;         /* Opera/IE 8+ */
   width: 100%;
 }
+
+.form-button {
+  display: inline;
+
+  input[type=submit] {
+    height: 16px;
+    width: 16px;
+    border: none;
+    background: transparent 0 0 no-repeat;
+
+    &.modify {
+      background-image: url("../pencil.png");
+    }
+
+    &.delete {
+      background-image: url("../trash.png");
+    }
+  }
+}
