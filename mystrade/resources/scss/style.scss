@@ -379,10 +379,6 @@ textarea {
     border: none;
     background: transparent 0 0 no-repeat;
 
-    &.modify {
-      background-image: url("../pencil.png");
-    }
-
     &.delete {
       background-image: url("../trash.png");
     }

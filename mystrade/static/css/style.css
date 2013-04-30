@@ -382,8 +382,5 @@ textarea {
     border: none;
     background: transparent 0 0 no-repeat; }
     /* line 382, ../../resources/scss/style.scss */
-    .form-button input[type=submit].modify {
-      background-image: url("../pencil.png"); }
-    /* line 386, ../../resources/scss/style.scss */
     .form-button input[type=submit].delete {
       background-image: url("../trash.png"); }

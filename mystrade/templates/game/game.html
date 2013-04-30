@@ -108,7 +108,8 @@
         <tr>
             <td><strong>{{ message_form.message.label_tag }}:</strong>
                 <span class="helptext">(<a href="https://github.com/fletcher/MultiMarkdown/blob/master/Documentation/Markdown%20Syntax.md">Markdown</a> allowed)</span>
-                <div class="lowerhelptext floatright"><span id="charactersLeft">{{ maxMessageLength }}</span> characters left</div></td>
+                <div class="lowerhelptext floatright"><span id="charactersLeft">{{ maxMessageLength }}</span> characters left</div>
+            </td>
             <td>&nbsp;</td>
         </tr>
         <tr>
@@ -122,23 +123,20 @@
 
         {% if messages.has_previous %}
             <tr><td><a href="?page={{ messages.previous_page_number }}">&lt; more recent messages</a></td><td>&nbsp;</td></tr>
-            <tr class="small-height"><td colspan="3">&nbsp;</td></tr>
+            <tr class="small-height"><td>&nbsp;</td><td>&nbsp;</td></tr>
         {% endif %}
         {% for msg in messages %}
-        <tr>
+        <tr class="message" id={{ msg.id }}>
             <td>
                 <div class="message_sender">{% include "common/name_or_you.html" with who=msg.sender %}
                     {% if msg.sender == game.master %} (<strong>game master</strong>) {% endif %}
                     said:
                     {% if msg.sender == user and msg.in_grace_period %}
-                        <span class="floatright">
+                        <div class="floatright">
                             <form method='POST' action="{% url 'delete_message' game.id msg.id %}" class="form-button">{% csrf_token %}
-                                <span data-tip="Modify"><input type="submit" class="modify" value=""/></span>
+                                <span data-tip="Delete"><input type="submit" class="delete" value=""/></span>
                             </form>
-                            <form method='POST' action="{% url 'delete_message' game.id msg.id %}" class="form-button">{% csrf_token %}
-                                <span data-tip="Suppress"><input type="submit" class="delete" value=""/></span>
-                            </form>
-                        </span>
+                        </div>
                     {% endif %}
                 </div>
                 {% if msg.sender == game.master %}
@@ -155,8 +153,7 @@
         </tr>
         {% endfor %}
         {% if messages.has_next %}
-            <tr><td><span class="floatright"><a href="?page={{ messages.next_page_number }}">show more &gt;</a></span></td>
-                <td>&nbsp;</td></tr>
+            <tr><td><span class="floatright"><a href="?page={{ messages.next_page_number }}">show more &gt;</a></span></td><td>&nbsp;</td></tr>
         {% endif %}
     </table>
 
