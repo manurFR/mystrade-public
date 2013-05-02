@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def trades(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
-    if request.user not in game.players.all() and request.user != game.master and not request.user.is_staff:
+    if request.user not in game.players.all() and not game.has_super_access(request.user):
         raise PermissionDenied
 
     trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game).order_by('-creation_date')
@@ -34,21 +34,22 @@ def trades(request, game_id):
 @login_required
 def show_trade(request, game_id, trade_id):
     trade = get_object_or_404(Trade, id = trade_id)
+    game = trade.game
 
-    if request.user != trade.initiator and request.user != trade.responder and request.user != trade.game.master \
-        and not request.user.is_staff:
+    if request.user != trade.initiator and request.user != trade.responder and request.user != game.master \
+        and not game.has_super_access(request.user):
         raise PermissionDenied
 
     if trade.status == 'INITIATED' and request.user == trade.responder:
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, trade.game)
-        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
+        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False,
                                                           'decline_reason_form': DeclineReasonForm(), 'offer_form': offer_form,
                                                           'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
     elif trade.status == 'REPLIED' and request.user == trade.initiator:
-        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False,
+        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False,
                                                           'decline_reason_form': DeclineReasonForm()})
     else:
-        return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade, 'errors': False})
+        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False})
 
 @login_required
 def create_trade(request, game_id):

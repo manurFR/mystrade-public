@@ -34,6 +34,13 @@ class Game(models.Model):
     def less_than_24_hours_remaining(self):
         return self.end_date + datetime.timedelta(days = -1) <= now() <= self.end_date
 
+    def has_super_access(self, user):
+        """ To have "super-access" to a game, one should either :
+             - be the game master, or
+             - be an admin AND not be a player in the game
+        """
+        return user == self.master or (user.is_staff and user not in self.players.all())
+
 class GamePlayer(models.Model):
     game = models.ForeignKey(Game)
     player = models.ForeignKey(User)

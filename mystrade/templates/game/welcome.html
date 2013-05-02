@@ -43,7 +43,7 @@
                             {% if game.is_active and not game.hand_submitted %}Play !{% else %}Show Game{% endif %}
                         </a>{% endif %}
                     {% elif user == game.master or user.is_staff %}
-                        <a href="{% url 'control' game.id %}">Control Board</a> | <a href="{% url 'game' game.id %}">Game Page</a>
+                        <a href="{% url 'game' game.id %}">Game Page</a>
                     {% endif %}
                 </div>
                 <div class="css_table-cell">

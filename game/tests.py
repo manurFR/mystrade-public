@@ -234,6 +234,8 @@ class GameCreationViewsTest(TestCase):
         self.assertEqual(4, emailAdmin.body.count('- Rule'))
 
 class GameModelsTest(TestCase):
+    fixtures = ['test_users.json'] # from userprofile app
+
     def test_game_is_active_if_start_and_end_date_enclose_now(self):
         start_date = now() + datetime.timedelta(days = -10)
         end_date = now() + datetime.timedelta(days = 10)
@@ -254,6 +256,24 @@ class GameModelsTest(TestCase):
         game = mommy.make(Game, start_date = start_date, end_date = end_date)
 
         self.assertFalse(game.is_active())
+
+    def test_game_simple_players_dont_have_super_access(self):
+        _common_setUp(self)
+        self.assertFalse(self.game.has_super_access(self.loginUser))
+
+    def test_game_master_has_super_access(self):
+        _common_setUp(self)
+        self.assertTrue(self.game.has_super_access(User.objects.get(username = 'test1')))
+
+    def test_game_admin_that_is_not_also_a_player_has_super_access(self):
+        _common_setUp(self)
+        self.assertTrue(self.game.has_super_access(User.objects.get(username = 'admin')))
+
+    def test_game_admin_that_IS_also_a_player_doesnt_have_super_access(self):
+        _common_setUp(self)
+        admin = User.objects.get(username = 'admin')
+        mommy.make(GamePlayer, game = self.game, player = admin)
+        self.assertFalse(self.game.has_super_access(admin))
 
 class GamePageViewTest(TestCase):
     fixtures = ['test_users.json'] # from userprofile app
@@ -312,6 +332,28 @@ class GamePageViewTest(TestCase):
 
         response = self.client.get("/game/{}/".format(game4.id))
         self.assertContains(response, "(started 4 days ago, closed 1 day ago)")
+
+    def test_game_show_shows_a_link_to_control_board_to_game_master_and_admins_that_are_not_players(self):
+        # logged as a simple player
+        response = self._assertGetGamePage()
+        self.assertNotContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
+
+        # game master
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+        response = self._assertGetGamePage()
+        self.assertContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
+
+        # admin not player
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'admin', password = 'test'))
+        response = self._assertGetGamePage()
+        self.assertContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
+
+        # admin but player in this game
+        mommy.make(GamePlayer, game = self.game, player = User.objects.get(username = 'admin'))
+        response = self._assertGetGamePage()
+        self.assertNotContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
 
     def test_game_page_shows_nb_of_rule_cards_owned_to_players(self):
         rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
@@ -745,31 +787,56 @@ class ControlBoardViewTest(TestCase):
     def test_access_to_score_page_allowed_only_to_closed_games(self):
         self._assertOperation_get(self.game_ended, "score", 403)
 
-    def test_access_to_control_board_allowed_only_to_game_master_and_admins(self):
+    def test_access_to_control_board_allowed_only_to_game_master_and_admins_that_are_not_players(self):
+        # simple player
         self._assertOperation_get(self.game, "control", 403)
 
-        self.client.logout()
-        self.assertTrue(self.client.login(username = 'admin', password = 'test'))
-        self._assertOperation_get(self.game, "control")
-
+        # game master
         self.client.logout()
         self.assertTrue(self.client.login(username = 'test1', password = 'test'))
         self._assertOperation_get(self.game, "control")
 
-    def test_close_game_allowed_only_to_game_master_and_admins(self):
-        self._assertOperation_post(self.game_ended, "close")
+        # admin not player
+        self.client.logout()
+        self.assertTrue(self.client.login(username = 'admin', password = 'test'))
+        self._assertOperation_get(self.game, "control")
 
+        # admin that is player
+        mommy.make(GamePlayer, game = self.game, player = User.objects.get(username = 'admin'))
+        self._assertOperation_get(self.game, "control", 403)
+
+    def test_close_game_allowed_only_to_game_master_and_admins_that_are_not_players(self):
+        # game master
+        self._assertOperation_post(self.game_ended, "close")
+        self.game_ended = Game.objects.get(id = self.game_ended.id)
+        self.assertIsNotNone(self.game_ended.closing_date)
+
+        # admin not player
         self.game_ended.closing_date = None
         self.game_ended.save()
         self.client.logout()
         self.assertTrue(self.client.login(username = 'admin', password = 'test'))
         self._assertOperation_post(self.game_ended, "close")
+        self.game_ended = Game.objects.get(id = self.game_ended.id)
+        self.assertIsNotNone(self.game_ended.closing_date)
 
-        other_player = User.objects.get(username = 'test3')
-        mommy.make(GamePlayer, game = self.game_ended, player = other_player)
+        # admin that is player
+        self.game_ended.closing_date = None
+        self.game_ended.save()
+        mommy.make(GamePlayer, game = self.game_ended, player = User.objects.get(username = 'admin'))
+        self._assertOperation_post(self.game_ended, "close", 403)
+        self.game_ended = Game.objects.get(id = self.game_ended.id)
+        self.assertIsNone(self.game_ended.closing_date)
+
+        # simple player
+        self.game_ended.closing_date = None
+        self.game_ended.save()
+        mommy.make(GamePlayer, game = self.game_ended, player = User.objects.get(username='test3'))
         self.client.logout()
         self.assertTrue(self.client.login(username = 'test3', password = 'test'))
         self._assertOperation_post(self.game_ended, "close", 403)
+        self.game_ended = Game.objects.get(id = self.game_ended.id)
+        self.assertIsNone(self.game_ended.closing_date)
 
     def test_close_game_not_allowed_in_GET(self):
         self._assertOperation_get(self.game_ended, "close", 403)

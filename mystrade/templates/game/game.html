@@ -35,6 +35,14 @@
             <div class="floatright"><a href="{% url 'submit_hand' game.id %}">&gt; Click here to submit your hand and finish now.</a></div>
             <br/>
         {% endif %}
+
+        {% if user not in game.players.all %}               {# these nested ifs are important because a player in a game should never #}
+            {% if user == game.master or user.is_staff %}   {# be given access to the control board even if (s)he is an admin         #}
+                <br/>
+                <div class="floatright"><a href="{% url 'control' game.id %}">&gt; Access to control board</a></div>
+                <br/>
+            {% endif %}
+        {% endif %}
     </div>
 
     {% if user in game.players.all %}
@@ -114,7 +122,7 @@
         </tr>
         <tr>
             <form action="{% url 'game' game.id %}" method="POST">{% csrf_token %}
-                <td>{{ message_form.message|attr:"rows:3" }}&nbsp;
+                <td style="width: 600px;">{{ message_form.message|attr:"rows:3" }}&nbsp;
                     <span class="errors">{{ message_form.message.errors.as_text }}</span>
                 </td>
                 <td style="vertical-align: top"><input type="submit" class="post-button" value="Post"/></td>

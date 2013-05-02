@@ -47,7 +47,7 @@ def game(request, game_id):
 
     players = sorted(game.players.all(), key = lambda player: player.get_profile().name)
 
-    if request.user not in players and request.user != game.master and not request.user.is_staff:
+    if request.user not in players and not game.has_super_access(request.user):
         raise PermissionDenied
 
     context =  {'game': game, 'players': players, 'maxMessageLength': Message.MAX_LENGTH}
@@ -345,7 +345,8 @@ def control_board(request, game_id):
     game = get_object_or_404(Game, id = game_id)
     data = {'game': game}
 
-    if request.user == game.master or request.user.is_staff:
+    # Control board access allowed only to the game master and to the admins that are NOT players in this game
+    if request.user == game.master or (request.user.is_staff and request.user not in game.players.all()):
         if game.is_closed():
             data['scoresheets'] = _fetch_scoresheets(game)
         elif game.is_active():
@@ -402,7 +403,7 @@ def _fetch_scoresheets(game):
 def close_game(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
-    if request.method == 'POST' and (request.user == game.master or request.user.is_staff):
+    if request.method == 'POST' and game.has_super_access(request.user):
         if game.end_date <= now() and game.closing_date is None :
             try:
                 with transaction.commit_on_success():

@@ -15,7 +15,7 @@
 
 {% block content %}
     <div class="header">Control board for game #{{ game }}{% if game.is_active %} (ending in {{ game.end_date|timeuntil }}){% endif %}
-        <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span></div>
+        <span class="floatright">&lt; <a href="{% url 'game' game.id %}">Back</a></span></div>
 
     {% if game.is_ended %}
         <div class="reminder">This game has ended on {{ game.end_date }} ({{ game.end_date|timesince }} ago).
