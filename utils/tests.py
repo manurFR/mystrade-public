@@ -5,6 +5,7 @@ from django.template import Template
 from django.test import TestCase
 from django.test.utils import override_settings
 from model_mommy import mommy
+from game.models import Game
 from utils import roundTimeToMinute, _send_notification_email
 
 class UtilsTest(TestCase):
@@ -91,3 +92,22 @@ class UtilsTest(TestCase):
         profile.send_notifications = send_notifications
         profile.save()
         return user
+
+class MystradeTestCase(TestCase):
+    """ Parent test case class with default element bootstrapped, to be inherited by other apps' test cases """
+    fixtures = ['test_users.json', # from userprofile app
+                'test_games.json']
+
+    def setUp(self):
+        self.game =             Game.objects.get(id = 1)
+        self.master =           self.game.master
+        self.loginUser =        User.objects.get(username = "test2")
+        self.alternativeUser =  User.objects.get(username = 'test5')
+        self.admin =            User.objects.get(username = 'admin')
+        self.admin_player =     User.objects.get(username = 'admin_player')
+        self.unrelated_user =   User.objects.get(username = 'unrelated_user')
+
+        self.login_as(self.loginUser)
+
+    def login_as(self, user):
+        self.assertTrue(self.client.login(username = user.username, password = 'test'))

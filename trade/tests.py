@@ -11,21 +11,9 @@ from ruleset.models import Ruleset, RuleCard, Commodity
 from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet, TradeForm
 from trade.models import Offer, Trade, TradedCommodities
 from trade.views import _prepare_offer_forms
+from utils.tests import MystradeTestCase
 
-def _common_setUp(self):
-    self.game = mommy.make(Game, master = User.objects.get(username = 'test1'), end_date = now() + datetime.timedelta(days = 7))
-    for player in User.objects.exclude(username = 'test1').exclude(username = 'admin').exclude(username = 'unrelated_user'):
-        mommy.make(GamePlayer, game = self.game, player = player)
-    self.dummy_offer = mommy.make(Offer)
-    self.loginUser = User.objects.get(username = 'test2')
-    self.test5 = User.objects.get(username = 'test5')
-    self.client.login(username = 'test2', password = 'test')
-
-class CreateTradeViewTest(TestCase):
-    fixtures = ['test_users.json'] # from userprofile app
-
-    def setUp(self):
-        _common_setUp(self)
+class CreateTradeViewTest(MystradeTestCase):
 
     def test_create_trade_without_responder_fails(self):
         response = self.client.post("/trade/{}/create/".format(self.game.id),
@@ -65,31 +53,31 @@ class CreateTradeViewTest(TestCase):
         gameplayer.submit_date = now()
         gameplayer.save()
 
-        self._assertIsCreateTradeAllowed(self.game, False)
+        self._assertIsCreateTradeAllowed(False)
 
     def test_create_trade_only_allowed_for_the_game_players(self):
         # most notably: the game master, the admins (when not in the players' list) and the users not in this game are denied
-        game = mommy.make(Game, master = self.loginUser, end_date = now() + datetime.timedelta(days = 7))
-        self._assertIsCreateTradeAllowed(game, False)
+        self._assertIsCreateTradeAllowed(True)
 
-        self.client.logout()
-        self.assertTrue(self.client.login(username = 'test4', password = 'test'))
-        self._assertIsCreateTradeAllowed(game, False, list_allowed = False) # a random non-player user can not even see the list of trades
+        self.login_as(self.master)
+        self._assertIsCreateTradeAllowed(False)
 
-        self.client.logout()
-        self.assertTrue(self.client.login(username = 'admin', password = 'test'))
-        self._assertIsCreateTradeAllowed(game, False)
+        self.login_as(self.unrelated_user)
+        self._assertIsCreateTradeAllowed(False, list_allowed = False) # a random non-player user can not even see the list of trades
 
-        mommy.make(GamePlayer, game = game, player = User.objects.get(username = 'admin'))
-        self._assertIsCreateTradeAllowed(game, True)
+        self.login_as(self.admin)
+        self._assertIsCreateTradeAllowed(False)
 
-    def _assertIsCreateTradeAllowed(self, game, create_allowed, list_allowed = True):
+        self.login_as(self.admin_player)
+        self._assertIsCreateTradeAllowed(True)
+
+    def _assertIsCreateTradeAllowed(self, create_allowed, list_allowed = True):
         expected_status = 200 if create_allowed else 403
 
-        response = self.client.get("/trade/{}/create/".format(game.id))
+        response = self.client.get("/trade/{}/create/".format(self.game.id))
         self.assertEqual(expected_status, response.status_code)
 
-        response = self.client.post("/trade/{}/create/".format(game.id),
+        response = self.client.post("/trade/{}/create/".format(self.game.id),
                                     {'responder': 4,
                                      'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
                                      'rulecards-0-card_id': 1,
@@ -105,7 +93,7 @@ class CreateTradeViewTest(TestCase):
                                     })
         self.assertEqual(expected_status, response.status_code)
 
-        response = self.client.get("/trade/{}/".format(game.id))
+        response = self.client.get("/trade/{}/".format(self.game.id))
         if list_allowed:
             if create_allowed:
                 self.assertContains(response, '<input type="submit" value="Set up trade proposal" />')
@@ -162,11 +150,7 @@ class CreateTradeViewTest(TestCase):
         self.assertContains(response, '<div class="card_name">Commodity#1</div>')
         self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
 
-class ManageViewsTest(TestCase):
-    fixtures = ['test_users.json'] # from userprofile app
-
-    def setUp(self):
-        _common_setUp(self)
+class ManageViewsTest(MystradeTestCase):
 
     def test_trade_list(self):
         right_now = now()
@@ -185,7 +169,7 @@ class ManageViewsTest(TestCase):
         trade_offered = mommy.make(Trade, game = self.game, responder = self.loginUser, status = 'INITIATED',
                                        initiator_offer = mommy.make(Offer),
                                        creation_date = right_now - datetime.timedelta(days = 5))
-        trade_replied = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+        trade_replied = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                                        status = 'REPLIED', initiator_offer = mommy.make(Offer),
                                        creation_date = right_now - datetime.timedelta(days = 6))
 
@@ -211,22 +195,22 @@ class ManageViewsTest(TestCase):
         self.assertEqual(200, response.status_code)
 
         # the responder
-        self.assertTrue(self.client.login(username = 'test5', password = 'test'))
+        self.login_as(self.alternativeUser)
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
         self.assertEqual(200, response.status_code)
 
         # the game master
-        self.assertTrue(self.client.login(username = 'test1', password = 'test'))
+        self.login_as(self.master)
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
         self.assertEqual(200, response.status_code)
 
         # an admin
-        self.assertTrue(self.client.login(username = 'admin', password = 'test'))
+        self.login_as(self.admin)
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id), follow = True)
         self.assertEqual(200, response.status_code)
 
         # anybody else
-        self.assertTrue(self.client.login(username = 'test3', password = 'test'))
+        self.login_as(self.admin_player)
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
         self.assertEqual(403, response.status_code)
 
@@ -242,7 +226,7 @@ class ManageViewsTest(TestCase):
         self.assertNotContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_for_the_responder_when_INITIATED(self):
-        trade = self._prepare_trade('INITIATED', initiator = self.test5, responder = self.loginUser)
+        trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
@@ -253,7 +237,7 @@ class ManageViewsTest(TestCase):
         self.assertContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_for_the_responder_when_REPLIED(self):
-        trade = self._prepare_trade('REPLIED', initiator = self.test5, responder = self.loginUser,
+        trade = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser,
                                     responder_offer = mommy.make(Offer))
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
@@ -276,7 +260,7 @@ class ManageViewsTest(TestCase):
         self.assertContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_with_trade_CANCELLED(self):
-        trade = self._prepare_trade('CANCELLED', finalizer = self.test5)
+        trade = self._prepare_trade('CANCELLED', finalizer = self.alternativeUser)
 
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
@@ -306,7 +290,7 @@ class ManageViewsTest(TestCase):
         self.assertNotContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
 
     def test_decline_reason_displayed_in_show_trade_when_DECLINED(self):
-        trade = self._prepare_trade('DECLINED', finalizer = self.test5)
+        trade = self._prepare_trade('DECLINED', finalizer = self.alternativeUser)
         response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
 
         self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\"><a href=\".*\">test5</a>")
@@ -327,7 +311,7 @@ class ManageViewsTest(TestCase):
 
     def test_cancel_trade_not_allowed_for_trades_when_you_re_not_the_player_that_can_cancel(self):
         # trade INITIATED but we're not the initiator
-        trade = self._prepare_trade('INITIATED', initiator = self.test5, responder = self.loginUser)
+        trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
         self._assertOperationNotAllowed(trade.id, 'cancel')
 
         # trade REPLIED but we're not the responder
@@ -353,7 +337,7 @@ class ManageViewsTest(TestCase):
         self._assertOperationNotAllowed(trade.id, 'cancel')
 
     def test_cancel_trade_not_allowed_for_the_responder_for_trades_not_in_status_REPLIED(self):
-        trade = self._prepare_trade('INITIATED', initiator = self.test5, responder = self.loginUser)
+        trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
         self._assertOperationNotAllowed(trade.id, 'cancel')
 
         trade.status = 'ACCEPTED'
@@ -395,7 +379,7 @@ class ManageViewsTest(TestCase):
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_cancel_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_REPLIED(self):
-        trade = self._prepare_trade('REPLIED', initiator = self.test5, responder = self.loginUser)
+        trade = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser)
         response = self.client.post("/trade/{}/{}/cancel/".format(self.game.id, trade.id), follow = True)
 
         self.assertEqual(200, response.status_code)
@@ -418,22 +402,22 @@ class ManageViewsTest(TestCase):
         self.assertEqual(403, response.status_code)
 
     def test_reply_trade_not_allowed_when_one_is_not_the_responder(self):
-        trade = self._prepare_trade('INITIATED', initiator = self.test5, responder = User.objects.get(username = 'test6'))
+        trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = User.objects.get(username = 'test6'))
         self._assertOperationNotAllowed(trade.id, 'reply')
 
     def test_reply_trade_not_allowed_for_trades_not_in_status_INITIATED(self):
-        trade = self._prepare_trade('ACCEPTED', initiator = self.test5, responder = self.loginUser)
+        trade = self._prepare_trade('ACCEPTED', initiator = self.alternativeUser, responder = self.loginUser)
         self._assertOperationNotAllowed(trade.id, 'reply')
 
     def test_reply_trade_not_allowed_when_the_game_has_ended(self):
         self.game.end_date = now() + datetime.timedelta(days = -5)
         self.game.save()
 
-        trade = self._prepare_trade('INITIATED', initiator = self.test5, responder = self.loginUser)
+        trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
         self._assertOperationNotAllowed(trade.id, 'reply')
 
     def test_reply_trade_without_selecting_cards_fails(self):
-        trade = self._prepare_trade('INITIATED', initiator = self.test5, responder = self.loginUser)
+        trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
         response = self.client.post("/trade/{}/{}/reply/".format(self.game.id, trade.id),
                                     {'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
                                      'rulecards-0-card_id': 1,
@@ -458,7 +442,7 @@ class ManageViewsTest(TestCase):
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
                                                            commodity = commodity, nb_cards = 2)
 
-        trade = self._prepare_trade('INITIATED', initiator = self.test5, responder = self.loginUser)
+        trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
 
         response = self.client.post("/trade/{}/{}/reply/".format(self.game.id, trade.id),
                                     {'rulecards-TOTAL_FORMS': 1,               'rulecards-INITIAL_FORMS': 1,
@@ -493,7 +477,7 @@ class ManageViewsTest(TestCase):
 
     def test_accept_trade_not_allowed_when_you_re_not_the_initiator(self):
         # responder
-        trade = self._prepare_trade('REPLIED', initiator = self.test5, responder = self.loginUser)
+        trade = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser)
         self._assertOperationNotAllowed(trade.id, 'accept')
 
         # someone else
@@ -529,15 +513,15 @@ class ManageViewsTest(TestCase):
         commodity1, commodity2, commodity3 = mommy.make(Commodity, _quantity = 3)
 
         rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1)
-        rih2 = mommy.make(RuleInHand, game = self.game, player = self.test5, rulecard = rulecard2)
+        rih2 = mommy.make(RuleInHand, game = self.game, player = self.alternativeUser, rulecard = rulecard2)
 
         cih1i = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity1,
                                nb_cards = 3)
-        cih1r = mommy.make(CommodityInHand, game = self.game, player = self.test5, commodity = commodity1,
+        cih1r = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, commodity = commodity1,
                                nb_cards = 3)
         cih2i = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity2,
                                nb_cards = 2)
-        cih3r = mommy.make(CommodityInHand, game = self.game, player = self.test5, commodity = commodity3,
+        cih3r = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, commodity = commodity3,
                                nb_cards = 2)
 
         # the initiaor offers rulecard1, 2 commodity1 and 1 commodity2
@@ -573,7 +557,7 @@ class ManageViewsTest(TestCase):
         self.assertEqual(rulecard2, hand_initiator[0].rulecard)
 
         self.assertIsNotNone(RuleInHand.objects.get(pk = rih2.id).abandon_date)
-        hand_responder = RuleInHand.objects.filter(game = self.game, player = self.test5, abandon_date__isnull = True)
+        hand_responder = RuleInHand.objects.filter(game = self.game, player = self.alternativeUser, abandon_date__isnull = True)
         self.assertEqual(1, hand_responder.count())
         self.assertEqual(rulecard1, hand_responder[0].rulecard)
 
@@ -583,9 +567,9 @@ class ManageViewsTest(TestCase):
         self.assertEqual(1, CommodityInHand.objects.get(game = self.game, player = self.loginUser, commodity = commodity2).nb_cards)
         self.assertEqual(2, CommodityInHand.objects.get(game = self.game, player = self.loginUser, commodity = commodity3).nb_cards)
 
-        self.assertEqual(4, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity1).nb_cards)
-        self.assertEqual(1, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity2).nb_cards)
-        self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = commodity3).nb_cards)
+        self.assertEqual(4, CommodityInHand.objects.get(game = self.game, player = self.alternativeUser, commodity = commodity1).nb_cards)
+        self.assertEqual(1, CommodityInHand.objects.get(game = self.game, player = self.alternativeUser, commodity = commodity2).nb_cards)
+        self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.alternativeUser, commodity = commodity3).nb_cards)
 
         # notification email sent
         self.assertEqual(1, len(mail.outbox))
@@ -605,14 +589,14 @@ class ManageViewsTest(TestCase):
         self._assertOperationNotAllowed(trade.id, 'decline')
 
         # trade REPLIED but we're not the initiator
-        trade.initiator = self.test5
+        trade.initiator = self.alternativeUser
         trade.responder = self.loginUser
         trade.status = 'REPLIED'
         trade.save()
         self._assertOperationNotAllowed(trade.id, 'decline')
 
     def test_decline_trade_not_allowed_for_the_responder_for_trades_not_in_status_INITIATED(self):
-        trade = self._prepare_trade('REPLIED', initiator = self.test5, responder = self.loginUser)
+        trade = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser)
         self._assertOperationNotAllowed(trade.id, 'decline')
 
         trade.status = 'ACCEPTED'
@@ -651,7 +635,7 @@ class ManageViewsTest(TestCase):
         self._assertOperationNotAllowed(trade.id, 'decline')
 
     def test_decline_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_INITIATED(self):
-        trade = self._prepare_trade('INITIATED', initiator = self.test5, responder = self.loginUser)
+        trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
         response = self.client.post("/trade/{}/{}/decline/".format(self.game.id, trade.id),
                                     {'decline_reason': "this is my reason"}, follow = True)
 
@@ -720,7 +704,7 @@ class ManageViewsTest(TestCase):
         offer3 = mommy.make(Offer, rules = [rih3])
         tc3 = mommy.make(TradedCommodities, offer = offer3, commodityinhand = cih2, nb_traded_cards = 1)
         offer3.tradedcommodities_set.add(tc3)
-        trade1 = self._prepare_trade('REPLIED', initiator = self.test5, responder = self.loginUser, responder_offer = offer3)
+        trade1 = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser, responder_offer = offer3)
 
         request = RequestFactory().get("/trade/{}/create/".format(self.game.id))
         request.user = self.loginUser
@@ -766,7 +750,7 @@ class ManageViewsTest(TestCase):
         rulecard_initiator = mommy.make(RuleCard, public_name = '7', description = 'rule description 7')
         rih_initiator = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard_initiator)
         rulecard_responder = mommy.make(RuleCard, public_name = '8', description = 'rule description 8')
-        rih_responder = mommy.make(RuleInHand, game = self.game, player = self.test5, rulecard = rulecard_responder)
+        rih_responder = mommy.make(RuleInHand, game = self.game, player = self.alternativeUser, rulecard = rulecard_responder)
         offer_initiator = mommy.make(Offer, rules = [rih_initiator], free_information = 'this is sensitive')
         offer_responder = mommy.make(Offer, rules = [rih_responder], free_information = 'these are sensitive')
 
@@ -868,8 +852,8 @@ class ManageViewsTest(TestCase):
     def _prepare_trade(self, status, initiator = None, responder = None, initiator_offer = None,
                        responder_offer = None, finalizer = None):
         if initiator is None: initiator = self.loginUser
-        if responder is None: responder = self.test5
-        if initiator_offer is None: initiator_offer = self.dummy_offer
+        if responder is None: responder = self.alternativeUser
+        if initiator_offer is None: initiator_offer = mommy.make(Offer)
         return mommy.make(Trade, game = self.game, initiator = initiator, responder = responder, finalizer = finalizer,
                               status = status, initiator_offer = initiator_offer, responder_offer = responder_offer)
 
@@ -878,10 +862,16 @@ class ManageViewsTest(TestCase):
         self.assertEqual(403, response.status_code)
 
 class TransactionalViewsTest(TransactionTestCase):
-    fixtures = ['test_users.json'] # from userprofile app
+    fixtures = ['test_users.json', # from userprofile app
+                'test_games.json']
 
     def setUp(self):
-        _common_setUp(self)
+        self.game =             Game.objects.get(id = 1)
+        self.master =           self.game.master
+        self.loginUser =        User.objects.get(username = "test2")
+        self.alternativeUser =  User.objects.get(username = 'test5')
+
+        self.client.login(username = self.loginUser.username, password = 'test')
 
     def test_accept_trade_cards_exchange_is_transactional(self):
         # let's make the responder offer 1 commodity for which he doesn't have any cards
@@ -890,11 +880,11 @@ class TransactionalViewsTest(TransactionTestCase):
         offer_initiator = mommy.make(Offer, rules = [rih])
 
         offer_responder = mommy.make(Offer)
-        cih = mommy.make(CommodityInHand, game = self.game, player = self.test5, nb_cards = 0)
+        cih = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 0)
         tc = mommy.make(TradedCommodities, offer = offer_responder, commodityinhand = cih, nb_traded_cards = 1)
         offer_responder.tradedcommodities_set.add(tc)
 
-        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.test5,
+        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                                status = 'REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
 
         response = self.client.post("/trade/{}/{}/accept/".format(self.game.id, trade.id), follow = True)
@@ -909,12 +899,12 @@ class TransactionalViewsTest(TransactionTestCase):
 
         # rule cards : no swapping
         with self.assertRaises(RuleInHand.DoesNotExist):
-            RuleInHand.objects.get(game = self.game, player = self.test5, rulecard = rih.rulecard)
+            RuleInHand.objects.get(game = self.game, player = self.alternativeUser, rulecard = rih.rulecard)
         self.assertIsNone(RuleInHand.objects.get(pk = rih.id).abandon_date)
 
         # commodity cards : no change
-        self.assertEqual(1, CommodityInHand.objects.filter(game = self.game, player = self.test5).count())
-        self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.test5, commodity = cih.commodity).nb_cards)
+        self.assertEqual(1, CommodityInHand.objects.filter(game = self.game, player = self.alternativeUser).count())
+        self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.alternativeUser, commodity = cih.commodity).nb_cards)
         self.assertEqual(0, CommodityInHand.objects.filter(game = self.game, player = self.loginUser).count())
 
 class FormsTest(TestCase):

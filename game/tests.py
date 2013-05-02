@@ -18,27 +18,9 @@ from ruleset.models import Ruleset, RuleCard, Commodity
 from scoring.card_scoring import Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.models import Offer, Trade
+from utils.tests import MystradeTestCase
 
-class _GameTestCase(TestCase):
-    fixtures = ['test_users.json', # from userprofile app
-                'test_games.json']
-
-    def setUp(self):
-        self.game =             Game.objects.get(id = 1)
-        self.master =           self.game.master
-        self.loginUser =        User.objects.get(username = "test2")
-        self.alternativeUser =  User.objects.get(username = 'test5')
-        self.admin =            User.objects.get(username = 'admin')
-        self.admin_player =     User.objects.get(username = 'admin_player')
-        self.unrelated_user =   User.objects.get(username = 'unrelated_user')
-
-        self._login_as(self.loginUser)
-
-    def _login_as(self, user):
-        self.client.logout()
-        self.assertTrue(self.client.login(username = user.username, password = 'test'))
-
-class WelcomePageViewTest(_GameTestCase):
+class WelcomePageViewTest(MystradeTestCase):
 
     def test_welcome_needs_login(self):
         response = self.client.get(reverse("welcome"))
@@ -238,7 +220,7 @@ class GameCreationViewsTest(TestCase):
         self.assertIn("The ruleset is: {}".format(created_game.ruleset.name), emailAdmin.body)
         self.assertEqual(4, emailAdmin.body.count('- Rule'))
 
-class GameModelsTest(_GameTestCase):
+class GameModelsTest(MystradeTestCase):
 
     def test_game_is_active_if_start_and_end_date_enclose_now(self):
         start_date = now() + datetime.timedelta(days = -10)
@@ -267,7 +249,7 @@ class GameModelsTest(_GameTestCase):
         self.assertTrue(self.game.has_super_access(self.admin))
         self.assertFalse(self.game.has_super_access(self.admin_player))
 
-class GamePageViewTest(_GameTestCase):
+class GamePageViewTest(MystradeTestCase):
 
     def test_returns_a_404_if_the_game_id_doesnt_exist(self):
         response = self.client.get("/game/999999999/")
@@ -276,13 +258,13 @@ class GamePageViewTest(_GameTestCase):
     def test_access_to_game_page_forbidden_for_users_not_related_to_the_game_except_admins(self):
         self._assertGetGamePage()
 
-        self._login_as(self.admin)
+        self.login_as(self.admin)
         self._assertGetGamePage()
 
-        self._login_as(self.master)
+        self.login_as(self.master)
         self._assertGetGamePage()
 
-        self._login_as(self.unrelated_user)
+        self.login_as(self.unrelated_user)
         self._assertGetGamePage(status_code = 403)
 
     def test_game_page_shows_starting_and_finishing_dates(self):
@@ -324,17 +306,17 @@ class GamePageViewTest(_GameTestCase):
         self.assertNotContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
 
         # game master
-        self._login_as(self.master)
+        self.login_as(self.master)
         response = self._assertGetGamePage()
         self.assertContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
 
         # admin not player
-        self._login_as(self.admin)
+        self.login_as(self.admin)
         response = self._assertGetGamePage()
         self.assertContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
 
         # admin but player in this game
-        self._login_as(self.admin_player)
+        self.login_as(self.admin_player)
         response = self._assertGetGamePage()
         self.assertNotContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
 
@@ -347,7 +329,7 @@ class GamePageViewTest(_GameTestCase):
         self.assertContains(response, "You own 2 rule cards")
 
     def test_game_page_doesnt_show_nb_of_rule_cards_nor_of_commodities_to_game_master(self):
-        self._login_as(self.master)
+        self.login_as(self.master)
 
         response = self._assertGetGamePage()
         self.assertNotContains(response, "You own 0 rule cards")
@@ -434,7 +416,7 @@ class GamePageViewTest(_GameTestCase):
                                 status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
                                 initiator_offer = mommy.make(Offer))
 
-        self._login_as(self.master)
+        self.login_as(self.master)
 
         response = self._assertGetGamePage()
         self.assertNotContains(response, "Pending trades")
@@ -546,7 +528,7 @@ class GamePageViewTest(_GameTestCase):
         self.assertEqual(status_code, response.status_code)
         return response
 
-class HandViewTest(_GameTestCase):
+class HandViewTest(MystradeTestCase):
 
     def test_show_hand_doesnt_show_commodities_with_no_cards(self):
         commodity1 = mommy.make(Commodity, name = 'Commodity#1')
@@ -654,11 +636,11 @@ class HandViewTest(_GameTestCase):
         response = self.client.post("/game/{}/hand/submit/".format(self.game.id))
         self.assertEqual(403, response.status_code)
 
-        self._login_as(self.admin)
+        self.login_as(self.admin)
         response = self.client.post("/game/{}/hand/submit/".format(self.game.id))
         self.assertEqual(403, response.status_code)
 
-        self._login_as(self.master)
+        self.login_as(self.master)
         response = self.client.post("/game/{}/hand/submit/".format(self.game.id))
         self.assertEqual(403, response.status_code)
 
@@ -736,7 +718,7 @@ class HandViewTest(_GameTestCase):
         self.assertEqual(self.loginUser, trade_replied_by_other_player.finalizer)
         self.assertIsNotNone(trade_replied_by_other_player.closing_date)
 
-class ControlBoardViewTest(_GameTestCase):
+class ControlBoardViewTest(MystradeTestCase):
 
     def setUp(self):
         super(ControlBoardViewTest, self).setUp()
@@ -748,10 +730,10 @@ class ControlBoardViewTest(_GameTestCase):
     def test_access_to_score_page_allowed_only_to_game_players(self):
         self._assertOperation_get(self.game_closed, "score")
 
-        self._login_as(self.admin)
+        self.login_as(self.admin)
         self._assertOperation_get(self.game_closed, "score", 403)
 
-        self._login_as(self.master)
+        self.login_as(self.master)
         self._assertOperation_get(self.game_closed, "score", 403)
 
     def test_access_to_score_page_allowed_only_to_closed_games(self):
@@ -762,15 +744,15 @@ class ControlBoardViewTest(_GameTestCase):
         self._assertOperation_get(self.game, "control", 403)
 
         # game master
-        self._login_as(self.master)
+        self.login_as(self.master)
         self._assertOperation_get(self.game, "control")
 
         # admin not player
-        self._login_as(self.admin)
+        self.login_as(self.admin)
         self._assertOperation_get(self.game, "control")
 
         # admin that is player
-        self._login_as(self.admin_player)
+        self.login_as(self.admin_player)
         self._assertOperation_get(self.game, "control", 403)
 
     def test_close_game_allowed_only_to_game_master_and_admins_that_are_not_players(self):
@@ -782,7 +764,7 @@ class ControlBoardViewTest(_GameTestCase):
         # admin not player
         self.game_ended.closing_date = None
         self.game_ended.save()
-        self._login_as(self.admin)
+        self.login_as(self.admin)
         self._assertOperation_post(self.game_ended, "close")
         self.game_ended = Game.objects.get(id = self.game_ended.id)
         self.assertIsNotNone(self.game_ended.closing_date)
@@ -791,7 +773,7 @@ class ControlBoardViewTest(_GameTestCase):
         self.game_ended.closing_date = None
         self.game_ended.save()
         mommy.make(GamePlayer, game = self.game_ended, player = User.objects.get(username = 'admin_player'))
-        self._login_as(self.admin_player)
+        self.login_as(self.admin_player)
         self._assertOperation_post(self.game_ended, "close", 403)
         self.game_ended = Game.objects.get(id = self.game_ended.id)
         self.assertIsNone(self.game_ended.closing_date)
@@ -800,7 +782,7 @@ class ControlBoardViewTest(_GameTestCase):
         self.game_ended.closing_date = None
         self.game_ended.save()
         mommy.make(GamePlayer, game = self.game_ended, player = User.objects.get(username='test3'))
-        self._login_as(User.objects.get(username='test3'))
+        self.login_as(User.objects.get(username='test3'))
         self._assertOperation_post(self.game_ended, "close", 403)
         self.game_ended = Game.objects.get(id = self.game_ended.id)
         self.assertIsNone(self.game_ended.closing_date)
@@ -969,7 +951,7 @@ class ControlBoardViewTest(_GameTestCase):
         mommy.make(ScoreFromCommodity, game = self.game, player = test6, commodity = Commodity.objects.get(name = 'Orange'),
                        nb_submitted_cards = 1, nb_scored_cards = 1, actual_value = 4, score = 4)
 
-        self._login_as(self.master)
+        self.login_as(self.master)
         response = self.client.get("/game/{}/{}/".format(self.game.id, "control"), follow = True)
         self.assertEqual(200, response.status_code)
 
@@ -987,7 +969,7 @@ class ControlBoardViewTest(_GameTestCase):
         cih1red = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser,
                                  nb_cards = 10, commodity = Commodity.objects.get(name = 'Red'))
 
-        self._login_as(self.master)
+        self.login_as(self.master)
         response = self.client.get("/game/{}/{}/".format(self.game.id, "control"), follow = True)
         self.assertEqual(200, response.status_code)
 
