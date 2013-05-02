@@ -1,0 +1,116 @@
+[
+    {
+        "pk": 1,
+        "model": "game.game",
+        "fields": {
+            "closing_date": null,
+            "creation_date": "2013-01-01T00:00:00Z",
+            "rules": [],
+            "master": [
+                "test1"
+            ],
+            "ruleset": 1,
+            "start_date": "2013-01-01T00:00:00Z",
+            "end_date": "2025-12-31T23:59:59Z"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "game.gameplayer",
+        "fields": {
+            "game": 1,
+            "submit_date": null,
+            "player": [
+                "test2"
+            ]
+        }
+    },
+    {
+        "pk": 2,
+        "model": "game.gameplayer",
+        "fields": {
+            "game": 1,
+            "submit_date": null,
+            "player": [
+                "test3"
+            ]
+        }
+    },
+    {
+        "pk": 3,
+        "model": "game.gameplayer",
+        "fields": {
+            "game": 1,
+            "submit_date": null,
+            "player": [
+                "test4"
+            ]
+        }
+    },
+    {
+        "pk": 4,
+        "model": "game.gameplayer",
+        "fields": {
+            "game": 1,
+            "submit_date": null,
+            "player": [
+                "test5"
+            ]
+        }
+    },
+    {
+        "pk": 5,
+        "model": "game.gameplayer",
+        "fields": {
+            "game": 1,
+            "submit_date": null,
+            "player": [
+                "test6"
+            ]
+        }
+    },
+    {
+        "pk": 6,
+        "model": "game.gameplayer",
+        "fields": {
+            "game": 1,
+            "submit_date": null,
+            "player": [
+                "test7"
+            ]
+        }
+    },
+    {
+        "pk": 7,
+        "model": "game.gameplayer",
+        "fields": {
+            "game": 1,
+            "submit_date": null,
+            "player": [
+                "test8"
+            ]
+        }
+    },
+    {
+        "pk": 8,
+        "model": "game.gameplayer",
+        "fields": {
+            "game": 1,
+            "submit_date": null,
+            "player": [
+                "test9"
+            ]
+        }
+    },
+    {
+        "pk": 9,
+        "model": "game.gameplayer",
+        "fields": {
+            "game": 1,
+            "submit_date": null,
+            "player": [
+                "admin_player"
+            ]
+        }
+    }
+]
