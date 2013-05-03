@@ -329,7 +329,7 @@ class GamePageViewTest(MystradeTestCase):
         self.assertNotContains(response, "<span class=\"minicard\"")
 
     def test_game_page_show_commodities_owned_to_players(self):
-        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Blue"),
+        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Blue"),
                               nb_cards = 1)
 
         response = self._assertGetGamePage()
@@ -337,7 +337,7 @@ class GamePageViewTest(MystradeTestCase):
         self.assertContains(response, "1 commodity")
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
 
-        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Red"),
+        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Red"),
                               nb_cards = 4, nb_submitted_cards = 2)
 
         response = self._assertGetGamePage()
@@ -350,11 +350,11 @@ class GamePageViewTest(MystradeTestCase):
         gameplayer.submit_date = now() +  datetime.timedelta(days = -2)
         gameplayer.save()
 
-        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Blue"),
+        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Blue"),
                               nb_cards = 3, nb_submitted_cards = 1)
-        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Red"),
+        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Red"),
                               nb_cards = 2, nb_submitted_cards = 2)
-        cih3 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(name = "Orange"),
+        cih3 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Orange"),
                               nb_cards = 1, nb_submitted_cards = 0)
 
         response = self._assertGetGamePage()
@@ -861,9 +861,9 @@ class ControlBoardViewTest(MystradeTestCase):
         mommy.make(GamePlayer, game = self.game_ended, player = test8)
 
         cih7blue   = mommy.make(CommodityInHand, game = self.game_ended, player = test7,
-                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Blue'))
+                                    nb_cards = 3, commodity = Commodity.objects.get(ruleset = 1, name = 'Blue'))
         cih8yellow = mommy.make(CommodityInHand, game = self.game_ended, player = test8,
-                                    nb_cards = 4, commodity = Commodity.objects.get(name = 'Yellow'))
+                                    nb_cards = 4, commodity = Commodity.objects.get(ruleset = 1, name = 'Yellow'))
 
         self._assertOperation_post(self.game_ended, "close")
 
@@ -938,9 +938,9 @@ class ControlBoardViewTest(MystradeTestCase):
         test6 = User.objects.get(username='test6')
 
         # a trap we shouldn't fall in
-        mommy.make(ScoreFromCommodity, game = self.game, player = self.alternativeUser, commodity = Commodity.objects.get(name = 'Orange'),
+        mommy.make(ScoreFromCommodity, game = self.game, player = self.alternativeUser, commodity = Commodity.objects.get(ruleset = 1, name = 'Orange'),
                        nb_submitted_cards = 3, nb_scored_cards = 3, actual_value = 4, score = 12)
-        mommy.make(ScoreFromCommodity, game = self.game, player = test6, commodity = Commodity.objects.get(name = 'Orange'),
+        mommy.make(ScoreFromCommodity, game = self.game, player = test6, commodity = Commodity.objects.get(ruleset = 1, name = 'Orange'),
                        nb_submitted_cards = 1, nb_scored_cards = 1, actual_value = 4, score = 4)
 
         self.login_as(self.master)
@@ -959,7 +959,7 @@ class ControlBoardViewTest(MystradeTestCase):
 
         self.game.rules.add(RuleCard.objects.get(ref_name = 'HAG15')) # rule that leads to random scores when a hand has > 13 commodity cards
         cih1red = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser,
-                                 nb_cards = 10, commodity = Commodity.objects.get(name = 'Red'))
+                                 nb_cards = 10, commodity = Commodity.objects.get(ruleset = 1, name = 'Red'))
 
         self.login_as(self.master)
         response = self.client.get("/game/{}/{}/".format(self.game.id, "control"), follow = True)
@@ -980,19 +980,19 @@ class ControlBoardViewTest(MystradeTestCase):
         game.rules.add(RuleCard.objects.get(ref_name = 'HAG05'))
 
         cih1orange = mommy.make(CommodityInHand, game = game, player = self.alternativeUser,
-                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Orange')) # value = 4
+                                    nb_cards = 3, commodity = Commodity.objects.get(ruleset = 1, name = 'Orange')) # value = 4
         cih1blue   = mommy.make(CommodityInHand, game = game, player = self.alternativeUser,
-                                    nb_cards = 2, commodity = Commodity.objects.get(name = 'Blue')) # value = 2
+                                    nb_cards = 2, commodity = Commodity.objects.get(ruleset = 1, name = 'Blue')) # value = 2
         cih1white  = mommy.make(CommodityInHand, game = game, player = self.alternativeUser,
-                                    nb_cards = 1, commodity = Commodity.objects.get(name = 'White')) # value = 5 or 0
+                                    nb_cards = 1, commodity = Commodity.objects.get(ruleset = 1, name = 'White')) # value = 5 or 0
 
         test6 = User.objects.get(username='test6')
         cih2orange = mommy.make(CommodityInHand, game = game, player = test6,
-                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Orange'))
+                                    nb_cards = 3, commodity = Commodity.objects.get(ruleset = 1, name = 'Orange'))
         cih2blue   = mommy.make(CommodityInHand, game = game, player = test6,
-                                    nb_cards = 3, commodity = Commodity.objects.get(name = 'Blue'))
+                                    nb_cards = 3, commodity = Commodity.objects.get(ruleset = 1, name = 'Blue'))
         cih2white  = mommy.make(CommodityInHand, game = game, player = test6,
-                                    nb_cards = 4, commodity = Commodity.objects.get(name = 'White'))
+                                    nb_cards = 4, commodity = Commodity.objects.get(ruleset = 1, name = 'White'))
 
     def _assertOperation_get(self, game, operation, status_code = 200):
         response = self.client.get("/game/{}/{}/".format(game.id, operation), follow = True)

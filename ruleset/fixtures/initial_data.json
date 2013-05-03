@@ -8,6 +8,14 @@
         }
     },
     {
+        "pk": 2,
+        "model": "ruleset.ruleset",
+        "fields": {
+            "name": "Remixed Haggle (2013)",
+            "module": "remixed"
+        }
+    },
+    {
         "pk": 1,
         "model": "ruleset.rulecard",
         "fields": {
@@ -200,6 +208,198 @@
         }
     },
     {
+        "pk": 16,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "1",
+            "description": "Green cards have the highest basic value and are equal to a yellow card and a blue card.",
+            "mandatory": true,
+            "ruleset": 2,
+            "ref_name": "RMX01",
+            "glob": false
+        }
+    },
+    {
+        "pk": 17,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "2",
+            "description": "White cards have a basic value twice that of blue and half that of yellow.",
+            "mandatory": true,
+            "ruleset": 2,
+            "ref_name": "RMX02",
+            "glob": false
+        }
+    },
+    {
+        "pk": 18,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "3",
+            "description": "Pink cards have a basic value of 3 and are equal to a blue card and a white card.",
+            "mandatory": true,
+            "ruleset": 2,
+            "ref_name": "RMX03",
+            "glob": false
+        }
+    },
+    {
+        "pk": 19,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "4",
+            "description": "If a player has a combined number of yellow and green cards strictly superior to five cards, all of his/her green cards lose their value.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX04",
+            "step": 10,
+            "glob": false
+        }
+    },
+    {
+        "pk": 20,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "5",
+            "description": "A player can score only as many yellow cards as he/she has pink cards.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX05",
+            "step": 10,
+            "glob": false
+        }
+    },
+    {
+        "pk": 21,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "6",
+            "description": "If a player has five or more blue cards, 10 points are deducted from every other player's score.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX06",
+            "step": 30,
+            "glob": true
+        }
+    },
+    {
+        "pk": 22,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "7",
+            "description": "A set of three yellow cards protects you from one set of five blue cards.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX07",
+            "step": 31,
+            "glob": false
+        }
+    },
+    {
+        "pk": 23,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "8",
+            "description": "Each set of five different colors gives a bonus of 8 points.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX08",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 24,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "9",
+            "description": "The player with the most white cards triples their value. In case of a tie, no player collects the extra value.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX09",
+            "step": 32,
+            "glob": true
+        }
+    },
+    {
+        "pk": 25,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "10",
+            "description": "If the total of the basic values of all the cards handed in by a player is worth 35 points or more, cards are removed at random until the total becomes less than 35 points. Only the basic values of the cards are considered, before any other rule is applied.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX10",
+            "step": 0,
+            "glob": false
+        }
+    },
+    {
+        "pk": 26,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "11",
+            "description": "If a player hands in seven or more cards of the same color, 10 points are deducted from his/her score for each of these colors.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX11",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 27,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "12",
+            "description": "The player with the most blue cards doubles the value of his/her pink cards. In case of a tie, no player collects the extra value.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX12",
+            "step": 32,
+            "glob": true
+        }
+    },
+    {
+        "pk": 28,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "13",
+            "description": "If four colors are handed in with the same number of cards for each, and no cards are handed in from the fifth color, the value of the hand is doubled.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX13",
+            "step": 40,
+            "glob": false
+        }
+    },
+    {
+        "pk": 29,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "14",
+            "description": "Each set of two pink cards doubles the value of one yellow card.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX14",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 30,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "15",
+            "description": "Each set of three white cards triples the value of one green card.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX15",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
         "pk": 1,
         "model": "ruleset.commodity",
         "fields": {
@@ -247,6 +447,56 @@
             "ruleset": 1,
             "value": 5,
             "color": "white"
+        }
+    },
+    {
+        "pk": 6,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Blue",
+            "ruleset": 2,
+            "value": 1,
+            "color": "blue"
+        }
+    },
+    {
+        "pk": 7,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "White",
+            "ruleset": 2,
+            "value": 2,
+            "color": "white"
+        }
+    },
+    {
+        "pk": 8,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Pink",
+            "ruleset": 2,
+            "value": 3,
+            "color": "pink"
+        }
+    },
+    {
+        "pk": 9,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Yellow",
+            "ruleset": 2,
+            "value": 4,
+            "color": "yellow"
+        }
+    },
+    {
+        "pk": 10,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Green",
+            "ruleset": 2,
+            "value": 5,
+            "color": "green"
         }
     }
 ]
