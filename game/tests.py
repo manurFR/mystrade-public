@@ -201,10 +201,6 @@ class GameCreationViewsTest(TestCase):
         emailTest2 = mail.outbox[list_recipients.index('test2@test.com')]
         self.assertEqual('[MysTrade] Game #{} has been created by test1'.format(created_game.id), emailTest2.subject)
         self.assertIn('Test1 has just created game #{}, and you\'ve been selected to join it !'.format(created_game.id), emailTest2.body)
-        self.assertNotRegexpMatches(emailTest2.body, '- test2 \(.*/profile/2/\)')
-        self.assertRegexpMatches(emailTest2.body, '- test3 \(.*/profile/3/\)')
-        self.assertRegexpMatches(emailTest2.body, '- test4 \(.*/profile/4/\)')
-        self.assertRegexpMatches(emailTest2.body, '- test5 \(.*/profile/5/\)')
         self.assertEqual(2, emailTest2.body.count('- Rule'))
         self.assertIn("The game has already started ! Start trading here:", emailTest2.body)
         self.assertIn('/trade/{}'.format(created_game.id), emailTest2.body)
@@ -213,10 +209,6 @@ class GameCreationViewsTest(TestCase):
         emailAdmin = mail.outbox[list_recipients.index('admin@mystrade.com')]
         self.assertEqual('[MysTrade] Game #{} has been created by test1'.format(created_game.id), emailAdmin.subject)
         self.assertIn('Test1 has just created game #{}.'.format(created_game.id), emailAdmin.body)
-        self.assertRegexpMatches(emailAdmin.body, '- test2 \(.*/profile/2/\)')
-        self.assertRegexpMatches(emailAdmin.body, '- test3 \(.*/profile/3/\)')
-        self.assertRegexpMatches(emailAdmin.body, '- test4 \(.*/profile/4/\)')
-        self.assertRegexpMatches(emailAdmin.body, '- test5 \(.*/profile/5/\)')
         self.assertIn("The ruleset is: {}".format(created_game.ruleset.name), emailAdmin.body)
         self.assertEqual(4, emailAdmin.body.count('- Rule'))
 
