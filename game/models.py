@@ -56,7 +56,7 @@ class RuleInHand(models.Model):
     abandon_date = models.DateTimeField("The date when this card was exchanged", null = True)
 
     def __unicode__(self):
-        return "Rule <{}> owned by {} in game {}".format(self.rulecard.ref_name, self.player.get_profile().name, self.game.id)
+        return "Rule <{}> owned by {} in game {}".format(self.rulecard.ref_name, self.player.get_profile().name, self.game_id)
 
     def is_in_a_pending_trade(self):
         """ A rule card may be in a trade in the initator offer or the responder offer.
@@ -77,7 +77,7 @@ class CommodityInHand(models.Model):
 
     def __unicode__(self):
         return "{} {} card{} owned by {} in game {}".format(self.nb_cards, self.commodity.name.lower(),
-                's' if self.nb_cards > 1 else '', self.player.get_profile().name, self.game.id)
+                's' if self.nb_cards > 1 else '', self.player.get_profile().name, self.game_id)
 
     def nb_tradable_cards(self):
         """ Commodity cards may be in a trade in the initator offer or the responder offer.

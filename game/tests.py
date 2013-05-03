@@ -182,7 +182,7 @@ class GameCreationViewsTest(TestCase):
         created_game = Game.objects.get(master = self.testUserCanCreate.id)
         self.assertRedirects(response, "/game/{}/".format(created_game.id))
 
-        self.assertEqual(1, created_game.ruleset.id)
+        self.assertEqual(1, created_game.ruleset_id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
         self.assertEqual(datetime.datetime(2037, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
         self.assertEqual(list(self.testUsersNoCreate)[:4], list(created_game.players.all()))

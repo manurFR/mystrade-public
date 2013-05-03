@@ -21,6 +21,8 @@ from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer, Trade
+from userprofile.helpers import UserNameCache
+from userprofile.models import UserProfile
 from utils import utils
 
 logger = logging.getLogger(__name__)
@@ -28,11 +30,17 @@ logger = logging.getLogger(__name__)
 @login_required
 def welcome(request):
     games = Game.objects.filter(Q(master=request.user) | Q(players=request.user)).distinct().order_by('-closing_date', '-end_date')
+
+    cache = UserNameCache()
+
+    participations = dict([(gp.game_id, gp) for gp in GamePlayer.objects.filter(player = request.user)])
+
     for game in games:
-        game.list_of_players = [player.get_profile().name for player in game.players.all().order_by('id')]
-        try:
-            game.hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None
-        except GamePlayer.DoesNotExist:
+        game.list_of_players = [cache.get_name(player) for player in game.players.all().order_by('id')]
+
+        if game.id in participations:
+            game.hand_submitted = participations[game.id].submit_date is not None
+        else:
             game.hand_submitted = False
     return render(request, 'game/welcome.html', {'games': games})
 
@@ -152,13 +160,13 @@ def hand(request, game_id):
                                   'date': offer.trade_initiated.closing_date,
                                   'free_information': offer.free_information})
 
-    featured_rulecards = [rh.rulecard.id for rh in rule_hand]
+    featured_rulecards = [rh.rulecard_id for rh in rule_hand]
     former_rules = []
     for rule in rules_formerly_in_hand(game, request.user):
-        if rule.rulecard.id not in featured_rulecards: # add only rulecards that are not currently in the hand and no duplicates
+        if rule.rulecard_id not in featured_rulecards: # add only rulecards that are not currently in the hand and no duplicates
             former_rules.append({'public_name': rule.rulecard.public_name,
                                  'description': rule.rulecard.description})
-            featured_rulecards.append(rule.rulecard.id)
+            featured_rulecards.append(rule.rulecard_id)
 
     return render(request, 'game/hand.html',
         {'game': game, 'hand_submitted': hand_submitted, 'rule_hand': rule_hand, 'former_rules': former_rules,
@@ -191,7 +199,7 @@ def submit_hand(request, game_id):
 
                     for commodity in commodity_hand:
                         for form in commodities_formset:
-                            if int(form.cleaned_data['commodity_id']) == commodity.commodity.id:
+                            if int(form.cleaned_data['commodity_id']) == commodity.commodity_id:
                                 commodity.nb_submitted_cards = form.cleaned_data['nb_submitted_cards']
                                 break
                         else: # if the for loop ends without a break, ie we didn't find the commodity in the form -- shouldn't happen but here for security
@@ -210,7 +218,7 @@ def submit_hand(request, game_id):
             pass # no reason to come here
     else:
         CommodityCardsFormSet = formset_factory(GameCommodityCardFormDisplay, extra=0)
-        commodities_formset = CommodityCardsFormSet(initial=[{'commodity_id': card.commodity.id,
+        commodities_formset = CommodityCardsFormSet(initial=[{'commodity_id': card.commodity_id,
                                                               'name': card.commodity.name,
                                                               'color': card.commodity.color,
                                                               'nb_cards': card.nb_cards,

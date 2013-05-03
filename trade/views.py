@@ -105,7 +105,7 @@ def create_trade(request, game_id):
 def cancel_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
-        if (trade.game.id == int(game_id) and trade.game.is_active() and
+        if (trade.game_id == int(game_id) and trade.game.is_active() and
             ((trade.status == 'INITIATED' and request.user == trade.initiator) or
              (trade.status == 'REPLIED' and request.user == trade.responder))):
             trade.status = 'CANCELLED'
@@ -113,7 +113,7 @@ def cancel_trade(request, game_id, trade_id):
             trade.closing_date = now()
             trade.save()
 
-            # email notification
+            # email notification                               x
             _trade_event_notification(request, trade)
 
             return redirect('trades', game_id)
@@ -125,7 +125,7 @@ def reply_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
 
-        if (trade.game.id == int(game_id) and trade.game.is_active() and
+        if (trade.game_id == int(game_id) and trade.game.is_active() and
            trade.status == 'INITIATED' and request.user == trade.responder):
             try:
                 offer, selected_rules, selected_commodities = _parse_offer_forms(request, trade.game)
@@ -144,7 +144,7 @@ def reply_trade(request, game_id, trade_id):
                 # email notification
                 _trade_event_notification(request, trade)
 
-                return redirect('trades', trade.game.id)
+                return redirect('trades', trade.game_id)
             except FormInvalidException as ex:
                 rulecards_formset = ex.forms['rulecards_formset']
                 commodities_formset = ex.forms['commodities_formset']
@@ -160,7 +160,7 @@ def reply_trade(request, game_id, trade_id):
 def accept_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
-        if (trade.game.id == int(game_id) and trade.game.is_active() and
+        if (trade.game_id == int(game_id) and trade.game.is_active() and
             trade.status == 'REPLIED' and request.user == trade.initiator):
             # Accepting a trade and exchanging the cards is a near-perfect textbook example of a process that must be transactional
             try:
@@ -223,7 +223,7 @@ def accept_trade(request, game_id, trade_id):
 def decline_trade(request, game_id, trade_id):
     if request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
-        if (trade.game.id == int(game_id) and trade.game.is_active() and
+        if (trade.game_id == int(game_id) and trade.game.is_active() and
             ((trade.status == 'INITIATED' and request.user == trade.responder) or
             (trade.status == 'REPLIED' and request.user == trade.initiator))):
             decline_reason_form = DeclineReasonForm(request.POST)
@@ -255,7 +255,7 @@ def _prepare_offer_forms(request, game, selected_rules = [], selected_commoditie
                                          prefix='rulecards')
 
     CommodityCardsFormSet = formset_factory(TradeCommodityCardFormDisplay, extra=0)
-    commodities_formset = CommodityCardsFormSet(initial=[{'commodity_id':      card.commodity.id,
+    commodities_formset = CommodityCardsFormSet(initial=[{'commodity_id':      card.commodity_id,
                                                           'name':              card.commodity.name,
                                                           'color':             card.commodity.color,
                                                           'nb_cards':          card.nb_cards,
@@ -291,7 +291,7 @@ def _parse_offer_forms(request, game):
     selected_commodities = {}
     for commodityinhand in commodity_hand:
         for form in commodities_formset:
-            if int(form.cleaned_data['commodity_id']) == commodityinhand.commodity.id:
+            if int(form.cleaned_data['commodity_id']) == commodityinhand.commodity_id:
                 selected_commodities[commodityinhand] = form.cleaned_data['nb_traded_cards']
                 break
 
@@ -323,7 +323,7 @@ def _trade_event_notification(request, trade):
 
     utils.send_notification_email(template, recipient,
                                   {'game': trade.game, 'trade': trade,
-                                   'url': request.build_absolute_uri(reverse('show_trade', args = [trade.game.id, trade.id]))})
+                                   'url': request.build_absolute_uri(reverse('show_trade', args = [trade.game_id, trade.id]))})
 
 class FormInvalidException(Exception):
     def __init__(self, forms, *args, **kwargs):
