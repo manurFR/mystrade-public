@@ -1,5 +1,5 @@
 """
-    Rule card scoring resolution for ruleset "Original Haggle"
+    Rule card scoring resolution for ruleset "Remixed Haggle"
 """
 
 def RMX04(self, scoresheet):
@@ -45,3 +45,29 @@ def RMX07(self, scoresheet):
                 sfr.detail = sfr.detail.replace('are deducted.', 'should have been deducted...')
                 scoresheet.register_score_from_rule(self, '(7) ...but a set of three yellow cards cancels that penalty.')
     return scoresheet
+
+def RMX08(self, scoresheet):
+    """Each set of five different colors gives a bonus of 8 points."""
+    min_color_number = None
+    nb_colors = 0
+    for sfc in scoresheet.scores_from_commodity:
+        nb_colors += 1
+        if min_color_number is None or sfc.nb_scored_cards < min_color_number:
+            min_color_number = sfc.nb_scored_cards
+    if min_color_number and nb_colors >= 5:
+        for _i in range(min_color_number):
+            scoresheet.register_score_from_rule(self, '(8) A set of five different colors gives a bonus of 8 points.', score = 8)
+
+def RMX09(self, scoresheets):
+    """The player with the most white cards triples their value.
+        In case of a tie, no player collects the extra value.
+
+        # Global rulecard #
+    """
+    winner = None
+    whites = [player.nb_scored_cards('White') for player in scoresheets]
+    if whites.count(max(whites)) == 1 and max(whites) > 0:
+        winner = scoresheets[whites.index(max(whites))]
+        winner.register_score_from_rule(self,
+                                        '(9) Having the most white cards ({} cards) triples their value.'.format(winner.nb_scored_cards('White')),
+                                        score = 2 * winner.nb_scored_cards('White') * winner.actual_value('White'))
