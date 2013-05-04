@@ -142,6 +142,57 @@ class RemixedHaggleTest(TestCase):
         self.assertEqual(12, scoresheet.total_score)
         assertRuleApplied(scoresheet, rulecard, '(4) Since the combined number of yellow cards (3) and green cards (3) is 6 (higher than five), the value of green cards is set to zero.')
 
+    def test_RMX05(self):
+        """"A player can score only as many yellow cards as he/she has pink cards."""
+        rulecard = RuleCard.objects.get(ref_name = 'RMX05')
+        scoresheet = _prepare_scoresheet(self.game, "p1", pink = 3, yellow = 3)
+        rulecard.perform(scoresheet)
+        self.assertEqual(21, scoresheet.total_score)
+        assertRuleNotApplied(scoresheet, rulecard)
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", pink = 2, yellow = 3)
+        rulecard.perform(scoresheet)
+        self.assertEqual(14, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecard, '(5) Since there are 2 pink card(s), only 2 yellow card(s) score.')
+
+    def test_RMX06(self):
+        """If a player has five or more blue cards, 10 points are deducted from every other player's score."""
+        rulecard = RuleCard.objects.get(ref_name = 'RMX06')
+        player1 = _prepare_scoresheet(self.game, "p1", blue = 5, green = 1)
+        player2 = _prepare_scoresheet(self.game, "p2", blue = 6, yellow = 2)
+        player3 = _prepare_scoresheet(self.game, "p3", blue = 2, white = 4, pink = 3, green = 1)
+        scoresheets = [player1, player2, player3]
+        rulecard.perform(scoresheets)
+        self.assertEqual(3, len(scoresheets))
+        self.assertEqual(10-10, scoresheets[0].total_score)
+        assertRuleApplied(scoresheets[0], rulecard, '(6) Since player #2 has 6 blue cards, 10 points are deducted.', -10)
+        self.assertEqual(14-10, scoresheets[1].total_score)
+        assertRuleApplied(scoresheets[1], rulecard, '(6) Since player #1 has 5 blue cards, 10 points are deducted.', -10)
+        self.assertEqual(24-20, scoresheets[2].total_score)
+        assertRuleApplied(scoresheets[2], rulecard, '(6) Since player #1 has 5 blue cards, 10 points are deducted.', -10)
+        assertRuleApplied(scoresheets[2], rulecard, '(6) Since player #2 has 6 blue cards, 10 points are deducted.', -10)
+
+    def test_RMX07(self):
+        """A set of three yellow cards protects you from one set of five blue cards."""
+        rulecardRMX06 = RuleCard.objects.get(ref_name = 'RMX06')
+        rulecardRMX07 = RuleCard.objects.get(ref_name = 'RMX07')
+        player1 = _prepare_scoresheet(self.game, "p1", blue = 5, green = 1)
+        player2 = _prepare_scoresheet(self.game, "p2", blue = 6, yellow = 3)
+        player3 = _prepare_scoresheet(self.game, "p3", blue = 2, yellow = 6)
+        rulecardRMX06.perform([player1, player2, player3])
+        rulecardRMX07.perform(player1)
+        rulecardRMX07.perform(player2)
+        rulecardRMX07.perform(player3)
+        self.assertEqual(10-10, player1.total_score)
+        assertRuleApplied(player1, rulecardRMX06, '(6) Since player #2 has 6 blue cards, 10 points are deducted.', -10)
+        self.assertEqual(18, player2.total_score)
+        assertRuleApplied(player2, rulecardRMX06, '(6) Since player #1 has 5 blue cards, 10 points should have been deducted...')
+        assertRuleApplied(player2, rulecardRMX07, '(7) ...but a set of three yellow cards cancels that penalty.')
+        self.assertEqual(26, player3.total_score)
+        assertRuleApplied(player3, rulecardRMX06, '(6) Since player #1 has 5 blue cards, 10 points should have been deducted...')
+        assertRuleApplied(player3, rulecardRMX06, '(6) Since player #2 has 6 blue cards, 10 points should have been deducted...')
+        assertRuleApplied(player3, rulecardRMX07, '(7) ...but a set of three yellow cards cancels that penalty.', times = 2)
+
 class HaggleTest(TestCase):
     def setUp(self):
         self.game = mommy.make(Game, ruleset = Ruleset.objects.get(id = 1))
