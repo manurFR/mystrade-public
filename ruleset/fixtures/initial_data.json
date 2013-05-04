@@ -248,7 +248,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "4",
-            "description": "If a player has a combined number of yellow and green cards strictly superior to five cards, all of his/her green cards lose their value.",
+            "description": "If a player has a combined number of yellow and green cards strictly higher than five cards, all of his/her green cards lose their value.",
             "mandatory": false,
             "ruleset": 2,
             "ref_name": "RMX04",
