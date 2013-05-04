@@ -18,7 +18,7 @@ class CreateGameForm(forms.Form):
 
     def __init__(self, game_master, *args, **kwargs):
         super(CreateGameForm, self).__init__(*args, **kwargs)
-        self.fields['players'].queryset = User.objects.exclude(id = game_master.id)
+        self.fields['players'].queryset = User.objects.exclude(id = game_master.id).order_by('username')
 
     def clean(self):
         cleaned_data = super(CreateGameForm, self).clean()

@@ -23,7 +23,10 @@
 			Ruleset : {{ session.ruleset }} &mdash; 
 			Start date : {{ session.start_date|date:"SHORT_DATETIME_FORMAT" }} &mdash;
 			End date : {{ session.end_date|date:"SHORT_DATETIME_FORMAT" }}<br/>
-			Players : {{ session.profiles|join:", " }}
+			Players :
+            {% for player in session.players %}
+                <div class="game-player"><a href="{% url 'otherprofile' player.id %}">{{ player.get_profile.name }}</a></div>
+            {% endfor %}
 		</div>
 		{% if error %}
 		<div class="errors">{{ error }}</div>

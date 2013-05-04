@@ -84,7 +84,7 @@ class GameCreationViewsTest(TestCase):
         self.assertEqual(1, self.client.session['ruleset'].id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), self.client.session['start_date'])
         self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), self.client.session['end_date'])
-        self.assertListEqual(list(self.testUsersNoCreate), self.client.session['players'])
+        self.assertItemsEqual(list(self.testUsersNoCreate), self.client.session['players'])
 
     def test_access_rules_with_incomplete_session_redirects_to_first_page(self):
         session = self.client.session
@@ -129,7 +129,7 @@ class GameCreationViewsTest(TestCase):
         session['ruleset'] = 1
         session['start_date'] = '11/10/2012 18:30'
         session['end_date'] = '11/13/2012 00:15'
-        session['players'] = [player.id for player in self.testUsersNoCreate][:4] # only 4 players
+        session['players'] = self.testUsersNoCreate[:4] # only 4 players
         session.save()
         response = self.client.post("/game/rules/",
                                     {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,

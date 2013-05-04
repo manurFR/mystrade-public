@@ -240,8 +240,7 @@ def create_game(request):
             request.session['ruleset'] = form.cleaned_data['ruleset']
             request.session['start_date'] = form.cleaned_data['start_date']
             request.session['end_date'] = form.cleaned_data['end_date']
-            request.session['players'] = list(form.cleaned_data['players'].all()) # convert from Queryset to list
-            request.session['profiles'] = [user.get_profile() for user in request.session['players']]
+            request.session['players'] = sorted(form.cleaned_data['players'].all(), key = lambda player: player.get_profile().name) # convert from Queryset to list
             return redirect('select_rules')
     else:
         form = CreateGameForm(request.user)
@@ -303,7 +302,6 @@ def select_rules(request):
                 del request.session['start_date']
                 del request.session['end_date']
                 del request.session['players']
-                del request.session['profiles']
 
                 # deal starting cards
                 deal_cards(game)
