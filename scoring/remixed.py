@@ -1,6 +1,8 @@
 """
     Rule card scoring resolution for ruleset "Remixed Haggle"
 """
+import random
+
 
 def RMX04(self, scoresheet):
     """If a player has a combined number of yellow and green cards strictly higher than five cards,
@@ -71,3 +73,31 @@ def RMX09(self, scoresheets):
         winner.register_score_from_rule(self,
                                         '(9) Having the most white cards ({} cards) triples their value.'.format(winner.nb_scored_cards('White')),
                                         score = 2 * winner.nb_scored_cards('White') * winner.actual_value('White'))
+
+def RMX10(self, scoresheet):
+    """If the total of the basic values of all the cards handed in by a player is higher than 39 points,
+        cards are removed at random until the total becomes less or equal than 39 points.
+        Only the basic values of the cards are considered, before any other rule is applied.
+    """
+    present_colors = []
+    for sfc in scoresheet.scores_from_commodity:
+        if sfc.nb_scored_cards > 0:
+            present_colors.append(sfc.name)
+    initial_score = scoresheet.total_score
+    if initial_score > 39:
+        discarded = {}
+        while scoresheet.total_score > 39:
+            selected_color = random.choice(present_colors)
+            scoresheet.set_nb_scored_cards(selected_color, nb_scored_cards = scoresheet.nb_scored_cards(selected_color) - 1)
+            if selected_color not in discarded:
+                discarded[selected_color] = 1
+            else:
+                discarded[selected_color] += 1
+            if scoresheet.nb_scored_cards(selected_color) == 0:
+                present_colors.remove(selected_color)
+        detail = '(10) Since the total of the basic values of your cards was {} points (more than 39), '.format(initial_score)
+        detail += 'the following cards have been discarded to bring the new basic total (before applying all other rules) to {} points: '.format(scoresheet.total_score)
+        for index, color in enumerate(discarded.iterkeys()):
+            detail += '{} {} card'.format(discarded[color], color) + ('s' if discarded[color] > 1 else '')
+            detail += ', ' if index < (len(discarded) - 1) else '.'
+        scoresheet.register_score_from_rule(self, detail, is_random = True)
