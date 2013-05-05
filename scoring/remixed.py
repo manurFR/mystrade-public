@@ -127,3 +127,19 @@ def RMX12(self, scoresheets):
         winner.register_score_from_rule(self,
                                         '(12) Having the most blue cards ({} cards) doubles the value of pink cards.'.format(winner.nb_scored_cards('Blue')),
                                         score = winner.nb_scored_cards('Pink') * winner.actual_value('Pink'))
+
+def RMX13(self, scoresheet):
+    """If four colors are handed in with the same number of cards for each,
+        and no cards are handed in from the fifth color, the value of the hand is doubled.
+
+       Note: this rule deals with cards *submitted*, not scored. Hence the use of 'nb_submitted_cards'.
+    """
+    nb_colors = []
+    for sfc in scoresheet.scores_from_commodity:
+        if sfc.nb_submitted_cards > 0:
+            nb_colors.append({ 'color': sfc.name, 'nb_cards': sfc.nb_submitted_cards })
+    if len(nb_colors) == 4 and all(item['nb_cards'] == nb_colors[0]['nb_cards'] for item in nb_colors):
+        scoresheet.register_score_from_rule(self,
+                                            '(13) A set of the same number of cards for 4 colors ({}, {}, {}, {}) and no other cards doubles the score.'.format(
+                                                nb_colors[0]['color'], nb_colors[1]['color'], nb_colors[2]['color'], nb_colors[3]['color']),
+                                            score = scoresheet.total_score)

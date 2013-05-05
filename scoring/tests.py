@@ -313,6 +313,26 @@ class RemixedHaggleTest(TestCase):
         self.assertEqual(18, player3.total_score)
         assertRuleNotApplied(player3, rulecard)
 
+    def test_RMX13(self):
+        """If four colors are handed in with the same number of cards for each,
+            and no cards are handed in from the fifth color, the value of the hand is doubled.
+        """
+        rulecard = RuleCard.objects.get(ref_name = 'RMX13')
+        scoresheet = _prepare_scoresheet(self.game, "p1", blue = 3, white = 3, yellow = 3, green = 3)
+        rulecard.perform(scoresheet)
+        self.assertEqual(36*2, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecard, '(13) A set of the same number of cards for 4 colors (blue, green, white, yellow) and no other cards doubles the score.', 36)
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", blue = 2, white = 2, pink = 2, yellow = 2, green = 2)
+        rulecard.perform(scoresheet)
+        self.assertEqual(30, scoresheet.total_score)
+        assertRuleNotApplied(scoresheet, rulecard)
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", blue = 4, white = 2, pink = 4, yellow = 4, green = 4)
+        rulecard.perform(scoresheet)
+        self.assertEqual(56, scoresheet.total_score)
+        assertRuleNotApplied(scoresheet, rulecard)
+
 class HaggleTest(TestCase):
     def setUp(self):
         self.game = mommy.make(Game, ruleset = Ruleset.objects.get(id = 1))
