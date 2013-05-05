@@ -101,3 +101,29 @@ def RMX10(self, scoresheet):
             detail += '{} {} card'.format(discarded[color], color) + ('s' if discarded[color] > 1 else '')
             detail += ', ' if index < (len(discarded) - 1) else '.'
         scoresheet.register_score_from_rule(self, detail, is_random = True)
+
+def RMX11(self, scoresheet):
+    """If a player hands in seven or more cards of the same color,
+       for each of these colors 10 points are deducted from his/her score.
+
+       Note: this rule deals with cards *submitted*, not scored. Hence the use of 'nb_submitted_cards'.
+    """
+    for sfc in scoresheet.scores_from_commodity:
+        if sfc.nb_submitted_cards >= 7:
+            scoresheet.register_score_from_rule(self,
+                                                '(11) Since {} {} cards where submitted (seven or more), 10 points are deducted.'.format(sfc.nb_submitted_cards, sfc.name),
+                                                score = -10)
+
+def RMX12(self, scoresheets):
+    """The player with the most blue cards doubles the value of his/her pink cards.
+        In case of a tie, no player collects the extra value.
+
+        # Global rulecard #
+    """
+    winner = None
+    blues = [player.nb_scored_cards('Blue') for player in scoresheets]
+    if blues.count(max(blues)) == 1 and max(blues) > 0:
+        winner = scoresheets[blues.index(max(blues))]
+        winner.register_score_from_rule(self,
+                                        '(12) Having the most blue cards ({} cards) doubles the value of pink cards.'.format(winner.nb_scored_cards('Blue')),
+                                        score = winner.nb_scored_cards('Pink') * winner.actual_value('Pink'))

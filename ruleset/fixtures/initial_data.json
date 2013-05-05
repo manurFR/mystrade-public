@@ -160,7 +160,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "12",
-            "description": "The player with the most red cards double their value. In case of a tie, no player collects the extra value.",
+            "description": "The player with the most red cards doubles their value. In case of a tie, no player collects the extra value.",
             "mandatory": false,
             "ruleset": 1,
             "ref_name": "HAG12",

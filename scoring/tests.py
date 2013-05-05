@@ -259,6 +259,60 @@ class RemixedHaggleTest(TestCase):
         self.assertEqual('RMX10', sfr.rulecard.ref_name)
         self.assertTrue(sfr.detail.startswith('(10) Since the total of the basic values of your cards was 60 points (more than 39)'))
 
+    def test_RMX11(self):
+        """If a player hands in seven or more cards of the same color,
+            10 points are deducted from his/her score for each of these colors.
+        """
+        rulecard = RuleCard.objects.get(ref_name = 'RMX11')
+        scoresheet = _prepare_scoresheet(self.game, "p1", white = 6, pink = 3, green = 1)
+        rulecard.perform(scoresheet)
+        self.assertEqual(26, scoresheet.total_score)
+        assertRuleNotApplied(scoresheet, rulecard)
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", white = 7, pink = 3, green = 1)
+        rulecard.perform(scoresheet)
+        self.assertEqual(28-10, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecard, '(11) Since 7 white cards where submitted (seven or more), 10 points are deducted.', -10)
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", white = 7, pink = 8, green = 1)
+        rulecard.perform(scoresheet)
+        self.assertEqual(43-20, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecard, '(11) Since 7 white cards where submitted (seven or more), 10 points are deducted.', -10)
+        assertRuleApplied(scoresheet, rulecard, '(11) Since 8 pink cards where submitted (seven or more), 10 points are deducted.', -10)
+
+    def test_RMX12(self):
+        """The player with the most blue cards doubles the value of his/her pink cards.
+            In case of a tie, no player collects the extra value.
+        """
+        rulecard = RuleCard.objects.get(ref_name = 'RMX12')
+        player1 = _prepare_scoresheet(self.game, "p1", blue = 3, pink = 4)
+        player2 = _prepare_scoresheet(self.game, "p2", blue = 1, pink = 3)
+        player3 = _prepare_scoresheet(self.game, "p3", yellow = 2, green = 2)
+        scoresheets = [player1, player2, player3]
+        rulecard.perform(scoresheets)
+        self.assertEqual(3, len(scoresheets))
+        self.assertEqual(15+12, player1.total_score)
+        assertRuleApplied(player1, rulecard, '(12) Having the most blue cards (3 cards) doubles the value of pink cards.', 12)
+        self.assertEqual(10, player2.total_score)
+        assertRuleNotApplied(player2, rulecard)
+        self.assertEqual(18, player3.total_score)
+        assertRuleNotApplied(player3, rulecard)
+
+    def test_RMX12_tie(self):
+        rulecard = RuleCard.objects.get(ref_name = 'RMX12')
+        player1 = _prepare_scoresheet(self.game, "p1", blue = 3, pink = 4)
+        player2 = _prepare_scoresheet(self.game, "p2", blue = 3, pink = 3)
+        player3 = _prepare_scoresheet(self.game, "p3", yellow = 2, green = 2)
+        scoresheets = [player1, player2, player3]
+        rulecard.perform(scoresheets)
+        self.assertEqual(3, len(scoresheets))
+        self.assertEqual(15, player1.total_score)
+        assertRuleNotApplied(player1, rulecard)
+        self.assertEqual(12, player2.total_score)
+        assertRuleNotApplied(player2, rulecard)
+        self.assertEqual(18, player3.total_score)
+        assertRuleNotApplied(player3, rulecard)
+
 class HaggleTest(TestCase):
     def setUp(self):
         self.game = mommy.make(Game, ruleset = Ruleset.objects.get(id = 1))
