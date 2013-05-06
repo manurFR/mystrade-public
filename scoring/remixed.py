@@ -143,3 +143,21 @@ def RMX13(self, scoresheet):
                                             '(13) A set of the same number of cards for 4 colors ({}, {}, {}, {}) and no other cards doubles the score.'.format(
                                                 nb_colors[0]['color'], nb_colors[1]['color'], nb_colors[2]['color'], nb_colors[3]['color']),
                                             score = scoresheet.total_score)
+
+def RMX14(self, scoresheet):
+    """Each set of two pink cards doubles the value of one yellow card."""
+    nb_sets = int(scoresheet.nb_scored_cards('Pink')) / 2
+    nb_bonus = min(nb_sets, scoresheet.nb_scored_cards('Yellow'))
+    for _i in range(nb_bonus):
+        scoresheet.register_score_from_rule(self,
+                                            '(14) A pair of pink cards doubles the value of one yellow card.',
+                                            score = scoresheet.actual_value('Yellow'))
+
+def RMX15(self, scoresheet):
+    """Each set of three white cards triples the value of one green card."""
+    nb_sets = int(scoresheet.nb_scored_cards('White')) / 3
+    nb_bonus = min(nb_sets, scoresheet.nb_scored_cards('Green'))
+    for _i in range(nb_bonus):
+        scoresheet.register_score_from_rule(self,
+                                            '(15) A set of three white cards triples the value of one green card.',
+                                            score = 2 * scoresheet.actual_value('Green'))
