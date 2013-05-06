@@ -29,6 +29,10 @@
 			<th>{{ form.ruleset.label_tag }} :</th>
 			<td>{{ form.ruleset }}&nbsp;<span class="errors">{{ form.ruleset.errors.as_text }}</span></td>
 		</tr>
+        <tr>
+            <th>&nbsp;</th>
+            <td><div class="upperhelptext" id="ruleset_description"></div></td>
+        </tr>
 		<tr>
 			<th>{{ form.start_date.label_tag }} :</th>
 			<td>{{ form.start_date|add_class:"jqueryui-datepicker"|attr:"size:17" }}&nbsp;<span class="errors">{{ form.start_date.errors.as_text }}</span></td>
@@ -48,17 +52,28 @@
 </form>
 
 <script>
-$(function() {
-    $(".jqueryui-datepicker").datetimepicker({
-    	showOn: "both",
-        buttonImage: "{% static 'calendar.png' %}",
-        buttonImageOnly: true,
-		stepMinute: 15,
-		minuteGrid: 15
+    $(function() {
+        $(".jqueryui-datepicker").datetimepicker({
+            showOn: "both",
+            buttonImage: "{% static 'calendar.png' %}",
+            buttonImageOnly: true,
+            stepMinute: 15,
+            minuteGrid: 15
+        });
+
+        $("input[type=submit]").button();
+
+        var descriptions = [];
+        {% for ruleset in rulesets %}
+            descriptions[{{ ruleset.id }}] = "{{ ruleset.description|escape }}";
+        {% endfor %}
+
+        $("#id_ruleset").on("change", function() {
+            var ruleset_id = $(this).children("option:selected").val();
+            $("#ruleset_description").html(descriptions[ruleset_id]);
+        });
+
+        $("#id_ruleset").change();
     });
-});
-$(function() {
-    $( "input[type=submit]" ).button();
-});
 </script>
 {% endblock content %}

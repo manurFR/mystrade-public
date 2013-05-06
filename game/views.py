@@ -16,13 +16,12 @@ from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse, MessageForm
 from game.helpers import rules_currently_in_hand, rules_formerly_in_hand, commodities_in_hand
 from game.models import Game, CommodityInHand, GamePlayer, Message
-from ruleset.models import RuleCard
+from ruleset.models import RuleCard, Ruleset
 from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer, Trade
 from userprofile.helpers import UserNameCache
-from userprofile.models import UserProfile
 from utils import utils
 
 logger = logging.getLogger(__name__)
@@ -244,7 +243,7 @@ def create_game(request):
             return redirect('select_rules')
     else:
         form = CreateGameForm(request.user)
-    return render(request, 'game/create.html', {'form': form})
+    return render(request, 'game/create.html', {'form': form, 'rulesets': Ruleset.objects.all()})
 
 @permission_required('game.add_game')
 def select_rules(request):
