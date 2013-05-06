@@ -6,6 +6,7 @@ from django.db.models.signals import post_init
 class Ruleset(models.Model):
     name = models.CharField(max_length = 255)
     module = models.CharField("Internal scoring module name", max_length = 20)
+    description = models.CharField(max_length = 510)
 
     def __unicode__(self):
         return self.name

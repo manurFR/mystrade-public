@@ -4,7 +4,8 @@
         "model": "ruleset.ruleset",
         "fields": {
             "name": "Original Haggle (1969)",
-            "module": "haggle"
+            "module": "haggle",
+            "description": "The original Haggle ruleset from Sid Sackson's A Gamut of Games 1969 book. Rule #9 has been modified to replace player elimination by a loss of 10 points."
         }
     },
     {
@@ -12,7 +13,8 @@
         "model": "ruleset.ruleset",
         "fields": {
             "name": "Remixed Haggle (2013)",
-            "module": "remixed"
+            "module": "remixed",
+            "description": "Our 'remix' of the original Haggle, changing some colors, their value, and almost all the rules in subtle ways, all of this in order to obfuscate the ruleset a bit. It may prevent that googling the original ruleset would bring an unfair advantage. The original principles and basic rule mechanisms have been kept the same."
         }
     },
     {
