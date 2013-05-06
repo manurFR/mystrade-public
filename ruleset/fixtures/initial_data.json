@@ -326,7 +326,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "10",
-            "description": "If the total of the basic values of all the cards handed in by a player is higher than 39 points, cards are removed at random until the total becomes less or equal than 39 points. Only the basic values of the cards are considered, before any other rule is applied.",
+            "description": "If the total of the basic values of all the cards handed in by a player is higher than 39 points, cards are removed at random until the total becomes less or equal than 39 points. Only the basic values are considered, before any other rule is applied.",
             "mandatory": false,
             "ruleset": 2,
             "ref_name": "RMX10",
