@@ -2,7 +2,8 @@ from django.test import TestCase
 from model_mommy import mommy
 from game.models import Game
 from ruleset.models import Ruleset, RuleCard
-from scoring.tests.commons import _prepare_scoresheet, assertRuleNotApplied, assertRuleApplied
+from scoring.card_scoring import tally_scores
+from scoring.tests.commons import _prepare_scoresheet, assertRuleNotApplied, assertRuleApplied, _prepare_hand
 
 class RemixedHaggleTest(TestCase):
     def setUp(self):
@@ -269,3 +270,16 @@ class RemixedHaggleTest(TestCase):
         self.assertEqual(28+20, scoresheet.total_score)
         assertRuleApplied(scoresheet, rulecard, '(15) A set of three white cards triples the value of one green card.', 10, times = 2)
 
+    def test_all_rules_remixed_haggle_together(self):
+        for rule in RuleCard.objects.filter(ruleset__id = 2):
+            self.game.rules.add(rule)
+        _prepare_hand(self.game, player = "p1", blue = 2, white = 1, pink = 3, yellow = 3, green = 2) # -6+7 8 14
+        _prepare_hand(self.game, player = "p2", blue = 7, white = 5, pink = 3,             green = 1) # 9 11 12 15
+        _prepare_hand(self.game, player = "p3", blue = 3, white = 1, pink = 1, yellow = 4, green = 2) # 4 5 -6+7 8
+        _prepare_hand(self.game, player = "p4",           white = 2, pink = 2, yellow = 2, green = 2) # -6 13 14
+        scoresheets = tally_scores(self.game)
+        self.assertEqual(4, len(scoresheets))
+        self.assertEqual(35+8+4, scoresheets[0].total_score)
+        self.assertEqual(31+20-10+9+10, scoresheets[1].total_score)
+        self.assertEqual(12+8, scoresheets[2].total_score)
+        self.assertEqual((28-10+4)*2, scoresheets[3].total_score)

@@ -16,7 +16,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.sass-cache" />
       <excludeFolder url="file://$MODULE_DIR$/design" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 2.7.3 (/usr/bin/python2.7)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 2.7.4 (/System/Library/Frameworks/Python.framework/Versions/2.7/bin/python)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" scope="PROVIDED" name="sass-stdlib" level="application" />
   </component>

@@ -1,6 +1,8 @@
 *.bak
 *.pyc
 *.iws
+*.iml
 .idea/workspace.xml
 .idea/dictionaries/
+.idea/misc.xml
 .sass-cache/
