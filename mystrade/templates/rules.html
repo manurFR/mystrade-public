@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+    <div class="reminder">
+        <img src="{% static 'warning.png' %}" alt=""/>
+        Cette page de r&egrave;gles est r&eacute;dig&eacute;e en fran&ccedil;ais. Tout le reste du site est en anglais.
+    </div>
+
+    <div class="header">R&egrave;gles du jeu</div>
+
+    <p>Au début d'une partie, chaque joueur reçoit une main (<em>hand</em>) aléatoire de cartes, réparties en deux catégories :</p>
+    <ul>
+        <li>Des règles (<em>rules</em>) ;</li>
+        <li>Des biens (<em>commodities</em>).</li>
+    </ul>
+    <p>Chaque joueur possédera, au départ, le même nombre de cartes règles, et le même nombre de cartes biens.</p>
+
+    <p>Le but du jeu est de rassembler à la fin de la partie la combinaison de cartes <strong>biens</strong> qui rapportera le plus de points.
+    Cependant, la valeur individuelle de chaque carte, ainsi que les bonus, malus ou limitations en rassemblant certaines
+    cartes entre elles sont définies par l'ensemble des cartes règles réparties entre tous les joueurs.</p>
+
+    <p><strong>Exemple de règles :</strong></p>
+    <ol>
+        <li>Les cartes "souris" valent un point.</li>
+        <li>Les biens "chien" et "chat" valent deux points chacun.</li>
+        <li>Une carte "mouton" vaut trois fois le nombre de points d'une carte "souris".</li>
+        <li>Chaque carte "chat" annule une carte "souris", qui ne vaut plus aucun point.</li>
+        <li>Chaque ensemble d'une carte "mouton" et d'une carte "chien" rapporte trois points de plus que sa valeur initiale.</li>
+        <li>Il n'y a pas de places pour plus de six animaux dans votre ferme. Si votre main comporte plus de six cartes, on en retirera au hasard jusqu'à ce qu'il n'en reste que six.</li>
+    </ol>
+
+{% endblock %}

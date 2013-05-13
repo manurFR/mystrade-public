@@ -13,8 +13,11 @@
  		
 	<body>
 		<div class="toplinks">
+            {% if user.is_authenticated %}<div class="game-player">{{  user.get_profile.name }}</div>&nbsp;&nbsp;&nbsp;{% endif %}
+
+            <a href="{% url 'rules' %}">R&egrave;gles</a> |
+
 			{% if user.is_authenticated %}
-                <div class="game-player">{{  user.get_profile.name }}</div>&nbsp;&nbsp;&nbsp;
 				<a href="{% url 'profile' %}">Profile</a> |
 				<a href="{% url 'logout' %}">Log out</a>
 			{% else %}
