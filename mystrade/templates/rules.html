@@ -13,37 +13,38 @@
 
     <p>Au début d'une partie, chaque joueur reçoit une main (<em>hand</em>) aléatoire de cartes, réparties en deux catégories :</p>
     <ul>
-        <li>Des règles (<em>rules</em>) ;</li>
-        <li>Des biens (<em>commodities</em>).</li>
+        <li>Deux cartes règles (<em>rules</em>) ;</li>
+        <li>Dix cartes biens (<em>commodities</em>).</li>
     </ul>
-    <p>Chaque joueur possédera, au départ, le même nombre de cartes règles, et le même nombre de cartes biens.</p>
 
     <p>Le but du jeu est de rassembler à la fin de la partie la combinaison de cartes <strong>biens</strong> qui rapportera le plus de points.
-    Cependant, la valeur individuelle de chaque carte, ainsi que les bonus, malus ou limitations obtenus en possédant certains groupes de
-    cartes sont définis par l'ensemble des cartes règles existantes dans le jeu. En d'autres termes, chaque joueur ne connaît qu'une partie
-    des règles du jeu en début de partie !</p>
+    Cependant, la valeur d'une main ne peut être déterminée qu'à partir de l'ensemble des règles présentes dans le jeu (voir un exemple en bas de page).
+    En d'autres termes, en début de partie chaque joueur ne connaît qu'une fraction des règles du jeu !</p>
 
-    <p>Le nombre de cartes règles en jeu est secret, mais chacune d'entre elles est présente en un minimum de deux exemplaires,
+    <p>Le nombre de règles en jeu est initialement secret, mais chacune d'entre elles est numérotée et présente en un minimum de deux exemplaires,
     répartis aléatoirement entre tous les joueurs.</p>
 
     <h4>Echanges</h4>
 
-    <p>Le jeu consiste à réaliser des échanges (<em>trades</em>) de cartes. Tous les types d'échanges sont permis, et le nombre d'échanges
-    durant une partie n'est pas limité. Chacun des deux joueurs impliqués dans un projet d'échange peut proposer à l'autre autant de biens,
-    cartes règles, "informations" ou promesses qu'il ou elle le souhaite.
-    Les <em>informations</em> peuvent par exemple être des "copier-coller" de cartes règles, mais pas obligatoirement. Les cartes règles et
-    les informations proposées ne sont révélées à l'autre joueur qu'une fois l'échange accepté par les deux parties.</p>
+    <p>Les joueurs poursuivent leurs deux objectifs parallèles d'obtention d'informations sur les règles et de constitution d'une main optimale
+    en proposant à leurs adversaires de réaliser des échanges (<em>trades</em>). Chacun des deux joueurs impliqués dans un projet d'échange
+    soumet à l'autre une offre contenant autant de cartes (biens et/ou règles), ainsi que d' &laquo; informations libres &raquo; (<em>free informations</em>),
+    qu'il le souhaite. Tout type d'accord est permis tant qu'il satisfait les deux joueurs, et le nombre d'échanges durant une partie n'est pas limité.</p>
+
+    <p>Tant que l'échange n'a pas été accepté par les deux joueurs, chacun ne visualise dans l'offre de l'autre partie que les biens,
+    le <em>numéro</em> des règles, et la présence ou non d'une information libre. Le <em>détail</em> des règles et de l'information libre ne sont   révélés
+    qu'après acceptation mutuelle des deux offres. Il est toutefois possible d'accompagner son offre d'un commentaire, visible immédiatement
+    par l'autre joueur, afin d'apporter des précisions sur ces éléments cachés ou de détailler ses souhaits pour l'offre en retour.</p>
 
     <h4>Fin de partie</h4>
 
-    <p>Chaque partie est définie avec une date de fin (<em>end date</em>) ; lorsque celle-ci est atteinte, plus aucun échange ne peut être
+    <p>Chaque partie est définie avec une date et heure de fin (<em>end date</em>) ; lorsque celle-ci est atteinte, plus aucun échange ne peut être
     réalisé (y compris les échanges encore non acceptés par les deux joueurs, qui ne pourront pas être menés à leur terme). Le score des
     joueurs sera alors calculé, sur impulsion du maître du jeu (<em>game master</em>), à partir de la main que chacun a soumis.</p>
 
-    <p>Si un joueur estime que son score sera meilleur en excluant certains biens qu'il ou elle possède, ce joueur peut rendre sa main
+    <p>Si un joueur estime que son score sera meilleur en excluant certains biens qu'il possède, ce joueur peut rendre sa main
     <strong>avant la date de fin</strong> de la partie en choisissant quelles cartes sont remises au maître du jeu. Les joueurs qui
     n'auront pas pris cette initiative à la date de fin soumettront automatiquement toutes les cartes biens de leur main.</p>
-
 
     <h4>Exemple de règles</h4>
     <ol>
@@ -85,9 +86,9 @@
             </ul>
         </li>
         <li>
-            <div class="game-player">Delhia</div>
+            <div class="game-player">Daphné</div>
             <ul>
-                <li>Main rendue : 3 chiens, 1 chat, 2 moutons. Delhia possédait 3 chats mais a choisi de soumettre sa main en excluant deux félins,
+                <li>Main rendue : 3 chiens, 1 chat, 2 moutons. Daphné possédait 3 chats mais a choisi de soumettre sa main en excluant deux félins,
                     car elle connaissait la règle 6. et ne voulait pas prendre le risque de perdre des moutons, comme Claude.</li>
                 <li>3 chiens, 1 chat : 8 points</li>
                 <li>2 moutons, qui rapportent chacun un bonus grâce aux trois chiens : 6 points + 6 points de bonus</li>
@@ -96,6 +97,6 @@
         </li>
     </ul>
 
-    <p>Delhia gagne cette partie.</p>
+    <p>Daphné gagne cette partie.</p>
 
 {% endblock %}

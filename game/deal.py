@@ -41,12 +41,12 @@ def dispatch_cards(nb_players, nb_cards_per_player, cards, card_dealer):
          be implemented here (for example, for rule cards there should be no duplicates in a hand).
         After that, if there are players left without all their intended nb_cards_per_player cards,
          a last copy of all cards is prepared and the appropriate players are dealt a last card.
-        This way of dealing ensures that among all selected cards for this game, some players will
-         have x copies, some x+1 copies, but no one more than that.
-        If the card_dealer object detects a bad dealing of cards (for example, for rule cards a
-         player might have to choose among cards (s)he already possess in the deck, which would lead
-         to a duplicate), it is the card_dealer's responsibility to raise an
-         InappropriateDealingException. It will make this function start the dealing from scratch.
+        This way of dealing ensures that among all selected cards for this game, some cards will
+         be dealt in n copies, and some in n+1 copies, but no card in less or more than that.
+        If the card_dealer object detects a bad dealing of cards (for example, for rule cards the
+         deck might only contain cards that a player already possess, which would lead to a duplicate),
+         it is the card_dealer's responsibility to raise an InappropriateDealingException.
+         It will make this function start the dealing from scratch.
     """
     copies = int(nb_cards_per_player * float(nb_players) / len(cards))
 
