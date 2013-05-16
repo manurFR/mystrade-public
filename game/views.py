@@ -1,5 +1,6 @@
 import logging
 import bleach
+import markdown
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError, PermissionDenied
@@ -10,7 +11,6 @@ from django.db.models import Q, F
 from django.forms.formsets import formset_factory
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now
-import markdown
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse, MessageForm
@@ -287,7 +287,7 @@ def select_rules(request):
                                                      'mandatory': bool(card.mandatory),
                                                      'selected_rule': bool(card in selected_rules)}
                                                     for card in rulecards_queryset])
-                return render(request, 'game/rules.html', {'formset': formset, 'session': request.session, 'error': error})
+                return render(request, 'game/select_rules.html', {'formset': formset, 'session': request.session, 'error': error})
             else:
                 game = Game.objects.create(ruleset    = ruleset,
                                            master     = request.user,
@@ -338,7 +338,7 @@ def select_rules(request):
                                              'description': card.description,
                                              'mandatory': bool(card.mandatory)}
                                             for card in rulecards_queryset])
-        return render(request, 'game/rules.html', {'formset': formset, 'session': request.session})
+        return render(request, 'game/select_rules.html', {'formset': formset, 'session': request.session})
 
 #############################################################################
 ##                          Control Board                                  ##

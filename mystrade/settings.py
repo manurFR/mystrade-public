@@ -1,6 +1,5 @@
 # Django settings for mystrade project.
 import logging
-from django.core.urlresolvers import reverse_lazy
 import os
 import sys
 
@@ -8,6 +7,12 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
+
+# Required when DEBUG is False, ie in production, to prevent "host-poisoning attacks".
+# ALLOWED_HOSTS = [
+#     '.example.com', # Allow domain and subdomains
+#     '.example.com.', # Also allow FQDN and subdomains
+# ]
 
 ADMINS = (
     ('Emmanuel', 'emmanuel.bizieau@laposte.net'),
@@ -83,8 +88,7 @@ STATICFILES_DIRS = (
     os.path.join(SITE_ROOT, 'static/userprofile'),
 )
 
-# List of finder classes that know how to find static files in
-# various locations.
+# List of finder classes that know how to find static files in various locations.
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -150,8 +154,8 @@ INSTALLED_APPS = (
 ) + MYSTRADE_APPS
 
 AUTH_PROFILE_MODULE = 'userprofile.UserProfile'
-LOGIN_URL = reverse_lazy('login')
-LOGIN_REDIRECT_URL = reverse_lazy('welcome')
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'welcome'
 
 # Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

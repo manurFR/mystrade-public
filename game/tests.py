@@ -80,49 +80,49 @@ class GameCreationViewsTest(TestCase):
                                                       'start_date': '11/10/2012 18:30',
                                                       'end_date': '11/13/2012 00:15',
                                                       'players': [player.id for player in self.testUsersNoCreate]})
-        self.assertRedirects(response, "/game/rules/")
+        self.assertRedirects(response, "/game/selectrules/")
         self.assertEqual(1, self.client.session['ruleset'].id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), self.client.session['start_date'])
         self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), self.client.session['end_date'])
         self.assertItemsEqual(list(self.testUsersNoCreate), self.client.session['players'])
 
-    def test_access_rules_with_incomplete_session_redirects_to_first_page(self):
+    def test_access_select_rules_with_incomplete_session_redirects_to_first_page(self):
         session = self.client.session
         session['ruleset'] = 1
         session.save()
-        response = self.client.get("/game/rules/")
+        response = self.client.get("/game/selectrules/")
         self.assertRedirects(response, "/game/create/")
  
-    def test_access_rules_without_enough_players_redirects_to_first_page(self):
+    def test_access_select_rules_without_enough_players_redirects_to_first_page(self):
         session = self.client.session
         session['ruleset'] = 1
         session['start_date'] = '11/10/2012 18:30'
         session['end_date'] = '11/13/2012 00:15'
         session['players'] = [self.testUsersNoCreate[0]]
         session.save()
-        response = self.client.get("/game/rules/")
+        response = self.client.get("/game/selectrules/")
         self.assertRedirects(response, "/game/create/")
 
-    def test_access_rules_with_invalid_dates_redirects_to_first_page(self):
+    def test_access_select_rules_with_invalid_dates_redirects_to_first_page(self):
         session = self.client.session
         session['ruleset'] = 1
         session['start_date'] = '11/10/2012 18:30'
         session['end_date'] = '11/13/2011 00:15'
         session['players'] = [self.testUsersNoCreate[0]]
         session.save()
-        response = self.client.get("/game/rules/")
+        response = self.client.get("/game/selectrules/")
         self.assertRedirects(response, "/game/create/")
 
-    def test_access_rules(self):
+    def test_access_select_rules(self):
         session = self.client.session
         session['ruleset'] = 1
         session['start_date'] = '11/10/2012 18:30'
         session['end_date'] = '11/13/2012 00:15'
         session['players'] = self.testUsersNoCreate
         session.save()
-        response = self.client.get("/game/rules/")
+        response = self.client.get("/game/selectrules/")
         self.assertEqual(200, response.status_code)
-        self.assertTemplateUsed(response, 'game/rules.html')
+        self.assertTemplateUsed(response, 'game/select_rules.html')
 
     def test_create_game_with_too_many_rulecards(self):
         session = self.client.session
@@ -131,7 +131,7 @@ class GameCreationViewsTest(TestCase):
         session['end_date'] = '11/13/2012 00:15'
         session['players'] = self.testUsersNoCreate[:4] # only 4 players
         session.save()
-        response = self.client.post("/game/rules/",
+        response = self.client.post("/game/selectrules/",
                                     {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
                                      'form-0-card_id': 1, 'form-0-selected_rule': 'on',
                                      'form-1-card_id': 2, 'form-1-selected_rule': 'on',
@@ -150,7 +150,7 @@ class GameCreationViewsTest(TestCase):
                                      'form-14-card_id': 15
                                     })
         self.assertEqual(200, response.status_code)
-        self.assertTemplateUsed(response, 'game/rules.html')
+        self.assertTemplateUsed(response, 'game/select_rules.html')
         self.assertEqual("Please select at most 4 rule cards (including the mandatory ones)", response.context['error'])
 
     @override_settings(ADMINS = (('admin', 'admin@mystrade.com'),))
@@ -159,8 +159,8 @@ class GameCreationViewsTest(TestCase):
                                                       'start_date': '11/10/2012 18:30',
                                                       'end_date': '11/13/2037 00:15',
                                                       'players': [player.id for player in self.testUsersNoCreate][:4]})
-        self.assertRedirects(response, "/game/rules/")
-        response = self.client.post("/game/rules/",
+        self.assertRedirects(response, "/game/selectrules/")
+        response = self.client.post("/game/selectrules/",
                                     {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
                                      'form-0-card_id': 1, 'form-0-selected_rule': 'on',
                                      'form-1-card_id': 2, 'form-1-selected_rule': 'on',
@@ -185,7 +185,7 @@ class GameCreationViewsTest(TestCase):
         self.assertEqual(1, created_game.ruleset_id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
         self.assertEqual(datetime.datetime(2037, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
-        self.assertEqual(list(self.testUsersNoCreate)[:4], list(created_game.players.all()))
+        self.assertItemsEqual(list(self.testUsersNoCreate)[:4], list(created_game.players.all()))
         self.assertListEqual([1, 2, 3, 9], [rule.id for rule in created_game.rules.all()])
         self.assertFalse('ruleset' in self.client.session)
         self.assertFalse('start_date' in self.client.session)
