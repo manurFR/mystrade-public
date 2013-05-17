@@ -1,5 +1,5 @@
-Game #{{ game.id }} has been created by {{ game.master.get_profile.name }}
-{{ game.master.get_profile.name|capfirst }} has just created game #{{ game.id }}, and you've been selected to join it !
+Game #{{ game.id }} has been created by {{ game.master.name }}
+{{ game.master.name|capfirst }} has just created game #{{ game.id }}, and you've been selected to join it !
 
 The other players are:
 {% for opponent in opponents %}- {{ opponent.name }} ({{ opponent.url }})

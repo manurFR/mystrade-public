@@ -85,7 +85,7 @@ STATICFILES_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     os.path.join(SITE_ROOT, 'static'),
-    os.path.join(SITE_ROOT, 'static/userprofile'),
+    os.path.join(SITE_ROOT, 'static/profile'),
 )
 
 # List of finder classes that know how to find static files in various locations.
@@ -129,7 +129,7 @@ TEMPLATE_DIRS = (
 )
 
 MYSTRADE_APPS = (
-    'userprofile',
+    'profile',
     'ruleset',
     'scoring',
     'game',
@@ -153,7 +153,7 @@ INSTALLED_APPS = (
     'south',
 ) + MYSTRADE_APPS
 
-AUTH_PROFILE_MODULE = 'userprofile.UserProfile'
+AUTH_USER_MODEL = 'profile.MystradeUser'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'welcome'
 

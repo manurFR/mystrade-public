@@ -103,4 +103,4 @@ class Scoresheet(object):
 
     @property
     def player_name(self):
-        return self.gameplayer.player.get_profile().name
+        return self.gameplayer.player.name

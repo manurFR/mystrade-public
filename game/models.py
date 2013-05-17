@@ -1,16 +1,16 @@
 import datetime
-from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q, Sum
 from django.utils.timezone import now
+from mystrade import settings
 from ruleset.models import Ruleset, RuleCard, Commodity
 
 class Game(models.Model):
     ruleset = models.ForeignKey(Ruleset)
-    master = models.ForeignKey(User, related_name = 'mastering_games_set')
+    master = models.ForeignKey(settings.AUTH_USER_MODEL, related_name = 'mastering_games_set')
 
     rules = models.ManyToManyField(RuleCard)
-    players = models.ManyToManyField(User, related_name = 'playing_games_set', through = 'GamePlayer')
+    players = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name = 'playing_games_set', through = 'GamePlayer')
 
     # it's important to use django.utils.timezone.now, which returns an aware date
     creation_date = models.DateTimeField(default = now)
@@ -43,20 +43,20 @@ class Game(models.Model):
 
 class GamePlayer(models.Model):
     game = models.ForeignKey(Game)
-    player = models.ForeignKey(User)
+    player = models.ForeignKey(settings.AUTH_USER_MODEL)
 
     submit_date = models.DateTimeField(null = True)
 
 class RuleInHand(models.Model):
     game = models.ForeignKey(Game)
-    player = models.ForeignKey(User)
+    player = models.ForeignKey(settings.AUTH_USER_MODEL)
     rulecard = models.ForeignKey(RuleCard)
 
     ownership_date = models.DateTimeField("The date when this card was acquired")
     abandon_date = models.DateTimeField("The date when this card was exchanged", null = True)
 
     def __unicode__(self):
-        return "Rule <{}> owned by {} in game {}".format(self.rulecard.ref_name, self.player.get_profile().name, self.game_id)
+        return "Rule <{}> owned by {} in game {}".format(self.rulecard.ref_name, self.player.name, self.game_id)
 
     def is_in_a_pending_trade(self):
         """ A rule card may be in a trade in the initator offer or the responder offer.
@@ -67,7 +67,7 @@ class RuleInHand(models.Model):
 
 class CommodityInHand(models.Model):
     game = models.ForeignKey(Game)
-    player = models.ForeignKey(User)
+    player = models.ForeignKey(settings.AUTH_USER_MODEL)
     commodity = models.ForeignKey(Commodity)
 
     nb_cards = models.PositiveSmallIntegerField(default = 0)
@@ -77,7 +77,7 @@ class CommodityInHand(models.Model):
 
     def __unicode__(self):
         return "{} {} card{} owned by {} in game {}".format(self.nb_cards, self.commodity.name.lower(),
-                's' if self.nb_cards > 1 else '', self.player.get_profile().name, self.game_id)
+                's' if self.nb_cards > 1 else '', self.player.name, self.game_id)
 
     def nb_tradable_cards(self):
         """ Commodity cards may be in a trade in the initator offer or the responder offer.
@@ -94,7 +94,7 @@ class Message(models.Model):
     GRACE_PERIOD = 20 # in minutes
 
     game = models.ForeignKey(Game)
-    sender = models.ForeignKey(User)
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL)
 
     content = models.CharField(max_length = MAX_LENGTH)
     posting_date = models.DateTimeField(default = now)

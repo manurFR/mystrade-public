@@ -5,7 +5,7 @@
 	<table class="fullwidth formtable">
 		<tr>
 			<td colspan="2" class="header">
-				Your details : {{ user.get_profile.name|title }}
+				Your details : {{ user.name|title }}
 				<span class="floatright">
 					<a href="{% url 'editprofile' %}"><img src="{% static "pencil.png" %}" height="16" width="16" alt=""/>Edit</a>
 				</span>
@@ -30,19 +30,19 @@
 		</tr>
         <tr>
             <th class="label">Sending game notifications :</th>
-            <td>{{user.get_profile.send_notifications|yesno|capfirst }}
+            <td>{{user.send_notifications|yesno|capfirst }}
         </tr>
 		<tr>
 			<th class="label">Your bio :</th>
 			<td><div class="frame">
-					{{ user.get_profile.bio|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
+					{{ user.bio|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
 				</div>
 				<span class="helptext">for others to know you</span></td>
 		</tr>
 		<tr>
 			<th class="label">Your contact informations :</th>
 			<td><div class="frame">
-					{{ user.get_profile.contact|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
+					{{ user.contact|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
 				</div>
 				<span class="helptext">for others to reach you</span></td>
 		</tr>													

@@ -1,5 +1,5 @@
 from unittest.util import safe_repr
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from model_mommy import mommy
 from game.models import GamePlayer, CommodityInHand
 from ruleset.models import Commodity
@@ -11,11 +11,11 @@ from scoring.card_scoring import Scoresheet
 
 def _prepare_hand(game, player, **commodities):
     try:
-        p = User.objects.get(username = player)
+        p = get_user_model().objects.get(username = player)
         gameplayer = GamePlayer.objects.get(game = game, player = p)
         CommodityInHand.objects.filter(game = game, player = p).delete()
-    except User.DoesNotExist:
-        p = mommy.make(User, username = player)
+    except get_user_model().DoesNotExist:
+        p = mommy.make(get_user_model(), username = player)
         gameplayer = mommy.make(GamePlayer, game = game, player = p)
 
     for name, nb_submitted_cards in commodities.iteritems():

@@ -4,19 +4,19 @@
 	<table class="fullwidth formtable">
 		<tr>
 			<td colspan="2" class="header">
-				{{ user_displayed.get_profile.name|title }}
+				{{ user_displayed.name|title }}
 			</td>
 		</tr>
 		<tr>
 			<th class="label">Bio :</th>
 			<td><div class="frame">
-					{{ user_displayed.get_profile.bio|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
+					{{ user_displayed.bio|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
 				</div></td>
 		</tr>
 		<tr>
 			<th class="label">Contact informations :</th>
 			<td><div class="frame">
-					{{ user_displayed.get_profile.contact|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
+					{{ user_displayed.contact|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
 				</div></td>
 		</tr>													
 	</table>

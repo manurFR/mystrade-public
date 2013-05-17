@@ -3,6 +3,7 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
+from mystrade import settings
 
 
 class Migration(SchemaMigration):
@@ -62,7 +63,7 @@ class Migration(SchemaMigration):
             'contact': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'send_notifications': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'})
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['" + settings.AUTH_USER_MODEL + "']", 'unique': 'True'})
         }
     }
 

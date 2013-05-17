@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from model_mommy import mommy
 from game.models import Game, GamePlayer, CommodityInHand
@@ -61,7 +61,7 @@ class ScoringTest(TestCase):
         self.assertListEqual([10,      10,      5,       5,       16     ], [sfr.score for sfr in scoresheets[0].scores_from_rule])
 
     def test_calculate_commodity_scores(self):
-        player = mommy.make(User, username = 'test')
+        player = mommy.make(get_user_model(), username = 'test')
         mommy.make(CommodityInHand, game = self.game, player = player, commodity__name = 'Blue', commodity__value = 2, nb_submitted_cards = 2)
         mommy.make(CommodityInHand, game = self.game, player = player, commodity__name = 'Red', commodity__value = 1, nb_submitted_cards = 3)
 

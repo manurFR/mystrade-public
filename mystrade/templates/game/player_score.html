@@ -13,11 +13,11 @@
     <div class="reminder">This game was closed on {{ game.end_date }} ({{ game.end_date|timesince }} ago).</div>
 
     {% if rank == 1 %}
-        <div class="congrats">Congratulations {{ user.get_profile.name }}, you won this game !</div>
+        <div class="congrats">Congratulations {{ user.name }}, you won this game !</div>
     {% elif rank == 2 %}
-        <div class="congrats">Congratulations {{ user.get_profile.name }}, you reached the second place.</div>
+        <div class="congrats">Congratulations {{ user.name }}, you reached the second place.</div>
     {% elif rank == 3 %}
-        <div class="congrats">Congratulations {{ user.get_profile.name }}, you reached the third place.</div>
+        <div class="congrats">Congratulations {{ user.name }}, you reached the third place.</div>
     {% endif %}
 
     {% include "scoring/score.html" %}

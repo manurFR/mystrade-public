@@ -3,6 +3,7 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
+from mystrade import settings
 
 
 class Migration(SchemaMigration):
@@ -11,7 +12,7 @@ class Migration(SchemaMigration):
         # Adding model 'UserProfile'
         db.create_table('userprofile_userprofile', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True)),
+            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm[settings.AUTH_USER_MODEL], unique=True)),
             ('bio', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('contact', self.gf('django.db.models.fields.TextField')(blank=True)),
         ))
@@ -65,7 +66,7 @@ class Migration(SchemaMigration):
             'bio': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'contact': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'})
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['" + settings.AUTH_USER_MODEL + "']", 'unique': 'True'})
         }
     }
 

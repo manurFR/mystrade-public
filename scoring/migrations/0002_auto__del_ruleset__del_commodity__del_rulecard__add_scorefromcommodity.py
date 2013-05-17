@@ -3,6 +3,7 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
+from mystrade import settings
 
 
 class Migration(SchemaMigration):
@@ -24,7 +25,7 @@ class Migration(SchemaMigration):
         db.create_table('scoring_scorefromcommodity', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('game', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['game.Game'])),
-            ('player', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
+            ('player', self.gf('django.db.models.fields.related.ForeignKey')(to=orm[settings.AUTH_USER_MODEL])),
             ('commodity', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['ruleset.Commodity'])),
             ('nb_scored_cards', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
             ('actual_value', self.gf('django.db.models.fields.IntegerField')()),
@@ -36,7 +37,7 @@ class Migration(SchemaMigration):
         db.create_table('scoring_scorefromrule', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('game', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['game.Game'])),
-            ('player', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
+            ('player', self.gf('django.db.models.fields.related.ForeignKey')(to=orm[settings.AUTH_USER_MODEL])),
             ('rulecard', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['ruleset.RuleCard'])),
             ('detail', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('score', self.gf('django.db.models.fields.PositiveIntegerField')()),
@@ -97,20 +98,23 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
-        'auth.user': {
-            'Meta': {'object_name': 'User'},
+        u'profile.mystradeuser': {
+            'Meta': {'object_name': 'MystradeUser'},
+            'bio': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'contact': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
             'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
+            'send_notifications': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
         'contenttypes.contenttype': {
@@ -125,8 +129,8 @@ class Migration(SchemaMigration):
             'creation_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'end_date': ('django.db.models.fields.DateTimeField', [], {}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'master': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'mastering_games_set'", 'to': "orm['auth.User']"}),
-            'players': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'playing_games_set'", 'symmetrical': 'False', 'through': "orm['game.GamePlayer']", 'to': "orm['auth.User']"}),
+            'master': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'mastering_games_set'", 'to': "orm['" + settings.AUTH_USER_MODEL + "']"}),
+            'players': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'playing_games_set'", 'symmetrical': 'False', 'through': "orm['game.GamePlayer']", 'to': "orm['" + settings.AUTH_USER_MODEL + "']"}),
             'rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['ruleset.RuleCard']", 'symmetrical': 'False'}),
             'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.Ruleset']"}),
             'start_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'})
@@ -135,7 +139,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'GamePlayer'},
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
+            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['" + settings.AUTH_USER_MODEL + "']"}),
             'submit_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True'})
         },
         'ruleset.commodity': {
@@ -170,7 +174,7 @@ class Migration(SchemaMigration):
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'nb_scored_cards': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
-            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
+            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['" + settings.AUTH_USER_MODEL + "']"}),
             'score': ('django.db.models.fields.PositiveIntegerField', [], {})
         },
         'scoring.scorefromrule': {
@@ -178,7 +182,7 @@ class Migration(SchemaMigration):
             'detail': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
+            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['" + settings.AUTH_USER_MODEL + "']"}),
             'rulecard': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['ruleset.RuleCard']"}),
             'score': ('django.db.models.fields.PositiveIntegerField', [], {})
         }

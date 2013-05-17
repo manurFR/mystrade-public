@@ -1,7 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
-from userprofile.models import MystradeUser
+from profile.models import MystradeUser
 
-class MystradeProfileTest(TestCase):
+class MystradeUserNameTest(TestCase):
     def test_name_first_and_last(self):
         user = MystradeUser.objects.create(username = "username", first_name = "first", last_name="last")
         self.assertEqual("first last", user.name)
@@ -20,7 +21,7 @@ class MystradeProfileTest(TestCase):
 
 class ViewsTest(TestCase):
     def setUp(self):
-        self.testUser = MystradeUser(username = 'test', email = 'test@aaa.com', bio = 'line\r\njump', send_notifications = True)
+        self.testUser = get_user_model()(username = 'test', email = 'test@aaa.com', bio = 'line\r\njump', send_notifications = True)
         self.testUser.make_password('test');
         self.testUser.save()
 
@@ -32,7 +33,7 @@ class ViewsTest(TestCase):
         self.assertContains(response, "test@aaa.com")
         self.assertContains(response, "line<br />jump")
         self.assertContains(response, "Yes")
-        self.assertTemplateUsed(response, 'userprofile/profile.html')
+        self.assertTemplateUsed(response, 'profile/profile.html')
 
     def test_display_profile_with_own_id_is_redirected(self):
         response = self.client.get("/profile/{}/".format(self.testUser.id))
@@ -40,7 +41,7 @@ class ViewsTest(TestCase):
         self.assertRedirects(response, "/profile/")
 
     def test_display_profile_for_other_player(self):
-        otherUser = MystradeUser(username = 'someone', email = 'someone@bbb.com', first_name = 'luke', last_name = 'skywalker',
+        otherUser = get_user_model()(username = 'someone', email = 'someone@bbb.com', first_name = 'luke', last_name = 'skywalker',
                                  contact = 'call me maybe', send_notifications = False)
         otherUser.make_password('password');
         otherUser.save()
@@ -51,7 +52,7 @@ class ViewsTest(TestCase):
         self.assertNotContains(response, "someone@bbb.com")
         self.assertNotContains(response, "Yes")
         self.assertContains(response, "call me maybe")
-        self.assertTemplateUsed(response, 'userprofile/otherprofile.html')
+        self.assertTemplateUsed(response, 'profile/otherprofile.html')
 
     def test_editprofile_change_user_and_profile(self):
         response = self.client.post("/profile/edit/",
@@ -61,14 +62,14 @@ class ViewsTest(TestCase):
                                     follow = True)
 
         self.assertEqual(200, response.status_code)
-        modifiedUser = MystradeUser.objects.get(pk = self.testUser.id)
+        modifiedUser = get_user_model().objects.get(pk = self.testUser.id)
         self.assertEqual("Leia Organa", modifiedUser.name)
         self.assertEqual("test@aaa.com", modifiedUser.email)
         self.assertEqual("princess", modifiedUser.bio)
         self.assertEqual("D2-R2", modifiedUser.contact)
         self.assertFalse(modifiedUser.send_notifications)
 
-        self.assertTemplateUsed(response, 'userprofile/profile.html')
+        self.assertTemplateUsed(response, 'profile/profile.html')
 
     def test_editprofile_bad_password_confirmation(self):
         expectedMessage = "The two password fields didn't match."

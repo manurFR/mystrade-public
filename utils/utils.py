@@ -1,7 +1,6 @@
 import datetime
 import logging
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.core.mail.message import BadHeaderError
 from django.template import Context
@@ -27,8 +26,8 @@ def send_notification_email(template_name, recipients, data = None):
             A template_name 'myfile' will need a template named 'templates/notification/myfile.txt'.
 
         Recipients : one can pass one user to send the notification to, or a list of users.
-           Each user can be given as a Django User instance or as an email address (a string).
-           Django User instances will have their userprofile checked to verify the person accepts to receive email notifications,
+           Each user can be given as a MystradeUser instance or as an email address (a string).
+           MystradeUser instances will have their profile checked to verify the person accepts to receive email notifications,
             and those who don't will be automatically suppressed from the recipients list.
      """
     try:
@@ -45,7 +44,7 @@ def _send_notification_email(template, recipients, data = None):
         for email_or_user in recipients:
             if isinstance(email_or_user, basestring):
                 to.append(email_or_user)
-            elif email_or_user.get_profile().send_notifications: # check if the recipient agree to receive email notifications
+            elif email_or_user.send_notifications: # check if the recipient agree to receive email notifications
                 to.append(email_or_user.email)
         if len(to) == 0: # no one left to receive notifications
             return

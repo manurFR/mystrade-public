@@ -25,8 +25,8 @@
     <div class="reminder">
         This game's players:
         {% for player in players %}
-            {% if player == user %}<div class="game-player">{{ player.get_profile.name }} (you)</div>
-            {% else %}<div class="game-player"><a href="{% url 'otherprofile' player.id %}">{{ player.get_profile.name }}</a></div>{% endif %}
+            {% if player == user %}<div class="game-player">{{ player.name }} (you)</div>
+            {% else %}<div class="game-player"><a href="{% url 'otherprofile' player.id %}">{{ player.name }}</a></div>{% endif %}
         {% endfor %}
 
         {% if user in game.players.all and game.is_active and not hand_submitted %}

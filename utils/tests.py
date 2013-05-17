@@ -1,5 +1,5 @@
 import datetime
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core import mail
 from django.template import Template
 from django.test import TestCase
@@ -87,25 +87,21 @@ class UtilsTest(TestCase):
         self.assertEqual(0, len(mail.outbox))
 
     def _prepare_user(self, email, send_notifications):
-        user = mommy.make(User, email = email)
-        profile = user.get_profile()
-        profile.send_notifications = send_notifications
-        profile.save()
-        return user
+        return mommy.make(get_user_model(), email = email, send_notifications = send_notifications)
 
 class MystradeTestCase(TestCase):
     """ Parent test case class with default element bootstrapped, to be inherited by other apps' test cases """
-    fixtures = ['test_users.json', # from userprofile app
+    fixtures = ['test_users.json', # from profile app
                 'test_games.json']
 
     def setUp(self):
         self.game =             Game.objects.get(id = 1)
         self.master =           self.game.master
-        self.loginUser =        User.objects.get(username = "test2")
-        self.alternativeUser =  User.objects.get(username = 'test5')
-        self.admin =            User.objects.get(username = 'admin')
-        self.admin_player =     User.objects.get(username = 'admin_player')
-        self.unrelated_user =   User.objects.get(username = 'unrelated_user')
+        self.loginUser =        get_user_model().objects.get(username = "test2")
+        self.alternativeUser =  get_user_model().objects.get(username = 'test5')
+        self.admin =            get_user_model().objects.get(username = 'admin')
+        self.admin_player =     get_user_model().objects.get(username = 'admin_player')
+        self.unrelated_user =   get_user_model().objects.get(username = 'unrelated_user')
 
         self.login_as(self.loginUser)
 

@@ -1,8 +1,8 @@
-Game #{{ game.id }}: {{ trade.initiator.get_profile.name }} has accepted the trade
-In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.initiator.get_profile.name }} has accepted your offer.
+Game #{{ game.id }}: {{ trade.initiator.name }} has accepted the trade
+In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.initiator.name }} has accepted your offer.
 These elements have been traded :
-- {{ trade.initiator.get_profile.name }} gave you {{ trade.initiator_offer.summary }}
-- you gave {{ trade.responder_offer.summary }} to {{ trade.initiator.get_profile.name }}
+- {{ trade.initiator.name }} gave you {{ trade.initiator_offer.summary }}
+- you gave {{ trade.responder_offer.summary }} to {{ trade.initiator.name }}
 
 Consult the trade on the following page:
 {{ url }}

@@ -21,7 +21,7 @@ from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer, Trade
-from userprofile.helpers import UserNameCache
+from profile.helpers import UserNameCache
 from utils import utils
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ MESSAGES_PAGINATION = 10
 def game(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
-    players = sorted(game.players.all(), key = lambda player: player.get_profile().name)
+    players = sorted(game.players.all(), key = lambda player: player.name)
 
     if request.user not in players and not game.has_super_access(request.user):
         raise PermissionDenied
@@ -239,7 +239,7 @@ def create_game(request):
             request.session['ruleset'] = form.cleaned_data['ruleset']
             request.session['start_date'] = form.cleaned_data['start_date']
             request.session['end_date'] = form.cleaned_data['end_date']
-            request.session['players'] = sorted(form.cleaned_data['players'].all(), key = lambda player: player.get_profile().name) # convert from Queryset to list
+            request.session['players'] = sorted(form.cleaned_data['players'].all(), key = lambda player: player.name) # convert from Queryset to list
             return redirect('select_rules')
     else:
         form = CreateGameForm(request.user)
@@ -308,7 +308,7 @@ def select_rules(request):
                 # email notification
                 all_players = {}
                 for player in game.players.all():
-                     all_players[player] = {'name': player.get_profile().name,
+                     all_players[player] = {'name': player.name,
                                             'url': request.build_absolute_uri(reverse('otherprofile', args=[player.id]))}
 
                 if game.is_active():

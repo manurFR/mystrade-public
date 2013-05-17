@@ -1,15 +1,16 @@
 from django import forms
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.forms.formsets import BaseFormSet
-from game.models import Game, RuleInHand, CommodityInHand
+from game.models import RuleInHand, CommodityInHand
+
 
 class TradeForm(forms.Form):
-    responder = forms.ModelChoiceField(queryset = User.objects.none(), empty_label = u'- Choose a player -',
+    responder = forms.ModelChoiceField(queryset = get_user_model().objects.none(), empty_label = u'- Choose a player -',
                                        error_messages = {'invalid_choice': "This player doesn't participate to this game or has already submitted his hand to the game master"})
 
     def __init__(self, me, game, *args, **kwargs):
         super(TradeForm, self).__init__(*args, **kwargs)
-        self.fields['responder'].queryset = User.objects.filter(gameplayer__game = game,
+        self.fields['responder'].queryset = get_user_model().objects.filter(gameplayer__game = game,
                                             gameplayer__submit_date__isnull = True).exclude(id = me.id).order_by('id')
 
 class DeclineReasonForm(forms.Form):

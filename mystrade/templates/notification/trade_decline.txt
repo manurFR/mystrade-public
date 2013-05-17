@@ -1,10 +1,10 @@
-Game #{{ game.id }}: {{ trade.finalizer.get_profile.name }} has declined the trade
-In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.finalizer.get_profile.name }} has declined your offer.
+Game #{{ game.id }}: {{ trade.finalizer.name }} has declined the trade
+In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.finalizer.name }} has declined your offer.
 The trade included the following elements:
-- {{ trade.initiator.get_profile.name }} offered {{ trade.initiator_offer.summary }}
-{% if trade.responder_offer %}- {{ trade.responder.get_profile.name }} offered {{ trade.responder_offer.summary }}{% endif %}
+- {{ trade.initiator.name }} offered {{ trade.initiator_offer.summary }}
+{% if trade.responder_offer %}- {{ trade.responder.name }} offered {{ trade.responder_offer.summary }}{% endif %}
 
-{% if trade.decline_reason %}{{ trade.finalizer.get_profile.name }} gave the following reason to decline :
+{% if trade.decline_reason %}{{ trade.finalizer.name }} gave the following reason to decline :
 {{ trade.decline_reason }}{% endif %}
 
 Consult the trade on the following page:

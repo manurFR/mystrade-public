@@ -1,6 +1,6 @@
 import datetime
+from django.contrib.auth import get_user_model
 
-from django.contrib.auth.models import User
 from django.core import mail
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -44,11 +44,11 @@ class WelcomePageViewTest(MystradeTestCase):
         self.assertNotIn(other_game, response.context['games'])
 
 class GameCreationViewsTest(TestCase):
-    fixtures = ['test_users.json'] # from userprofile app
+    fixtures = ['test_users.json'] # from profile app
 
     def setUp(self):
-        self.testUserCanCreate = User.objects.get(username = 'test1')
-        self.testUsersNoCreate = User.objects.exclude(user_permissions__codename = "add_game")
+        self.testUserCanCreate = get_user_model().objects.get(username = 'test1')
+        self.testUsersNoCreate = get_user_model().objects.exclude(user_permissions__codename = "add_game")
         self.client.login(username = 'test1', password = 'test')
 
     def test_create_game_only_with_the_permission(self):
@@ -556,7 +556,7 @@ class HandViewTest(MystradeTestCase):
 
     def test_show_hand_doesnt_display_free_informations_from_ACCEPTED_trades_of_other_games(self):
         other_game = mommy.make(Game, master = self.master, end_date = now() + datetime.timedelta(days = 7))
-        for player in User.objects.exclude(username = 'test1'): mommy.make(GamePlayer, game = other_game, player = player)
+        for player in get_user_model().objects.exclude(username = 'test1'): mommy.make(GamePlayer, game = other_game, player = player)
 
         initiator_offer1 = mommy.make(Offer)
         responder_offer1 = mommy.make(Offer, free_information = "There is no point showing this")
@@ -764,7 +764,7 @@ class ControlBoardViewTest(MystradeTestCase):
         # admin that is player
         self.game_ended.closing_date = None
         self.game_ended.save()
-        mommy.make(GamePlayer, game = self.game_ended, player = User.objects.get(username = 'admin_player'))
+        mommy.make(GamePlayer, game = self.game_ended, player = get_user_model().objects.get(username = 'admin_player'))
         self.login_as(self.admin_player)
         self._assertOperation_post(self.game_ended, "close", 403)
         self.game_ended = Game.objects.get(id = self.game_ended.id)
@@ -773,8 +773,8 @@ class ControlBoardViewTest(MystradeTestCase):
         # simple player
         self.game_ended.closing_date = None
         self.game_ended.save()
-        mommy.make(GamePlayer, game = self.game_ended, player = User.objects.get(username='test3'))
-        self.login_as(User.objects.get(username='test3'))
+        mommy.make(GamePlayer, game = self.game_ended, player = get_user_model().objects.get(username='test3'))
+        self.login_as(get_user_model().objects.get(username='test3'))
         self._assertOperation_post(self.game_ended, "close", 403)
         self.game_ended = Game.objects.get(id = self.game_ended.id)
         self.assertIsNone(self.game_ended.closing_date)
@@ -829,7 +829,7 @@ class ControlBoardViewTest(MystradeTestCase):
 
     def test_close_game_submits_the_commodity_cards_of_players_who_havent_manually_submitted(self):
         gp1 = mommy.make(GamePlayer, game = self.game_ended, player = self.alternativeUser)
-        test6 = User.objects.get(username='test6')
+        test6 = get_user_model().objects.get(username='test6')
         gp2_submit_date = now() + datetime.timedelta(days = -1)
         gp2 = mommy.make(GamePlayer, game = self.game_ended, player = test6, submit_date = gp2_submit_date)
 
@@ -852,9 +852,9 @@ class ControlBoardViewTest(MystradeTestCase):
     def test_close_game_calculates_and_persists_the_final_score(self):
         self._prepare_game_for_scoring(self.game_ended)
 
-        test6 = User.objects.get(username='test6')
-        test7 = User.objects.get(username='test7')
-        test8 = User.objects.get(username='test8')
+        test6 = get_user_model().objects.get(username='test6')
+        test7 = get_user_model().objects.get(username='test7')
+        test8 = get_user_model().objects.get(username='test8')
         mommy.make(GamePlayer, game = self.game_ended, player = self.alternativeUser)
         mommy.make(GamePlayer, game = self.game_ended, player = test6)
         mommy.make(GamePlayer, game = self.game_ended, player = test7)
@@ -935,7 +935,7 @@ class ControlBoardViewTest(MystradeTestCase):
     def test_control_board_shows_current_scoring_during_game(self):
         self._prepare_game_for_scoring(self.game)
 
-        test6 = User.objects.get(username='test6')
+        test6 = get_user_model().objects.get(username='test6')
 
         # a trap we shouldn't fall in
         mommy.make(ScoreFromCommodity, game = self.game, player = self.alternativeUser, commodity = Commodity.objects.get(ruleset = 1, name = 'Orange'),
@@ -986,7 +986,7 @@ class ControlBoardViewTest(MystradeTestCase):
         cih1white  = mommy.make(CommodityInHand, game = game, player = self.alternativeUser,
                                     nb_cards = 1, commodity = Commodity.objects.get(ruleset = 1, name = 'White')) # value = 5 or 0
 
-        test6 = User.objects.get(username='test6')
+        test6 = get_user_model().objects.get(username='test6')
         cih2orange = mommy.make(CommodityInHand, game = game, player = test6,
                                     nb_cards = 3, commodity = Commodity.objects.get(ruleset = 1, name = 'Orange'))
         cih2blue   = mommy.make(CommodityInHand, game = game, player = test6,
@@ -1003,14 +1003,14 @@ class ControlBoardViewTest(MystradeTestCase):
         self.assertEqual(status_code, response.status_code)
 
 class TransactionalViewsTest(TransactionTestCase):
-    fixtures = ['test_users.json', # from userprofile app
+    fixtures = ['test_users.json', # from profile app
                 'test_games.json']
 
     def setUp(self):
         self.game =             Game.objects.get(id = 1)
         self.master =           self.game.master
-        self.loginUser =        User.objects.get(username = "test2")
-        self.alternativeUser =  User.objects.get(username = 'test5')
+        self.loginUser =        get_user_model().objects.get(username = "test2")
+        self.alternativeUser =  get_user_model().objects.get(username = 'test5')
 
         self.client.login(username = self.loginUser.username, password = 'test')
 
@@ -1052,7 +1052,7 @@ class TransactionalViewsTest(TransactionTestCase):
         cih = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, commodity__value = 1, nb_cards = 1)
 
         trade = mommy.make(Trade, game = self.game, status = 'INITIATED', initiator = self.alternativeUser,
-                               responder = User.objects.get(username = 'test6'),
+                               responder = get_user_model().objects.get(username = 'test6'),
                                initiator_offer = mommy.make(Offer), finalizer = None)
 
         response = self.client.post("/game/{}/close/".format(self.game.id), follow = True)
@@ -1104,7 +1104,7 @@ class DealTest(TestCase):
         self.rules = []
         self.commodities = []
         for i in range(6):
-            self.users.append(mommy.make(User, username = i))
+            self.users.append(mommy.make(get_user_model(), username = i))
             self.rules.append(mommy.make(RuleCard, ref_name = i))
             self.commodities.append(mommy.make(Commodity, name = i))
 

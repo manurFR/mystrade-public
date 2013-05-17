@@ -1,0 +1,254 @@
+[
+    {
+        "pk": 1,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "test1",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2013-01-23T16:50:02.535Z",
+            "groups": [],
+            "user_permissions": [["add_game", "game", "game"]],
+            "password": "pbkdf2_sha256$10000$ugaqIMpJCLqL$ICD7AbFkd1xruEUzRCfc7Wn5OykpQt3EbVXkFmf4bJA=",
+            "email": "test1@test.com",
+            "date_joined": "2012-11-14T21:14:43.486Z",
+            "send_notifications": "True",
+            "bio": "",
+            "contact": ""
+        }
+    },
+    {
+        "pk": 2,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "test2",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2013-01-23T15:26:12.879Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$cKGwnJ2Fw2DN$w73RWXIIEG4rpEaYsM7E/aHblltOxEGxW6iSwr0Fu84=",
+            "email": "test2@test.com",
+            "date_joined": "2012-11-14T21:14:54Z",
+            "send_notifications": "True",
+            "bio": "",
+            "contact": ""
+        }
+    },
+    {
+        "pk": 3,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "test3",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2013-01-23T16:01:29.768Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$Qe110chEVgXx$/h9v3IdKxiD2AgKcKHFKJXv6hQ3lG9xV4CKqK9K5e0Y=",
+            "email": "test3@test.com",
+            "date_joined": "2012-11-14T21:16:06.794Z",
+            "send_notifications": "True",
+            "bio": "",
+            "contact": ""
+        }
+    },
+    {
+        "pk": 4,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "test4",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-11-14T21:16:15.139Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$gfuMQraRYBX6$K7XS9VXSfzyypuS9cONAstm1t0f/5cFonHpXki/um7A=",
+            "email": "test4@test.com",
+            "date_joined": "2012-11-14T21:16:15.139Z",
+            "send_notifications": "True",
+            "bio": "",
+            "contact": ""
+        }
+    },
+    {
+        "pk": 5,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "test5",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2013-01-23T15:08:15.178Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$pkmAlZ316n1L$K5QRf1+cOUcmb22RO/d15mprtTUhjaCTt2V7i80+9Yc=",
+            "email": "test5@test.com",
+            "date_joined": "2012-11-14T21:16:25.940Z",
+            "send_notifications": "True",
+            "bio": "",
+            "contact": ""
+        }
+    },
+    {
+        "pk": 6,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "test6",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-11-14T21:16:35.504Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$lldGUIwveKF9$woG1SSqxUUe78ATix5m4OWxuDlRUe/3qVIV5Y06s5hQ=",
+            "email": "test6@test.com",
+            "date_joined": "2012-11-14T21:16:35.504Z",
+            "send_notifications": "True",
+            "bio": "",
+            "contact": ""
+        }
+    },
+    {
+        "pk": 7,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "test7",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-11-14T21:16:42.608Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$PyYHiS2oxbmA$dLdbqVEe9Hk6CNkof36pyvg2ByZ+Rg8Oe7gYnh7BcH8=",
+            "email": "test7@test.com",
+            "date_joined": "2012-11-14T21:16:42.608Z",
+            "send_notifications": "True",
+            "bio": "",
+            "contact": ""
+        }
+    },
+    {
+        "pk": 8,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "test8",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2013-01-23T17:29:47.600Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$l3RIL0Sdy17H$ivtardZX6ZL0AYOawLKRoJ1WOARl3Cyjus5xG6Mf2eA=",
+            "email": "test8@test.com",
+            "date_joined": "2012-11-14T21:16:51.240Z",
+            "send_notifications": "True",
+            "bio": "",
+            "contact": ""
+        }
+    },
+    {
+        "pk": 9,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "test9",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-11-14T21:16:59.278Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$lQjGRQ0IdsJk$iFkyorMeAoGo5LihMgp6v89po55IjK+faczx1mLb9KM=",
+            "email": "test9@test.com",
+            "date_joined": "2012-11-14T21:16:59.278Z",
+            "send_notifications": "True",
+            "bio": "",
+            "contact": ""
+        }
+    },
+    {
+        "pk": 10,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "admin",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": true,
+            "is_staff": true,
+            "last_login": "2012-11-14T21:16:59.278Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$J5spRWoc4SNP$8Edtd1yppm6nrFmNj3pRW12jAWT3p+mjLL8nBaPFTqA=",
+            "email": "admin@test.com",
+            "date_joined": "2012-11-14T21:16:59.278Z",
+            "send_notifications": "True",
+            "bio": "",
+            "contact": ""
+        }
+    },
+    {
+        "pk": 11,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "admin_player",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": true,
+            "is_staff": true,
+            "last_login": "2012-11-14T21:16:59.278Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$J5spRWoc4SNP$8Edtd1yppm6nrFmNj3pRW12jAWT3p+mjLL8nBaPFTqA=",
+            "email": "admin_player@test.com",
+            "date_joined": "2012-11-14T21:16:59.278Z",
+            "send_notifications": "True",
+            "bio": "admin that is also a player in the game",
+            "contact": ""
+        }
+    },
+    {
+        "pk": 12,
+        "model": "profile.mystradeuser",
+        "fields": {
+            "username": "unrelated_user",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": false,
+            "is_staff": false,
+            "last_login": "2012-11-14T21:16:59.278Z",
+            "groups": [],
+            "user_permissions": [],
+            "password": "pbkdf2_sha256$10000$J5spRWoc4SNP$8Edtd1yppm6nrFmNj3pRW12jAWT3p+mjLL8nBaPFTqA=",
+            "email": "unrelated@test.com",
+            "date_joined": "2012-11-14T21:16:59.278Z",
+            "send_notifications": "False",
+            "bio": "Unrelated user",
+            "contact": ""
+        }
+    }
+]

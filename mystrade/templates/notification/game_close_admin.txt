@@ -1,5 +1,5 @@
-Game #{{ game.id }} has been closed by {{ game.master.get_profile.name }}
-{% load humanize %}{{ game.master.get_profile.name|capfirst }} has closed game #{{ game.id }} on {{ game.closing_date|date:"SHORT_DATETIME_FORMAT" }}
+Game #{{ game.id }} has been closed by {{ game.master.name }}
+{% load humanize %}{{ game.master.name|capfirst }} has closed game #{{ game.id }} on {{ game.closing_date|date:"SHORT_DATETIME_FORMAT" }}
 
 Final Scores:
 {% for scoresheet in scoresheets %}{{ forloop.counter|ordinal }}. {{ scoresheet.player_name }} : {{ scoresheet.total_score }} point{{ scoresheet.total_score|pluralize }}

@@ -1,7 +1,8 @@
-from django.contrib.auth.models import User
 from django.db import models
 from django.utils.timezone import now
 from game.models import Game, RuleInHand, CommodityInHand
+from mystrade import settings
+
 
 class Trade(models.Model):
     """
@@ -20,8 +21,8 @@ class Trade(models.Model):
 
     game = models.ForeignKey(Game)
 
-    initiator = models.ForeignKey(User, related_name="initiator_trades_set")
-    responder = models.ForeignKey(User, related_name="responder_trades_set")
+    initiator = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="initiator_trades_set")
+    responder = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="responder_trades_set")
 
     initiator_offer = models.OneToOneField('Offer', related_name = 'trade_initiated')
     responder_offer = models.OneToOneField('Offer', related_name = 'trade_responded', null = True)
@@ -29,7 +30,7 @@ class Trade(models.Model):
     status = models.CharField(max_length = 15, choices = STATUS_CHOICES, default = "INITIATED") # see above
 
     decline_reason = models.TextField(blank = True, null = True)
-    finalizer = models.ForeignKey(User, null = True,
+    finalizer = models.ForeignKey(settings.AUTH_USER_MODEL, null = True,
         verbose_name = "Player that caused the trade to reach the current final status, null if not in a final status")
 
     creation_date = models.DateTimeField(default = now)

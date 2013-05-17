@@ -3,6 +3,7 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
+from mystrade import settings
 
 
 class Migration(SchemaMigration):
@@ -77,22 +78,6 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
-        'auth.user': {
-            'Meta': {'object_name': 'User'},
-            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
-        },
         'contenttypes.contenttype': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
             'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
@@ -106,15 +91,15 @@ class Migration(SchemaMigration):
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'nb_cards': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '0'}),
-            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
+            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['" + settings.AUTH_USER_MODEL + "']"})
         },
         'game.game': {
             'Meta': {'object_name': 'Game'},
             'creation_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'end_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'master': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'mastering_games_set'", 'to': "orm['auth.User']"}),
-            'players': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'playing_games_set'", 'symmetrical': 'False', 'to': "orm['auth.User']"}),
+            'master': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'mastering_games_set'", 'to': "orm['" + settings.AUTH_USER_MODEL + "']"}),
+            'players': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'playing_games_set'", 'symmetrical': 'False', 'to': "orm['" + settings.AUTH_USER_MODEL + "']"}),
             'rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['scoring.RuleCard']", 'symmetrical': 'False'}),
             'ruleset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.Ruleset']"}),
             'start_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'})
@@ -133,7 +118,7 @@ class Migration(SchemaMigration):
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'ownership_date': ('django.db.models.fields.DateTimeField', [], {}),
-            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
+            'player': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['" + settings.AUTH_USER_MODEL + "']"}),
             'rulecard': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['scoring.RuleCard']"})
         },
         'game.trade': {
@@ -145,9 +130,9 @@ class Migration(SchemaMigration):
             'free_information': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Game']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'initiator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'initiator_trades_set'", 'to': "orm['auth.User']"}),
+            'initiator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'initiator_trades_set'", 'to': "orm['" + settings.AUTH_USER_MODEL + "']"}),
             'initiator_offer': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'trade_initiated'", 'unique': 'True', 'null': 'True', 'to': "orm['game.Offer']"}),
-            'responder': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'responder_trades_set'", 'to': "orm['auth.User']"}),
+            'responder': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'responder_trades_set'", 'to': "orm['" + settings.AUTH_USER_MODEL + "']"}),
             'responder_offer': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'trade_responded'", 'unique': 'True', 'null': 'True', 'to': "orm['game.Offer']"}),
             'rules': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['game.RuleInHand']", 'symmetrical': 'False'}),
             'status': ('django.db.models.fields.CharField', [], {'default': "'INITIATED'", 'max_length': '15'})
@@ -159,6 +144,25 @@ class Migration(SchemaMigration):
             'nb_traded_cards': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '0'}),
             'offer': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Offer']", 'null': 'True'}),
             'trade': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['game.Trade']", 'null': 'True'})
+        },
+        u'profile.mystradeuser': {
+            'Meta': {'object_name': 'MystradeUser'},
+            'bio': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'contact': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
+            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
+            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
+            'send_notifications': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
+            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
         'scoring.commodity': {
             'Meta': {'object_name': 'Commodity'},

@@ -1,5 +1,5 @@
 import datetime
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core import mail
 from django.forms.formsets import formset_factory
 from django.test import RequestFactory, Client, TransactionTestCase
@@ -315,7 +315,7 @@ class ManageViewsTest(MystradeTestCase):
         self._assertOperationNotAllowed(trade.id, 'cancel')
 
         # trade REPLIED but we're not the responder
-        trade.responder = User.objects.get(username = 'test3')
+        trade.responder = get_user_model().objects.get(username = 'test3')
         trade.status = 'REPLIED'
         trade.save()
         self._assertOperationNotAllowed(trade.id, 'cancel')
@@ -402,7 +402,7 @@ class ManageViewsTest(MystradeTestCase):
         self.assertEqual(403, response.status_code)
 
     def test_reply_trade_not_allowed_when_one_is_not_the_responder(self):
-        trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = User.objects.get(username = 'test6'))
+        trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = get_user_model().objects.get(username = 'test6'))
         self._assertOperationNotAllowed(trade.id, 'reply')
 
     def test_reply_trade_not_allowed_for_trades_not_in_status_INITIATED(self):
@@ -439,7 +439,7 @@ class ManageViewsTest(MystradeTestCase):
         rule_in_hand = RuleInHand.objects.create(game = self.game, player = self.loginUser,
                                                  rulecard = rulecard, ownership_date = now())
         commodity = mommy.make(Commodity, ruleset = ruleset, name = 'commodity_1')
-        commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = User.objects.get(username = 'test2'),
+        commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = get_user_model().objects.get(username = 'test2'),
                                                            commodity = commodity, nb_cards = 2)
 
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
@@ -481,7 +481,7 @@ class ManageViewsTest(MystradeTestCase):
         self._assertOperationNotAllowed(trade.id, 'accept')
 
         # someone else
-        trade.initiator = User.objects.get(username = 'test3')
+        trade.initiator = get_user_model().objects.get(username = 'test3')
         trade.save()
         self._assertOperationNotAllowed(trade.id, 'accept')
 
@@ -862,14 +862,14 @@ class ManageViewsTest(MystradeTestCase):
         self.assertEqual(403, response.status_code)
 
 class TransactionalViewsTest(TransactionTestCase):
-    fixtures = ['test_users.json', # from userprofile app
+    fixtures = ['test_users.json', # from profile app
                 'test_games.json']
 
     def setUp(self):
         self.game =             Game.objects.get(id = 1)
         self.master =           self.game.master
-        self.loginUser =        User.objects.get(username = "test2")
-        self.alternativeUser =  User.objects.get(username = 'test5')
+        self.loginUser =        get_user_model().objects.get(username = "test2")
+        self.alternativeUser =  get_user_model().objects.get(username = 'test5')
 
         self.client.login(username = self.loginUser.username, password = 'test')
 
@@ -977,8 +977,8 @@ class FormsTest(TestCase):
         self.assertIn("A commodity card in a pending trade can not be offered in another trade.", commodities_formset._non_form_errors)
 
     def test_a_trade_with_a_responder_who_has_already_submitted_his_hand_is_forbidden(self):
-        ihavesubmitted = mommy.make(User, username = 'ihavesubmitted')
-        ihavent = mommy.make(User, username = 'ihavent')
+        ihavesubmitted = mommy.make(get_user_model(), username = 'ihavesubmitted')
+        ihavent = mommy.make(get_user_model(), username = 'ihavent')
         mommy.make(GamePlayer, game = self.game, player = ihavesubmitted, submit_date = now())
         mommy.make(GamePlayer, game = self.game, player = ihavent, submit_date = None)
 

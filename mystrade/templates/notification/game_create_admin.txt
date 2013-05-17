@@ -1,5 +1,5 @@
-Game #{{ game.id }} has been created by {{ game.master.get_profile.name }}
-{{ game.master.get_profile.name|capfirst }} has just created game #{{ game.id }}.
+Game #{{ game.id }} has been created by {{ game.master.name }}
+{{ game.master.name|capfirst }} has just created game #{{ game.id }}.
 
 The players are:
 {% for player in players %}- {{ player.name }} ({{ player.url }})

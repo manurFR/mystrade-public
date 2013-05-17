@@ -12,7 +12,7 @@
  		
 	<body>
 		<div class="toplinks">
-            {% if user.is_authenticated %}<div class="game-player">{{  user.get_profile.name }}</div>&nbsp;&nbsp;&nbsp;{% endif %}
+            {% if user.is_authenticated %}<div class="game-player">{{ user.name }}</div>&nbsp;&nbsp;&nbsp;{% endif %}
 
             <a href="{% url 'rules' %}">R&egrave;gles</a> |
 

@@ -1,11 +1,11 @@
-from django.contrib.auth.models import User
 from django.db import models
 from game.models import Game
+from mystrade import settings
 from ruleset.models import RuleCard, Commodity
 
 class ScoreFromRule(models.Model):
     game = models.ForeignKey(Game)
-    player = models.ForeignKey(User)
+    player = models.ForeignKey(settings.AUTH_USER_MODEL)
     rulecard = models.ForeignKey(RuleCard)
 
     detail = models.CharField(max_length = 255)
@@ -13,7 +13,7 @@ class ScoreFromRule(models.Model):
 
 class ScoreFromCommodity(models.Model):
     game = models.ForeignKey(Game)
-    player = models.ForeignKey(User)
+    player = models.ForeignKey(settings.AUTH_USER_MODEL)
     commodity = models.ForeignKey(Commodity)
 
     nb_submitted_cards = models.PositiveSmallIntegerField()
