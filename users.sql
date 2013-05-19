@@ -1,9 +1,5 @@
 -- psql mystrade < users.sql
 
-delete from game_game_players;
-delete from game_game_rules;
-delete from game_game;
-delete from django_admin_log;
 delete from profile_mystradeuser_user_permissions;
 delete from profile_mystradeuser;
 

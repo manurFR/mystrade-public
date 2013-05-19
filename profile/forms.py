@@ -1,13 +1,13 @@
 from django import forms
-from profile.models import MystradeUser
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
-
-class UserForm(forms.ModelForm):
+class MystradeUserForm(forms.ModelForm):
     new_password1 = forms.CharField(label="New password", required = False,
                                     widget=forms.PasswordInput)
     new_password2 = forms.CharField(label="New password confirmation", required = False,
                                     widget=forms.PasswordInput)
-    
+
     def clean_new_password2(self):
         password1 = self.cleaned_data.get('new_password1')
         password2 = self.cleaned_data.get('new_password2')
@@ -19,5 +19,5 @@ class UserForm(forms.ModelForm):
         return password2
 
     class Meta:
-        model = MystradeUser
+        model = get_user_model()
         fields = ['username', 'first_name', 'last_name', 'email', 'send_notifications', 'bio', 'contact']

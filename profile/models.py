@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-# Create your models here.
 class MystradeUser(AbstractUser):
     send_notifications = models.BooleanField("Send game notifications", help_text = "Check to receive email alerts about your trades and games")
 

@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from profile.forms import UserForm
+from profile.forms import MystradeUserForm
 
 
 @login_required
@@ -17,7 +17,7 @@ def profile(request, user_id = None):
 @login_required
 def editprofile(request):
     if request.method == 'POST':
-        user_form = UserForm(data = request.POST, instance = request.user)
+        user_form = MystradeUserForm(data = request.POST, instance = request.user)
         if user_form.is_valid():
             user = user_form.save(commit = False)
             if user_form.cleaned_data['new_password1']:
@@ -25,6 +25,6 @@ def editprofile(request):
             user.save()
             return redirect('profile')
     else:
-        user_form = UserForm(instance = request.user)
+        user_form = MystradeUserForm(instance = request.user)
 
     return render(request, 'profile/editprofile.html', {'user_form': user_form})

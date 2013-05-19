@@ -22,7 +22,7 @@ class MystradeUserNameTest(TestCase):
 class ViewsTest(TestCase):
     def setUp(self):
         self.testUser = get_user_model()(username = 'test', email = 'test@aaa.com', bio = 'line\r\njump', send_notifications = True)
-        self.testUser.make_password('test');
+        self.testUser.set_password('test');
         self.testUser.save()
 
         self.client.login(username = 'test', password = 'test')
@@ -43,7 +43,7 @@ class ViewsTest(TestCase):
     def test_display_profile_for_other_player(self):
         otherUser = get_user_model()(username = 'someone', email = 'someone@bbb.com', first_name = 'luke', last_name = 'skywalker',
                                  contact = 'call me maybe', send_notifications = False)
-        otherUser.make_password('password');
+        otherUser.set_password('password');
         otherUser.save()
 
         response = self.client.get("/profile/{}/".format(otherUser.id))
