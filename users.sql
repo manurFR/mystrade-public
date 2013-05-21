@@ -1,5 +1,11 @@
 -- psql mystrade < users.sql
 
+delete from game_gameplayer;
+delete from game_commodityinhand;
+delete from game_ruleinhand;
+delete from game_message;
+delete from game_game_rules;
+delete from game_game;
 delete from profile_mystradeuser_user_permissions;
 delete from profile_mystradeuser;
 
@@ -14,6 +20,6 @@ insert into profile_mystradeuser (id, username, first_name, last_name, email, pa
 insert into profile_mystradeuser (id, username, first_name, last_name, email, password, is_staff, is_active, is_superuser, last_login, date_joined, send_notifications, bio, contact) values (9, 'test8', '', '', 'test8@manur.org', 'pbkdf2_sha256$10000$l3RIL0Sdy17H$ivtardZX6ZL0AYOawLKRoJ1WOARl3Cyjus5xG6Mf2eA=', false, true, false, '2012-11-14 13:16:51.240367-08', '2012-11-14 13:16:51.240378-08', false, '', '');
 insert into profile_mystradeuser (id, username, first_name, last_name, email, password, is_staff, is_active, is_superuser, last_login, date_joined, send_notifications, bio, contact) values (10, 'test9', '', '', 'test9@manur.org', 'pbkdf2_sha256$10000$lQjGRQ0IdsJk$iFkyorMeAoGo5LihMgp6v89po55IjK+faczx1mLb9KM=', false, true, false, '2012-11-14 13:16:59.278742-08', '2012-11-14 13:16:59.278752-08', false, '', '');
 
-select setval('profile_mystradeuser_id_seq', 1, false);
+select setval('profile_mystradeuser_id_seq', 11);
 
 -- TODO add add_game permission to manur
