@@ -19,3 +19,6 @@ PYTHONPATH=~/python-modules ~/python-modules/pip install -t ~/python-modules -U 
 # Apply South migrations
 ./manage.py migrate
 
+# Collect staticfiles
+./manage.py collectstatic
+
