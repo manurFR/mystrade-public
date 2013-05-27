@@ -13,8 +13,8 @@ git checkout -f
 git reset --hard
 
 # Update requirements, installing the modules in alwaysdata specific directory
-PYTHONPATH=~/python-modules pip install -t ~/python-modules -r requirements.txt
+PYTHONPATH=~/python-modules pip install --install-option="--install-dir=~/python-modules" -r requirements.txt -U
 
 # Apply South migrations
-./manage.py migrate
+#./manage.py migrate
 
