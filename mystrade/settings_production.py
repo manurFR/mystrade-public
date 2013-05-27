@@ -38,7 +38,7 @@ DATABASES = {
     }
 }
 
-STATIC_ROOT = os.path.join(SITE_ROOT, "public", "static")
+STATIC_ROOT = os.path.join(SITE_ROOT, "..", "public", "static")
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
