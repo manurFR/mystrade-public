@@ -17,8 +17,9 @@ PYTHONPATH=~/python-modules ~/python-modules/pip install -t ~/python-modules -U 
 # note: the first time we needed PYTHONPATH=~/python-modules easy_install-2.6 --install-dir ~/python-modules markdown==2.3.1
 
 # Apply South migrations
+export DJANGO_SETTINGS_MODULE=mystrade.settings_production
 ./manage.py migrate
 
 # Collect staticfiles
-./manage.py collectstatic
+./manage.py collectstatic --noinput
 
