@@ -17,5 +17,5 @@ PYTHONPATH=~/python-modules ~/python-modules/pip install -t ~/python-modules -U 
 # note: the first time we needed PYTHONPATH=~/python-modules easy_install-2.6 --install-dir ~/python-modules markdown==2.3.1
 
 # Apply South migrations
-#./manage.py migrate
+./manage.py migrate
 
