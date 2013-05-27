@@ -20,6 +20,16 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_TLS = False
+EMAIL_SUBJECT_PREFIX = '[MysTrade] ' # for admins
+
+EMAIL_MYSTRADE = 'mystrade@manur.org'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
@@ -156,17 +166,6 @@ INSTALLED_APPS = (
 AUTH_USER_MODEL = 'profile.MystradeUser'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'welcome'
-
-# Email
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 25
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
-EMAIL_USE_TLS = False
-EMAIL_SUBJECT_PREFIX = '[MysTrade] ' # for admins
-
-EMAIL_MYSTRADE = 'mystrade@manur.org'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
