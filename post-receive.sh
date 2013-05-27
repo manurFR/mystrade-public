@@ -13,7 +13,7 @@ git checkout -f
 git reset --hard
 
 # Update requirements, installing the modules in alwaysdata specific directory
-PYTHONPATH=~/python-modules pip install --install-option="--install-dir=~/python-modules" -r requirements.txt -U
+PYTHONPATH=~/python-modules pip install --install-option="--install-dir=/home/mystrade/python-modules" -U -r requirements_production.txt
 
 # Apply South migrations
 #./manage.py migrate
