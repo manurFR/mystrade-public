@@ -8,7 +8,6 @@ TEMPLATE_DEBUG = DEBUG
 
 # Required when DEBUG is False, ie in production, to prevent "host-poisoning attacks".
 ALLOWED_HOSTS = [
-    #'127.0.0.1',
     'mystrade.alwaysdata.net', # Allow domain and subdomains
     #'.example.com.', # Also allow FQDN and subdomains
 ]
