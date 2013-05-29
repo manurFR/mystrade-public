@@ -1,7 +1,41 @@
-Before making the first "git push", the following two files should be copied (scp) to the production server:
-1. "post-receive" should be copied on the server, under the "hooks" directory in the git repository,
-   and given executable rights if needed (chmod +x post-receive).
-2. "deploy.sh" should be copied on the server, under the "production" directory in the future working tree
-   ($HOME/mystrade/production), and given executable rights if needed.
+Before making the first "git push", the following tree should be prepared on the production server's home directory:
 
-The other deployment steps should be taken care of automatically at the end of each "git push" once this is done.
+$HOME
+|-- admin
+|   ...
+|-- cgi-bin
+|   ...
+|-- git
+|   `-- mystrade.git [1]
+|       |-- HEAD
+|       |-- ORIG_HEAD
+|       |-- branches
+|       |   ...
+|       |-- config
+|       |-- description
+|       |-- hooks
+|       |   `-- post-receive [+x] [2]
+|       |-- index
+|       |-- info
+|       |   ...
+|       |-- objects
+|       |   ...
+|       |-- packed-refs
+|       `-- refs
+|           ...
+|-- mystrade
+|   |-- production
+|   |   `-- deploy.sh [+x] [2]
+|   `-- public
+|       |-- django.fcgi [+x] [2]
+|       |-- media -> /usr/local/alwaysdata/python/django/1.5.1/django/contrib/admin/media/
+|       `-- static
+|           ...
+`-- python-modules
+    ...
+
+[1] bare git repository cloned ("git clone --bare mystrade/ mystrade.git") and scp'ed from the mystrade git repository
+[2] these three files should be copied (scp) from the "production" folder to the corresponding folder on the server
+[+x] these files should be executable on the server ("chmod +x <file>" if they are not)
+
+The deployment should then be performed automatically at the end of each "git push".
