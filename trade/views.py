@@ -213,7 +213,7 @@ def accept_trade(request, game_id, trade_id):
                     _trade_event_notification(request, trade)
             except BaseException as ex:
                 # if anything crappy happens, rollback the transaction and do nothing else except logging
-                logger.error("Error in accept_trace({}, {})".format(game_id, trade_id), exc_info = ex)
+                logger.error("Error in accept_trace({0}, {1})".format(game_id, trade_id), exc_info = ex)
 
             return redirect('trades', game_id)
 

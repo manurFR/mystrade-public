@@ -210,7 +210,7 @@ def submit_hand(request, game_id):
                         trade.abort(request.user, gameplayer.submit_date)
 
             except BaseException as ex:
-                logger.error("Error in submit_hand({})".format(game_id), exc_info = ex)
+                logger.error("Error in submit_hand({0})".format(game_id), exc_info = ex)
 
             return redirect('game', game.id)
         else:
@@ -279,7 +279,7 @@ def select_rules(request):
                         selected_rules.append(card)
                         break
             if len(selected_rules) > len(players):
-                error = "Please select at most {} rule cards (including the mandatory ones)".format(len(players))
+                error = "Please select at most {0} rule cards (including the mandatory ones)".format(len(players))
                 RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
                 formset = RuleCardsFormSet(initial=[{'card_id': card.id,
                                                      'public_name': card.public_name,
@@ -445,7 +445,7 @@ def close_game(request, game_id):
                                                    'url': request.build_absolute_uri(reverse('control', args = [game.id]))})
 
             except BaseException as ex:
-                logger.error("Error in close_game({})".format(game_id), exc_info = ex)
+                logger.error("Error in close_game({0})".format(game_id), exc_info = ex)
 
             return redirect('control', game_id)
 

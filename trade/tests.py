@@ -16,7 +16,7 @@ from utils.tests import MystradeTestCase
 class CreateTradeViewTest(MystradeTestCase):
 
     def test_create_trade_without_responder_fails(self):
-        response = self.client.post("/trade/{}/create/".format(self.game.id),
+        response = self.client.post("/trade/{0}/create/".format(self.game.id),
                                     {'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
                                      'rulecards-0-card_id': 1,
                                      'rulecards-1-card_id': 2,
@@ -32,7 +32,7 @@ class CreateTradeViewTest(MystradeTestCase):
         self.assertFormError(response, 'trade_form', 'responder', 'This field is required.')
 
     def test_create_trade_without_selecting_cards_fails(self):
-        response = self.client.post("/trade/{}/create/".format(self.game.id),
+        response = self.client.post("/trade/{0}/create/".format(self.game.id),
                                     {'responder': 4,
                                      'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
                                      'rulecards-0-card_id': 1,
@@ -74,10 +74,10 @@ class CreateTradeViewTest(MystradeTestCase):
     def _assertIsCreateTradeAllowed(self, create_allowed, list_allowed = True):
         expected_status = 200 if create_allowed else 403
 
-        response = self.client.get("/trade/{}/create/".format(self.game.id))
+        response = self.client.get("/trade/{0}/create/".format(self.game.id))
         self.assertEqual(expected_status, response.status_code)
 
-        response = self.client.post("/trade/{}/create/".format(self.game.id),
+        response = self.client.post("/trade/{0}/create/".format(self.game.id),
                                     {'responder': 4,
                                      'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
                                      'rulecards-0-card_id': 1,
@@ -93,7 +93,7 @@ class CreateTradeViewTest(MystradeTestCase):
                                     })
         self.assertEqual(expected_status, response.status_code)
 
-        response = self.client.get("/trade/{}/".format(self.game.id))
+        response = self.client.get("/trade/{0}/".format(self.game.id))
         if list_allowed:
             if create_allowed:
                 self.assertContains(response, '<input type="submit" value="Set up trade proposal" />')
@@ -110,7 +110,7 @@ class CreateTradeViewTest(MystradeTestCase):
         commodity = mommy.make(Commodity, ruleset = ruleset, name = 'commodity_1')
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = self.loginUser,
                                                            commodity = commodity, nb_cards = 2)
-        response = self.client.post("/trade/{}/create/".format(self.game.id),
+        response = self.client.post("/trade/{0}/create/".format(self.game.id),
                                     {'responder': 4,
                                      'rulecards-TOTAL_FORMS': 1,               'rulecards-INITIAL_FORMS': 1,
                                      'rulecards-0-card_id': rule_in_hand.id,   'rulecards-0-selected_rule': 'on',
@@ -119,7 +119,7 @@ class CreateTradeViewTest(MystradeTestCase):
                                      'free_information': 'some "secret" info',
                                      'comment': 'a comment'
                                     })
-        self.assertRedirects(response, "/trade/{}/".format(self.game.id))
+        self.assertRedirects(response, "/trade/{0}/".format(self.game.id))
 
         trade = Trade.objects.get(game = self.game, initiator__username = 'test2')
         self.assertEqual(4, trade.responder.id)
@@ -134,9 +134,9 @@ class CreateTradeViewTest(MystradeTestCase):
         # notification email sent
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
-        self.assertEqual('[MysTrade] Game #{}: You have been offered a trade by test2'.format(self.game.id), email.subject)
-        self.assertIn('In game #{}, test2 has offered you a new trade'.format(self.game.id), email.body)
-        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertEqual('[MysTrade] Game #{0}: You have been offered a trade by test2'.format(self.game.id), email.subject)
+        self.assertIn('In game #{0}, test2 has offered you a new trade'.format(self.game.id), email.body)
+        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test4@test.com'], email.to)
 
     def test_create_trade_page_doesnt_show_commodities_with_no_cards(self):
@@ -145,7 +145,7 @@ class CreateTradeViewTest(MystradeTestCase):
         cih1 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 1)
         cih2 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity2, nb_cards = 0)
 
-        response = self.client.get("/trade/{}/create/".format(self.game.id))
+        response = self.client.get("/trade/{0}/create/".format(self.game.id))
 
         self.assertContains(response, '<div class="card_name">Commodity#1</div>')
         self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
@@ -173,7 +173,7 @@ class ManageViewsTest(MystradeTestCase):
                                        status = 'REPLIED', initiator_offer = mommy.make(Offer),
                                        creation_date = right_now - datetime.timedelta(days = 6))
 
-        response = self.client.get("/trade/{}/".format(self.game.id))
+        response = self.client.get("/trade/{0}/".format(self.game.id))
 
         self.assertContains(response, "submitted 1 day ago")
         self.assertContains(response, "cancelled by <div class=\"game-player\"><strong>you</strong></div> 2 days ago")
@@ -191,107 +191,107 @@ class ManageViewsTest(MystradeTestCase):
         trade = self._prepare_trade('INITIATED')
 
         # the initiator
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertEqual(200, response.status_code)
 
         # the responder
         self.login_as(self.alternativeUser)
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertEqual(200, response.status_code)
 
         # the game master
         self.login_as(self.master)
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertEqual(200, response.status_code)
 
         # an admin
         self.login_as(self.admin)
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id), follow = True)
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), follow = True)
         self.assertEqual(200, response.status_code)
 
         # anybody else
         self.login_as(self.admin_player)
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertEqual(403, response.status_code)
 
     def test_buttons_in_show_trade_with_own_initiated_trade(self):
         trade = self._prepare_trade('INITIATED')
 
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
 
-        self.assertContains(response, '<form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<button type="button" id="reply">Reply with your offer</button>')
-        self.assertNotContains(response, '<form action="/trade/{}/{}/reply/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/reply/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
-        self.assertNotContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_for_the_responder_when_INITIATED(self):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
 
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
 
-        self.assertNotContains(response, 'form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, 'form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
         self.assertContains(response, '<button type="button" id="reply">Reply with your offer</button>')
-        self.assertContains(response, '<form action="/trade/{}/{}/reply/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<form action="/trade/{0}/{1}/reply/"'.format(self.game.id, trade.id))
         self.assertContains(response, '<button type="button" id="decline">Decline</button>')
-        self.assertContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_for_the_responder_when_REPLIED(self):
         trade = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser,
                                     responder_offer = mommy.make(Offer))
 
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
 
-        self.assertContains(response, '<form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<form action="/trade/{}/{}/accept/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<button type="button" id="reply">Reply with your offer</button>')
-        self.assertNotContains(response, '<form action="/trade/{}/{}/reply/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/reply/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
-        self.assertNotContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_for_the_initiator_when_REPLIED(self):
         trade = self._prepare_trade('REPLIED', responder_offer = mommy.make(Offer))
 
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
 
-        self.assertNotContains(response, '<form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
-        self.assertContains(response, '<form action="/trade/{}/{}/accept/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
         self.assertContains(response, '<button type="button" id="decline">Decline</button>')
-        self.assertContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_with_trade_CANCELLED(self):
         trade = self._prepare_trade('CANCELLED', finalizer = self.alternativeUser)
 
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
 
-        self.assertNotContains(response, '<form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<form action="/trade/{}/{}/accept/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
-        self.assertNotContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
 
     def test_buttons_in_show_trade_when_the_game_has_ended(self):
         self.game.end_date = now() + datetime.timedelta(days = -5)
         self.game.save()
 
         trade = self._prepare_trade('INITIATED')
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
-        self.assertNotContains(response, '<form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
 
         trade.responder = self.loginUser
         trade.save()
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
-        self.assertNotContains(response, '<form action="/trade/{}/{}/reply/"'.format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/reply/"'.format(self.game.id, trade.id))
 
         trade.status = 'REPLIED'
         trade.save()
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
-        self.assertNotContains(response, '<form action="/trade/{}/{}/cancel/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<form action="/trade/{}/{}/accept/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<form action="/trade/{}/{}/decline/"'.format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
 
     def test_decline_reason_displayed_in_show_trade_when_DECLINED(self):
         trade = self._prepare_trade('DECLINED', finalizer = self.alternativeUser)
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
 
         self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\"><a href=\".*\">test5</a>")
         self.assertNotContains(response, "with the following reason given:")
@@ -299,14 +299,14 @@ class ManageViewsTest(MystradeTestCase):
         trade.decline_reason = "Because I do not need it"
         trade.save()
 
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
 
         self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\"><a href=\".*\">test5</a>")
         self.assertContains(response, "with the following reason given:")
         self.assertContains(response, "Because I do not need it")
 
     def test_cancel_trade_not_allowed_in_GET(self):
-        response = self.client.get("/trade/{}/{}/cancel/".format(self.game.id, 1))
+        response = self.client.get("/trade/{0}/{1}/cancel/".format(self.game.id, 1))
         self.assertEqual(403, response.status_code)
 
     def test_cancel_trade_not_allowed_for_trades_when_you_re_not_the_player_that_can_cancel(self):
@@ -361,7 +361,7 @@ class ManageViewsTest(MystradeTestCase):
 
     def test_cancel_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_INITIATED(self):
         trade = self._prepare_trade('INITIATED')
-        response = self.client.post("/trade/{}/{}/cancel/".format(self.game.id, trade.id), follow = True)
+        response = self.client.post("/trade/{0}/{1}/cancel/".format(self.game.id, trade.id), follow = True)
 
         self.assertEqual(200, response.status_code)
 
@@ -373,14 +373,14 @@ class ManageViewsTest(MystradeTestCase):
         # notification email sent
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
-        self.assertEqual('[MysTrade] Game #{}: test2 has cancelled the trade'.format(self.game.id), email.subject)
+        self.assertEqual('[MysTrade] Game #{0}: test2 has cancelled the trade'.format(self.game.id), email.subject)
         self.assertIn('test2 has cancelled the trade including the following elements', email.body)
-        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_cancel_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_REPLIED(self):
         trade = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser)
-        response = self.client.post("/trade/{}/{}/cancel/".format(self.game.id, trade.id), follow = True)
+        response = self.client.post("/trade/{0}/{1}/cancel/".format(self.game.id, trade.id), follow = True)
 
         self.assertEqual(200, response.status_code)
 
@@ -392,13 +392,13 @@ class ManageViewsTest(MystradeTestCase):
         # notification email sent
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
-        self.assertEqual('[MysTrade] Game #{}: test2 has cancelled the trade'.format(self.game.id), email.subject)
+        self.assertEqual('[MysTrade] Game #{0}: test2 has cancelled the trade'.format(self.game.id), email.subject)
         self.assertIn('test2 has cancelled the trade including the following elements', email.body)
-        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_reply_trade_not_allowed_in_GET(self):
-        response = self.client.get("/trade/{}/{}/reply/".format(self.game.id, 1))
+        response = self.client.get("/trade/{0}/{1}/reply/".format(self.game.id, 1))
         self.assertEqual(403, response.status_code)
 
     def test_reply_trade_not_allowed_when_one_is_not_the_responder(self):
@@ -418,7 +418,7 @@ class ManageViewsTest(MystradeTestCase):
 
     def test_reply_trade_without_selecting_cards_fails(self):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
-        response = self.client.post("/trade/{}/{}/reply/".format(self.game.id, trade.id),
+        response = self.client.post("/trade/{0}/{1}/reply/".format(self.game.id, trade.id),
                                     {'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
                                      'rulecards-0-card_id': 1,
                                      'rulecards-1-card_id': 2,
@@ -444,7 +444,7 @@ class ManageViewsTest(MystradeTestCase):
 
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
 
-        response = self.client.post("/trade/{}/{}/reply/".format(self.game.id, trade.id),
+        response = self.client.post("/trade/{0}/{1}/reply/".format(self.game.id, trade.id),
                                     {'rulecards-TOTAL_FORMS': 1,               'rulecards-INITIAL_FORMS': 1,
                                      'rulecards-0-card_id': rule_in_hand.id,   'rulecards-0-selected_rule': 'on',
                                      'commodity-TOTAL_FORMS': 1,               'commodity-INITIAL_FORMS': 1,
@@ -452,7 +452,7 @@ class ManageViewsTest(MystradeTestCase):
                                      'free_information': 'some "secret" info',
                                      'comment': 'a comment'
                                     })
-        self.assertRedirects(response, "/trade/{}/".format(self.game.id))
+        self.assertRedirects(response, "/trade/{0}/".format(self.game.id))
 
         trade = Trade.objects.get(pk = trade.id)
         self.assertEqual('REPLIED', trade.status)
@@ -466,13 +466,13 @@ class ManageViewsTest(MystradeTestCase):
         # notification email sent
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
-        self.assertEqual('[MysTrade] Game #{}: test2 has replied to your trade proposal'.format(self.game.id), email.subject)
-        self.assertIn('In game #{}, test2 has replied to your offer.'.format(self.game.id), email.body)
-        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertEqual('[MysTrade] Game #{0}: test2 has replied to your trade proposal'.format(self.game.id), email.subject)
+        self.assertIn('In game #{0}, test2 has replied to your offer.'.format(self.game.id), email.body)
+        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_accept_trade_not_allowed_in_GET(self):
-        response = self.client.get("/trade/{}/{}/accept/".format(self.game.id, 1))
+        response = self.client.get("/trade/{0}/{1}/accept/".format(self.game.id, 1))
         self.assertEqual(403, response.status_code)
 
     def test_accept_trade_not_allowed_when_you_re_not_the_initiator(self):
@@ -540,7 +540,7 @@ class ManageViewsTest(MystradeTestCase):
 
         trade = self._prepare_trade('REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
 
-        response = self.client.post("/trade/{}/{}/accept/".format(self.game.id, trade.id), follow = True)
+        response = self.client.post("/trade/{0}/{1}/accept/".format(self.game.id, trade.id), follow = True)
 
         self.assertEqual(200, response.status_code)
 
@@ -574,13 +574,13 @@ class ManageViewsTest(MystradeTestCase):
         # notification email sent
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
-        self.assertEqual('[MysTrade] Game #{}: test2 has accepted the trade'.format(self.game.id), email.subject)
+        self.assertEqual('[MysTrade] Game #{0}: test2 has accepted the trade'.format(self.game.id), email.subject)
         self.assertIn('test2 has accepted your offer.'.format(self.game.id), email.body)
-        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_decline_trade_not_allowed_in_GET(self):
-        response = self.client.get("/trade/{}/{}/decline/".format(self.game.id, 1))
+        response = self.client.get("/trade/{0}/{1}/decline/".format(self.game.id, 1))
         self.assertEqual(403, response.status_code)
 
     def test_decine_trade_not_allowed_for_trades_when_you_re_not_the_player_that_can_decline(self):
@@ -636,7 +636,7 @@ class ManageViewsTest(MystradeTestCase):
 
     def test_decline_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_INITIATED(self):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
-        response = self.client.post("/trade/{}/{}/decline/".format(self.game.id, trade.id),
+        response = self.client.post("/trade/{0}/{1}/decline/".format(self.game.id, trade.id),
                                     {'decline_reason': "this is my reason"}, follow = True)
 
         self.assertEqual(200, response.status_code)
@@ -650,15 +650,15 @@ class ManageViewsTest(MystradeTestCase):
         # notification email sent
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
-        self.assertEqual('[MysTrade] Game #{}: test2 has declined the trade'.format(self.game.id), email.subject)
+        self.assertEqual('[MysTrade] Game #{0}: test2 has declined the trade'.format(self.game.id), email.subject)
         self.assertIn('test2 has declined your offer.'.format(self.game.id), email.body)
-        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertIn("this is my reason", email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_decline_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_REPLIED(self):
         trade = self._prepare_trade('REPLIED')
-        response = self.client.post("/trade/{}/{}/decline/".format(self.game.id, trade.id),
+        response = self.client.post("/trade/{0}/{1}/decline/".format(self.game.id, trade.id),
                                     {'decline_reason': "this is my reason"}, follow = True)
 
         self.assertEqual(200, response.status_code)
@@ -672,9 +672,9 @@ class ManageViewsTest(MystradeTestCase):
         # notification email sent
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
-        self.assertEqual('[MysTrade] Game #{}: test2 has declined the trade'.format(self.game.id), email.subject)
+        self.assertEqual('[MysTrade] Game #{0}: test2 has declined the trade'.format(self.game.id), email.subject)
         self.assertIn('test2 has declined your offer.'.format(self.game.id), email.body)
-        self.assertIn('/trade/{}/{}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertIn("this is my reason", email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
@@ -706,7 +706,7 @@ class ManageViewsTest(MystradeTestCase):
         offer3.tradedcommodities_set.add(tc3)
         trade1 = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser, responder_offer = offer3)
 
-        request = RequestFactory().get("/trade/{}/create/".format(self.game.id))
+        request = RequestFactory().get("/trade/{0}/create/".format(self.game.id))
         request.user = self.loginUser
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, self.game,
                                                                                   selected_rules = [rih2],
@@ -756,11 +756,11 @@ class ManageViewsTest(MystradeTestCase):
 
         # INITIATED : the initiator should see the sensitive elements of his offer, the responder should not
         trade = self._prepare_trade('INITIATED', initiator_offer = offer_initiator)
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertContains(response, 'rule description 7')
         self.assertContains(response, 'this is sensitive')
 
-        response = clientTest5.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = clientTest5.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertNotContains(response, 'rule description 7')
         self.assertNotContains(response, 'this is sensitive')
         self.assertContains(response, '(Hidden until trade accepted)')
@@ -772,7 +772,7 @@ class ManageViewsTest(MystradeTestCase):
         trade.status = 'REPLIED'
         trade.save()
 
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertContains(response, 'rule description 7')
         self.assertContains(response, 'this is sensitive')
         self.assertNotContains(response, 'rule description 8')
@@ -780,7 +780,7 @@ class ManageViewsTest(MystradeTestCase):
         self.assertContains(response, '(Hidden until trade accepted)')
         self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
 
-        response = clientTest5.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = clientTest5.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertNotContains(response, 'rule description 7')
         self.assertNotContains(response, 'this is sensitive')
         self.assertContains(response, '(Hidden until trade accepted)')
@@ -793,7 +793,7 @@ class ManageViewsTest(MystradeTestCase):
         trade.finalizer = self.loginUser
         trade.save()
 
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertContains(response, 'rule description 7')
         self.assertContains(response, 'this is sensitive')
         self.assertNotContains(response, 'rule description 8')
@@ -801,7 +801,7 @@ class ManageViewsTest(MystradeTestCase):
         self.assertContains(response, '(Hidden until trade accepted)')
         self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
 
-        response = clientTest5.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = clientTest5.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertNotContains(response, 'rule description 7')
         self.assertNotContains(response, 'this is sensitive')
         self.assertContains(response, '(Hidden until trade accepted)')
@@ -813,7 +813,7 @@ class ManageViewsTest(MystradeTestCase):
         trade.status = 'CANCELLED'
         trade.save()
 
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertContains(response, 'rule description 7')
         self.assertContains(response, 'this is sensitive')
         self.assertNotContains(response, 'rule description 8')
@@ -821,7 +821,7 @@ class ManageViewsTest(MystradeTestCase):
         self.assertContains(response, '(Hidden until trade accepted)')
         self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
 
-        response = clientTest5.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = clientTest5.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertNotContains(response, 'rule description 7')
         self.assertNotContains(response, 'this is sensitive')
         self.assertContains(response, '(Hidden until trade accepted)')
@@ -833,7 +833,7 @@ class ManageViewsTest(MystradeTestCase):
         trade.status = 'ACCEPTED'
         trade.save()
 
-        response = self.client.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertContains(response, 'rule description 7')
         self.assertContains(response, 'this is sensitive')
         self.assertContains(response, 'rule description 8')
@@ -841,7 +841,7 @@ class ManageViewsTest(MystradeTestCase):
         self.assertNotContains(response, '(Hidden until trade accepted)')
         self.assertNotContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
 
-        response = clientTest5.get("/trade/{}/{}/".format(self.game.id, trade.id))
+        response = clientTest5.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
         self.assertContains(response, 'rule description 7')
         self.assertContains(response, 'this is sensitive')
         self.assertNotContains(response, '(Hidden until trade accepted)')
@@ -858,7 +858,7 @@ class ManageViewsTest(MystradeTestCase):
                               status = status, initiator_offer = initiator_offer, responder_offer = responder_offer)
 
     def _assertOperationNotAllowed(self, trade_id, operation):
-        response = self.client.post("/trade/{}/{}/{}/".format(self.game.id, trade_id, operation), follow=True)
+        response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation), follow=True)
         self.assertEqual(403, response.status_code)
 
 class TransactionalViewsTest(TransactionTestCase):
@@ -887,7 +887,7 @@ class TransactionalViewsTest(TransactionTestCase):
         trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                                status = 'REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
 
-        response = self.client.post("/trade/{}/{}/accept/".format(self.game.id, trade.id), follow = True)
+        response = self.client.post("/trade/{0}/{1}/accept/".format(self.game.id, trade.id), follow = True)
 
         self.assertEqual(200, response.status_code)
 

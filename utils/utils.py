@@ -31,9 +31,9 @@ def send_notification_email(template_name, recipients, data = None):
             and those who don't will be automatically suppressed from the recipients list.
      """
     try:
-        _send_notification_email(get_template('notification/{}.txt'.format(template_name)), recipients, data)
+        _send_notification_email(get_template('notification/{0}.txt'.format(template_name)), recipients, data)
     except BadHeaderError as err:
-        logger.error("BadHeaderError in send_notification_email({}, {}, {})".format(template_name, recipients, data), exc_info = err)
+        logger.error("BadHeaderError in send_notification_email({0}, {1}, {2})".format(template_name, recipients, data), exc_info = err)
 
 def _send_notification_email(template, recipients, data = None):
     if recipients:
@@ -53,7 +53,7 @@ def _send_notification_email(template, recipients, data = None):
         subject = message[0]
         body = '\n'.join(message[1:])
         if subject:
-            email = EmailMessage('{}{}'.format(settings.EMAIL_SUBJECT_PREFIX, subject),
+            email = EmailMessage('{0}{1}'.format(settings.EMAIL_SUBJECT_PREFIX, subject),
                                  body,
                                  from_email = settings.EMAIL_MYSTRADE,
                                  to = to,

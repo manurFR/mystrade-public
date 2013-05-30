@@ -38,5 +38,5 @@ def assertRuleApplied(scoresheet, rulecard, detail = '', score = None, times = 1
 def assertRuleNotApplied(scoresheet, rulecard):
     applied_rules = [sfr.rulecard for sfr in scoresheet.scores_from_rule]
     if rulecard in applied_rules:
-        raise AssertionError('{} unexpectedly found in {}'.format(safe_repr(rulecard), safe_repr(applied_rules)))
+        raise AssertionError('{0} unexpectedly found in {1}'.format(safe_repr(rulecard), safe_repr(applied_rules)))
 

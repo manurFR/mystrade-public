@@ -36,7 +36,7 @@ class ViewsTest(TestCase):
         self.assertTemplateUsed(response, 'profile/profile.html')
 
     def test_display_profile_with_own_id_is_redirected(self):
-        response = self.client.get("/profile/{}/".format(self.testUser.id))
+        response = self.client.get("/profile/{0}/".format(self.testUser.id))
 
         self.assertRedirects(response, "/profile/")
 
@@ -46,7 +46,7 @@ class ViewsTest(TestCase):
         otherUser.set_password('password');
         otherUser.save()
 
-        response = self.client.get("/profile/{}/".format(otherUser.id))
+        response = self.client.get("/profile/{0}/".format(otherUser.id))
 
         self.assertContains(response, "Luke Skywalker")
         self.assertNotContains(response, "someone@bbb.com")

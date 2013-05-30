@@ -1,0 +1,6 @@
+A list of the unnecessary crap that was needed because alwaysdata is still in python 2.6.6.
+To unmade when they have the decency to upgrade to 2.7.
+===========================================================================================
+
+- importlib==1.0.2 in requirements_production.txt (importlib is included by default in 2.7)
+- all string.format() calls with replacement fields were forced to have an index ("{0}" instead of "{}")

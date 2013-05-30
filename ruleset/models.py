@@ -27,7 +27,7 @@ class RuleCard(models.Model):
     description = models.TextField()
 
     def __unicode__(self):
-        return "{} - ({}) {}".format(self.ref_name, self.public_name, self.description)
+        return "{0} - ({1}) {2}".format(self.ref_name, self.public_name, self.description)
 
     def perform(self, scoresheet):
         """ Should be overriden dynamically at post_init (see below). """

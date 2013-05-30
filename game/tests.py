@@ -180,7 +180,7 @@ class GameCreationViewsTest(TestCase):
                                     })
 
         created_game = Game.objects.get(master = self.testUserCanCreate.id)
-        self.assertRedirects(response, "/game/{}/".format(created_game.id))
+        self.assertRedirects(response, "/game/{0}/".format(created_game.id))
 
         self.assertEqual(1, created_game.ruleset_id)
         self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
@@ -199,17 +199,17 @@ class GameCreationViewsTest(TestCase):
 
         self.assertEqual(1, list_recipients.count('test2@test.com'))
         emailTest2 = mail.outbox[list_recipients.index('test2@test.com')]
-        self.assertEqual('[MysTrade] Game #{} has been created by test1'.format(created_game.id), emailTest2.subject)
-        self.assertIn('Test1 has just created game #{}, and you\'ve been selected to join it !'.format(created_game.id), emailTest2.body)
+        self.assertEqual('[MysTrade] Game #{0} has been created by test1'.format(created_game.id), emailTest2.subject)
+        self.assertIn('Test1 has just created game #{0}, and you\'ve been selected to join it !'.format(created_game.id), emailTest2.body)
         self.assertEqual(2, emailTest2.body.count('- Rule'))
         self.assertIn("The game has already started ! Start trading here:", emailTest2.body)
-        self.assertIn('/trade/{}'.format(created_game.id), emailTest2.body)
+        self.assertIn('/trade/{0}'.format(created_game.id), emailTest2.body)
 
         self.assertEqual(1, list_recipients.count('admin@mystrade.com'))
         emailAdmin = mail.outbox[list_recipients.index('admin@mystrade.com')]
-        self.assertEqual('[MysTrade] Game #{} has been created by test1'.format(created_game.id), emailAdmin.subject)
-        self.assertIn('Test1 has just created game #{}.'.format(created_game.id), emailAdmin.body)
-        self.assertIn("The ruleset is: {}".format(created_game.ruleset.name), emailAdmin.body)
+        self.assertEqual('[MysTrade] Game #{0} has been created by test1'.format(created_game.id), emailAdmin.subject)
+        self.assertIn('Test1 has just created game #{0}.'.format(created_game.id), emailAdmin.body)
+        self.assertIn("The ruleset is: {0}".format(created_game.ruleset.name), emailAdmin.body)
         self.assertEqual(4, emailAdmin.body.count('- Rule'))
 
 class GameModelsTest(MystradeTestCase):
@@ -268,49 +268,49 @@ class GamePageViewTest(MystradeTestCase):
         game1 = mommy.make(Game, master = self.loginUser, start_date = now() + datetime.timedelta(days = 2, seconds = 2),
                                end_date = now() + datetime.timedelta(days = 4, seconds = 2))
 
-        response = self.client.get("/game/{}/".format(game1.id))
+        response = self.client.get("/game/{0}/".format(game1.id))
         self.assertContains(response, "(starting in 2 days, ending in 4 days)")
 
         # during the game
         game2 = mommy.make(Game, master = self.loginUser, start_date = now() + datetime.timedelta(days = -2),
                                end_date = now() + datetime.timedelta(days = 4, seconds = 2))
 
-        response = self.client.get("/game/{}/".format(game2.id))
+        response = self.client.get("/game/{0}/".format(game2.id))
         self.assertContains(response, "(started 2 days ago, ending in 4 days)")
 
         # after end_date
         game3 = mommy.make(Game, master = self.loginUser, start_date = now() + datetime.timedelta(days = -4),
                                end_date = now() + datetime.timedelta(days = -2))
 
-        response = self.client.get("/game/{}/".format(game3.id))
+        response = self.client.get("/game/{0}/".format(game3.id))
         self.assertContains(response, "(started 4 days ago, ended 2 days ago)")
 
         # after closing_date
         game4 = mommy.make(Game, master = self.loginUser, start_date = now() + datetime.timedelta(days = -4),
                                end_date = now() + datetime.timedelta(days = -2), closing_date = now() + datetime.timedelta(days = -1))
 
-        response = self.client.get("/game/{}/".format(game4.id))
+        response = self.client.get("/game/{0}/".format(game4.id))
         self.assertContains(response, "(started 4 days ago, closed 1 day ago)")
 
     def test_game_show_shows_a_link_to_control_board_to_game_master_and_admins_that_are_not_players(self):
         # logged as a simple player
         response = self._assertGetGamePage()
-        self.assertNotContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
+        self.assertNotContains(response, "<a href=\"/game/{0}/control/\">&gt; Access to control board</a>".format(self.game.id))
 
         # game master
         self.login_as(self.master)
         response = self._assertGetGamePage()
-        self.assertContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
+        self.assertContains(response, "<a href=\"/game/{0}/control/\">&gt; Access to control board</a>".format(self.game.id))
 
         # admin not player
         self.login_as(self.admin)
         response = self._assertGetGamePage()
-        self.assertContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
+        self.assertContains(response, "<a href=\"/game/{0}/control/\">&gt; Access to control board</a>".format(self.game.id))
 
         # admin but player in this game
         self.login_as(self.admin_player)
         response = self._assertGetGamePage()
-        self.assertNotContains(response, "<a href=\"/game/{}/control/\">&gt; Access to control board</a>".format(self.game.id))
+        self.assertNotContains(response, "<a href=\"/game/{0}/control/\">&gt; Access to control board</a>".format(self.game.id))
 
     def test_game_page_shows_nb_of_rule_cards_owned_to_players(self):
         rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
@@ -378,9 +378,9 @@ class GamePageViewTest(MystradeTestCase):
 
         response = self._assertGetGamePage()
         self.assertContains(response, "Pending trades")
-        self.assertContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade1.id))
-        self.assertContains(response, "trade/{}/{}/\"><span class=\"new\">Decide".format(self.game.id, trade2.id))
-        self.assertNotContains(response, "trade/{}/{}/\">".format(self.game.id, trade3.id))
+        self.assertContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade1.id))
+        self.assertContains(response, "trade/{0}/{1}/\"><span class=\"new\">Decide".format(self.game.id, trade2.id))
+        self.assertNotContains(response, "trade/{0}/{1}/\">".format(self.game.id, trade3.id))
 
     def test_game_page_show_last_3_pending_trades_when_more_than_three_are_pending(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
@@ -398,10 +398,10 @@ class GamePageViewTest(MystradeTestCase):
 
         response = self._assertGetGamePage()
         self.assertContains(response, "Last 3 pending trades")
-        self.assertContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade1.id))
-        self.assertContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade2.id))
-        self.assertContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade3.id))
-        self.assertNotContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade4.id))
+        self.assertContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade1.id))
+        self.assertContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade2.id))
+        self.assertContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade3.id))
+        self.assertNotContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade4.id))
 
     def test_game_page_doesnt_show_pending_trades_to_game_master(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
@@ -412,12 +412,12 @@ class GamePageViewTest(MystradeTestCase):
 
         response = self._assertGetGamePage()
         self.assertNotContains(response, "Pending trades")
-        self.assertNotContains(response, "trade/{}/{}/\">Show".format(self.game.id, trade1.id))
+        self.assertNotContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade1.id))
 
     def test_game_page_post_a_message(self):
         self.assertEqual(0, Message.objects.count())
 
-        response = self.client.post("/game/{}/".format(self.game.id), {'message': 'test message represents'})
+        response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'test message represents'})
         self.assertEqual(200, response.status_code)
 
         self.assertEqual(1, Message.objects.count())
@@ -428,13 +428,13 @@ class GamePageViewTest(MystradeTestCase):
             self.fail("Message was not created for expected game and sender")
 
     def test_game_page_posting_a_message_fails_for_more_than_255_characters(self):
-        response = self.client.post("/game/{}/".format(self.game.id), {'message': 'A'*300})
+        response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'A'*300})
         self.assertEqual(200, response.status_code)
         self.assertEqual(0, Message.objects.count())
         self.assertContains(response, '<span class="errors">* Ensure this value has at most 255 characters (it has 300).</span>')
 
     def test_game_page_message_with_markdown_are_interpreted(self):
-        response = self.client.post("/game/{}/".format(self.game.id),
+        response = self.client.post("/game/{0}/".format(self.game.id),
                                     {'message': 'Hi *this* is __a test__ and [a link](http://example.net/)'})
         self.assertEqual(200, response.status_code)
 
@@ -442,7 +442,7 @@ class GamePageViewTest(MystradeTestCase):
                          Message.objects.get(game = self.game, sender = self.loginUser).content)
 
     def test_game_page_bleach_strips_unwanted_tags_and_attributes(self):
-        response = self.client.post("/game/{}/".format(self.game.id),
+        response = self.client.post("/game/{0}/".format(self.game.id),
                                     {'message': '<script>var i=3;</script>Hi an <em class="test">image</em><img src="http://blah.jpg"/>'})
         self.assertEqual(200, response.status_code)
 
@@ -469,7 +469,7 @@ class GamePageViewTest(MystradeTestCase):
         response = self._assertGetGamePage()
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10)
 
-        response = self.client.get("/game/{}/?page=2".format(self.game.id), follow = True)
+        response = self.client.get("/game/{0}/?page=2".format(self.game.id), follow = True)
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 4)
 
     def test_game_page_messages_from_the_game_master_stand_out(self):
@@ -482,29 +482,29 @@ class GamePageViewTest(MystradeTestCase):
     def test_delete_message_forbidden_when_youre_not_the_original_sender(self):
         msg = mommy.make(Message, game = self.game, sender = self.master)
 
-        response = self.client.post("/game/{}/deletemessage/{}/".format(self.game.id, msg.id), follow = True)
+        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
         self.assertEqual(403, response.status_code)
 
     def test_delete_message_forbidden_when_not_in_POST(self):
         msg = mommy.make(Message, game = self.game, sender = self.loginUser)
 
-        response = self.client.get("/game/{}/deletemessage/{}/".format(self.game.id, msg.id), follow = True)
+        response = self.client.get("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
         self.assertEqual(403, response.status_code)
 
     def test_delete_message_returns_404_when_the_message_doesnt_exists(self):
-        response = self.client.post("/game/{}/deletemessage/987654321/".format(self.game.id), follow = True)
+        response = self.client.post("/game/{0}/deletemessage/987654321/".format(self.game.id), follow = True)
         self.assertEqual(404, response.status_code)
 
     def test_delete_message_forbidden_when_grace_period_has_expired(self):
         msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -120))
 
-        response = self.client.post("/game/{}/deletemessage/{}/".format(self.game.id, msg.id))
+        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id))
         self.assertEqual(403, response.status_code)
 
     def test_delete_message_works_for_the_sender_during_the_grace_period(self):
         msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -10))
 
-        response = self.client.post("/game/{}/deletemessage/{}/".format(self.game.id, msg.id), follow = True)
+        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
         self.assertEqual(200, response.status_code)
 
         try:
@@ -516,7 +516,7 @@ class GamePageViewTest(MystradeTestCase):
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
             game = self.game
-        response = self.client.get("/game/{}/".format(game.id), follow = True)
+        response = self.client.get("/game/{0}/".format(game.id), follow = True)
         self.assertEqual(status_code, response.status_code)
         return response
 
@@ -528,7 +528,7 @@ class HandViewTest(MystradeTestCase):
         cih1 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 1)
         cih2 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity2, nb_cards = 0)
 
-        response = self.client.get("/game/{}/hand/".format(self.game.id))
+        response = self.client.get("/game/{0}/hand/".format(self.game.id))
 
         self.assertContains(response, '<div class="card_name">Commodity#1</div>')
         self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
@@ -547,7 +547,7 @@ class HandViewTest(MystradeTestCase):
         trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser, status = 'DECLINED',
                                 initiator_offer = mommy.make(Offer), responder_offer = offer3_from_other_as_responder)
 
-        response = self.client.get("/game/{}/hand/".format(self.game.id))
+        response = self.client.get("/game/{0}/hand/".format(self.game.id))
 
         self.assertContains(response, "Show me this 1")
         self.assertContains(response, "Show me this 2")
@@ -568,7 +568,7 @@ class HandViewTest(MystradeTestCase):
         trade = mommy.make(Trade, game = other_game, initiator = self.alternativeUser, responder = self.alternativeUser,
                                status = 'ACCEPTED', initiator_offer = initiator_offer2, responder_offer = responder_offer2)
 
-        response = self.client.get("/game/{}/hand/".format(self.game.id))
+        response = self.client.get("/game/{0}/hand/".format(self.game.id))
 
         self.assertNotContains(response, "There is no point showing this")
         self.assertNotContains(response, "There is no point showing that")
@@ -591,7 +591,7 @@ class HandViewTest(MystradeTestCase):
 
         # one should see one rulecard 2 in rules currently owned and only one rulecard 1 in former rules
         #  (no duplicates and no copies of cards currently in hand)
-        response = self.client.get("/game/{}/hand/".format(self.game.id))
+        response = self.client.get("/game/{0}/hand/".format(self.game.id))
 
         self.assertContains(response, '<div class="card_name">C2</div>', count = 1)
         self.assertEqual([rulecard2], [rih.rulecard for rih in response.context['rule_hand']])
@@ -611,7 +611,7 @@ class HandViewTest(MystradeTestCase):
         cih3 = mommy.make(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
                               nb_cards = 3, nb_submitted_cards = None)
 
-        response = self.client.get("/game/{}/hand/submit/".format(self.game.id))
+        response = self.client.get("/game/{0}/hand/submit/".format(self.game.id))
         self.assertEqual(200, response.status_code)
 
         self.assertEqual(3, len(response.context['commodities_formset'].initial))
@@ -625,15 +625,15 @@ class HandViewTest(MystradeTestCase):
     def test_submit_hand_is_not_allowed_when_you_re_not_a_player_in_this_game(self):
         self.game.gameplayer_set.get(player = self.loginUser).delete() # make me not a player in this game
 
-        response = self.client.post("/game/{}/hand/submit/".format(self.game.id))
+        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id))
         self.assertEqual(403, response.status_code)
 
         self.login_as(self.admin)
-        response = self.client.post("/game/{}/hand/submit/".format(self.game.id))
+        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id))
         self.assertEqual(403, response.status_code)
 
         self.login_as(self.master)
-        response = self.client.post("/game/{}/hand/submit/".format(self.game.id))
+        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id))
         self.assertEqual(403, response.status_code)
 
     def test_submit_hand_is_not_allowed_if_it_has_already_been_submitted(self):
@@ -641,7 +641,7 @@ class HandViewTest(MystradeTestCase):
         gameplayer.submit_date = now()
         gameplayer.save()
 
-        response = self.client.post("/game/{}/hand/submit/".format(self.game.id))
+        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id))
         self.assertEqual(403, response.status_code)
 
     def test_submit_hand_save_submitted_commodities_and_submit_date(self):
@@ -658,7 +658,7 @@ class HandViewTest(MystradeTestCase):
         cih3 = mommy.make(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
                               nb_cards = 3, nb_submitted_cards = None)
 
-        response = self.client.post("/game/{}/hand/submit/".format(self.game.id),
+        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id),
                                     {'commodity-TOTAL_FORMS': 2, 'commodity-INITIAL_FORMS': 2,
                                      'commodity-0-commodity_id': commodity1.id, 'commodity-0-nb_submitted_cards': 0,
                                      'commodity-1-commodity_id': commodity3.id, 'commodity-1-nb_submitted_cards': 2 }, follow = True)
@@ -686,7 +686,7 @@ class HandViewTest(MystradeTestCase):
                                                        initiator_offer = mommy.make(Offer),
                                                        status = 'REPLIED')
 
-        response = self.client.post("/game/{}/hand/submit/".format(self.game.id),
+        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id),
                                     {'commodity-TOTAL_FORMS': 0, 'commodity-INITIAL_FORMS': 0}, follow = True)
         self.assertEqual(200, response.status_code)
 
@@ -889,27 +889,27 @@ class ControlBoardViewTest(MystradeTestCase):
 
         self.assertEqual(1, list_recipients.count('test6@test.com'))
         emailTest6 = mail.outbox[list_recipients.index('test6@test.com')]
-        self.assertEqual('[MysTrade] Game #{} has been closed by test2'.format(self.game_ended.id), emailTest6.subject)
-        self.assertIn('Test2 has closed game #{}'.format(self.game_ended.id), emailTest6.body)
+        self.assertEqual('[MysTrade] Game #{0} has been closed by test2'.format(self.game_ended.id), emailTest6.subject)
+        self.assertIn('Test2 has closed game #{0}'.format(self.game_ended.id), emailTest6.body)
         self.assertIn('Congratulations, you are the winner !', emailTest6.body)
         self.assertIn('You scored 18 points, divided as:', emailTest6.body)
         self.assertIn('- 3 scored Orange cards x 4 = 12 points', emailTest6.body)
         self.assertIn('- 3 scored Blue cards x 2 = 6 points', emailTest6.body)
         self.assertIn('- 4 scored White cards x 0 = 0 points', emailTest6.body)
         self.assertIn('- Rule : (4) Since there are 4 white cards (more than three), their value is set to zero.', emailTest6.body)
-        self.assertIn('/game/{}/score/'.format(self.game_ended.id), emailTest6.body)
+        self.assertIn('/game/{0}/score/'.format(self.game_ended.id), emailTest6.body)
 
         self.assertEqual(1, list_recipients.count('test5@test.com'))
         emailTest5 = mail.outbox[list_recipients.index('test5@test.com')]
-        self.assertEqual('[MysTrade] Game #{} has been closed by test2'.format(self.game_ended.id), emailTest5.subject)
-        self.assertIn('Test2 has closed game #{}'.format(self.game_ended.id), emailTest5.body)
+        self.assertEqual('[MysTrade] Game #{0} has been closed by test2'.format(self.game_ended.id), emailTest5.subject)
+        self.assertIn('Test2 has closed game #{0}'.format(self.game_ended.id), emailTest5.body)
         self.assertIn('Congratulations, you are in the second place !', emailTest5.body)
         self.assertIn('You scored 17 points, divided as:', emailTest5.body)
         self.assertIn('- 2 scored Orange cards x 4 = 8 points', emailTest5.body)
         self.assertIn('- 2 scored Blue cards x 2 = 4 points', emailTest5.body)
         self.assertIn('- 1 scored White card x 5 = 5 points', emailTest5.body)
         self.assertIn('- Rule : (5) Since there are 2 blue card(s), only 2 orange card(s) score.', emailTest5.body)
-        self.assertIn('/game/{}/score/'.format(self.game_ended.id), emailTest5.body)
+        self.assertIn('/game/{0}/score/'.format(self.game_ended.id), emailTest5.body)
 
         self.assertEqual(1, list_recipients.count('test7@test.com'))
         emailTest7 = mail.outbox[list_recipients.index('test7@test.com')]
@@ -923,14 +923,14 @@ class ControlBoardViewTest(MystradeTestCase):
 
         self.assertEqual(1, list_recipients.count('admin@mystrade.com'))
         emailAdmin = mail.outbox[list_recipients.index('admin@mystrade.com')]
-        self.assertEqual('[MysTrade] Game #{} has been closed by test2'.format(self.game_ended.id), emailAdmin.subject)
-        self.assertIn('Test2 has closed game #{}'.format(self.game_ended.id), emailAdmin.body)
+        self.assertEqual('[MysTrade] Game #{0} has been closed by test2'.format(self.game_ended.id), emailAdmin.subject)
+        self.assertIn('Test2 has closed game #{0}'.format(self.game_ended.id), emailAdmin.body)
         self.assertIn('Final Scores:', emailAdmin.body)
         self.assertIn('1st. test6 : 18 points', emailAdmin.body)
         self.assertIn('2nd. test5 : 17 points', emailAdmin.body)
         self.assertIn('3rd. test7 : 6 points', emailAdmin.body)
         self.assertIn('4th. test8 : 4 points', emailAdmin.body)
-        self.assertIn('/game/{}/control/'.format(self.game_ended.id), emailAdmin.body)
+        self.assertIn('/game/{0}/control/'.format(self.game_ended.id), emailAdmin.body)
 
     def test_control_board_shows_current_scoring_during_game(self):
         self._prepare_game_for_scoring(self.game)
@@ -944,7 +944,7 @@ class ControlBoardViewTest(MystradeTestCase):
                        nb_submitted_cards = 1, nb_scored_cards = 1, actual_value = 4, score = 4)
 
         self.login_as(self.master)
-        response = self.client.get("/game/{}/{}/".format(self.game.id, "control"), follow = True)
+        response = self.client.get("/game/{0}/{1}/".format(self.game.id, "control"), follow = True)
         self.assertEqual(200, response.status_code)
 
         scoresheets = response.context['scoresheets']
@@ -962,7 +962,7 @@ class ControlBoardViewTest(MystradeTestCase):
                                  nb_cards = 10, commodity = Commodity.objects.get(ruleset = 1, name = 'Red'))
 
         self.login_as(self.master)
-        response = self.client.get("/game/{}/{}/".format(self.game.id, "control"), follow = True)
+        response = self.client.get("/game/{0}/{1}/".format(self.game.id, "control"), follow = True)
         self.assertEqual(200, response.status_code)
 
         self.assertTrue(response.context['random_scoring']) # the whole game scoring is tagged
@@ -995,11 +995,11 @@ class ControlBoardViewTest(MystradeTestCase):
                                     nb_cards = 4, commodity = Commodity.objects.get(ruleset = 1, name = 'White'))
 
     def _assertOperation_get(self, game, operation, status_code = 200):
-        response = self.client.get("/game/{}/{}/".format(game.id, operation), follow = True)
+        response = self.client.get("/game/{0}/{1}/".format(game.id, operation), follow = True)
         self.assertEqual(status_code, response.status_code)
 
     def _assertOperation_post(self, game, operation, status_code = 200):
-        response = self.client.post("/game/{}/{}/".format(game.id, operation), follow = True)
+        response = self.client.post("/game/{0}/{1}/".format(game.id, operation), follow = True)
         self.assertEqual(status_code, response.status_code)
 
 class TransactionalViewsTest(TransactionTestCase):
@@ -1024,7 +1024,7 @@ class TransactionalViewsTest(TransactionTestCase):
                               nb_cards = 2, nb_submitted_cards = None)
 
         # set a nb_submitted_cards < 0 on the last form to make the view fail on the last iteration
-        response = self.client.post("/game/{}/hand/submit/".format(self.game.id),
+        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id),
             {'commodity-TOTAL_FORMS': 2, 'commodity-INITIAL_FORMS': 2,
              'commodity-0-commodity_id': commodity1.id, 'commodity-0-nb_submitted_cards': 1,
              'commodity-1-commodity_id': commodity2.id, 'commodity-1-nb_submitted_cards': -3 }, follow = True)
@@ -1055,7 +1055,7 @@ class TransactionalViewsTest(TransactionTestCase):
                                responder = get_user_model().objects.get(username = 'test6'),
                                initiator_offer = mommy.make(Offer), finalizer = None)
 
-        response = self.client.post("/game/{}/close/".format(self.game.id), follow = True)
+        response = self.client.post("/game/{0}/close/".format(self.game.id), follow = True)
 
         self.assertEqual(200, response.status_code)
 
