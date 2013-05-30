@@ -19,7 +19,7 @@ ADMINS = (
 MANAGERS = ADMINS
 SEND_BROKEN_LINK_EMAILS = True
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.alwaysdata.com'
 EMAIL_PORT = 25
 EMAIL_HOST_USER = 'mystrade' # mystrade@alwaysdata.net
