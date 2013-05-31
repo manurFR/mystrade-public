@@ -8,7 +8,7 @@ from django.test import TestCase
 from model_mommy import mommy
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from ruleset.models import Ruleset, RuleCard, Commodity
-from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet, TradeForm
+from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet, TradeForm, OfferForm
 from trade.models import Offer, Trade, TradedCommodities
 from trade.views import _prepare_offer_forms
 from utils.tests import MystradeTestCase
@@ -31,7 +31,7 @@ class CreateTradeViewTest(MystradeTestCase):
                                     })
         self.assertFormError(response, 'trade_form', 'responder', 'This field is required.')
 
-    def test_create_trade_without_selecting_cards_fails(self):
+    def test_create_trade_without_selecting_cards_or_giving_a_free_information_fails(self):
         response = self.client.post("/trade/{0}/create/".format(self.game.id),
                                     {'responder': 4,
                                      'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
@@ -43,10 +43,10 @@ class CreateTradeViewTest(MystradeTestCase):
                                      'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
                                      'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 0,
                                      'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
-                                     'free_information': 'secret!',
+                                     'free_information': '',
                                      'comment': 'a comment'
                                     })
-        self.assertFormError(response, 'offer_form', None, 'At least one card should be offered.')
+        self.assertFormError(response, 'offer_form', None, 'At least one card or one free information should be offered.')
 
     def test_create_trade_is_forbidden_if_you_have_submitted_your_hand(self):
         gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)
@@ -84,13 +84,13 @@ class CreateTradeViewTest(MystradeTestCase):
                                      'rulecards-1-card_id': 2,
                                      'commodity-TOTAL_FORMS': 5, 'commodity-INITIAL_FORMS': 5,
                                      'commodity-0-commodity_id': 1, 'commodity-0-nb_traded_cards': 0,
-                                     'commodity-1-commodity_id': 2, 'commodity-1-nb_traded_cards': 0,
+                                     'commodity-1-commodity_id': 2, 'commodity-1-nb_traded_cards': 1,
                                      'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
-                                     'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 0,
+                                     'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 1,
                                      'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
                                      'free_information': 'secret!',
                                      'comment': 'a comment'
-                                    })
+                                    }, follow = True)
         self.assertEqual(expected_status, response.status_code)
 
         response = self.client.get("/trade/{0}/".format(self.game.id))
@@ -416,7 +416,7 @@ class ManageViewsTest(MystradeTestCase):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
         self._assertOperationNotAllowed(trade.id, 'reply')
 
-    def test_reply_trade_without_selecting_cards_fails(self):
+    def test_reply_trade_without_selecting_cards_or_typing_a_free_information_fails(self):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
         response = self.client.post("/trade/{0}/{1}/reply/".format(self.game.id, trade.id),
                                     {'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
@@ -428,10 +428,10 @@ class ManageViewsTest(MystradeTestCase):
                                      'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
                                      'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 0,
                                      'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
-                                     'free_information': 'secret!',
+                                     'free_information': '',
                                      'comment': 'a comment'
                                     })
-        self.assertFormError(response, 'offer_form', None, 'At least one card should be offered.')
+        self.assertFormError(response, 'offer_form', None, 'At least one card or one free information should be offered.')
 
     def test_reply_trade_complete_save(self):
         ruleset = mommy.make(Ruleset)
@@ -986,3 +986,12 @@ class FormsTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("This player doesn't participate to this game or has already submitted his hand to the game master",
                       form.errors['responder'])
+
+    def test_an_offer_with_only_a_free_information_is_accepted(self):
+        form = OfferForm(data = { 'free_information': 'hello world' })
+        self.assertTrue(form.is_valid())
+
+    def test_an_offer_with_no_cards_and_no_free_information_is_forbidden(self):
+        form = OfferForm(data = {})
+        self.assertFalse(form.is_valid())
+        self.assertIn("At least one card or one free information should be offered.", form.errors['__all__'])

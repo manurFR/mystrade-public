@@ -32,8 +32,8 @@ class OfferForm(forms.Form):
 
     def clean(self):
         cleaned_data = super(OfferForm, self).clean()
-        if self.nb_selected_rules == 0 and self.nb_selected_commodities == 0:
-            raise forms.ValidationError("At least one card should be offered.")
+        if self.nb_selected_rules == 0 and self.nb_selected_commodities == 0 and not cleaned_data['free_information']:
+            raise forms.ValidationError("At least one card or one free information should be offered.")
         return cleaned_data
 
 class RuleCardFormParse(forms.Form):
