@@ -323,7 +323,7 @@ a:hover, .dynamic_link:hover {
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   padding-left: 30px;
-  padding-top: 110px; }
+  padding-top: 10px; }
   /* line 326, ../../resources/scss/style.scss */
   .free_information legend {
     color: #333333;
