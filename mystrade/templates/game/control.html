@@ -75,7 +75,7 @@
                     {% if trade.status == 'CANCELLED' or trade.status == 'DECLINED' %}by {% include "common/name_or_you.html" with who=trade.finalizer %}{% endif %}
                 </td>
                 <td class="css_table-cell {{ color }}">{{ trade.creation_date|date:"SHORT_DATETIME_FORMAT" }}</td>
-                <td class="css_table-cell {{ color }}">{% if trade.closing_date|date:"SHORT_DATETIME_FORMAT" %}{{ trade.closing_date }}{% endif %}</td>
+                <td class="css_table-cell {{ color }}">{% if trade.closing_date %}{{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }}{% endif %}</td>
                 <td class="css_table-cell {{ color }}"><a href="{% url 'show_trade' game.id trade.id %}">Show trade</a></td>
             </tr>
         {% endfor %}

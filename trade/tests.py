@@ -741,114 +741,6 @@ class ManageViewsTest(MystradeTestCase):
                        'nb_tradable_cards': 1, # one card is in a pending trade
                        'nb_traded_cards':   0}, commodities_formset.initial)
 
-    def test_display_of_sensitive_trade_elements(self):
-        """ The description of the rules and the free information should not be shown to the other player until/unless
-             the trade has reached the status ACCEPTED """
-        clientTest5 = Client()
-        self.assertTrue(clientTest5.login(username = 'test5', password = 'test'))
-
-        rulecard_initiator = mommy.make(RuleCard, public_name = '7', description = 'rule description 7')
-        rih_initiator = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard_initiator)
-        rulecard_responder = mommy.make(RuleCard, public_name = '8', description = 'rule description 8')
-        rih_responder = mommy.make(RuleInHand, game = self.game, player = self.alternativeUser, rulecard = rulecard_responder)
-        offer_initiator = mommy.make(Offer, rules = [rih_initiator], free_information = 'this is sensitive')
-        offer_responder = mommy.make(Offer, rules = [rih_responder], free_information = 'these are sensitive')
-
-        # INITIATED : the initiator should see the sensitive elements of his offer, the responder should not
-        trade = self._prepare_trade('INITIATED', initiator_offer = offer_initiator)
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
-        self.assertContains(response, 'rule description 7')
-        self.assertContains(response, 'this is sensitive')
-
-        response = clientTest5.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
-        self.assertNotContains(response, 'rule description 7')
-        self.assertNotContains(response, 'this is sensitive')
-        self.assertContains(response, '(Hidden until trade accepted)')
-        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
-
-        # REPLIED : same as INITIATED for the initiator offer, plus the responder should see the sensitive elements of
-        #  her offer, but not the initiator
-        trade.responder_offer = offer_responder
-        trade.status = 'REPLIED'
-        trade.save()
-
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
-        self.assertContains(response, 'rule description 7')
-        self.assertContains(response, 'this is sensitive')
-        self.assertNotContains(response, 'rule description 8')
-        self.assertNotContains(response, 'these are sensitive')
-        self.assertContains(response, '(Hidden until trade accepted)')
-        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
-
-        response = clientTest5.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
-        self.assertNotContains(response, 'rule description 7')
-        self.assertNotContains(response, 'this is sensitive')
-        self.assertContains(response, '(Hidden until trade accepted)')
-        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
-        self.assertContains(response, 'rule description 8')
-        self.assertContains(response, 'these are sensitive')
-
-        # CANCELLED : same as REPLIED
-        trade.status = 'CANCELLED'
-        trade.finalizer = self.loginUser
-        trade.save()
-
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
-        self.assertContains(response, 'rule description 7')
-        self.assertContains(response, 'this is sensitive')
-        self.assertNotContains(response, 'rule description 8')
-        self.assertNotContains(response, 'these are sensitive')
-        self.assertContains(response, '(Hidden until trade accepted)')
-        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
-
-        response = clientTest5.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
-        self.assertNotContains(response, 'rule description 7')
-        self.assertNotContains(response, 'this is sensitive')
-        self.assertContains(response, '(Hidden until trade accepted)')
-        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
-        self.assertContains(response, 'rule description 8')
-        self.assertContains(response, 'these are sensitive')
-
-        # DECLINED : same as REPLIED
-        trade.status = 'CANCELLED'
-        trade.save()
-
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
-        self.assertContains(response, 'rule description 7')
-        self.assertContains(response, 'this is sensitive')
-        self.assertNotContains(response, 'rule description 8')
-        self.assertNotContains(response, 'these are sensitive')
-        self.assertContains(response, '(Hidden until trade accepted)')
-        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
-
-        response = clientTest5.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
-        self.assertNotContains(response, 'rule description 7')
-        self.assertNotContains(response, 'this is sensitive')
-        self.assertContains(response, '(Hidden until trade accepted)')
-        self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
-        self.assertContains(response, 'rule description 8')
-        self.assertContains(response, 'these are sensitive')
-
-        # ACCEPTED : both players should at least be able to see all sensitive information
-        trade.status = 'ACCEPTED'
-        trade.save()
-
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
-        self.assertContains(response, 'rule description 7')
-        self.assertContains(response, 'this is sensitive')
-        self.assertContains(response, 'rule description 8')
-        self.assertContains(response, 'these are sensitive')
-        self.assertNotContains(response, '(Hidden until trade accepted)')
-        self.assertNotContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
-
-        response = clientTest5.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
-        self.assertContains(response, 'rule description 7')
-        self.assertContains(response, 'this is sensitive')
-        self.assertNotContains(response, '(Hidden until trade accepted)')
-        self.assertNotContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
-        self.assertContains(response, 'rule description 8')
-        self.assertContains(response, 'these are sensitive')
-
     def _prepare_trade(self, status, initiator = None, responder = None, initiator_offer = None,
                        responder_offer = None, finalizer = None):
         if initiator is None: initiator = self.loginUser
@@ -860,6 +752,97 @@ class ManageViewsTest(MystradeTestCase):
     def _assertOperationNotAllowed(self, trade_id, operation):
         response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation), follow=True)
         self.assertEqual(403, response.status_code)
+
+class SensitiveTradeElementsTest(MystradeTestCase):
+    """ The description of the rules and the free information should not be shown to the other player until/unless
+         the trade has reached the status ACCEPTED. The game master can always see them though. """
+
+    def setUp(self):
+        super(SensitiveTradeElementsTest, self).setUp()
+
+        self.clientInitiator = self.client
+        self.clientResponder = Client()
+        self.assertTrue(self.clientResponder.login(username = self.alternativeUser.username, password = 'test'))
+        self.clientMaster = Client()
+        self.assertTrue(self.clientMaster.login(username = self.master.username, password = 'test'))
+
+        rulecard_initiator = mommy.make(RuleCard, public_name = '7', description = 'rule description 7')
+        rih_initiator = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard_initiator)
+        rulecard_responder = mommy.make(RuleCard, public_name = '8', description = 'rule description 8')
+        rih_responder = mommy.make(RuleInHand, game = self.game, player = self.alternativeUser, rulecard = rulecard_responder)
+        self.offer_initiator = mommy.make(Offer, rules = [rih_initiator], free_information = 'this is sensitive')
+        self.offer_responder = mommy.make(Offer, rules = [rih_responder], free_information = 'these are sensitive')
+
+    def test_display_of_sensitive_trade_elements_in_status_INITIATED(self):
+        """ the initiator should see the sensitive elements of his offer, the responder should not """
+        self._prepare_trade('INITIATED')
+
+        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True)
+        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False)
+        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True)
+
+    def test_display_of_sensitive_trade_elements_in_status_REPLIED(self):
+        """same as INITIATED for the initiator offer, plus the responder should see the sensitive elements of
+           her offer, but not the initiator
+        """
+        self._prepare_trade('REPLIED')
+
+        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = False)
+        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
+        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
+
+    def test_display_of_sensitive_trade_elements_in_status_CANCELLED(self):
+        """ CANCELLED : same as REPLIED """
+        self._prepare_trade('CANCELLED')
+
+        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = False)
+        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
+        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
+
+    def test_display_of_sensitive_trade_elements_in_status_DECLINED(self):
+        """ DECLINED : same as REPLIED """
+        self._prepare_trade('DECLINED')
+
+        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = False)
+        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
+        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
+
+    def test_display_of_sensitive_trade_elements_in_status_ACCEPTED(self):
+        """ ACCEPTED : both players should at least be able to see all sensitive information """
+        self._prepare_trade('ACCEPTED')
+
+        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = True)
+        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = True, responder_elements = True)
+        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
+
+    def _prepare_trade(self, status):
+        self.trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                                status = status, initiator_offer = self.offer_initiator,
+                                responder_offer = self.offer_responder if status <> 'INITIATED' else None,
+                                finalizer = self.loginUser if status == 'CANCELLED' or status == 'DECLINED' else None)
+
+    def _assert_sensitive_elements(self, client, initiator_elements = None, responder_elements = None):
+        response = client.get("/trade/{0}/{1}/".format(self.game.id, self.trade.id))
+        if initiator_elements is not None:
+            if initiator_elements:
+                self.assertContains(response, 'rule description 7')
+                self.assertContains(response, 'this is sensitive')
+            else:
+                self.assertNotContains(response, 'rule description 7')
+                self.assertNotContains(response, 'this is sensitive')
+        if responder_elements is not None:
+            if responder_elements:
+                self.assertContains(response, 'rule description 8')
+                self.assertContains(response, 'these are sensitive')
+            else:
+                self.assertNotContains(response, 'rule description 8')
+                self.assertNotContains(response, 'these are sensitive')
+        if initiator_elements == False or responder_elements == False:
+            self.assertContains(response, '(Hidden until trade accepted)')
+            self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
+        else:
+            self.assertNotContains(response, '(Hidden until trade accepted)')
+            self.assertNotContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
 
 class TransactionalViewsTest(TransactionTestCase):
     fixtures = ['test_users.json', # from profile app

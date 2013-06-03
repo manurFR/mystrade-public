@@ -36,20 +36,21 @@ def show_trade(request, game_id, trade_id):
     trade = get_object_or_404(Trade, id = trade_id)
     game = trade.game
 
-    if request.user != trade.initiator and request.user != trade.responder and request.user != game.master \
-        and not game.has_super_access(request.user):
+    super_access = game.has_super_access(request.user)
+
+    if request.user != trade.initiator and request.user != trade.responder and not super_access:
         raise PermissionDenied
 
     if trade.status == 'INITIATED' and request.user == trade.responder:
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, trade.game)
-        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False,
+        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access,
                                                           'decline_reason_form': DeclineReasonForm(), 'offer_form': offer_form,
                                                           'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
     elif trade.status == 'REPLIED' and request.user == trade.initiator:
-        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False,
+        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access,
                                                           'decline_reason_form': DeclineReasonForm()})
     else:
-        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False})
+        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access})
 
 @login_required
 def create_trade(request, game_id):
@@ -57,9 +58,7 @@ def create_trade(request, game_id):
 
     # Trade creation is not allowed for :
     #  - players who have already submitted their hand to the game master
-    #  - the game master
-    #  - admins who are not players
-    #  - more generally, all site users who are not players in this game
+    #  - all site users who are not players in this game (including the game master and admins who are not players)
     try:
         if GamePlayer.objects.get(game = game, player = request.user).submit_date:
             raise PermissionDenied
