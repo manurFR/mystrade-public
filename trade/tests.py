@@ -15,7 +15,7 @@ from utils.tests import MystradeTestCase
 
 class CreateTradeViewTest(MystradeTestCase):
 
-    def test_create_trade_without_responder_fails(self):
+    def test_create_trade_without_responder_fails_and_keeps_text_fields(self):
         response = self.client.post("/trade/{0}/create/".format(self.game.id),
                                     {'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
                                      'rulecards-0-card_id': 1,
@@ -30,8 +30,10 @@ class CreateTradeViewTest(MystradeTestCase):
                                      'comment': 'a comment'
                                     })
         self.assertFormError(response, 'trade_form', 'responder', 'This field is required.')
+        self.assertContains(response, "secret!")
+        self.assertContains(response, "a comment")
 
-    def test_create_trade_without_selecting_cards_or_giving_a_free_information_fails(self):
+    def test_create_trade_without_selecting_cards_or_giving_a_free_information_fails_and_keeps_text_fields(self):
         response = self.client.post("/trade/{0}/create/".format(self.game.id),
                                     {'responder': 4,
                                      'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
@@ -47,6 +49,7 @@ class CreateTradeViewTest(MystradeTestCase):
                                      'comment': 'a comment'
                                     })
         self.assertFormError(response, 'offer_form', None, 'At least one card or one free information should be offered.')
+        self.assertContains(response, "a comment")
 
     def test_create_trade_is_forbidden_if_you_have_submitted_your_hand(self):
         gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)

@@ -78,7 +78,6 @@ def create_trade(request, game_id):
                     if nb_traded_cards > 0:
                         TradedCommodities.objects.create(offer = offer, commodityinhand = commodityinhand, nb_traded_cards = nb_traded_cards)
 
-                #noinspection PyUnusedLocal
                 trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
                                              responder = trade_form.cleaned_data['responder'])
 
@@ -87,7 +86,7 @@ def create_trade(request, game_id):
 
                 return redirect('trades', game.id)
             else:
-                offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, selected_commodities)
+                offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, selected_commodities, offer)
         except FormInvalidException as ex:
             rulecards_formset = ex.forms['rulecards_formset']
             commodities_formset = ex.forms['commodities_formset']
@@ -240,7 +239,7 @@ def decline_trade(request, game_id, trade_id):
 
     raise PermissionDenied
 
-def _prepare_offer_forms(request, game, selected_rules = [], selected_commodities = {}):
+def _prepare_offer_forms(request, game, selected_rules = [], selected_commodities = {}, offer = None):
     rule_hand = rules_currently_in_hand(game, request.user)
     commodity_hand = commodities_in_hand(game, request.user)
 
@@ -263,7 +262,12 @@ def _prepare_offer_forms(request, game, selected_rules = [], selected_commoditie
                                                          for card in commodity_hand],
                                                 prefix='commodity')
 
-    offer_form = OfferForm()
+    if offer:
+        offer_form = OfferForm({'free_information': offer.free_information,
+                                'comment':          offer.comment},
+                               nb_selected_rules = len(selected_rules), nb_selected_commodities = sum(selected_commodities.values()))
+    else:
+        offer_form = OfferForm()
 
     return offer_form, rulecards_formset, commodities_formset
 
