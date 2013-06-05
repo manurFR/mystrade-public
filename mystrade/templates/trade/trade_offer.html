@@ -14,7 +14,7 @@
 {% block content %}
     <div class="header">Trade for game #{{ game }} (ending in {{ game.end_date|timeuntil }})
         <span class="floatright">&lt;
-            {% if user in game.players.all %}<a href="{% url 'trades' game.id %}">Back</a>
+            {% if user in game.players.all %}<a href="{% url 'game' game.id %}">Back</a>
             {% else %}<a href="{% url 'control' game.id %}">Back</a>{% endif %}
         </span></div>
     {% if not trade %}
