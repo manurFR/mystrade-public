@@ -13,13 +13,21 @@
 {% endblock %}
 
 {% block content %}
-    <div class="header">Control board for game #{{ game }}{% if game.is_active %} (ending in {{ game.end_date|timeuntil }}){% endif %}
-        <span class="floatright">&lt; <a href="{% url 'game' game.id %}">Back</a></span></div>
+    <div class="header">Summary game #{{ game }}{% if game.is_active %} (ending in {{ game.end_date|timeuntil }}){% endif %}
+        <span class="floatright">{% if super_access %}&lt; <a href="{% url 'game' game.id %}">Back</a>{% else %}
+                                                      &lt; <a href="{% url 'welcome' %}">Back</a>{% endif %}</span></div>
 
-    {% if game.is_ended %}
-        <div class="reminder">This game has ended on {{ game.end_date }} ({{ game.end_date|timesince }} ago).
-        {% if not game.closing_date %}
+    <div class="reminder">
+    {% if game.is_closed %}
+        This game was closed on {{ game.end_date }} ({{ game.end_date|timesince }} ago).
+        {% if player_access %}
+            <p>Discover <a href="#rules">all the rules in this game</a> below !</p>
+        {% endif %}
+    {% elif game.is_ended %}
+        This game has ended on {{ game.end_date }} ({{ game.end_date|timesince }} ago).
+        {% if super_access %}
             <p>All trades have been blocked since that time.<br/>
+
             Please click on this button to cancel all unfinished trades, calculate scores and definitely close the game:</p>
             <div class="floatright">
                 <form action="{% url 'close_game' game.id %}" method="post">{% csrf_token %}
@@ -28,82 +36,96 @@
             </div>
             <br/><br/>
         {% endif %}
-        </div>
-    {% elif game.is_closed %}
-        <div class="reminder">This game was closed on {{ game.end_date }} ({{ game.end_date|timesince }} ago).</div>
+    {% else %}
+        All scores below are <strong>temporary</strong> and may evolve as the game progresses.
     {% endif %}
+    </div>
 
     <h4>Table of Contents</h4>
     <ul>
-        {% if game.is_active %}
+        {% if game.is_closed %}
+            <li><a href="#scores">Scores</a></li>
+            <li><a href="#scoreDetails">Score Details</a></li>
+            {% if super_access %}
+                <li><a href="#trades">Trades</a></li>
+            {% endif %}
+            <li><a href="#rules">Rules</a></li>
+        {% else %}
             <li><a href="#trades">Trades</a></li>
-            <li><a href="#scores">Current Scores</a></li>
-            <li><a href="#scoreDetails">Current Score Details</a></li>
-        {% elif game.is_closed %}
-            <li><a href="#scores">Final Scores</a></li>
-            <li><a href="#scoreDetails">Final Score Details</a></li>
-            <li><a href="#trades">Trades</a></li>
+            <li><a href="#scores">Scores</a></li>
+            <li><a href="#scoreDetails">Score Details</a></li>
+            <li><a href="#rules">Rules</a></li>
         {% endif %}
-        <li><a href="#rules">Rules</a></li>
     </ul>
 
     {% if game.is_closed %}
+        {% if player_access %}
+            {% if rank == 1 %}
+                <div class="congrats">Congratulations {{ user.name }}, you won this game !</div>
+            {% elif rank == 2 %}
+                <div class="congrats">Congratulations {{ user.name }}, you reached the second place.</div>
+            {% elif rank == 3 %}
+                <div class="congrats">Congratulations {{ user.name }}, you reached the third place.</div>
+            {% endif %}
+        {% endif %}
         {% include "scoring/score.html"  with specification="Final" %}
     {% endif %}
 
-    <a name="trades"></a>
-    <h3>Trades</h3>
-    {% if trades %}
-    <table>
-        <thead>
-            <tr class="header-row">
-                <th>from</th>
-                <th>to</th>
-                <th>status</th>
-                <th>initiated</th>
-                <th>closed</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for trade in trades %}
-            {% cycle 'even_color' 'odd_color' as color silent %}
-            <tr{% if trade.status == 'ACCEPTED' or trade.status == 'DECLINED' %} class="done"{% elif trade.status == 'CANCELLED' %} class="cancelled"{% endif %}">
-                <td class="css_table-cell {{ color }}">{% include "common/name_or_you.html" with who=trade.initiator %}</td>
-                <td class="css_table-cell {{ color }}">{% include "common/name_or_you.html" with who=trade.responder %}</td>
-                <td class="css_table-cell {{ color }}">
-                    {{ trade.status }}
-                    {% if trade.status == 'CANCELLED' or trade.status == 'DECLINED' %}by {% include "common/name_or_you.html" with who=trade.finalizer %}{% endif %}
-                </td>
-                <td class="css_table-cell {{ color }}">{{ trade.creation_date|date:"SHORT_DATETIME_FORMAT" }}</td>
-                <td class="css_table-cell {{ color }}">{% if trade.closing_date %}{{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }}{% endif %}</td>
-                <td class="css_table-cell {{ color }}"><a href="{% url 'show_trade' game.id trade.id %}">Show trade</a></td>
-            </tr>
-        {% endfor %}
-        </tbody>
+    {% if super_access %}
+        <a name="trades"></a>
+        <h3>Trades</h3>
+        {% if trades %}
+        <table>
+            <thead>
+                <tr class="header-row">
+                    <th>from</th>
+                    <th>to</th>
+                    <th>status</th>
+                    <th>initiated</th>
+                    <th>closed</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for trade in trades %}
+                {% cycle 'even_color' 'odd_color' as color silent %}
+                <tr{% if trade.status == 'ACCEPTED' or trade.status == 'DECLINED' %} class="done"{% elif trade.status == 'CANCELLED' %} class="cancelled"{% endif %}">
+                    <td class="css_table-cell {{ color }}">{% include "common/name_or_you.html" with who=trade.initiator %}</td>
+                    <td class="css_table-cell {{ color }}">{% include "common/name_or_you.html" with who=trade.responder %}</td>
+                    <td class="css_table-cell {{ color }}">
+                        {{ trade.status }}
+                        {% if trade.status == 'CANCELLED' or trade.status == 'DECLINED' %}by {% include "common/name_or_you.html" with who=trade.finalizer %}{% endif %}
+                    </td>
+                    <td class="css_table-cell {{ color }}">{{ trade.creation_date|date:"SHORT_DATETIME_FORMAT" }}</td>
+                    <td class="css_table-cell {{ color }}">{% if trade.closing_date %}{{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }}{% endif %}</td>
+                    <td class="css_table-cell {{ color }}"><a href="{% url 'show_trade' game.id trade.id %}">Show trade</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
 
-        <tfoot>
-            <tr class="pagination">
-                <td colspan="5">
-                    {% if trades.has_previous %}
-                        <a href="?page={{ trades.previous_page_number }}">&lt;</a>
-                    {% endif %}
+            <tfoot>
+                <tr class="pagination">
+                    <td colspan="5">
+                        {% if trades.has_previous %}
+                            <a href="?page={{ trades.previous_page_number }}">&lt;</a>
+                        {% endif %}
 
-                    <span class="current">
-                        Page {{ trades.number }} of {{ trades.paginator.num_pages }}
-                    </span>
+                        <span class="current">
+                            Page {{ trades.number }} of {{ trades.paginator.num_pages }}
+                        </span>
 
-                    {% if trades.has_next %}
-                        <a href="?page={{ trades.next_page_number }}">&gt;</a>
-                    {% endif %}
-                </td>
-            </tr>
-        </tfoot>
-    </table>
-    {% else %}
-        <div class="helptext">No trades yet.</div>
+                        {% if trades.has_next %}
+                            <a href="?page={{ trades.next_page_number }}">&gt;</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+        {% else %}
+            <div class="helptext">No trades yet.</div>
+        {% endif %}
     {% endif %}
 
-    {% if game.is_active %}
+    {% if not game.is_closed %}
         {% include "scoring/score.html" with specification="Current" %}
     {% endif %}
 

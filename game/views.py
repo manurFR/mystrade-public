@@ -351,7 +351,8 @@ def control_board(request, game_id):
     data = {'game': game}
 
     # Control board access allowed only to the game master and to the admins that are NOT players in this game
-    if request.user == game.master or (request.user.is_staff and request.user not in game.players.all()):
+    if game.has_super_access(request.user):
+        data['super_access'] = True
         if game.is_closed():
             data['scoresheets'] = _fetch_scoresheets(game)
         elif game.is_active():
@@ -393,7 +394,7 @@ def player_score(request, game_id):
         if scoresheet.gameplayer.player == request.user:
             rank = index
 
-    return render(request, 'game/player_score.html', {'game': game, 'scoresheets': scoresheets, 'rank': rank})
+    return render(request, 'game/control.html', {'game': game, 'scoresheets': scoresheets, 'player_access': True, 'rank': rank})
 
 def _fetch_scoresheets(game):
     scoresheets = []
