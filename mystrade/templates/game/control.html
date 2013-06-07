@@ -21,7 +21,8 @@
     {% if game.is_closed %}
         This game was closed on {{ game.end_date }} ({{ game.end_date|timesince }} ago).
         {% if player_access %}
-            <p>Discover <a href="#rules">all the rules in this game</a> below !</p>
+            <p>Thank you for participating!<br/>
+               Discover <a href="#rules">all the rules in this game</a> below, or go see the messages, the trades, etc. on the <a href="{% url 'game' game.id %}">game page</a>.</p>
         {% endif %}
     {% elif game.is_ended %}
         This game has ended on {{ game.end_date }} ({{ game.end_date|timesince }} ago).
