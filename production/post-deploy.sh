@@ -40,6 +40,15 @@ if (( $? )); then
     echo "** WARNING ** [cp -f $PROD_DIR/settings_production.py $HOME/mystrade/mystrade/] failed";
 fi
 
+# Copy favicon.ico to root of public directory (for Internet Explorer)
+if [ -f $HOME/mystrade/mystrade/static/favicon.ico ]; then
+    cp -f $HOME/mystrade/mystrade/static/favicon.ico $HOME/mystrade/public/
+    if (( $? )); then
+        DEPLOY_WITH_WARNINGS=1
+        echo "** WARNING ** [cp -f $HOME/mystrade/mystrade/static/favicon.ico $HOME/mystrade/public/] failed";
+    fi
+fi
+
 # Apply South migrations
 $HOME/mystrade/manage.py migrate
 if (( $? )); then
@@ -48,10 +57,10 @@ if (( $? )); then
 fi
 
 # Collect staticfiles
-$HOME/mystrade/manage.py collectstatic --noinput
+$HOME/mystrade/manage.py collectstatic --noinput --ignore=favicon.ico
 if (( $? )); then
     DEPLOY_WITH_WARNINGS=1
-    echo "** WARNING ** [$HOME/mystrade/manage.py collectstatic --noinput] failed";
+    echo "** WARNING ** [$HOME/mystrade/manage.py collectstatic --noinput --ignore=favicon.ico] failed";
 fi
 
 if (( $DEPLOY_WITH_WARNINGS )); then
