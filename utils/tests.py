@@ -5,20 +5,44 @@ from django.template import Template
 from django.test import TestCase
 from django.test.utils import override_settings
 from model_mommy import mommy
-from game.models import Game
+from game.models import Game, CommodityInHand
+from ruleset.models import RuleCard, Commodity
+from trade.models import Trade
 from utils import roundTimeToMinute, _send_notification_email
+from stats import record
+from models import StatsScore
+
+
+class MystradeTestCase(TestCase):
+    """ Parent test case class with default element bootstrapped, to be inherited by other apps' test cases """
+    fixtures = ['test_users.json', # from profile app
+                'test_games.json']
+
+    def setUp(self):
+        self.game =             Game.objects.get(id = 1)
+        self.master =           self.game.master
+        self.loginUser =        get_user_model().objects.get(username = "test2")
+        self.alternativeUser =  get_user_model().objects.get(username = 'test5')
+        self.admin =            get_user_model().objects.get(username = 'admin')
+        self.admin_player =     get_user_model().objects.get(username = 'admin_player')
+        self.unrelated_user =   get_user_model().objects.get(username = 'unrelated_user')
+
+        self.login_as(self.loginUser)
+
+    def login_as(self, user):
+        self.assertTrue(self.client.login(username = user.username, password = 'test'))
 
 class UtilsTest(TestCase):
     def test_roundTimeToMinute(self):
-        self.assertEqual(datetime.datetime(2012, 11, 9, 14, 45), 
+        self.assertEqual(datetime.datetime(2012, 11, 9, 14, 45),
                          roundTimeToMinute(datetime.datetime(2012, 11, 9, 14, 51), 15))
-        self.assertEqual(datetime.datetime(2012, 11, 9, 14, 45), 
+        self.assertEqual(datetime.datetime(2012, 11, 9, 14, 45),
                          roundTimeToMinute(datetime.datetime(2012, 11, 9, 14, 43), 15))
-        self.assertEqual(datetime.datetime(2012, 11, 9, 15, 00), 
+        self.assertEqual(datetime.datetime(2012, 11, 9, 15, 00),
                          roundTimeToMinute(datetime.datetime(2012, 11, 9, 14, 57), 15))
-        self.assertEqual(datetime.datetime(2012, 11, 9, 14, 00, 0, 0), 
+        self.assertEqual(datetime.datetime(2012, 11, 9, 14, 00, 0, 0),
                          roundTimeToMinute(datetime.datetime(2012, 11, 9, 14, 7, 18, 324), 15))
-        self.assertEqual(datetime.datetime(2012, 11, 9, 14, 15), 
+        self.assertEqual(datetime.datetime(2012, 11, 9, 14, 15),
                          roundTimeToMinute(datetime.datetime(2012, 11, 9, 14, 8), 15))
 
     @override_settings(EMAIL_SUBJECT_PREFIX = '[test] ', EMAIL_MYSTRADE = 'mystrade@test.com')
@@ -89,21 +113,47 @@ class UtilsTest(TestCase):
     def _prepare_user(self, email, send_notifications):
         return mommy.make(get_user_model(), email = email, send_notifications = send_notifications)
 
-class MystradeTestCase(TestCase):
-    """ Parent test case class with default element bootstrapped, to be inherited by other apps' test cases """
-    fixtures = ['test_users.json', # from profile app
-                'test_games.json']
+class StatsTest(MystradeTestCase):
+    def test_record(self):
+        self.game.rules.add(RuleCard.objects.get(ref_name = 'HAG10')) # 5 different colors => +10 points
+        self.game.rules.add(RuleCard.objects.get(ref_name = 'HAG12')) # most red cards double their value
+        self.game.rules.add(RuleCard.objects.get(ref_name = 'HAG13')) # 3 yellow cards doubles the value of 1 white card
+        self.game.rules.add(RuleCard.objects.get(ref_name = 'HAG15')) # (random) more than 13 cards => removed
 
-    def setUp(self):
-        self.game =             Game.objects.get(id = 1)
-        self.master =           self.game.master
-        self.loginUser =        get_user_model().objects.get(username = "test2")
-        self.alternativeUser =  get_user_model().objects.get(username = 'test5')
-        self.admin =            get_user_model().objects.get(username = 'admin')
-        self.admin_player =     get_user_model().objects.get(username = 'admin_player')
-        self.unrelated_user =   get_user_model().objects.get(username = 'unrelated_user')
+        y = Commodity.objects.get(ruleset = 1, name = 'Yellow')
+        b = Commodity.objects.get(ruleset = 1, name = 'Blue')
+        r = Commodity.objects.get(ruleset = 1, name = 'Red')
+        o = Commodity.objects.get(ruleset = 1, name = 'Orange')
+        w = Commodity.objects.get(ruleset = 1, name = 'White')
 
-        self.login_as(self.loginUser)
+        mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 3, commodity = y)
+        mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 2, commodity = b)
+        mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 3, commodity = r)
+        mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 2, commodity = o)
+        mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 2, commodity = w)
 
-    def login_as(self, user):
-        self.assertTrue(self.client.login(username = user.username, password = 'test'))
+        mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 6, commodity = y)
+        mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 1, commodity = b)
+        mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 2, commodity = r)
+        mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 6, commodity = o)
+
+        trade = mommy.make(Trade)
+
+        record(self.game, trade)
+
+        try:
+            stats_loginUser = StatsScore.objects.get(game = self.game, player = self.loginUser)
+            self.assertEqual(trade, stats_loginUser.trade)
+            self.assertEqual(68, stats_loginUser.score)
+            self.assertFalse(stats_loginUser.random)
+            self.assertIsNotNone(stats_loginUser.dateScore)
+        except StatsScore.DoesNotExist:
+            self.fail("StatsScore does not contain record for loginUser (test2)")
+
+        try:
+            stats_loginUser = StatsScore.objects.get(game = self.game, player = self.alternativeUser)
+            self.assertEqual(trade, stats_loginUser.trade)
+            self.assertTrue(stats_loginUser.random)
+            self.assertIsNotNone(stats_loginUser.dateScore)
+        except StatsScore.DoesNotExist:
+            self.fail("StatsScore does not contain record for alternativeUser (test5)")
