@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="header">Summary game #{{ game }}{% if game.is_active %} (ending in {{ game.end_date|timeuntil }}){% endif %}
+    <div class="header">Summary for game #{{ game }}{% if game.is_active %} (ending in {{ game.end_date|timeuntil }}){% endif %}
         <span class="floatright">{% if super_access %}&lt; <a href="{% url 'game' game.id %}">Back</a>{% else %}
                                                       &lt; <a href="{% url 'welcome' %}">Back</a>{% endif %}</span></div>
 

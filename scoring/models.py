@@ -8,7 +8,7 @@ class ScoreFromRule(models.Model):
     player = models.ForeignKey(settings.AUTH_USER_MODEL)
     rulecard = models.ForeignKey(RuleCard)
 
-    detail = models.CharField(max_length = 255)
+    detail = models.CharField(max_length = 500)
     score = models.IntegerField(null = True)
 
 class ScoreFromCommodity(models.Model):
