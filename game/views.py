@@ -305,6 +305,9 @@ def select_rules(request):
                 # deal starting cards
                 deal_cards(game)
 
+                # record score stats at the game creation
+                stats.record(game)
+
                 # email notification
                 all_players = {}
                 for player in game.players.all():
@@ -329,9 +332,6 @@ def select_rules(request):
                 utils.send_notification_email('game_create_admin', [admin[1] for admin in settings.ADMINS],
                                                {'game': game, 'players': sorted(all_players.itervalues(), key = lambda player: player['name']),
                                                 'rules': selected_rules})
-
-                # record score stats at the game creation
-                stats.record(game)
 
                 return redirect('game', game.id)
     else:
@@ -436,6 +436,9 @@ def close_game(request, game_id):
                     for scoresheet in scoresheets:
                         scoresheet.persist()
 
+                    # record score stats when game is closed
+                    stats.record(game, scoresheets = scoresheets)
+
                     # email notification
                     scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
                     for rank, scoresheet in enumerate(scoresheets, 1):
@@ -447,7 +450,6 @@ def close_game(request, game_id):
                     utils.send_notification_email('game_close_admin', [admin[1] for admin in settings.ADMINS],
                                                   {'game': game, 'scoresheets': scoresheets,
                                                    'url': request.build_absolute_uri(reverse('control', args = [game.id]))})
-
             except BaseException as ex:
                 logger.error("Error in close_game({0})".format(game_id), exc_info = ex)
 

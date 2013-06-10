@@ -4,6 +4,7 @@ from django.core import mail
 from django.template import Template
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.utils.timezone import now
 from model_mommy import mommy
 from game.models import Game, CommodityInHand
 from ruleset.models import RuleCard, Commodity
@@ -139,7 +140,7 @@ class StatsTest(MystradeTestCase):
 
         trade = mommy.make(Trade)
 
-        record(self.game, trade)
+        record(self.game, trade = trade)
 
         try:
             stats_loginUser = StatsScore.objects.get(game = self.game, player = self.loginUser)
@@ -158,7 +159,7 @@ class StatsTest(MystradeTestCase):
         except StatsScore.DoesNotExist:
             self.fail("StatsScore does not contain record for alternativeUser (test5)")
 
-    def test_record_score_at_game_creation(self):
+    def test_record_scores_at_game_creation(self):
         self.game.delete()
         self.client.logout()
         self.login_as(self.master)
@@ -194,7 +195,7 @@ class StatsTest(MystradeTestCase):
         self.assertGreater(stats[1].score, 0)
         self.assertGreater(stats[2].score, 0)
 
-    def test_record_score_when_trades_are_performed(self):
+    def test_record_scores_when_trades_are_performed(self):
         y = Commodity.objects.get(ruleset = 1, name = 'Yellow')
         b = Commodity.objects.get(ruleset = 1, name = 'Blue')
         r = Commodity.objects.get(ruleset = 1, name = 'Red')
@@ -238,3 +239,42 @@ class StatsTest(MystradeTestCase):
             self.assertIsNotNone(stats_alternativeUser.dateScore)
         except StatsScore.DoesNotExist:
             self.fail("StatsScore does not contain record for alternativeUser (test5)")
+
+    def test_record_scores_when_game_is_closed(self):
+        self.client.logout()
+        self.login_as(self.master)
+
+        self.game.end_date = now() + datetime.timedelta(days = -2)
+        self.game.save()
+
+        y = Commodity.objects.get(ruleset = 1, name = 'Yellow')
+        b = Commodity.objects.get(ruleset = 1, name = 'Blue')
+        r = Commodity.objects.get(ruleset = 1, name = 'Red')
+
+        mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 3, commodity = y)
+        mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 2, commodity = b)
+        mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 3, commodity = r)
+
+        mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 6, commodity = y)
+        mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 1, commodity = b)
+        mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 2, commodity = r)
+
+        response = self.client.post("/game/{0}/close/".format(self.game.id), follow = True)
+        self.assertEqual(200, response.status_code)
+
+        try:
+            stats_loginUser = StatsScore.objects.get(game = self.game, player = self.loginUser)
+            self.assertIsNone(stats_loginUser.trade)
+            self.assertEqual(16, stats_loginUser.score)
+            self.assertIsNotNone(stats_loginUser.dateScore)
+        except StatsScore.DoesNotExist:
+            self.fail("StatsScore does not contain record for loginUser (test2)")
+
+        try:
+            stats_alternativeUser = StatsScore.objects.get(game = self.game, player = self.alternativeUser)
+            self.assertIsNone(stats_alternativeUser.trade)
+            self.assertEqual(14, stats_alternativeUser.score)
+            self.assertIsNotNone(stats_alternativeUser.dateScore)
+        except StatsScore.DoesNotExist:
+            self.fail("StatsScore does not contain record for alternativeUser (test5)")
+

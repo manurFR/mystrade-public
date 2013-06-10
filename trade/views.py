@@ -207,11 +207,11 @@ def accept_trade(request, game_id, trade_id):
                         cih_from_responder.nb_cards -= tradedcommodity_from_responder.nb_traded_cards
                         cih_from_responder.save()
 
+                    # record score stats after each completed trade
+                    stats.record(trade.game, trade = trade)
+
                     # email notification
                     _trade_event_notification(request, trade)
-
-                    # record score stats after each completed trade
-                    stats.record(trade.game, trade)
             except BaseException as ex:
                 # if anything crappy happens, rollback the transaction and do nothing else except logging
                 logger.error("Error in accept_trace({0}, {1})".format(game_id, trade_id), exc_info = ex)

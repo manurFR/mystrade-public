@@ -1,10 +1,8 @@
 from scoring.card_scoring import tally_scores
 from models import StatsScore
 
-def record(game, trade = None):
-    if game.is_closed():
-        scoresheets = game.views._fetch_scoresheets(game) # can't import game.views as it would create a circular dependency
-    else:
+def record(game, trade = None, scoresheets = None):
+    if not scoresheets:
         scoresheets = tally_scores(game)
 
     # save in db

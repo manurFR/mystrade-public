@@ -513,7 +513,7 @@ class ManageViewsTest(MystradeTestCase):
 
     def test_accept_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_REPLIED(self):
         rulecard1, rulecard2 = mommy.make(RuleCard, _quantity = 2)
-        commodity1, commodity2, commodity3 = mommy.make(Commodity, _quantity = 3)
+        commodity1, commodity2, commodity3 = mommy.make(Commodity, _quantity = 3, value = 1)
 
         rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1)
         rih2 = mommy.make(RuleInHand, game = self.game, player = self.alternativeUser, rulecard = rulecard2)
