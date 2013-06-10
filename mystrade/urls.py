@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     url(r'^profile/',  include('profile.urls')),
     url(r'^game/',     include('game.urls')),
     url(r'^trade/',    include('trade.urls')),
+    url(r'^utils/',    include('utils.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^caramba/doc/', include('django.contrib.admindocs.urls')),

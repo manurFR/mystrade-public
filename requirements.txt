@@ -9,3 +9,5 @@ django-debug-toolbar
 model_mommy
 markdown
 bleach
+numpy
+#matplotlib # doesn't work: need to do 'sudo apt-get install python-matplotlib' manually
