@@ -7,10 +7,6 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
-    depends_on = (("game", "0001_initial"),
-                  ("profile", "0001_initial"),
-                  ("trade", "0001_initial"))
-
     def forwards(self, orm):
         # Adding model 'StatsScore'
         db.create_table(u'utils_statsscore', (
@@ -18,7 +14,7 @@ class Migration(SchemaMigration):
             ('game', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['game.Game'])),
             ('player', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['profile.MystradeUser'])),
             ('trade', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['trade.Trade'], null=True)),
-            ('dateScore', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('date_score', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
             ('score', self.gf('django.db.models.fields.IntegerField')()),
             ('random', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
@@ -164,7 +160,7 @@ class Migration(SchemaMigration):
         },
         u'utils.statsscore': {
             'Meta': {'object_name': 'StatsScore'},
-            'dateScore': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'date_score': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'game': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['game.Game']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'player': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['profile.MystradeUser']"}),

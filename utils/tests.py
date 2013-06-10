@@ -147,7 +147,7 @@ class StatsTest(MystradeTestCase):
             self.assertEqual(trade, stats_loginUser.trade)
             self.assertEqual(68, stats_loginUser.score)
             self.assertFalse(stats_loginUser.random)
-            self.assertIsNotNone(stats_loginUser.dateScore)
+            self.assertIsNotNone(stats_loginUser.date_score)
         except StatsScore.DoesNotExist:
             self.fail("StatsScore does not contain record for loginUser (test2)")
 
@@ -155,11 +155,11 @@ class StatsTest(MystradeTestCase):
             stats_alternativeUser = StatsScore.objects.get(game = self.game, player = self.alternativeUser)
             self.assertEqual(trade, stats_alternativeUser.trade)
             self.assertTrue(stats_alternativeUser.random)
-            self.assertIsNotNone(stats_alternativeUser.dateScore)
+            self.assertIsNotNone(stats_alternativeUser.date_score)
         except StatsScore.DoesNotExist:
             self.fail("StatsScore does not contain record for alternativeUser (test5)")
 
-        self.assertEqual(stats_loginUser.dateScore, stats_alternativeUser.dateScore)
+        self.assertEqual(stats_loginUser.date_score, stats_alternativeUser.date_score)
 
     def test_record_scores_at_game_creation(self):
         self.game.delete()
@@ -230,7 +230,7 @@ class StatsTest(MystradeTestCase):
             stats_loginUser = StatsScore.objects.get(game = self.game, player = self.loginUser)
             self.assertEqual(trade, stats_loginUser.trade)
             self.assertEqual(11, stats_loginUser.score)
-            self.assertIsNotNone(stats_loginUser.dateScore)
+            self.assertIsNotNone(stats_loginUser.date_score)
         except StatsScore.DoesNotExist:
             self.fail("StatsScore does not contain record for loginUser (test2)")
 
@@ -238,7 +238,7 @@ class StatsTest(MystradeTestCase):
             stats_alternativeUser = StatsScore.objects.get(game = self.game, player = self.alternativeUser)
             self.assertEqual(trade, stats_alternativeUser.trade)
             self.assertEqual(19, stats_alternativeUser.score)
-            self.assertIsNotNone(stats_alternativeUser.dateScore)
+            self.assertIsNotNone(stats_alternativeUser.date_score)
         except StatsScore.DoesNotExist:
             self.fail("StatsScore does not contain record for alternativeUser (test5)")
 
@@ -268,7 +268,7 @@ class StatsTest(MystradeTestCase):
             stats_loginUser = StatsScore.objects.get(game = self.game, player = self.loginUser)
             self.assertIsNone(stats_loginUser.trade)
             self.assertEqual(16, stats_loginUser.score)
-            self.assertIsNotNone(stats_loginUser.dateScore)
+            self.assertIsNotNone(stats_loginUser.date_score)
         except StatsScore.DoesNotExist:
             self.fail("StatsScore does not contain record for loginUser (test2)")
 
@@ -276,7 +276,7 @@ class StatsTest(MystradeTestCase):
             stats_alternativeUser = StatsScore.objects.get(game = self.game, player = self.alternativeUser)
             self.assertIsNone(stats_alternativeUser.trade)
             self.assertEqual(14, stats_alternativeUser.score)
-            self.assertIsNotNone(stats_alternativeUser.dateScore)
+            self.assertIsNotNone(stats_alternativeUser.date_score)
         except StatsScore.DoesNotExist:
             self.fail("StatsScore does not contain record for alternativeUser (test5)")
 
