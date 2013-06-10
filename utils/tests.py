@@ -157,3 +157,39 @@ class StatsTest(MystradeTestCase):
             self.assertIsNotNone(stats_loginUser.dateScore)
         except StatsScore.DoesNotExist:
             self.fail("StatsScore does not contain record for alternativeUser (test5)")
+
+    def test_record_score_at_game_creation(self):
+        self.game.delete()
+        self.client.logout()
+        self.login_as(self.master)
+        response = self.client.post("/game/create/", {'ruleset': 1,
+                                                      'start_date': '11/10/2012 18:30',
+                                                      'end_date': '11/13/2037 00:15',
+                                                      'players': [self.loginUser.id, self.alternativeUser.id, self.admin_player.id]})
+        self.assertRedirects(response, "/game/selectrules/")
+        response = self.client.post("/game/selectrules/",
+                                    {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
+                                     'form-0-card_id': 1, 'form-0-selected_rule': 'on',
+                                     'form-1-card_id': 2, 'form-1-selected_rule': 'on',
+                                     'form-2-card_id': 3, 'form-2-selected_rule': 'on',
+                                     'form-3-card_id': 4,
+                                     'form-4-card_id': 5,
+                                     'form-5-card_id': 6,
+                                     'form-6-card_id': 7,
+                                     'form-7-card_id': 8,
+                                     'form-8-card_id': 9,
+                                     'form-9-card_id': 10,
+                                     'form-10-card_id': 11,
+                                     'form-11-card_id': 12,
+                                     'form-12-card_id': 13,
+                                     'form-13-card_id': 14,
+                                     'form-14-card_id': 15
+                                    })
+
+        created_game = Game.objects.get(master = self.master)
+        self.assertRedirects(response, "/game/{0}/".format(created_game.id))
+        stats = list(StatsScore.objects.filter(game = created_game))
+        self.assertEqual(3, len(stats))
+        self.assertGreater(stats[0].score, 0)
+        self.assertGreater(stats[1].score, 0)
+        self.assertGreater(stats[2].score, 0)

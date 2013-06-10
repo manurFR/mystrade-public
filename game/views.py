@@ -22,7 +22,7 @@ from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer, Trade
 from profile.helpers import UserNameCache
-from utils import utils
+from utils import utils, stats
 
 logger = logging.getLogger(__name__)
 
@@ -329,6 +329,9 @@ def select_rules(request):
                 utils.send_notification_email('game_create_admin', [admin[1] for admin in settings.ADMINS],
                                                {'game': game, 'players': sorted(all_players.itervalues(), key = lambda player: player['name']),
                                                 'rules': selected_rules})
+
+                # record score stats at the game creation
+                stats.record(game)
 
                 return redirect('game', game.id)
     else:
