@@ -152,12 +152,14 @@ class StatsTest(MystradeTestCase):
             self.fail("StatsScore does not contain record for loginUser (test2)")
 
         try:
-            stats_loginUser = StatsScore.objects.get(game = self.game, player = self.alternativeUser)
-            self.assertEqual(trade, stats_loginUser.trade)
-            self.assertTrue(stats_loginUser.random)
-            self.assertIsNotNone(stats_loginUser.dateScore)
+            stats_alternativeUser = StatsScore.objects.get(game = self.game, player = self.alternativeUser)
+            self.assertEqual(trade, stats_alternativeUser.trade)
+            self.assertTrue(stats_alternativeUser.random)
+            self.assertIsNotNone(stats_alternativeUser.dateScore)
         except StatsScore.DoesNotExist:
             self.fail("StatsScore does not contain record for alternativeUser (test5)")
+
+        self.assertEqual(stats_loginUser.dateScore, stats_alternativeUser.dateScore)
 
     def test_record_scores_at_game_creation(self):
         self.game.delete()
