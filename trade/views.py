@@ -11,7 +11,7 @@ from game.helpers import rules_currently_in_hand, commodities_in_hand
 from game.models import RuleInHand, CommodityInHand, Game, GamePlayer
 from trade.forms import DeclineReasonForm, TradeForm, RuleCardFormDisplay, TradeCommodityCardFormDisplay, OfferForm, RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet
 from trade.models import Trade, TradedCommodities, Offer
-from utils import utils
+from utils import utils, stats
 
 logger = logging.getLogger(__name__)
 
@@ -209,6 +209,9 @@ def accept_trade(request, game_id, trade_id):
 
                     # email notification
                     _trade_event_notification(request, trade)
+
+                    # record score stats after each completed trade
+                    stats.record(trade.game, trade)
             except BaseException as ex:
                 # if anything crappy happens, rollback the transaction and do nothing else except logging
                 logger.error("Error in accept_trace({0}, {1})".format(game_id, trade_id), exc_info = ex)

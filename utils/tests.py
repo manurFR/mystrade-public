@@ -7,7 +7,7 @@ from django.test.utils import override_settings
 from model_mommy import mommy
 from game.models import Game, CommodityInHand
 from ruleset.models import RuleCard, Commodity
-from trade.models import Trade
+from trade.models import Trade, Offer, TradedCommodities
 from utils import roundTimeToMinute, _send_notification_email
 from stats import record
 from models import StatsScore
@@ -193,3 +193,48 @@ class StatsTest(MystradeTestCase):
         self.assertGreater(stats[0].score, 0)
         self.assertGreater(stats[1].score, 0)
         self.assertGreater(stats[2].score, 0)
+
+    def test_record_score_when_trades_are_performed(self):
+        y = Commodity.objects.get(ruleset = 1, name = 'Yellow')
+        b = Commodity.objects.get(ruleset = 1, name = 'Blue')
+        r = Commodity.objects.get(ruleset = 1, name = 'Red')
+
+        cih_i1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 3, commodity = y)
+        cih_i2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 2, commodity = b)
+        cih_i3 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 3, commodity = r)
+
+        cih_r1 = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 6, commodity = y)
+        cih_r2 = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 1, commodity = b)
+        cih_r3 = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 2, commodity = r)
+
+        offer_initiator = mommy.make(Offer)
+        tc1 = mommy.make(TradedCommodities, offer = offer_initiator, commodityinhand = cih_i1, nb_traded_cards = 1)
+        tc2 = mommy.make(TradedCommodities, offer = offer_initiator, commodityinhand = cih_i3, nb_traded_cards = 2)
+        offer_initiator.tradedcommodities_set.add(tc1)
+        offer_initiator.tradedcommodities_set.add(tc2)
+
+        offer_responder = mommy.make(Offer)
+        tc3 = mommy.make(TradedCommodities, offer = offer_responder, commodityinhand = cih_r2, nb_traded_cards = 1)
+        offer_responder.tradedcommodities_set.add(tc3)
+
+        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                   status = 'REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
+
+        response = self.client.post("/trade/{0}/{1}/accept/".format(self.game.id, trade.id), follow = True)
+        self.assertEqual(200, response.status_code)
+
+        try:
+            stats_loginUser = StatsScore.objects.get(game = self.game, player = self.loginUser)
+            self.assertEqual(trade, stats_loginUser.trade)
+            self.assertEqual(11, stats_loginUser.score)
+            self.assertIsNotNone(stats_loginUser.dateScore)
+        except StatsScore.DoesNotExist:
+            self.fail("StatsScore does not contain record for loginUser (test2)")
+
+        try:
+            stats_alternativeUser = StatsScore.objects.get(game = self.game, player = self.alternativeUser)
+            self.assertEqual(trade, stats_alternativeUser.trade)
+            self.assertEqual(19, stats_alternativeUser.score)
+            self.assertIsNotNone(stats_alternativeUser.dateScore)
+        except StatsScore.DoesNotExist:
+            self.fail("StatsScore does not contain record for alternativeUser (test5)")
