@@ -9,7 +9,7 @@ class StatsScore(models.Model):
     player = models.ForeignKey(settings.AUTH_USER_MODEL)
     trade = models.ForeignKey(Trade, null = True) # after which completed trade this stat was taken, if not null
 
-    dateScore = models.DateTimeField(default = now)
+    date_score = models.DateTimeField(default = now)
 
     score = models.IntegerField()
 
