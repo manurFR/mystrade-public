@@ -75,6 +75,7 @@ class GameCreationViewsTest(TestCase):
                                                       'players': self.testUsersNoCreate[0].id})
         self.assertFormError(response, 'form', None, 'Please select at least 3 players (as many as there are mandatory rule cards in this ruleset).')
 
+    @override_settings(TIME_ZONE = 'UTC')
     def test_create_game_first_page(self):
         response = self.client.post("/game/create/", {'ruleset': 1,
                                                       'start_date': '11/10/2012 18:30',
@@ -153,7 +154,7 @@ class GameCreationViewsTest(TestCase):
         self.assertTemplateUsed(response, 'game/select_rules.html')
         self.assertEqual("Please select at most 4 rule cards (including the mandatory ones)", response.context['error'])
 
-    @override_settings(ADMINS = (('admin', 'admin@mystrade.com'),))
+    @override_settings(ADMINS = (('admin', 'admin@mystrade.com'),), TIME_ZONE = 'UTC')
     def test_create_game_complete_save_and_clean_session(self):
         response = self.client.post("/game/create/", {'ruleset': 1,
                                                       'start_date': '11/10/2012 18:30',
