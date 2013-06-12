@@ -3,4 +3,5 @@ South==0.7.6
 markdown==2.3.1
 bleach==1.2.2
 importlib==1.0.2 # necessary until alwaysdata upgrades to python 2.7
-matplotlib=1.2.1
+numpy==1.6.1
+matplotlib==1.1.1
