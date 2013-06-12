@@ -4,9 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 from matplotlib import dates
 from matplotlib.backends.backend_agg import FigureCanvasAgg
-import matplotlib.pyplot as plt
 
 from game.models import Game
 from models import StatsScore
