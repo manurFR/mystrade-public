@@ -28,7 +28,6 @@ fi
 # Update requirements, installing the modules in personal modules directory (python-modules) per alwaysdata policy
 # note: the first time we needed:
 #   PYTHONPATH=$HOME/python-modules easy_install-2.6 --install-dir $HOME/python-modules markdown==2.3.1
-#   PYTHONPATH=$HOME/python-modules easy_install-2.6 --install-dir $HOME/python-modules numpy==1.6.1
 $HOME/python-modules/pip install -t $HOME/python-modules -U -r $PROD_DIR/requirements_production.txt
 if (( $? )); then
     DEPLOY_WITH_WARNINGS=1
