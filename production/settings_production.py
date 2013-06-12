@@ -61,7 +61,7 @@ INSTALLED_APPS = (
      'django.contrib.admindocs',
      'django.contrib.humanize',
      'widget_tweaks',
-     #'django_extensions',
+     'django_extensions',
      #'debug_toolbar',
      'south',
 ) + MYSTRADE_APPS
