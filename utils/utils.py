@@ -53,7 +53,7 @@ def _send_notification_email(template, recipients, data = None):
         subject = message[0]
         body = '\n'.join(message[1:])
         if subject:
-            email = EmailMessage('{0}{1}'.format(settings.EMAIL_SUBJECT_PREFIX, subject),
+            email = EmailMessage(u'{0}{1}'.format(settings.EMAIL_SUBJECT_PREFIX, subject),
                                  body,
                                  from_email = settings.EMAIL_MYSTRADE,
                                  to = to,

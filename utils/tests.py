@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import datetime
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -12,7 +15,6 @@ from trade.models import Trade, Offer, TradedCommodities
 from utils import roundTimeToMinute, _send_notification_email
 from stats import record
 from models import StatsScore
-
 
 class MystradeTestCase(TestCase):
     """ Parent test case class with default element bootstrapped, to be inherited by other apps' test cases """
@@ -110,6 +112,17 @@ class UtilsTest(TestCase):
         _send_notification_email(template, recipients = [user1, user2])
 
         self.assertEqual(0, len(mail.outbox))
+
+    @override_settings(EMAIL_SUBJECT_PREFIX = '[test] ')
+    def test_send_notification_email_should_accept_accented_characters_in_subject(self):
+        template = Template(u'my name is André\nHello.')
+        try:
+            _send_notification_email(template, 'to1@test.com')
+        except UnicodeEncodeError:
+            self.fail("Notification email should accept accented characters in subject")
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual(u'[test] my name is André', email.subject)
 
     def _prepare_user(self, email, send_notifications):
         return mommy.make(get_user_model(), email = email, send_notifications = send_notifications)
