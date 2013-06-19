@@ -1,6 +1,6 @@
 import logging
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, NON_FIELD_ERRORS
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q
@@ -88,10 +88,14 @@ def create_trade(request, game_id):
             else:
                 offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, selected_commodities, offer)
         except FormInvalidException as ex:
-            rulecards_formset = ex.forms['rulecards_formset']
-            commodities_formset = ex.forms['commodities_formset']
-            if 'offer_form' in ex.forms:
-                offer_form = ex.forms['offer_form']
+            offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game,
+                                                                                      ex.formdata['selected_rules'],
+                                                                                      ex.formdata['selected_commodities'],
+                                                                                      ex.formdata['offer'])
+            rulecards_formset._non_form_errors = ex.formdata['rulecards_errors']
+            commodities_formset._non_form_errors = ex.formdata['commodities_errors']
+            offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
+
     else:
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game)
         trade_form = TradeForm(request.user, game)
@@ -144,10 +148,14 @@ def reply_trade(request, game_id, trade_id):
 
                 return redirect('trades', trade.game_id)
             except FormInvalidException as ex:
-                rulecards_formset = ex.forms['rulecards_formset']
-                commodities_formset = ex.forms['commodities_formset']
-                if 'offer_form' in ex.forms:
-                    offer_form = ex.forms['offer_form']
+                offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, trade.game,
+                                                                                          ex.formdata['selected_rules'],
+                                                                                          ex.formdata['selected_commodities'],
+                                                                                          ex.formdata['offer'])
+                rulecards_formset._non_form_errors = ex.formdata['rulecards_errors']
+                commodities_formset._non_form_errors = ex.formdata['commodities_errors']
+                offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
+
                 return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade,
                                                                   'errors': True, 'offer_form': offer_form,
                                                                   'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
@@ -285,8 +293,9 @@ def _parse_offer_forms(request, game):
     commodities_formset.set_game(game)
     commodities_formset.set_player(request.user)
 
-    if not rulecards_formset.is_valid() or not commodities_formset.is_valid():
-        raise FormInvalidException({'rulecards_formset' : rulecards_formset, 'commodities_formset' : commodities_formset})
+    # fill the cleaned_data arrays
+    rulecards_valid = rulecards_formset.is_valid()
+    commodities_valid = commodities_formset.is_valid()
 
     selected_rules = []
     for card in rule_hand:
@@ -304,13 +313,18 @@ def _parse_offer_forms(request, game):
     offer_form = OfferForm(request.POST,
                            nb_selected_rules = len(selected_rules), nb_selected_commodities = sum(selected_commodities.values()))
 
-    if not offer_form.is_valid():
-        dummy, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, selected_commodities)
-        raise FormInvalidException({'rulecards_formset' : rulecards_formset, 'commodities_formset' : commodities_formset,
-                                    'offer_form' : offer_form})
+    offer_valid = offer_form.is_valid() # fill the cleaned_data array
 
     offer = Offer(free_information = offer_form.cleaned_data['free_information'] or None, # 'or None' necessary to insert null (not empty) values
                   comment          = offer_form.cleaned_data['comment'] or None)
+
+    if not rulecards_valid or not commodities_valid or not offer_valid:
+        raise FormInvalidException({'selected_rules': selected_rules,
+                                    'selected_commodities': selected_commodities,
+                                    'offer': offer,
+                                    'rulecards_errors': rulecards_formset.non_form_errors(),
+                                    'commodities_errors': commodities_formset.non_form_errors(),
+                                    'offer_errors': offer_form.non_field_errors()})
 
     return offer, selected_rules, selected_commodities
 
@@ -332,6 +346,6 @@ def _trade_event_notification(request, trade):
                                    'url': request.build_absolute_uri(reverse('show_trade', args = [trade.game_id, trade.id]))})
 
 class FormInvalidException(Exception):
-    def __init__(self, forms, *args, **kwargs):
+    def __init__(self, formdata, *args, **kwargs):
         super(FormInvalidException, self).__init__(*args, **kwargs)
-        self.forms = forms
+        self.formdata = formdata

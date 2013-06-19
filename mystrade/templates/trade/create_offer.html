@@ -1,15 +1,26 @@
 {% load filters %}
 
 <div>You are offering: <span id="summary"/></div>
-{% for err in offer_form.non_field_errors %}
+{% if offer_form.non_field_errors %}
     <table>
-        <tr>
-            <td colspan="2"><span class="errors">{{ err }}</span></td>
-        </tr>
+        {% for err in offer_form.non_field_errors %}
+            <tr>
+                <td><span class="errors">{{ err }}</span></td>
+            </tr>
+        {% endfor %}
     </table>
-{% endfor %}
+{% endif %}
 <div>
     <h4>Rules</h4>
+    {% if rulecards_formset.non_form_errors %}
+        <table>
+        {% for err in rulecards_formset.non_form_errors %}
+                <tr>
+                    <td><span class="errors">{{ err }}</span></td>
+                </tr>
+        {% endfor %}
+        </table>
+    {% endif %}
     <div class="css_table">
         {{ rulecards_formset.management_form }}
         {% for form in rulecards_formset %}
@@ -39,6 +50,15 @@
         {% endfor %}
     </div>
     <h4>Commodities (click on cards to offer)</h4>
+    {% if commodities_formset.non_form_errors %}
+        <table>
+            {% for err in commodities_formset.non_form_errors %}
+                <tr>
+                    <td><span class="errors">{{ err }}</span></td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
     <div class="css_table">
         {{ commodities_formset.management_form }}
         <div class="css_table-row">

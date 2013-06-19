@@ -153,6 +153,26 @@ class CreateTradeViewTest(MystradeTestCase):
         self.assertContains(response, '<div class="card_name">Commodity#1</div>')
         self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
 
+    def test_create_trade_with_reserved_elements_fails_gracefully(self):
+        rulecard = mommy.make(RuleCard, public_name = 'R1', description = 'my rulecard')
+        rih = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard)
+        # reserving the rule in hand for another trade
+        other_trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
+                                 initiator_offer = mommy.make(Offer, rules=[rih]))
+
+        response = self.client.post("/trade/{0}/create/".format(self.game.id),
+                                    {'responder': 4,
+                                     'rulecards-TOTAL_FORMS': 1,      'rulecards-INITIAL_FORMS': 1,
+                                     'rulecards-0-card_id': rih.id,   'rulecards-0-selected_rule': 'on',
+                                     'commodity-TOTAL_FORMS': 0,      'commodity-INITIAL_FORMS': 0,
+                                     'comment': 'a comment'
+                                    })
+        self.assertContains(response, '<div class="card_name">R1</div>')
+        self.assertContains(response, '<div class="card_desc">my rulecard</div>')
+        self.assertContains(response, '<span class="helptext">Reserved for a pending trade</span>')
+        self.assertContains(response, 'a comment')
+        self.assertContains(response, 'A rule card in a pending trade can not be offered in another trade.')
+
 class ManageViewsTest(MystradeTestCase):
 
     def test_trade_list(self):
@@ -436,13 +456,37 @@ class ManageViewsTest(MystradeTestCase):
                                     })
         self.assertFormError(response, 'offer_form', None, 'At least one card or one free information should be offered.')
 
+    def test_reply_trade_with_reserved_elements_fails_gracefully(self):
+        commodity = mommy.make(Commodity, name = 'commodity_1')
+        commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = self.loginUser,
+                                                           commodity = commodity, nb_cards = 1)
+        # reserving the commodity in hand for another trade
+        offer_initiator = mommy.make(Offer)
+        tc = mommy.make(TradedCommodities, offer = offer_initiator, commodityinhand = commodity_in_hand, nb_traded_cards = 1)
+        offer_initiator.tradedcommodities_set.add(tc)
+
+        other_trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
+                                 initiator_offer = offer_initiator)
+
+        response = self.client.post("/trade/{0}/create/".format(self.game.id),
+                                    {'responder': 4,
+                                     'rulecards-TOTAL_FORMS': 0,      'rulecards-INITIAL_FORMS': 0,
+                                     'commodity-TOTAL_FORMS': 1,               'commodity-INITIAL_FORMS': 1,
+                                     'commodity-0-commodity_id': commodity.id, 'commodity-0-nb_traded_cards': 1,
+                                     'comment': 'a comment'
+                                    })
+        self.assertContains(response, '<div class="card_name">commodity_1</div>')
+        self.assertContains(response, 'excluded" data-tip="Reserved for a pending trade"')
+        self.assertContains(response, 'a comment')
+        self.assertContains(response, 'A commodity card in a pending trade can not be offered in another trade.')
+
     def test_reply_trade_complete_save(self):
         ruleset = mommy.make(Ruleset)
         rulecard = mommy.make(RuleCard, ruleset = ruleset)
         rule_in_hand = RuleInHand.objects.create(game = self.game, player = self.loginUser,
                                                  rulecard = rulecard, ownership_date = now())
         commodity = mommy.make(Commodity, ruleset = ruleset, name = 'commodity_1')
-        commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = get_user_model().objects.get(username = 'test2'),
+        commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = self.loginUser,
                                                            commodity = commodity, nb_cards = 2)
 
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
