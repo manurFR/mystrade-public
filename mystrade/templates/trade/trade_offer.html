@@ -95,6 +95,7 @@
             $('input[type=submit], button').button();
         {% if errors %}
             $('#reply').hide();
+            $('#decline').hide();
         {% else %}
             $('#offer').hide();
             $('#reply').on("click", function() {
