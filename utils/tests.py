@@ -12,7 +12,7 @@ from model_mommy import mommy
 from game.models import Game, CommodityInHand
 from ruleset.models import RuleCard, Commodity
 from trade.models import Trade, Offer, TradedCommodities
-from utils import roundTimeToMinute, _send_notification_email
+from utils import roundTimeToMinute, _send_notification_email, send_notification_email
 from stats import record
 from models import StatsScore
 
@@ -123,6 +123,31 @@ class UtilsTest(TestCase):
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
         self.assertEqual(u'[test] my name is André', email.subject)
+
+    def test_notification_email_should_not_escape_special_characters(self):
+        user = mommy.make(get_user_model(), first_name = 'John "<html>" Peter' ,last_name = "O'Neal & Yo")
+        game = mommy.make(Game, master = user)
+        trade = mommy.make(Trade, initiator = user, responder = user, finalizer = user)
+
+        data = {'game': game, 'trade': trade}
+
+        for template in ['game_close', 'game_close_admin', 'game_create', 'game_create_admin',
+                         'trade_accept', 'trade_cancel', 'trade_decline', 'trade_offer', 'trade_reply']:
+            send_notification_email(template, 'recipient@dummy.com', data)
+
+            self.assertEqual(1, len(mail.outbox))
+            email = mail.outbox.pop()
+
+            self.assertNotIn('&lt;', email.subject,     "Escaped character '&lt;' found in notification template {0}.txt :\n{1}".format(template, email.subject))
+            self.assertNotIn('&lt;', email.body,        "Escaped character '&lt;' found in notification template {0}.txt :\n{1}".format(template, email.body))
+            self.assertNotIn('&gt;', email.subject,     "Escaped character '&gt;' found in notification template {0}.txt :\n{1}".format(template, email.subject))
+            self.assertNotIn('&gt;', email.body,        "Escaped character '&gt;' found in notification template {0}.txt :\n{1}".format(template, email.body))
+            self.assertNotIn('&#39;', email.subject,    "Escaped character '&#39;' found in notification template {0}.txt :\n{1}".format(template, email.subject))
+            self.assertNotIn('&#39;', email.body,       "Escaped character '&#39;' found in notification template {0}.txt :\n{1}".format(template, email.body))
+            self.assertNotIn('&quot;', email.subject,   "Escaped character '&quot;' found in notification template {0}.txt :\n{1}".format(template, email.subject))
+            self.assertNotIn('&quot;', email.body,      "Escaped character '&quot;' found in notification template {0}.txt :\n{1}".format(template, email.body))
+            self.assertNotIn('&amp;', email.subject,    "Escaped character '&amp;' found in notification template {0}.txt :\n{1}".format(template, email.subject))
+            self.assertNotIn('&amp;', email.body,       "Escaped character '&amp;' found in notification template {0}.txt :\n{1}".format(template, email.body))
 
     def _prepare_user(self, email, send_notifications):
         return mommy.make(get_user_model(), email = email, send_notifications = send_notifications)

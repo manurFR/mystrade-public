@@ -1,4 +1,4 @@
-Game #{{ game.id }}: {{ trade.initiator.name }} has accepted the trade
+{% autoescape off %}Game #{{ game.id }}: {{ trade.initiator.name }} has accepted the trade
 In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.initiator.name }} has accepted your offer.
 These elements have been traded :
 - {{ trade.initiator.name }} gave you {{ trade.initiator_offer.summary }}
@@ -7,4 +7,4 @@ These elements have been traded :
 Consult the trade on the following page:
 {{ url }}
 
-{% include "notification/footer.txt" %}
+{% include "notification/footer.txt" %}{% endautoescape %}

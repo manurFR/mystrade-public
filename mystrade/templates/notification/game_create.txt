@@ -1,4 +1,4 @@
-Game #{{ game.id }} has been created by {{ game.master.name }}
+{% autoescape off %}Game #{{ game.id }} has been created by {{ game.master.name }}
 {{ game.master.name|capfirst }} has just created game #{{ game.id }}, and you've been selected to join it !
 
 The other players are:
@@ -18,5 +18,5 @@ Here's the hand dealt to you:
 
 Have a fun game!
 
-{% include "notification/footer.txt" %}
+{% include "notification/footer.txt" %}{% endautoescape %}
 

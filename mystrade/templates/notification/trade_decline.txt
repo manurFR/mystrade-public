@@ -1,4 +1,4 @@
-Game #{{ game.id }}: {{ trade.finalizer.name }} has declined the trade
+{% autoescape off %}Game #{{ game.id }}: {{ trade.finalizer.name }} has declined the trade
 In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.finalizer.name }} has declined your offer.
 The trade included the following elements:
 - {{ trade.initiator.name }} offered {{ trade.initiator_offer.summary }}
@@ -10,4 +10,4 @@ The trade included the following elements:
 Consult the trade on the following page:
 {{ url }}
 
-{% include "notification/footer.txt" %}
+{% include "notification/footer.txt" %}{% endautoescape %}

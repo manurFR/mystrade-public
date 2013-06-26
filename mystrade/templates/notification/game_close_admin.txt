@@ -1,4 +1,4 @@
-Game #{{ game.id }} has been closed by {{ game.master.name }}
+{% autoescape off %}Game #{{ game.id }} has been closed by {{ game.master.name }}
 {% load humanize %}{{ game.master.name|capfirst }} has closed game #{{ game.id }} on {{ game.closing_date|date:"SHORT_DATETIME_FORMAT" }}
 
 Final Scores:
@@ -8,5 +8,5 @@ Final Scores:
 Check the full scores of all players on the game's control board:
 {{ url }}
 
-{% include "notification/footer.txt" %}
+{% include "notification/footer.txt" %}{% endautoescape %}
 

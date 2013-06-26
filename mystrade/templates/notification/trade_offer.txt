@@ -1,4 +1,4 @@
-Game #{{ game.id }}: You have been offered a trade by {{ trade.initiator.name }}
+{% autoescape off %}Game #{{ game.id }}: You have been offered a trade by {{ trade.initiator.name }}
 In game #{{ game.id }}, {{ trade.initiator.name }} has offered you a new trade on {{ trade.creation_date|date:"SHORT_DATETIME_FORMAT" }},
 with the following elements:
 - {{ trade.initiator.name }} offers {{ trade.initiator_offer.summary }}
@@ -6,4 +6,4 @@ with the following elements:
 Please give your reply on the following page:
 {{ url }}
 
-{% include "notification/footer.txt" %}
+{% include "notification/footer.txt" %}{% endautoescape %}

@@ -1,4 +1,4 @@
-Game #{{ game.id }} has been created by {{ game.master.name }}
+{% autoescape off %}Game #{{ game.id }} has been created by {{ game.master.name }}
 {{ game.master.name|capfirst }} has just created game #{{ game.id }}.
 
 The players are:
@@ -11,5 +11,5 @@ The selected rules are:
 {% for rulecard in rules %}- Rule {{ rulecard.public_name }}: {{ rulecard.description|safe }}
 {% endfor %}
 
-{% include "notification/footer.txt" %}
+{% include "notification/footer.txt" %}{% endautoescape %}
 
