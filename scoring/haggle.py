@@ -23,14 +23,14 @@ def HAG06(self, scoresheets):
         # Global rulecard #
     """
     culprits = []
-    for index, player in enumerate(scoresheets):
+    for player in scoresheets:
         if player.nb_scored_cards('Blue') >= 5:
-            culprits.append(index)
+            culprits.append(player)
     for culprit in culprits:
-        for index, victim in enumerate(scoresheets):
-            if index != culprit:
+        for victim in scoresheets:
+            if victim != culprit:
                 victim.register_score_from_rule(self,
-                              '(6) Since player #{0} has {1} blue cards, 10 points are deducted.'.format(culprit + 1, scoresheets[culprit].nb_scored_cards('Blue')),
+                              '(6) Since {0} has {1} blue cards, 10 points are deducted.'.format(culprit.player_name, culprit.nb_scored_cards('Blue')),
                               score = -10)
 
 def HAG07(self, scoresheet):
