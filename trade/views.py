@@ -1,4 +1,5 @@
 import logging
+import bleach
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, NON_FIELD_ERRORS
 from django.core.urlresolvers import reverse
@@ -239,7 +240,7 @@ def decline_trade(request, game_id, trade_id):
             if decline_reason_form.is_valid():
                 trade.status = 'DECLINED'
                 trade.finalizer = request.user
-                trade.decline_reason = decline_reason_form.cleaned_data['decline_reason']
+                trade.decline_reason = bleach.clean(decline_reason_form.cleaned_data['decline_reason'], tags = [], strip = True)
                 trade.closing_date = now()
                 trade.save()
 
@@ -315,8 +316,8 @@ def _parse_offer_forms(request, game):
 
     offer_valid = offer_form.is_valid() # fill the cleaned_data array
 
-    offer = Offer(free_information = offer_form.cleaned_data['free_information'] or None, # 'or None' necessary to insert null (not empty) values
-                  comment          = offer_form.cleaned_data['comment'] or None)
+    offer = Offer(free_information = bleach.clean(offer_form.cleaned_data['free_information'], tags = [], strip = True) or None, # 'or None' necessary to insert null (not empty) values
+                  comment          = bleach.clean(offer_form.cleaned_data['comment'], tags = [], strip = True) or None)
 
     if not rulecards_valid or not commodities_valid or not offer_valid:
         raise FormInvalidException({'selected_rules': selected_rules,
