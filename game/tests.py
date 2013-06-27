@@ -22,13 +22,23 @@ from utils.tests import MystradeTestCase
 
 class WelcomePageViewTest(MystradeTestCase):
 
+    def test_url_with_no_path_should_display_welcome_page_if_authenticated(self):
+        """ ie http://host.com/ should actually display the same page as http://host.com/game/ """
+        response = self.client.get("")
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(response, "game/welcome.html")
+
+        self.client.logout()
+        response = self.client.get("")
+        self.assertRedirects(response, "/login?next=/")
+
     def test_welcome_needs_login(self):
         response = self.client.get(reverse("welcome"))
         self.assertEqual(200, response.status_code)
 
         self.client.logout()
         response = self.client.get(reverse("welcome"))
-        self.assertEqual(302, response.status_code)
+        self.assertRedirects(response, "/login?next=/game/")
 
     def test_welcome_games_query(self):
         game_mastered = mommy.make(Game, master = self.loginUser,

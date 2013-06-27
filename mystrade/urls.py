@@ -1,14 +1,13 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
-from django.views.generic import TemplateView, RedirectView
-
-# Uncomment the next two lines to enable the admin:
+from django.views.generic import TemplateView
+from game import views as game_views
 
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^$',         'django.contrib.auth.views.login', {'template_name': 'profile/login.html'}, name='login'),
-    url(r'^welcome/$', RedirectView.as_view(url = '/game/')),
+    url(r'^$',         game_views.welcome),
+    url(r'^login$',    'django.contrib.auth.views.login', {'template_name': 'profile/login.html'}, name='login'),
     url(r'^logout$',   'django.contrib.auth.views.logout_then_login', name='logout'),
     url(r'^rules/',    TemplateView.as_view(template_name = 'rules.html'), name='rules'),
     url(r'^profile/',  include('profile.urls')),
