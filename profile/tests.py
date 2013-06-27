@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import check_password
 from django.test import TestCase
 from profile.models import MystradeUser
 
@@ -54,11 +55,12 @@ class ViewsTest(TestCase):
         self.assertContains(response, "call me maybe")
         self.assertTemplateUsed(response, 'profile/otherprofile.html')
 
-    def test_editprofile_change_user_and_profile(self):
+    def test_editprofile_change_user_fields_and_password(self):
         response = self.client.post("/profile/edit/",
                                     {'username': 'test', 'first_name': 'Leia', 'last_name': 'Organa',
                                      'send_notifications': '',
-                                     'email': 'test@aaa.com', 'bio': 'princess', 'contact': 'D2-R2'},
+                                     'email': 'test@aaa.com', 'bio': 'princess', 'contact': 'D2-R2',
+                                     'old_password': 'test', 'new_password1': 'alderaan', 'new_password2': 'alderaan'},
                                     follow = True)
 
         self.assertEqual(200, response.status_code)
@@ -68,23 +70,41 @@ class ViewsTest(TestCase):
         self.assertEqual("princess", modifiedUser.bio)
         self.assertEqual("D2-R2", modifiedUser.contact)
         self.assertFalse(modifiedUser.send_notifications)
+        self.assertTrue(check_password('alderaan', modifiedUser.password))
 
         self.assertTemplateUsed(response, 'profile/profile.html')
 
-    def test_editprofile_bad_password_confirmation(self):
-        expectedMessage = "The two password fields didn't match."
+    def test_editprofile_bad_old_password(self):
+        response = self.client.post("/profile/edit/",
+                                    {'old_password': 'BAD', 'new_password1': 'alderaan', 'new_password2': 'alderaan'},
+                                    follow = True)
+        self.assertFormError(response, 'password_form', 'old_password', "Your old password was entered incorrectly. Please enter it again.")
 
         response = self.client.post("/profile/edit/",
-                                    {'new_password1': 'pass1', 'new_password2': ''},
+                                    {'old_password': '', 'new_password1': 'alderaan', 'new_password2': 'alderaan'},
                                     follow = True)
-        self.assertFormError(response, 'user_form', 'new_password2', expectedMessage)
+        self.assertFormError(response, 'password_form', 'old_password', "This field is required.")
+
+    def test_editprofile_bad_new_passwords(self):
+        response = self.client.post("/profile/edit/",
+                                    {'old_password': 'test', 'new_password1': 'pass1', 'new_password2': ''},
+                                    follow = True)
+        self.assertFormError(response, 'password_form', 'new_password2', "This field is required.")
 
         response = self.client.post("/profile/edit/",
-                                    {'new_password1': '', 'new_password2': 'pass2'},
+                                    {'old_password': 'test', 'new_password1': '', 'new_password2': 'pass2'},
                                     follow = True)
-        self.assertFormError(response, 'user_form', 'new_password2', expectedMessage)
+        self.assertFormError(response, 'password_form', 'new_password1', "This field is required.")
 
         response = self.client.post("/profile/edit/",
-                                    {'new_password1': 'pass1', 'new_password2': 'pass2'},
+                                    {'old_password': 'test', 'new_password1': 'pass1', 'new_password2': 'pass2'},
                                     follow = True)
-        self.assertFormError(response, 'user_form', 'new_password2', expectedMessage)
+        self.assertFormError(response, 'password_form', 'new_password2', "The two password fields didn't match.")
+
+    def test_editprofile_password_fields_not_evaluated_when_new_password1_is_empty(self):
+        response = self.client.post("/profile/edit/",
+                                    {'username': 'test', 'first_name': 'Leia', 'last_name': 'Organa',
+                                     'old_password': 'bogus', 'new_password1': '', 'new_password2': 'alderaan'},
+                                    follow = True)
+        self.assertNotContains(response, "Your old password was entered incorrectly. Please enter it again.")
+        self.assertNotContains(response, "The two password fields didn&#39;t match.")

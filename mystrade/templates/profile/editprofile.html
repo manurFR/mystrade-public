@@ -50,15 +50,20 @@
 				<td colspan="2" class="header">Change password
 					<span class="helptext">Let blank to keep the same password</span></td>
 			</tr>
+            <tr>
+                <th>{{ password_form.old_password.label_tag }} :</th>
+                <td>{{ password_form.old_password }}&nbsp;<span class="errors">{{ password_form.old_password.errors.as_text }}</span>
+                    <span class="helptext">{{ password_form.old_password.help_text }}</span></td>
+            </tr>
 			<tr>
-				<th>{{ user_form.new_password1.label_tag }} :</th>
-				<td>{{ user_form.new_password1 }}&nbsp;<span class="errors">{{ user_form.new_password1.errors.as_text }}</span>
-				    <span class="helptext">{{ user_form.new_password1.help_text }}</span></td>
+				<th>{{ password_form.new_password1.label_tag }} :</th>
+				<td>{{ password_form.new_password1 }}&nbsp;<span class="errors">{{ password_form.new_password1.errors.as_text }}</span>
+				    <span class="helptext">{{ password_form.new_password1.help_text }}</span></td>
 			</tr>
 			<tr>
-				<th>{{ user_form.new_password2.label_tag }} :</th>
-				<td>{{ user_form.new_password2 }}&nbsp;<span class="errors">{{ user_form.new_password2.errors.as_text }}</span>
-				    <span class="helptext">{{ user_form.new_password2.help_text }}</span></td>
+				<th>{{ password_form.new_password2.label_tag }} :</th>
+				<td>{{ password_form.new_password2 }}&nbsp;<span class="errors">{{ password_form.new_password2.errors.as_text }}</span>
+				    <span class="helptext">{{ password_form.new_password2.help_text }}</span></td>
 			</tr>
 		</table>
 		<div class="submit-button">

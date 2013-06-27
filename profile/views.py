@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect, get_object_or_404
 from profile.forms import MystradeUserForm
 
@@ -18,13 +19,19 @@ def profile(request, user_id = None):
 def editprofile(request):
     if request.method == 'POST':
         user_form = MystradeUserForm(data = request.POST, instance = request.user)
-        if user_form.is_valid():
-            user = user_form.save(commit = False)
-            if user_form.cleaned_data['new_password1']:
-                user.set_password(user_form.cleaned_data['new_password1'])
-            user.save()
+        password_form = PasswordChangeForm(data = request.POST, user = request.user)
+
+        if request.POST.get('new_password1'):
+            if user_form.is_valid() and password_form.is_valid():
+                user = user_form.save(commit = False)
+                user.set_password(password_form.cleaned_data['new_password1'])
+                user.save()
+                return redirect('profile')
+        elif user_form.is_valid():
+            user_form.save()
             return redirect('profile')
     else:
         user_form = MystradeUserForm(instance = request.user)
+        password_form = PasswordChangeForm(user = request.user)
 
-    return render(request, 'profile/editprofile.html', {'user_form': user_form})
+    return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form})
