@@ -35,7 +35,7 @@ def welcome(request):
     participations = dict([(gp.game_id, gp) for gp in GamePlayer.objects.filter(player = request.user)])
 
     for game in games:
-        game.list_of_players = [cache.get_name(player) for player in game.players.all().order_by('id')]
+        game.list_of_players = sorted([cache.get_name(player) for player in game.players.all()], key = lambda player: player.lower())
 
         if game.id in participations:
             game.hand_submitted = participations[game.id].submit_date is not None
@@ -52,7 +52,7 @@ MESSAGES_PAGINATION = 10
 def game(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
-    players = sorted(game.players.all(), key = lambda player: player.name)
+    players = sorted(game.players.all(), key = lambda player: player.name.lower())
 
     if request.user not in players and not game.has_super_access(request.user):
         raise PermissionDenied

@@ -493,7 +493,7 @@ class GamePageViewTest(MystradeTestCase):
         self.assertContains(response, "(<strong>game master</strong>)")
         self.assertContains(response, "<div class=\"message_content admin\">")
 
-    def test_delete_message_forbidden_when_youre_not_the_original_sender(self):
+    def test_delete_message_forbidden_when_you_are_not_the_original_sender(self):
         msg = mommy.make(Message, game = self.game, sender = self.master)
 
         response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
