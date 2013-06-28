@@ -425,11 +425,12 @@ class GamePageViewTest(MystradeTestCase):
         self.assertNotContains(response, "Pending trades")
         self.assertNotContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade1.id))
 
-    def test_game_page_post_a_message(self):
+    def test_game_page_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())
 
-        response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'test message represents'})
+        response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'test message represents'}, follow = True)
         self.assertEqual(200, response.status_code)
+        self.assertEqual('GET', response.request['REQUEST_METHOD'])
 
         self.assertEqual(1, Message.objects.count())
         try:
@@ -446,7 +447,8 @@ class GamePageViewTest(MystradeTestCase):
 
     def test_game_page_message_with_markdown_are_interpreted(self):
         response = self.client.post("/game/{0}/".format(self.game.id),
-                                    {'message': 'Hi *this* is __a test__ and [a link](http://example.net/)'})
+                                    {'message': 'Hi *this* is __a test__ and [a link](http://example.net/)'},
+                                    follow = True)
         self.assertEqual(200, response.status_code)
 
         self.assertEqual('Hi <em>this</em> is <strong>a test</strong> and <a href=\"http://example.net/\">a link</a>',
@@ -454,7 +456,8 @@ class GamePageViewTest(MystradeTestCase):
 
     def test_game_page_bleach_strips_unwanted_tags_and_attributes(self):
         response = self.client.post("/game/{0}/".format(self.game.id),
-                                    {'message': '<script>var i=3;</script>Hi an <em class="test">image</em><img src="http://blah.jpg"/>'})
+                                    {'message': '<script>var i=3;</script>Hi an <em class="test">image</em><img src="http://blah.jpg"/>'},
+                                    follow = True)
         self.assertEqual(200, response.status_code)
 
         self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)

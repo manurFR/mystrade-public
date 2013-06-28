@@ -57,7 +57,20 @@ def game(request, game_id):
     if request.user not in players and not game.has_super_access(request.user):
         raise PermissionDenied
 
-    context =  {'game': game, 'players': players, 'maxMessageLength': Message.MAX_LENGTH}
+    # parse message post
+    if request.method == 'POST':
+        message_form = MessageForm(data = request.POST)
+        if message_form.is_valid() and len(message_form.cleaned_data['message']) > 0:
+        # bleach allowed tags : 'a','abbr','acronym','b','blockquote','code','em','i','li','ol','strong', 'ul'
+            secure_message = bleach.clean(markdown.markdown(message_form.cleaned_data['message']), strip = True)
+            Message.objects.create(game = game, sender = request.user, content = secure_message)
+            return redirect('game', game_id) # call again the same view method but in GET, so that a refresh doesn't re-post the message
+            # else keep the bound message_form to display the erroneous message
+    else:
+        message_form = MessageForm()
+
+    # game elements
+    context =  {'game': game, 'players': players, 'message_form': message_form,  'maxMessageLength': Message.MAX_LENGTH}
 
     if request.user in players:
         rules = rules_currently_in_hand(game, request.user)
@@ -79,17 +92,7 @@ def game(request, game_id):
         context.update({'rules': rules, 'commodities': commodities, 'nb_commodities': nb_commodities,
                         'pending_trades': pending_trades, 'hand_submitted': hand_submitted})
 
-    if request.method == 'POST':
-        message_form = MessageForm(data = request.POST)
-        if message_form.is_valid() and len(message_form.cleaned_data['message']) > 0:
-                # bleach allowed tags : 'a','abbr','acronym','b','blockquote','code','em','i','li','ol','strong', 'ul'
-            secure_message = bleach.clean(markdown.markdown(message_form.cleaned_data['message']), strip = True)
-            Message.objects.create(game = game, sender = request.user, content = secure_message)
-            message_form = MessageForm()
-        # else keep the bound message_form to display the erroneous message
-    else:
-        message_form = MessageForm()
-
+    # display messages
     messages = Message.objects.filter(game = game).order_by('-posting_date')
     paginator = Paginator(messages, per_page = MESSAGES_PAGINATION, orphans = 3)
     page = request.GET.get('page')
@@ -100,7 +103,7 @@ def game(request, game_id):
     except EmptyPage:
         displayed_messages = paginator.page(paginator.num_pages) # If page is out of range, deliver last page of results.
 
-    context.update({'message_form': message_form, 'messages': displayed_messages})
+    context.update({'messages': displayed_messages})
 
     return render(request, 'game/game.html', context)
 
