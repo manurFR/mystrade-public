@@ -70,7 +70,7 @@
                 <div class="css_table">
                     {% for trade in pending_trades|slice:":3" %}
                         {% cycle 'even_color' 'odd_color' as color silent %}
-                        <div class="css_table-row{% if trade.status == 'ACCEPTED' or trade.status == 'DECLINED' %} done{% elif trade.status == 'CANCELLED' %} cancelled{% endif %}">
+                        <div class="css_table-row{% if trade.finalizer %} done{% endif %}{% if trade.status == 'CANCELLED' %} cancelled{% endif %}">
                             <div class="css_table-cell {{ color }}">
                                 From <strong>{% include "common/name_or_you.html" with who=trade.initiator %}</strong>
                                 to <strong>{% include "common/name_or_you.html" with who=trade.responder %}</strong>

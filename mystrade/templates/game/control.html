@@ -89,7 +89,7 @@
             <tbody>
             {% for trade in trades %}
                 {% cycle 'even_color' 'odd_color' as color silent %}
-                <tr{% if trade.status == 'ACCEPTED' or trade.status == 'DECLINED' %} class="done"{% elif trade.status == 'CANCELLED' %} class="cancelled"{% endif %}">
+                <tr class="{% if trade.finalizer %} done{% endif %}{% if trade.status == 'CANCELLED' %} cancelled{% endif %}">
                     <td class="css_table-cell {{ color }}">{% include "common/name_or_you.html" with who=trade.initiator %}</td>
                     <td class="css_table-cell {{ color }}">{% include "common/name_or_you.html" with who=trade.responder %}</td>
                     <td class="css_table-cell {{ color }}">
