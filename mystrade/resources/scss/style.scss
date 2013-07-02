@@ -384,3 +384,17 @@ textarea {
     }
   }
 }
+
+@media handheld, only screen and (max-device-width: 767px) { // for smartphones and tablets
+  // http://www.seabreezecomputers.com/tips/mobile-css.htm
+  // http://twitter.github.io/bootstrap/scaffolding.html#responsive
+  body, .fullwidth {
+    width: auto;
+  }
+  textarea {
+    width: 100%;
+  }
+  input, textarea, select {
+    @include font($size: 12px);
+  }
+}

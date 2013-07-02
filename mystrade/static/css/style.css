@@ -384,3 +384,16 @@ textarea {
     /* line 382, ../../resources/scss/style.scss */
     .form-button input[type=submit].delete {
       background-image: url("../trash.png"); }
+
+@media handheld, only screen and (max-device-width: 767px) {
+  /* line 391, ../../resources/scss/style.scss */
+  body, .fullwidth {
+    width: auto; }
+
+  /* line 394, ../../resources/scss/style.scss */
+  textarea {
+    width: 100%; }
+
+  /* line 397, ../../resources/scss/style.scss */
+  input, textarea, select {
+    font-size: 12px; } }

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load staticfiles %}
+{% load widget_tweaks %}
 
 {% block styles %}
 	<link rel="stylesheet" href="{% static "css/style.login.css" %}" type="text/css"/>
@@ -15,7 +16,7 @@
 		<table class="login">
 			<tr class="form-row">
 			    <td class="label">{{ form.username.label_tag }} :</td>
-			    <td>{{ form.username }}</td>
+			    <td>{{ form.username|attr:"autocapitalize:off" }}</td>
 			</tr>
 			<tr class="form-row">
 			    <td class="label">{{ form.password.label_tag }} :</td>
