@@ -121,7 +121,7 @@
         </tr>
         <tr>
             <form action="{% url 'game' game.id %}" method="POST">{% csrf_token %}
-                <td style="width: 600px;">{{ message_form.message|attr:"rows:3" }}&nbsp;
+                <td class="message_area">{{ message_form.message|attr:"rows:3" }}&nbsp;
                     <span class="errors">{{ message_form.message.errors.as_text }}</span>
                 </td>
                 <td style="vertical-align: top"><input type="submit" class="post-button" value="Post"/></td>

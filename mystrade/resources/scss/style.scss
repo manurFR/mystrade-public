@@ -334,6 +334,10 @@ a:hover, .dynamic_link:hover {
   color: red;
 }
 
+.message_area {
+  width: 600px;
+}
+
 .message_content {
   @include roundedBorder(5px);
   background-color: lighten($backgroundColor, 5%);
@@ -392,9 +396,25 @@ textarea {
     width: auto;
   }
   textarea {
-    width: 100%;
+    width: 80%;
   }
   input, textarea, select {
     @include font($size: 12px);
+  }
+  .toplinks {
+    margin-bottom: 0;
+  }
+  .logobox {
+    width: 300px;
+    img {
+      max-width: 300px;
+    }
+    .motto {
+      @include font($size: 1.0em);
+      letter-spacing: 5px;
+    }
+  }
+  .message_area {
+    width: auto;
   }
 }

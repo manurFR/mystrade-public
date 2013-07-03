@@ -335,6 +335,10 @@ a:hover, .dynamic_link:hover {
   color: red; }
 
 /* line 337, ../../resources/scss/style.scss */
+.message_area {
+  width: 600px; }
+
+/* line 341, ../../resources/scss/style.scss */
 .message_content {
   border-radius: 5px;
   -moz-border-radius: 5px;
@@ -344,25 +348,25 @@ a:hover, .dynamic_link:hover {
   margin: 3px;
   width: 600px;
   font-size: 0.9em; }
-  /* line 345, ../../resources/scss/style.scss */
+  /* line 349, ../../resources/scss/style.scss */
   .message_content.admin {
     background: #d69900;
     position: relative;
     padding-bottom: 15px; }
-    /* line 350, ../../resources/scss/style.scss */
+    /* line 354, ../../resources/scss/style.scss */
     .message_content.admin img {
       margin-left: -65px; }
-    /* line 354, ../../resources/scss/style.scss */
+    /* line 358, ../../resources/scss/style.scss */
     .message_content.admin p {
       position: absolute;
       top: 0;
       width: 95%; }
 
-/* line 362, ../../resources/scss/style.scss */
+/* line 366, ../../resources/scss/style.scss */
 .message_date {
   margin-bottom: 5px; }
 
-/* line 366, ../../resources/scss/style.scss */
+/* line 370, ../../resources/scss/style.scss */
 textarea {
   -webkit-box-sizing: border-box;
   /* Safari/Chrome, other WebKit */
@@ -372,28 +376,47 @@ textarea {
   /* Opera/IE 8+ */
   width: 100%; }
 
-/* line 373, ../../resources/scss/style.scss */
+/* line 377, ../../resources/scss/style.scss */
 .form-button {
   display: inline; }
-  /* line 376, ../../resources/scss/style.scss */
+  /* line 380, ../../resources/scss/style.scss */
   .form-button input[type=submit] {
     height: 16px;
     width: 16px;
     border: none;
     background: transparent 0 0 no-repeat; }
-    /* line 382, ../../resources/scss/style.scss */
+    /* line 386, ../../resources/scss/style.scss */
     .form-button input[type=submit].delete {
       background-image: url("../trash.png"); }
 
 @media handheld, only screen and (max-device-width: 767px) {
-  /* line 391, ../../resources/scss/style.scss */
+  /* line 395, ../../resources/scss/style.scss */
   body, .fullwidth {
     width: auto; }
 
-  /* line 394, ../../resources/scss/style.scss */
+  /* line 398, ../../resources/scss/style.scss */
   textarea {
-    width: 100%; }
+    width: 80%; }
 
-  /* line 397, ../../resources/scss/style.scss */
+  /* line 401, ../../resources/scss/style.scss */
   input, textarea, select {
-    font-size: 12px; } }
+    font-size: 12px; }
+
+  /* line 404, ../../resources/scss/style.scss */
+  .toplinks {
+    margin-bottom: 0; }
+
+  /* line 407, ../../resources/scss/style.scss */
+  .logobox {
+    width: 300px; }
+    /* line 409, ../../resources/scss/style.scss */
+    .logobox img {
+      max-width: 300px; }
+    /* line 412, ../../resources/scss/style.scss */
+    .logobox .motto {
+      font-size: 1em;
+      letter-spacing: 5px; }
+
+  /* line 417, ../../resources/scss/style.scss */
+  .message_area {
+    width: auto; } }
