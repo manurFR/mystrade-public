@@ -419,4 +419,7 @@ textarea {
 
   /* line 417, ../../resources/scss/style.scss */
   .message_area {
-    width: auto; } }
+    width: auto; }
+
+  /* line 420, ../../resources/scss/style.scss */
+  .message_content { width: auto; } }
