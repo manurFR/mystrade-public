@@ -1,24 +1,25 @@
 /* line 3, ../../resources/scss/style.login.scss */
 .content {
-  background-color: #FFC840;
+  background-color: #ffbf00;
   margin-top: 50px;
   margin-left: auto;
   margin-right: auto;
   padding: 10px;
   border: 1px solid #ffd773;
-  border-radius: 10px;
-  -moz-border-radius: 10px;
-  -webkit-border-radius: 10px;
+  border-radius: 20px;
+  -moz-border-radius: 20px;
+  -webkit-border-radius: 20px;
   width: 21em;
-  text-align: center; }
-  /* line 14, ../../resources/scss/style.login.scss */
+  text-align: center;
+  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5) inset, 0px 2px 2px 0px rgba(255, 255, 255, 0.5); }
+  /* line 18, ../../resources/scss/style.login.scss */
   .content table.login {
     width: auto; }
-    /* line 17, ../../resources/scss/style.login.scss */
+    /* line 21, ../../resources/scss/style.login.scss */
     .content table.login td {
       vertical-align: middle; }
 
-/* line 24, ../../resources/scss/style.login.scss */
+/* line 28, ../../resources/scss/style.login.scss */
 .form-row .label {
   color: #333333;
   float: left;
@@ -27,11 +28,11 @@
   padding-right: 0.5em;
   text-align: right;
   width: 9em; }
-/* line 34, ../../resources/scss/style.login.scss */
+/* line 38, ../../resources/scss/style.login.scss */
 .form-row .input {
   width: 14em; }
 
-/* line 39, ../../resources/scss/style.login.scss */
+/* line 43, ../../resources/scss/style.login.scss */
 .submit-row {
   padding-top: 1em;
   padding-bottom: 0.5em; }

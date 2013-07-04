@@ -1,15 +1,19 @@
 @import "common";
 
 .content {
-  background-color: #FFC840;
+  background-color: $infoPanelColor;
   margin-top: 50px;
   margin-left: auto;
   margin-right: auto;
   padding: 10px;
   border: $lightSolidBorder;
-  @include roundedBorder(10px);
+  @include roundedBorder(20px);
   width: 21em;
   text-align: center;
+
+  box-shadow:
+    0px 2px 2px 0px rgba(0, 0, 0, 0.5) inset,
+    0px 2px 2px 0px rgba(255, 255, 255, 0.5);
 
   table.login {
     width: auto;

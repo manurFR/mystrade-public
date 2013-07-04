@@ -2,6 +2,15 @@
 {% load staticfiles %}
 {% load widget_tweaks %}
 
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.1.custom.min.css' %}" />
+{% endblock styles %}
+
+{% block scripts %}
+    <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
+    <script src="{% static 'jquery/jquery-ui-1.9.1.custom.min.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 	<form action="{% url 'editprofile' %}" method="POST">{% csrf_token %}
 		<table class="fullwidth formtable">
@@ -66,9 +75,42 @@
 				    <span class="helptext">{{ password_form.new_password2.help_text }}</span></td>
 			</tr>
 		</table>
-		<div class="submit-button">
+		<div class="submit-button floatright">
 			<input type="submit" value="Submit" />
 		</div>
 	</form>
-	<script type="text/javascript" src="{% static 'displayed_name.js' %}"></script>
+
+    <script type="text/javascript">
+        $(function() {
+            $("input[type=submit]").button();
+        });
+
+        function toTitleCase(txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1);
+        }
+
+        function getDisplayedName() {
+            var firstName = $('#id_first_name').val();
+            var lastName = $('#id_last_name').val();
+            if (firstName != "" && lastName != "") {
+                return toTitleCase(firstName) + " " + toTitleCase(lastName);
+            } else if (lastName != "") {
+                return toTitleCase(lastName);
+            } else if (firstName != "") {
+                return toTitleCase(firstName);
+            } else {
+                return toTitleCase($('#id_username').val());
+            }
+        }
+
+        function refreshDisplayedName() {
+            displayed_name = $('#displayed_name').text(getDisplayedName());
+        }
+
+        $("#id_first_name").on("input keyup cut paste", refreshDisplayedName);
+        $("#id_last_name").on("input keyup cut paste", refreshDisplayedName);
+        $("#id_username").on("input keyup cut paste", refreshDisplayedName);
+
+        refreshDisplayedName();
+    </script>
 {% endblock content %}
