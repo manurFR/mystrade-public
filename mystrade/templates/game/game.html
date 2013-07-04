@@ -31,7 +31,7 @@
 
         {% if user in game.players.all and game.is_active and not hand_submitted %}
             <br/>
-            <div class="floatright"><a href="{% url 'submit_hand' game.id %}">&gt; Click here to submit your hand and finish now.</a></div>
+            <div class="floatright"><a href="{% url 'submit_hand' game.id %}">&gt; Choose your cards to finish this game now...</a></div>
             <br/>
         {% endif %}
 
