@@ -1,5 +1,6 @@
 import datetime
 import logging
+import re
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.core.mail.message import BadHeaderError
@@ -49,9 +50,13 @@ def _send_notification_email(template, recipients, data = None):
         if len(to) == 0: # no one left to receive notifications
             return
 
-        message = template.render(Context(data)).splitlines()
-        subject = message[0]
-        body = '\n'.join(message[1:])
+        message = template.render(Context(data))
+        message = '\n\n'.join(re.split('\\n{3,}', message)) # blocks of 3 or more line breaks are crushed to 2 line breaks
+        lines = message.splitlines()
+        subject = lines[0]
+        body = '\n'.join(lines[1:])
+
+
         if subject:
             email = EmailMessage(u'{0}{1}'.format(settings.EMAIL_SUBJECT_PREFIX, subject),
                                  body,
