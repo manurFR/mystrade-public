@@ -1,8 +1,11 @@
 {% autoescape off %}Game #{{ game.id }}: {{ trade.initiator.name }} has accepted the trade
 In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.initiator.name }} has accepted your offer.
 These elements have been traded :
-- {{ trade.initiator.name }} gave you {{ trade.initiator_offer.summary }}
-- you gave {{ trade.responder_offer.summary }} to {{ trade.initiator.name }}
+=== {{ trade.initiator.name }} gave you ===
+{% include "notification/_offer_detail.txt" with offer=trade.initiator_offer %}
+
+=== You gave the following elements to {{ trade.initiator.name }} ===
+{% include "notification/_offer_detail.txt" with offer=trade.responder_offer %}
 
 Consult the trade on the following page:
 {{ url }}
