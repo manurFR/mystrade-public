@@ -1,15 +1,7 @@
 {% autoescape off %}Game #{{ game.id }}: You have been offered a trade by {{ trade.initiator.name }}
 In game #{{ game.id }}, {{ trade.initiator.name }} has offered you a new trade on {{ trade.creation_date|date:"SHORT_DATETIME_FORMAT" }},
 with the following elements:
-{% if trade.initiator_offer.rules.all %}* Rule{{ trade.initiator_offer.rules.all|pluralize }}: {% for rih in trade.initiator_offer.rules.all %}{{ rih.rulecard.public_name }} {% endfor %}{% endif %}
-{% if trade.initiator_offer.commodities.all %}* Commoditie{{ trade.initiator_offer.commodities.all|pluralize }}:
-{% for tc in trade.initiator_offer.tradedcommodities_set.all %}- {{ tc.nb_traded_cards }} {{ tc.commodityinhand.commodity.name }} card{{ tc.nb_traded_cards|pluralize }}
-{% endfor %}{% endif %}
-{% if trade.initiator_offer.free_information %}* A free information (to be revealed once the trade is accepted).{% endif %}
-
-{% if trade.initiator_offer.comment %}{{ trade.initiator.name }} added the following comment to the offer:
-{% for line in trade.initiator_offer.comment.splitlines %}> {{ line }}
-{% endfor %}{% endif %}
+{% include "notification/_offer_detail.txt" with offer=trade.initiator_offer %}
 
 Please give your reply on the following page:
 {{ url }}

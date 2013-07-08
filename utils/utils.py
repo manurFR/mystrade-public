@@ -51,11 +51,9 @@ def _send_notification_email(template, recipients, data = None):
             return
 
         message = template.render(Context(data))
-        message = '\n\n'.join(re.split('\\n{3,}', message)) # blocks of 3 or more line breaks are crushed to 2 line breaks
         lines = message.splitlines()
         subject = lines[0]
-        body = '\n'.join(lines[1:])
-
+        body = _limit_line_breaks('\n'.join(lines[1:]))
 
         if subject:
             email = EmailMessage(u'{0}{1}'.format(settings.EMAIL_SUBJECT_PREFIX, subject),
@@ -65,3 +63,6 @@ def _send_notification_email(template, recipients, data = None):
                                  bcc = [settings.EMAIL_MYSTRADE])
             email.send()
 
+def _limit_line_breaks(text):
+    """ Blocks of 3 or more line breaks are crushed to 2 line breaks """
+    return '\n\n'.join(re.split('\\n{3,}', text))

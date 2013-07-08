@@ -1,8 +1,6 @@
 {% autoescape off %}Game #{{ game.id }}: {{ trade.responder.name }} has replied to your trade proposal
-In game #{{ game.id }}, {{ trade.responder.name }} has replied to your offer.
-Here are the trade's elements:
-- you offer {{ trade.initiator_offer.summary }}
-- {{ trade.responder.name }} offers {{ trade.responder_offer.summary }}
+In game #{{ game.id }}, {{ trade.responder.name }} has replied to your proposal, with the following offer:
+{% include "notification/_offer_detail.txt" with offer=trade.responder_offer %}
 
 Accept or decline the trade on the following page:
 {{ url }}

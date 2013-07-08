@@ -1,0 +1,9 @@
+{% if offer.rules.all %}* Rule{{ offer.rules.all|pluralize }}: {% for rih in offer.rules.all %}{{ rih.rulecard.public_name }} {% endfor %}{% endif %}
+{% if offer.commodities.all %}* Commodit{{ offer.commodities.all|pluralize:"y,ies" }}:
+{% for tc in offer.tradedcommodities_set.all %}- {{ tc.nb_traded_cards }} {{ tc.commodityinhand.commodity.name }} card{{ tc.nb_traded_cards|pluralize }}
+{% endfor %}{% endif %}
+{% if offer.free_information %}* A free information (to be revealed once the trade is accepted).{% endif %}
+
+{% if offer.comment %}The following comment was added to the offer:
+{% for line in offer.comment.splitlines %}> {{ line }}
+{% endfor %}{% endif %}

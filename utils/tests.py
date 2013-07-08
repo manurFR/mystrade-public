@@ -12,7 +12,7 @@ from model_mommy import mommy
 from game.models import Game, CommodityInHand
 from ruleset.models import RuleCard, Commodity
 from trade.models import Trade, Offer, TradedCommodities
-from utils import roundTimeToMinute, _send_notification_email, send_notification_email
+from utils import roundTimeToMinute, _send_notification_email, send_notification_email, _limit_line_breaks
 from stats import record
 from models import StatsScore
 
@@ -148,6 +148,12 @@ class UtilsTest(TestCase):
             self.assertNotIn('&quot;', email.body,      "Escaped character '&quot;' found in notification template {0}.txt :\n{1}".format(template, email.body))
             self.assertNotIn('&amp;', email.subject,    "Escaped character '&amp;' found in notification template {0}.txt :\n{1}".format(template, email.subject))
             self.assertNotIn('&amp;', email.body,       "Escaped character '&amp;' found in notification template {0}.txt :\n{1}".format(template, email.body))
+
+    def test_limit_line_breaks(self):
+        self.assertEqual("hello\nworld!",   _limit_line_breaks("hello\nworld!"))
+        self.assertEqual("hello\n\nworld!", _limit_line_breaks("hello\n\nworld!"))
+        self.assertEqual("hello\n\nworld!", _limit_line_breaks("hello\n\n\nworld!"))
+        self.assertEqual("hello\n\nworld!", _limit_line_breaks("hello\n\n\n\nworld!"))
 
     def _prepare_user(self, email, send_notifications):
         return mommy.make(get_user_model(), email = email, send_notifications = send_notifications)

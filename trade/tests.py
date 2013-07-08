@@ -514,7 +514,7 @@ class ManageViewsTest(MystradeTestCase):
         self.assertEqual(1, len(mail.outbox))
         email = mail.outbox[0]
         self.assertEqual('[MysTrade] Game #{0}: test2 has replied to your trade proposal'.format(self.game.id), email.subject)
-        self.assertIn('In game #{0}, test2 has replied to your offer.'.format(self.game.id), email.body)
+        self.assertIn('In game #{0}, test2 has replied to your proposal, with the following offer:'.format(self.game.id), email.body)
         self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
