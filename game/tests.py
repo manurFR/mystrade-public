@@ -1055,6 +1055,7 @@ class TransactionalViewsTest(TransactionTestCase):
             mommy.make(ScoreFromCommodity, game = self.gameplayer.game, player = self.gameplayer.player)
             mommy.make(ScoreFromRule, game = self.gameplayer.game, player = self.gameplayer.player)
             raise RuntimeError
+        old_persist = Scoresheet.persist
         Scoresheet.persist = mock_persist
 
         self.client.logout()
@@ -1087,6 +1088,8 @@ class TransactionalViewsTest(TransactionTestCase):
 
         self.assertEqual(0, ScoreFromCommodity.objects.filter(game = self.game).count())
         self.assertEqual(0, ScoreFromRule.objects.filter(game = self.game).count())
+
+        Scoresheet.persist = old_persist
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):
