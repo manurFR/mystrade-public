@@ -35,9 +35,6 @@
             {% else %}<strong>This game has ended. This trade proposal can not be advanced any further.</strong>{% endif %}
         {% elif trade.status == 'ACCEPTED' %}accepted and performed
         {% elif trade.status == 'DECLINED' %}declined by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
-            {% if trade.decline_reason %}with the following reason given:
-                <div class="reminder">{{ trade.decline_reason }}</div>
-            {% endif %}
         {% endif %}
         </div>
 
@@ -86,6 +83,13 @@
                     {% include "trade/decline_trade.html" %}
                 {% endif %}
             {% endif %}
+        {% endif %}
+        <br/>
+        {% if trade.status == 'DECLINED' and trade.decline_reason %}
+        <div class="trade_reason">
+            <h3>{% include "common/name_or_you.html" with who=trade.finalizer %} gave the following reason to decline:</h3>
+            {{  trade.decline_reason }}
+        </div>
         {% endif %}
         <br/><br/><br/>
     {% endif %}

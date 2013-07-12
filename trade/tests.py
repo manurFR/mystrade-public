@@ -325,7 +325,7 @@ class ManageViewsTest(MystradeTestCase):
         response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
 
         self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\"><a href=\".*\">test5</a>")
-        self.assertContains(response, "with the following reason given:")
+        self.assertContains(response, "gave the following reason to decline:")
         self.assertContains(response, "Because I do not need it")
 
     def test_cancel_trade_not_allowed_in_GET(self):

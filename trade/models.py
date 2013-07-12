@@ -60,6 +60,25 @@ class Offer(models.Model):
     comment = models.TextField(blank = True, null = True)
     free_information = models.TextField("Free information that won't be revealed until both players accept the trade", blank = True, null = True)
 
+    @property
+    def summary(self):
+        content = []
+        nb_rules = len(self.rules.all())
+        nb_traded_commodities = sum([t.nb_traded_cards for t in self.tradedcommodities_set.all()])
+        if nb_rules > 0:
+            content.append("{0} rule{1}".format(nb_rules, "s" if nb_rules > 1 else ""))
+        if nb_traded_commodities > 0:
+            content.append("{0} commodit{1}".format(nb_traded_commodities, "ies" if nb_traded_commodities > 1 else "y"))
+        if self.free_information:
+            content.append("some information")
+
+        if not content:
+            return
+        elif len(content) == 1:
+            return content[0]
+        else:
+            return ", ".join(content[:-1]) + " and " + content[-1]
+
 class TradedCommodities(models.Model):
     offer = models.ForeignKey(Offer)
     commodityinhand = models.ForeignKey(CommodityInHand)
