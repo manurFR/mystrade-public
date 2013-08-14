@@ -1,0 +1,121 @@
+@import "common";
+
+/* Base tags styling */
+body {
+  background-color: $backgroundColor;
+  width: 980px;
+  margin: 5px auto 0 auto;
+  @include font(('Lucida Grande', Verdana, Arial, sans-serif), 10pt);
+}
+
+a, .dynamic_link {
+  color: #800024;
+  @include font($weight: normal);
+  text-decoration: none;
+
+  &.game-player {
+    font-weight: inherit;
+    color: darkgreen;
+  }
+}
+
+a:hover, .dynamic_link:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+a img, .icon {
+  border: 0px;
+  vertical-align: text-top;
+}
+
+input[type="text"], input[type="password"], textarea, select {
+  border: $lightSolidBorder;
+}
+
+input, textarea, select {
+  @include font($size: 10px, $weight: normal);
+  background-color: #FAFFBD;
+  margin: 2px 0;
+  padding: 2px 3px;
+}
+
+select {
+  height: 2em;
+}
+select[multiple] {
+  height: auto;
+}
+
+input[type="submit"] {
+  background-color: #DDDDDD;
+}
+
+textarea {
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;         /* Opera/IE 8+ */
+  width: 100%;
+}
+
+/* Page structure */
+#zone_toplinks {
+  top: 2px;
+  text-align: right;
+  margin-bottom: -20px;
+  margin-right: 20px;
+}
+
+#zone_logobox {
+  width: 422px;
+  top: 10px;
+
+  #zone_motto {
+    position: relative;
+    top: -10px;
+    left: 15px;
+    @include font(("Garamond", "Times New Roman", serif), 1.3em, $style: italic);
+    color: black;
+    letter-spacing: 7px;
+  }
+
+  a:hover {
+    text-decoration: none;
+  }
+}
+
+#zone_content {
+  padding: 10px;
+}
+
+/* Miscellaneous common styles */
+.helptext {
+  @include font($size: 8pt, $style: italic);
+  color: $infoTextColor;
+}
+
+.upperhelptext {
+  @extend .helptext;
+  display: block;
+  margin-top: -0.6em;
+}
+
+.lowerhelptext {
+  @extend .helptext;
+  display: block;
+  margin-top: 0.4em;
+}
+
+.game-player {
+  display: inline;
+  border: $lightSolidBorder;
+  @include roundedBorder(5px);
+  padding: 0 3px;
+  margin: 0 2px;
+
+  &:hover {
+    background-color: $lightBackgroundColor;
+  }
+}
+
+@import "responsive";

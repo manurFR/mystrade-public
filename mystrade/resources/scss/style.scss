@@ -1,45 +1,4 @@
-@import "common";
-
-body {
-    background-color: $backgroundColor;
-    width: 980px;
-    margin: 5px auto 0 auto;
-    @include font(('Lucida Grande', Verdana, Arial, sans-serif), 10pt);
-}
-
-a img, .icon {
-    border: 0px;
-    vertical-align: text-top;
-}
-
-.toplinks {
-  top: 2px;
-  text-align: right;
-  margin-bottom: -20px;
-  margin-right: 20px;
-}
-
-.logobox {
-  width: 422px;
-  top: 10px;
-
-  .motto {
-    position: relative;
-    top: -10px;
-    left: 15px;
-    @include font(("Garamond", "Times New Roman", serif), 1.3em, $style: italic);
-    color: black;
-    letter-spacing: 7px;
-  }
-
-  a:hover {
-    text-decoration: none;
-  }
-}
-
-.content {
-  padding: 10px;
-}
+@import "base";
 
 .fullwidth {
   width: 960px;
@@ -85,45 +44,6 @@ a img, .icon {
 
 td.small-height {
   line-height: 8pt;
-}
-
-.helptext {
-  @include font($size: 8pt, $style: italic);
-  color: $infoTextColor;
-}
-
-.upperhelptext {
-  @extend .helptext;
-  display: block;
-  margin-top: -0.6em;
-}
-
-.lowerhelptext {
-  @extend .helptext;
-  display: block;
-  margin-top: 0.4em;
-}
-
-input[type="text"], input[type="password"], textarea, select {
-  border: $lightSolidBorder;
-}
-
-input, textarea, select {
-  @include font($size: 10px, $weight: normal);
-  background-color: #FAFFBD;
-  margin: 2px 0;
-  padding: 2px 3px;
-}
-
-select {
-  height: 2em;
-}
-select[multiple] {
-  height: auto;
-}
-
-input[type="submit"] {
-  background-color: #DDDDDD;
 }
 
 .submit-button {
@@ -279,34 +199,6 @@ input[type="submit"] {
   @include font($weight: bold);
 }
 
-.game-player {
-  display: inline;
-  border: $lightSolidBorder;
-  @include roundedBorder(5px);
-  padding: 0 3px;
-  margin: 0 2px;
-
-  &:hover {
-    background-color: $lightBackgroundColor;
-  }
-}
-
-a, .dynamic_link {
-  color: #800024;
-  @include font($weight: normal);
-  text-decoration: none;
-
-  &.game-player {
-    font-weight: inherit;
-    color: darkgreen;
-  }
-}
-
-a:hover, .dynamic_link:hover {
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 .underline[data-tip] { // data-tips with a dotted underline
   border-bottom: dotted 1px black;
 }
@@ -367,13 +259,6 @@ a:hover, .dynamic_link:hover {
   margin-bottom: 5px;
 }
 
-textarea {
-  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-  box-sizing: border-box;         /* Opera/IE 8+ */
-  width: 100%;
-}
-
 .form-button {
   display: inline;
 
@@ -386,38 +271,5 @@ textarea {
     &.delete {
       background-image: url("../trash.png");
     }
-  }
-}
-
-@media handheld, only screen and (max-device-width: 767px) { // for smartphones and tablets
-  // http://www.seabreezecomputers.com/tips/mobile-css.htm
-  // http://twitter.github.io/bootstrap/scaffolding.html#responsive
-  body, .fullwidth {
-    width: auto;
-  }
-  textarea {
-    width: 80%;
-  }
-  input, textarea, select {
-    @include font($size: 12px);
-  }
-  .toplinks {
-    margin-bottom: 0;
-  }
-  .logobox {
-    width: 300px;
-    img {
-      max-width: 300px;
-    }
-    .motto {
-      @include font($size: 1.0em);
-      letter-spacing: 5px;
-    }
-  }
-  .message_area {
-    width: auto;
-  }
-  .message_content {
-    width: auto;
   }
 }

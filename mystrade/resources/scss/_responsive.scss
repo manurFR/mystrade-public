@@ -1,0 +1,32 @@
+@media handheld, only screen and (max-device-width: 767px) { // for smartphones and tablets
+// http://www.seabreezecomputers.com/tips/mobile-css.htm
+// http://twitter.github.io/bootstrap/scaffolding.html#responsive
+  body, .fullwidth {
+    width: auto;
+  }
+  textarea {
+    width: 80%;
+  }
+  input, textarea, select {
+    @include font($size: 12px);
+  }
+  #zone_toplinks {
+    margin-bottom: 0;
+  }
+  #zone_logobox {
+    width: 300px;
+    img {
+      max-width: 300px;
+    }
+    #zone_motto {
+      @include font($size: 1.0em);
+      letter-spacing: 5px;
+    }
+  }
+  .message_area {
+    width: auto;
+  }
+  .message_content {
+    width: auto;
+  }
+}

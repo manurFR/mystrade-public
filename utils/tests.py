@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+from unittest import skip
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.template import Template
@@ -205,6 +206,7 @@ class StatsTest(MystradeTestCase):
 
         self.assertEqual(stats_loginUser.date_score, stats_alternativeUser.date_score)
 
+    @skip("until redesign")
     def test_record_scores_at_game_creation(self):
         self.game.delete()
         self.client.logout()

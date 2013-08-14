@@ -1,3 +1,161 @@
+/* Base tags styling */
+/* line 4, ../../resources/scss/_base.scss */
+body {
+  background-color: #ffb600;
+  width: 980px;
+  margin: 5px auto 0 auto;
+  font-family: "Lucida Grande", Verdana, Arial, sans-serif;
+  font-size: 10pt; }
+
+/* line 11, ../../resources/scss/_base.scss */
+a, .dynamic_link {
+  color: #800024;
+  font-weight: normal;
+  text-decoration: none; }
+  /* line 16, ../../resources/scss/_base.scss */
+  a.game-player, .dynamic_link.game-player {
+    font-weight: inherit;
+    color: darkgreen; }
+
+/* line 22, ../../resources/scss/_base.scss */
+a:hover, .dynamic_link:hover {
+  text-decoration: underline;
+  cursor: pointer; }
+
+/* line 27, ../../resources/scss/_base.scss */
+a img, .icon {
+  border: 0px;
+  vertical-align: text-top; }
+
+/* line 32, ../../resources/scss/_base.scss */
+input[type="text"], input[type="password"], textarea, select {
+  border: 1px solid #ffd773; }
+
+/* line 36, ../../resources/scss/_base.scss */
+input, textarea, select {
+  font-size: 10px;
+  font-weight: normal;
+  background-color: #FAFFBD;
+  margin: 2px 0;
+  padding: 2px 3px; }
+
+/* line 43, ../../resources/scss/_base.scss */
+select {
+  height: 2em; }
+
+/* line 46, ../../resources/scss/_base.scss */
+select[multiple] {
+  height: auto; }
+
+/* line 50, ../../resources/scss/_base.scss */
+input[type="submit"] {
+  background-color: #DDDDDD; }
+
+/* line 54, ../../resources/scss/_base.scss */
+textarea {
+  -webkit-box-sizing: border-box;
+  /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;
+  /* Firefox, other Gecko */
+  box-sizing: border-box;
+  /* Opera/IE 8+ */
+  width: 100%; }
+
+/* Page structure */
+/* line 62, ../../resources/scss/_base.scss */
+#zone_toplinks {
+  top: 2px;
+  text-align: right;
+  margin-bottom: -20px;
+  margin-right: 20px; }
+
+/* line 69, ../../resources/scss/_base.scss */
+#zone_logobox {
+  width: 422px;
+  top: 10px; }
+  /* line 73, ../../resources/scss/_base.scss */
+  #zone_logobox #zone_motto {
+    position: relative;
+    top: -10px;
+    left: 15px;
+    font-family: "Garamond", "Times New Roman", serif;
+    font-size: 1.3em;
+    font-style: italic;
+    color: black;
+    letter-spacing: 7px; }
+  /* line 82, ../../resources/scss/_base.scss */
+  #zone_logobox a:hover {
+    text-decoration: none; }
+
+/* line 87, ../../resources/scss/_base.scss */
+#zone_content {
+  padding: 10px; }
+
+/* Miscellaneous common styles */
+/* line 92, ../../resources/scss/_base.scss */
+.helptext, .upperhelptext, .lowerhelptext {
+  font-size: 8pt;
+  font-style: italic;
+  color: #a67600; }
+
+/* line 97, ../../resources/scss/_base.scss */
+.upperhelptext {
+  display: block;
+  margin-top: -0.6em; }
+
+/* line 103, ../../resources/scss/_base.scss */
+.lowerhelptext {
+  display: block;
+  margin-top: 0.4em; }
+
+/* line 109, ../../resources/scss/_base.scss */
+.game-player {
+  display: inline;
+  border: 1px solid #ffd773;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  padding: 0 3px;
+  margin: 0 2px; }
+  /* line 116, ../../resources/scss/_base.scss */
+  .game-player:hover {
+    background-color: #ffd773; }
+
+@media handheld, only screen and (max-device-width: 767px) {
+  /* line 4, ../../resources/scss/_responsive.scss */
+  body, .fullwidth {
+    width: auto; }
+
+  /* line 7, ../../resources/scss/_responsive.scss */
+  textarea {
+    width: 80%; }
+
+  /* line 10, ../../resources/scss/_responsive.scss */
+  input, textarea, select {
+    font-size: 12px; }
+
+  /* line 13, ../../resources/scss/_responsive.scss */
+  #zone_toplinks {
+    margin-bottom: 0; }
+
+  /* line 16, ../../resources/scss/_responsive.scss */
+  #zone_logobox {
+    width: 300px; }
+    /* line 18, ../../resources/scss/_responsive.scss */
+    #zone_logobox img {
+      max-width: 300px; }
+    /* line 21, ../../resources/scss/_responsive.scss */
+    #zone_logobox #zone_motto {
+      font-size: 1em;
+      letter-spacing: 5px; }
+
+  /* line 26, ../../resources/scss/_responsive.scss */
+  .message_area {
+    width: auto; }
+
+  /* line 29, ../../resources/scss/_responsive.scss */
+  .message_content {
+    width: auto; } }
 /* line 3, ../../resources/scss/style.scoring.scss */
 .scores {
   margin-left: auto;

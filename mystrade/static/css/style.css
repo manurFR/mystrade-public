@@ -1,4 +1,5 @@
-/* line 3, ../../resources/scss/style.scss */
+/* Base tags styling */
+/* line 4, ../../resources/scss/_base.scss */
 body {
   background-color: #ffb600;
   width: 980px;
@@ -6,24 +7,74 @@ body {
   font-family: "Lucida Grande", Verdana, Arial, sans-serif;
   font-size: 10pt; }
 
-/* line 10, ../../resources/scss/style.scss */
+/* line 11, ../../resources/scss/_base.scss */
+a, .dynamic_link {
+  color: #800024;
+  font-weight: normal;
+  text-decoration: none; }
+  /* line 16, ../../resources/scss/_base.scss */
+  a.game-player, .dynamic_link.game-player {
+    font-weight: inherit;
+    color: darkgreen; }
+
+/* line 22, ../../resources/scss/_base.scss */
+a:hover, .dynamic_link:hover {
+  text-decoration: underline;
+  cursor: pointer; }
+
+/* line 27, ../../resources/scss/_base.scss */
 a img, .icon {
   border: 0px;
   vertical-align: text-top; }
 
-/* line 15, ../../resources/scss/style.scss */
-.toplinks {
+/* line 32, ../../resources/scss/_base.scss */
+input[type="text"], input[type="password"], textarea, select {
+  border: 1px solid #ffd773; }
+
+/* line 36, ../../resources/scss/_base.scss */
+input, textarea, select {
+  font-size: 10px;
+  font-weight: normal;
+  background-color: #FAFFBD;
+  margin: 2px 0;
+  padding: 2px 3px; }
+
+/* line 43, ../../resources/scss/_base.scss */
+select {
+  height: 2em; }
+
+/* line 46, ../../resources/scss/_base.scss */
+select[multiple] {
+  height: auto; }
+
+/* line 50, ../../resources/scss/_base.scss */
+input[type="submit"] {
+  background-color: #DDDDDD; }
+
+/* line 54, ../../resources/scss/_base.scss */
+textarea {
+  -webkit-box-sizing: border-box;
+  /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;
+  /* Firefox, other Gecko */
+  box-sizing: border-box;
+  /* Opera/IE 8+ */
+  width: 100%; }
+
+/* Page structure */
+/* line 62, ../../resources/scss/_base.scss */
+#zone_toplinks {
   top: 2px;
   text-align: right;
   margin-bottom: -20px;
   margin-right: 20px; }
 
-/* line 22, ../../resources/scss/style.scss */
-.logobox {
+/* line 69, ../../resources/scss/_base.scss */
+#zone_logobox {
   width: 422px;
   top: 10px; }
-  /* line 26, ../../resources/scss/style.scss */
-  .logobox .motto {
+  /* line 73, ../../resources/scss/_base.scss */
+  #zone_logobox #zone_motto {
     position: relative;
     top: -10px;
     left: 15px;
@@ -32,125 +83,150 @@ a img, .icon {
     font-style: italic;
     color: black;
     letter-spacing: 7px; }
-  /* line 35, ../../resources/scss/style.scss */
-  .logobox a:hover {
+  /* line 82, ../../resources/scss/_base.scss */
+  #zone_logobox a:hover {
     text-decoration: none; }
 
-/* line 40, ../../resources/scss/style.scss */
-.content {
+/* line 87, ../../resources/scss/_base.scss */
+#zone_content {
   padding: 10px; }
 
-/* line 44, ../../resources/scss/style.scss */
+/* Miscellaneous common styles */
+/* line 92, ../../resources/scss/_base.scss */
+.helptext, .upperhelptext, .lowerhelptext {
+  font-size: 8pt;
+  font-style: italic;
+  color: #a67600; }
+
+/* line 97, ../../resources/scss/_base.scss */
+.upperhelptext {
+  display: block;
+  margin-top: -0.6em; }
+
+/* line 103, ../../resources/scss/_base.scss */
+.lowerhelptext {
+  display: block;
+  margin-top: 0.4em; }
+
+/* line 109, ../../resources/scss/_base.scss */
+.game-player {
+  display: inline;
+  border: 1px solid #ffd773;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  padding: 0 3px;
+  margin: 0 2px; }
+  /* line 116, ../../resources/scss/_base.scss */
+  .game-player:hover {
+    background-color: #ffd773; }
+
+@media handheld, only screen and (max-device-width: 767px) {
+  /* line 4, ../../resources/scss/_responsive.scss */
+  body, .fullwidth {
+    width: auto; }
+
+  /* line 7, ../../resources/scss/_responsive.scss */
+  textarea {
+    width: 80%; }
+
+  /* line 10, ../../resources/scss/_responsive.scss */
+  input, textarea, select {
+    font-size: 12px; }
+
+  /* line 13, ../../resources/scss/_responsive.scss */
+  #zone_toplinks {
+    margin-bottom: 0; }
+
+  /* line 16, ../../resources/scss/_responsive.scss */
+  #zone_logobox {
+    width: 300px; }
+    /* line 18, ../../resources/scss/_responsive.scss */
+    #zone_logobox img {
+      max-width: 300px; }
+    /* line 21, ../../resources/scss/_responsive.scss */
+    #zone_logobox #zone_motto {
+      font-size: 1em;
+      letter-spacing: 5px; }
+
+  /* line 26, ../../resources/scss/_responsive.scss */
+  .message_area {
+    width: auto; }
+
+  /* line 29, ../../resources/scss/_responsive.scss */
+  .message_content {
+    width: auto; } }
+/* line 3, ../../resources/scss/style.scss */
 .fullwidth {
   width: 960px; }
 
-/* line 48, ../../resources/scss/style.scss */
+/* line 7, ../../resources/scss/style.scss */
 .header {
   line-height: 1.6em;
   background-color: #FFE640;
   padding-left: 2em; }
 
-/* line 54, ../../resources/scss/style.scss */
+/* line 13, ../../resources/scss/style.scss */
 .containerForColumns {
   overflow: auto;
   width: 100%; }
 
-/* line 59, ../../resources/scss/style.scss */
+/* line 18, ../../resources/scss/style.scss */
 .leftOfTwoColumns {
   width: 50%;
   float: left; }
 
-/* line 64, ../../resources/scss/style.scss */
+/* line 23, ../../resources/scss/style.scss */
 .rightOfTwoColumns {
   margin-left: 50%; }
 
-/* line 69, ../../resources/scss/style.scss */
+/* line 28, ../../resources/scss/style.scss */
 .formtable tr {
   line-height: 1.5em; }
-/* line 73, ../../resources/scss/style.scss */
+/* line 32, ../../resources/scss/style.scss */
 .formtable th {
   width: 230px;
   font-weight: normal;
   padding-right: 1em;
   text-align: right;
   vertical-align: text-top; }
-/* line 81, ../../resources/scss/style.scss */
+/* line 40, ../../resources/scss/style.scss */
 .formtable label {
   color: #333333; }
 
-/* line 86, ../../resources/scss/style.scss */
+/* line 45, ../../resources/scss/style.scss */
 td.small-height {
   line-height: 8pt; }
 
-/* line 90, ../../resources/scss/style.scss */
-.helptext, .upperhelptext, .lowerhelptext {
-  font-size: 8pt;
-  font-style: italic;
-  color: #a67600; }
-
-/* line 95, ../../resources/scss/style.scss */
-.upperhelptext {
-  display: block;
-  margin-top: -0.6em; }
-
-/* line 101, ../../resources/scss/style.scss */
-.lowerhelptext {
-  display: block;
-  margin-top: 0.4em; }
-
-/* line 107, ../../resources/scss/style.scss */
-input[type="text"], input[type="password"], textarea, select {
-  border: 1px solid #ffd773; }
-
-/* line 111, ../../resources/scss/style.scss */
-input, textarea, select {
-  font-size: 10px;
-  font-weight: normal;
-  background-color: #FAFFBD;
-  margin: 2px 0;
-  padding: 2px 3px; }
-
-/* line 118, ../../resources/scss/style.scss */
-select {
-  height: 2em; }
-
-/* line 121, ../../resources/scss/style.scss */
-select[multiple] {
-  height: auto; }
-
-/* line 125, ../../resources/scss/style.scss */
-input[type="submit"] {
-  background-color: #DDDDDD; }
-
-/* line 129, ../../resources/scss/style.scss */
+/* line 49, ../../resources/scss/style.scss */
 .submit-button {
   margin-left: 250px; }
 
-/* line 133, ../../resources/scss/style.scss */
+/* line 53, ../../resources/scss/style.scss */
 .errors {
   font-size: 0.8em;
   color: #a67600; }
 
-/* line 138, ../../resources/scss/style.scss */
+/* line 58, ../../resources/scss/style.scss */
 .done {
   color: #a67600; }
 
-/* line 142, ../../resources/scss/style.scss */
+/* line 62, ../../resources/scss/style.scss */
 .cancelled {
   text-decoration: line-through; }
 
-/* line 146, ../../resources/scss/style.scss */
+/* line 66, ../../resources/scss/style.scss */
 .floatright {
   float: right;
   margin-right: 1em;
   text-align: right; }
 
-/* line 152, ../../resources/scss/style.scss */
+/* line 72, ../../resources/scss/style.scss */
 .frame {
   border: thin inset white;
   padding: 2px; }
 
-/* line 157, ../../resources/scss/style.scss */
+/* line 77, ../../resources/scss/style.scss */
 .card {
   position: relative;
   padding: 5px;
@@ -161,29 +237,29 @@ input[type="submit"] {
   text-align: center;
   width: 225px;
   height: 170px; }
-  /* line 166, ../../resources/scss/style.scss */
+  /* line 86, ../../resources/scss/style.scss */
   .card.with_button {
     height: 200px; }
-  /* line 170, ../../resources/scss/style.scss */
+  /* line 90, ../../resources/scss/style.scss */
   .card.dashed {
     border: 1px dashed #ffd773;
     color: #644700; }
 
-/* line 176, ../../resources/scss/style.scss */
+/* line 96, ../../resources/scss/style.scss */
 .card_name {
   font-size: 1.5em;
   font-weight: bold;
   padding: 3px; }
 
-/* line 181, ../../resources/scss/style.scss */
+/* line 101, ../../resources/scss/style.scss */
 .card_desc {
   padding: 3px; }
 
-/* line 185, ../../resources/scss/style.scss */
+/* line 105, ../../resources/scss/style.scss */
 .card_copies {
   margin-top: 30px; }
 
-/* line 189, ../../resources/scss/style.scss */
+/* line 109, ../../resources/scss/style.scss */
 .minicard {
   display: inline-block;
   border-radius: 2px;
@@ -192,131 +268,103 @@ input[type="submit"] {
   width: 25px;
   height: 50px; }
 
-/* line 196, ../../resources/scss/style.scss */
+/* line 116, ../../resources/scss/style.scss */
 .excluded {
   background: url(../stripe.png); }
 
-/* line 200, ../../resources/scss/style.scss */
+/* line 120, ../../resources/scss/style.scss */
 .clicked {
   border: gray solid 3px;
   border-radius: 2px;
   -moz-border-radius: 2px;
   -webkit-border-radius: 2px; }
 
-/* line 205, ../../resources/scss/style.scss */
+/* line 125, ../../resources/scss/style.scss */
 .card_select {
   width: 220px;
   text-align: center; }
 
-/* line 210, ../../resources/scss/style.scss */
+/* line 130, ../../resources/scss/style.scss */
 .css_table {
   display: table;
   border-spacing: 2px; }
 
-/* line 215, ../../resources/scss/style.scss */
+/* line 135, ../../resources/scss/style.scss */
 .css_table-row {
   display: table-row; }
 
-/* line 219, ../../resources/scss/style.scss */
+/* line 139, ../../resources/scss/style.scss */
 .css_table-cell {
   display: table-cell;
   padding: 1px 4px; }
 
-/* line 224, ../../resources/scss/style.scss */
+/* line 144, ../../resources/scss/style.scss */
 .header-row {
   text-align: center;
   font-weight: bold;
   padding: 1px 4px;
   background-color: #eba700; }
 
-/* line 231, ../../resources/scss/style.scss */
+/* line 151, ../../resources/scss/style.scss */
 .even_color {
   background-color: #ffc533; }
-  /* line 234, ../../resources/scss/style.scss */
+  /* line 154, ../../resources/scss/style.scss */
   .even_color:hover {
     background-color: #FFD800; }
 
-/* line 239, ../../resources/scss/style.scss */
+/* line 159, ../../resources/scss/style.scss */
 .odd_color {
   background-color: #eba700; }
-  /* line 242, ../../resources/scss/style.scss */
+  /* line 162, ../../resources/scss/style.scss */
   .odd_color:hover {
     background-color: #FFD800; }
 
-/* line 247, ../../resources/scss/style.scss */
+/* line 167, ../../resources/scss/style.scss */
 .middle-align {
   vertical-align: middle; }
 
-/* line 251, ../../resources/scss/style.scss */
+/* line 171, ../../resources/scss/style.scss */
 .centered {
   text-align: center; }
 
-/* line 255, ../../resources/scss/style.scss */
+/* line 175, ../../resources/scss/style.scss */
 .pagination {
   font-size: 0.8em;
   text-align: center; }
 
-/* line 260, ../../resources/scss/style.scss */
+/* line 180, ../../resources/scss/style.scss */
 .points {
   min-width: 4em;
   text-align: right; }
 
-/* line 265, ../../resources/scss/style.scss */
+/* line 185, ../../resources/scss/style.scss */
 .align_to_bottom {
   position: absolute;
   bottom: 5px; }
 
-/* line 270, ../../resources/scss/style.scss */
+/* line 190, ../../resources/scss/style.scss */
 .reminder {
   margin: 4px 4px 4px 10px;
   padding: 3px;
   border: thin dotted gray;
   background-color: #ffbf00; }
 
-/* line 277, ../../resources/scss/style.scss */
+/* line 197, ../../resources/scss/style.scss */
 .new {
   color: red;
   font-weight: bold; }
 
-/* line 282, ../../resources/scss/style.scss */
-.game-player {
-  display: inline;
-  border: 1px solid #ffd773;
-  border-radius: 5px;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  padding: 0 3px;
-  margin: 0 2px; }
-  /* line 289, ../../resources/scss/style.scss */
-  .game-player:hover {
-    background-color: #ffd773; }
-
-/* line 294, ../../resources/scss/style.scss */
-a, .dynamic_link {
-  color: #800024;
-  font-weight: normal;
-  text-decoration: none; }
-  /* line 299, ../../resources/scss/style.scss */
-  a.game-player, .dynamic_link.game-player {
-    font-weight: inherit;
-    color: darkgreen; }
-
-/* line 305, ../../resources/scss/style.scss */
-a:hover, .dynamic_link:hover {
-  text-decoration: underline;
-  cursor: pointer; }
-
-/* line 310, ../../resources/scss/style.scss */
+/* line 202, ../../resources/scss/style.scss */
 .underline[data-tip] {
   border-bottom: dotted 1px black; }
 
-/* line 314, ../../resources/scss/style.scss */
+/* line 206, ../../resources/scss/style.scss */
 .ui-datepicker-trigger {
   position: relative;
   top: 4px;
   left: 2px; }
 
-/* line 320, ../../resources/scss/style.scss */
+/* line 212, ../../resources/scss/style.scss */
 .free_information {
   border: 1px solid #ffd773;
   border-radius: 5px;
@@ -324,21 +372,21 @@ a:hover, .dynamic_link:hover {
   -webkit-border-radius: 5px;
   padding-left: 30px;
   padding-top: 10px; }
-  /* line 326, ../../resources/scss/style.scss */
+  /* line 218, ../../resources/scss/style.scss */
   .free_information legend {
     color: #333333;
     font-style: italic;
     margin-left: -15px; }
 
-/* line 333, ../../resources/scss/style.scss */
+/* line 225, ../../resources/scss/style.scss */
 .end_warning {
   color: red; }
 
-/* line 337, ../../resources/scss/style.scss */
+/* line 229, ../../resources/scss/style.scss */
 .message_area {
   width: 600px; }
 
-/* line 341, ../../resources/scss/style.scss */
+/* line 233, ../../resources/scss/style.scss */
 .message_content {
   border-radius: 5px;
   -moz-border-radius: 5px;
@@ -348,78 +396,33 @@ a:hover, .dynamic_link:hover {
   margin: 3px;
   width: 600px;
   font-size: 0.9em; }
-  /* line 349, ../../resources/scss/style.scss */
+  /* line 241, ../../resources/scss/style.scss */
   .message_content.admin {
     background: #d69900;
     position: relative;
     padding-bottom: 15px; }
-    /* line 354, ../../resources/scss/style.scss */
+    /* line 246, ../../resources/scss/style.scss */
     .message_content.admin img {
       margin-left: -65px; }
-    /* line 358, ../../resources/scss/style.scss */
+    /* line 250, ../../resources/scss/style.scss */
     .message_content.admin p {
       position: absolute;
       top: 0;
       width: 95%; }
 
-/* line 366, ../../resources/scss/style.scss */
+/* line 258, ../../resources/scss/style.scss */
 .message_date {
   margin-bottom: 5px; }
 
-/* line 370, ../../resources/scss/style.scss */
-textarea {
-  -webkit-box-sizing: border-box;
-  /* Safari/Chrome, other WebKit */
-  -moz-box-sizing: border-box;
-  /* Firefox, other Gecko */
-  box-sizing: border-box;
-  /* Opera/IE 8+ */
-  width: 100%; }
-
-/* line 377, ../../resources/scss/style.scss */
+/* line 262, ../../resources/scss/style.scss */
 .form-button {
   display: inline; }
-  /* line 380, ../../resources/scss/style.scss */
+  /* line 265, ../../resources/scss/style.scss */
   .form-button input[type=submit] {
     height: 16px;
     width: 16px;
     border: none;
     background: transparent 0 0 no-repeat; }
-    /* line 386, ../../resources/scss/style.scss */
+    /* line 271, ../../resources/scss/style.scss */
     .form-button input[type=submit].delete {
       background-image: url("../trash.png"); }
-
-@media handheld, only screen and (max-device-width: 767px) {
-  /* line 395, ../../resources/scss/style.scss */
-  body, .fullwidth {
-    width: auto; }
-
-  /* line 398, ../../resources/scss/style.scss */
-  textarea {
-    width: 80%; }
-
-  /* line 401, ../../resources/scss/style.scss */
-  input, textarea, select {
-    font-size: 12px; }
-
-  /* line 404, ../../resources/scss/style.scss */
-  .toplinks {
-    margin-bottom: 0; }
-
-  /* line 407, ../../resources/scss/style.scss */
-  .logobox {
-    width: 300px; }
-    /* line 409, ../../resources/scss/style.scss */
-    .logobox img {
-      max-width: 300px; }
-    /* line 412, ../../resources/scss/style.scss */
-    .logobox .motto {
-      font-size: 1em;
-      letter-spacing: 5px; }
-
-  /* line 417, ../../resources/scss/style.scss */
-  .message_area {
-    width: auto; }
-
-  /* line 420, ../../resources/scss/style.scss */
-  .message_content { width: auto; } }

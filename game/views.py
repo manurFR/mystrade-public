@@ -459,3 +459,17 @@ def close_game(request, game_id):
             return redirect('control', game_id)
 
     raise PermissionDenied
+
+#############################################################################
+##                              Redesign                                   ##
+#############################################################################
+@login_required
+def game_board(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+
+    players = sorted(game.players.all(), key = lambda player: player.name.lower())
+
+    if request.user not in players and not game.has_super_access(request.user):
+        raise PermissionDenied
+
+    return render(request, 'game/board.html', {'game': game})

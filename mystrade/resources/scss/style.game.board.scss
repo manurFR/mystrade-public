@@ -1,0 +1,10 @@
+@import "base";
+
+/* Page structure */
+#zone_game_header {}
+#zone_game_label {}
+
+/* Game label */
+#game_label {
+  @include font($size: 1.8em, $weight: bold);
+}
