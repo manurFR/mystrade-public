@@ -1,10 +1,25 @@
 @import "base";
 
-/* Page structure */
-#zone_game_header {}
-#zone_game_label {}
+#zone_content {}
 
-/* Game label */
+#zone_game_header {
+  overflow: auto;
+  width: 100%;
+}
+
+#zone_game_label {
+  float: left;
+  width: 180px;
+}
+
 #game_label {
   @include font($size: 1.8em, $weight: bold);
+}
+
+#zone_player_list {
+  margin-left: 180px;
+
+  > div {
+    float: right;
+  }
 }

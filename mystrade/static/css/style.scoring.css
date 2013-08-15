@@ -116,8 +116,9 @@ textarea {
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   padding: 0 3px;
-  margin: 0 2px; }
-  /* line 116, ../../resources/scss/_base.scss */
+  margin: 0 2px;
+  line-height: 20px; }
+  /* line 117, ../../resources/scss/_base.scss */
   .game-player:hover {
     background-color: #ffd773; }
 

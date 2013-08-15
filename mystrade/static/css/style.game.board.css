@@ -116,8 +116,9 @@ textarea {
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   padding: 0 3px;
-  margin: 0 2px; }
-  /* line 116, ../../resources/scss/_base.scss */
+  margin: 0 2px;
+  line-height: 20px; }
+  /* line 117, ../../resources/scss/_base.scss */
   .game-player:hover {
     background-color: #ffd773; }
 
@@ -156,9 +157,24 @@ textarea {
   /* line 29, ../../resources/scss/_responsive.scss */
   .message_content {
     width: auto; } }
-/* Page structure */
-/* Game label */
-/* line 8, ../../resources/scss/style.game.board.scss */
+/* line 5, ../../resources/scss/style.game.board.scss */
+#zone_game_header {
+  overflow: auto;
+  width: 100%; }
+
+/* line 10, ../../resources/scss/style.game.board.scss */
+#zone_game_label {
+  float: left;
+  width: 180px; }
+
+/* line 15, ../../resources/scss/style.game.board.scss */
 #game_label {
   font-size: 1.8em;
   font-weight: bold; }
+
+/* line 19, ../../resources/scss/style.game.board.scss */
+#zone_player_list {
+  margin-left: 180px; }
+  /* line 22, ../../resources/scss/style.game.board.scss */
+  #zone_player_list > div {
+    float: right; }

@@ -112,6 +112,7 @@ textarea {
   @include roundedBorder(5px);
   padding: 0 3px;
   margin: 0 2px;
+  line-height: 20px;
 
   &:hover {
     background-color: $lightBackgroundColor;

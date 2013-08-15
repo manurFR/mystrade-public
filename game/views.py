@@ -472,4 +472,4 @@ def game_board(request, game_id):
     if request.user not in players and not game.has_super_access(request.user):
         raise PermissionDenied
 
-    return render(request, 'game/board.html', {'game': game})
+    return render(request, 'game/board.html', {'game': game, 'players': players})

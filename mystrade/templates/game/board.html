@@ -21,6 +21,15 @@
                 {% else %}starting in {{ game.start_date|timeuntil }}{% endif %}
             </div>
         </div>
+
+        <div id="zone_player_list">
+            <div>
+                {% for player in players %}
+                    {% if player == user %}<div class="game-player">{{ player.name }} (you)</div>
+                    {% else %}<div class="game-player"><a href="{% url 'otherprofile' player.id %}">{{ player.name }}</a></div>{% endif %}
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
     <script>
