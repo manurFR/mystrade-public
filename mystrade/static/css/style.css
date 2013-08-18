@@ -9,7 +9,7 @@ body {
 
 /* line 11, ../../resources/scss/_base.scss */
 h3 {
-  margin: 5px 0; }
+  margin: 4px 0; }
 
 /* line 15, ../../resources/scss/_base.scss */
 a, .dynamic_link {
@@ -126,6 +126,16 @@ textarea {
   /* line 121, ../../resources/scss/_base.scss */
   .game-player:hover {
     background-color: #ffd773; }
+
+/* line 126, ../../resources/scss/_base.scss */
+.minicard {
+  display: inline-block;
+  border-radius: 2px;
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  width: 25px;
+  height: 50px;
+  margin: 1px 1px; }
 
 @media handheld, only screen and (max-device-width: 767px) {
   /* line 4, ../../resources/scss/_responsive.scss */

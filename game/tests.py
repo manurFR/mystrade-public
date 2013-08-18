@@ -254,13 +254,13 @@ class GameModelsTest(MystradeTestCase):
         self.assertTrue(self.game.has_super_access(self.admin))
         self.assertFalse(self.game.has_super_access(self.admin_player))
 
-class GamePageViewTest(MystradeTestCase):
+class GameBoardMainTest(MystradeTestCase):
 
     def test_returns_a_404_if_the_game_id_doesnt_exist(self):
         response = self.client.get("/game/999999999/")
         self.assertEqual(404, response.status_code)
 
-    def test_access_to_game_page_forbidden_for_users_not_related_to_the_game_except_admins(self):
+    def test_access_to_game_board_forbidden_for_users_not_related_to_the_game_except_admins(self):
         self._assertGetGamePage()
 
         self.login_as(self.admin)
@@ -272,7 +272,7 @@ class GamePageViewTest(MystradeTestCase):
         self.login_as(self.unrelated_user)
         self._assertGetGamePage(status_code = 403)
 
-    def test_game_page_shows_starting_or_finishing_date(self):
+    def test_game_board_shows_starting_or_finishing_date(self):
         # Note: we add a couple of seconds to each date in the future because otherwise the timeuntil filter would sadly go
         #  from "2 days" to "1 day, 23 hours" between the instant the games' models are created and the few milliseconds it
         #  takes to call the template rendering. Sed fugit interea tempus fugit irreparabile, singula dum capti circumvectamur amore.
@@ -327,64 +327,7 @@ class GamePageViewTest(MystradeTestCase):
         self.assertNotContains(response, "<a href=\"/game/{0}/control/\">&gt; Access to control board</a>".format(self.game.id))
 
     @skip("until redesign")
-    def test_game_page_shows_nb_of_rule_cards_owned_to_players(self):
-        rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
-        rih2 = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
-        rih3 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, abandon_date = now())
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "You own 2 rule cards")
-
-
-    def test_game_page_doesnt_show_nb_of_rule_cards_nor_of_commodities_to_game_master(self):
-        self.login_as(self.master)
-
-        response = self._assertGetGamePage()
-        self.assertNotContains(response, "You own 0 rule cards")
-        self.assertNotContains(response, "and 0 commodities")
-        self.assertNotContains(response, "<span class=\"minicard\"")
-
-    @skip("until redesign")
-    def test_game_page_show_commodities_owned_to_players(self):
-        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Blue"),
-                              nb_cards = 1)
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "You own 0 rule cards")
-        self.assertContains(response, "1 commodity")
-        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
-
-        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Red"),
-                              nb_cards = 4, nb_submitted_cards = 2)
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "5 commodities")
-        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
-        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 4)
-
-    @skip("until redesign")
-    def test_game_page_show_only_submitted_commodities_to_players_who_have_submitted_their_hand(self):
-        gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)
-        gameplayer.submit_date = now() +  datetime.timedelta(days = -2)
-        gameplayer.save()
-
-        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Blue"),
-                              nb_cards = 3, nb_submitted_cards = 1)
-        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Red"),
-                              nb_cards = 2, nb_submitted_cards = 2)
-        cih3 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Orange"),
-                              nb_cards = 1, nb_submitted_cards = 0)
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "you have submitted")
-        self.assertContains(response, "3 commodities")
-
-        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
-        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 2)
-        self.assertNotContains(response, "<span class=\"minicard\" data-tip=\"Orange\" style=\"background-color: orange\">&nbsp;</span>")
-
-    @skip("until redesign")
-    def test_game_page_show_pending_trades_with_less_than_3_pending_trades(self):
+    def test_game_board_show_pending_trades_with_less_than_3_pending_trades(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                                 status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
                                 initiator_offer = mommy.make(Offer))
@@ -402,7 +345,7 @@ class GamePageViewTest(MystradeTestCase):
         self.assertNotContains(response, "trade/{0}/{1}/\">".format(self.game.id, trade3.id))
 
     @skip("until redesign")
-    def test_game_page_show_last_3_pending_trades_when_more_than_three_are_pending(self):
+    def test_game_board_show_last_3_pending_trades_when_more_than_three_are_pending(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                                 status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
                                 initiator_offer = mommy.make(Offer))
@@ -423,7 +366,7 @@ class GamePageViewTest(MystradeTestCase):
         self.assertContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade3.id))
         self.assertNotContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade4.id))
 
-    def test_game_page_doesnt_show_pending_trades_to_game_master(self):
+    def test_game_board_doesnt_show_pending_trades_to_game_master(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                                 status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
                                 initiator_offer = mommy.make(Offer))
@@ -435,7 +378,7 @@ class GamePageViewTest(MystradeTestCase):
         self.assertNotContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade1.id))
 
     @skip("until redesign")
-    def test_game_page_post_a_message_works_and_redirect_as_a_GET_request(self):
+    def test_game_board_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())
 
         response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'test message represents'}, follow = True)
@@ -450,14 +393,14 @@ class GamePageViewTest(MystradeTestCase):
             self.fail("Message was not created for expected game and sender")
 
     @skip("until redesign")
-    def test_game_page_posting_a_message_fails_for_more_than_255_characters(self):
+    def test_game_board_posting_a_message_fails_for_more_than_255_characters(self):
         response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'A'*300})
         self.assertEqual(200, response.status_code)
         self.assertEqual(0, Message.objects.count())
         self.assertContains(response, '<span class="errors">* Ensure this value has at most 255 characters (it has 300).</span>')
 
     @skip("until redesign")
-    def test_game_page_message_with_markdown_are_interpreted(self):
+    def test_game_board_message_with_markdown_are_interpreted(self):
         response = self.client.post("/game/{0}/".format(self.game.id),
                                     {'message': 'Hi *this* is __a test__ and [a link](http://example.net/)'},
                                     follow = True)
@@ -467,7 +410,7 @@ class GamePageViewTest(MystradeTestCase):
                          Message.objects.get(game = self.game, sender = self.loginUser).content)
 
     @skip("until redesign")
-    def test_game_page_bleach_strips_unwanted_tags_and_attributes(self):
+    def test_game_board_bleach_strips_unwanted_tags_and_attributes(self):
         response = self.client.post("/game/{0}/".format(self.game.id),
                                     {'message': '<script>var i=3;</script>Hi an <em class="test">image</em><img src="http://blah.jpg"/>'},
                                     follow = True)
@@ -476,7 +419,7 @@ class GamePageViewTest(MystradeTestCase):
         self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)
 
     @skip("until redesign")
-    def test_game_page_displays_messages_for_the_game(self):
+    def test_game_board_displays_messages_for_the_game(self):
         mommy.make(Message, game = self.game, sender = self.loginUser, content = 'Show me maybe')
         mommy.make(Message, game = mommy.make(Game, end_date = now() + datetime.timedelta(days = 2)),
                        sender = self.loginUser, content = 'Do not display')
@@ -486,7 +429,7 @@ class GamePageViewTest(MystradeTestCase):
         self.assertNotContains(response, "<div class=\"message_content\">Do not display</div>")
 
     @skip("until redesign")
-    def test_game_page_messages_are_paginated(self):
+    def test_game_board_messages_are_paginated(self):
         # 10 messages per page, extensible to 13 to accomodate 1 to 3 last messages we don't want alone on a last page
         mommy.make(Message, _quantity = 13, game = self.game, sender = self.loginUser, content = 'my test msg')
 
@@ -502,7 +445,7 @@ class GamePageViewTest(MystradeTestCase):
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 4)
 
     @skip("until redesign")
-    def test_game_page_messages_from_the_game_master_stand_out(self):
+    def test_game_board_messages_from_the_game_master_stand_out(self):
         msg = mommy.make(Message, game = self.game, sender = self.master, content = 'some message')
 
         response = self._assertGetGamePage()
@@ -550,9 +493,82 @@ class GamePageViewTest(MystradeTestCase):
         self.assertEqual(status_code, response.status_code)
         return response
 
-class HandViewTest(MystradeTestCase):
+class GameBoardHandTest(MystradeTestCase):
 
-    def test_show_hand_doesnt_show_commodities_with_no_cards(self):
+    @skip("until redesign")
+    def test_game_board_shows_nb_of_rule_cards_owned_to_players(self):
+        rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
+        rih2 = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
+        rih3 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, abandon_date = now())
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "You own 2 rule cards")
+
+
+    def test_game_board_doesnt_show_nb_of_rule_cards_nor_of_commodities_to_game_master(self):
+        self.login_as(self.master)
+
+        response = self._assertGetGamePage()
+        self.assertNotContains(response, "You own 0 rule cards")
+        self.assertNotContains(response, "and 0 commodities")
+        self.assertNotContains(response, "<span class=\"minicard\"")
+
+    def test_game_board_show_commodities_owned_to_players(self):
+        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser,
+                          commodity = Commodity.objects.get(ruleset = 1, name = "Blue"), nb_cards = 1)
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
+
+        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser,
+                          commodity = Commodity.objects.get(ruleset = 1, name = "Red"), nb_cards = 4, nb_submitted_cards = 2)
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
+        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 4)
+
+    def test_game_board_doesnt_show_commodities_with_no_cards(self):
+        commodity1 = mommy.make(Commodity, name = 'Commodity1', color="col1")
+        commodity2 = mommy.make(Commodity, name = 'Commodity2', color="col2")
+        cih1 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 1)
+        cih2 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity2, nb_cards = 0)
+
+        response = self._assertGetGamePage()
+
+        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Commodity1\" style=\"background-color: col1\">&nbsp;</span>", count = 1)
+        self.assertNotContains(response, "<span class=\"minicard\" data-tip=\"Commodity2\" style=\"background-color: col2\">&nbsp;</span>")
+
+    @skip("until redesign")
+    def test_game_board_show_only_submitted_commodities_to_players_who_have_submitted_their_hand(self):
+        gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)
+        gameplayer.submit_date = now() +  datetime.timedelta(days = -2)
+        gameplayer.save()
+
+        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Blue"),
+                          nb_cards = 3, nb_submitted_cards = 1)
+        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Red"),
+                          nb_cards = 2, nb_submitted_cards = 2)
+        cih3 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = Commodity.objects.get(ruleset = 1, name = "Orange"),
+                          nb_cards = 1, nb_submitted_cards = 0)
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "you have submitted")
+        self.assertContains(response, "3 commodities")
+
+        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
+        self.assertContains(response, "<span class=\"minicard\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 2)
+        self.assertNotContains(response, "<span class=\"minicard\" data-tip=\"Orange\" style=\"background-color: orange\">&nbsp;</span>")
+
+    def _assertGetGamePage(self, game = None, status_code = 200):
+        if game is None:
+            game = self.game
+        response = self.client.get("/game/{0}/".format(game.id), follow = True)
+        self.assertEqual(status_code, response.status_code)
+        return response
+
+class HandViewTest(MystradeTestCase): # TODO detele
+
+    def test_show_hand_doesnt_show_commodities_with_no_cards(self): # TODO delete
         commodity1 = mommy.make(Commodity, name = 'Commodity#1')
         commodity2 = mommy.make(Commodity, name = 'Commodity#2')
         cih1 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 1)

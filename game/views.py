@@ -472,4 +472,10 @@ def game_board(request, game_id):
     if request.user not in players and not game.has_super_access(request.user):
         raise PermissionDenied
 
-    return render(request, 'game/board.html', {'game': game, 'players': players})
+    context = {'game': game, 'players': players}
+
+    if request.user in players:
+        commodities = list(commodities_in_hand(game, request.user))
+        context.update({'commodities': commodities})
+
+    return render(request, 'game/board.html', context)
