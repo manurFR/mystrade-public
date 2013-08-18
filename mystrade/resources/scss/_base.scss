@@ -8,6 +8,10 @@ body {
   @include font(('Lucida Grande', Verdana, Arial, sans-serif), 10pt);
 }
 
+h3 {
+  margin: 5px 0;
+}
+
 a, .dynamic_link {
   color: #800024;
   @include font($weight: normal);
@@ -90,7 +94,7 @@ textarea {
 
 /* Miscellaneous common styles */
 .helptext {
-  @include font($size: 8pt, $style: italic);
+  @include font($size: 8pt, $style: italic, $weight: normal);
   color: $infoTextColor;
 }
 

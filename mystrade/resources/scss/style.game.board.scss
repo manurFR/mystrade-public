@@ -23,3 +23,21 @@
     float: right;
   }
 }
+
+#zone_game_main {
+  overflow: auto;
+  width: 100%;
+}
+
+#zone_hand {
+  float: left;
+  width: 500px;
+
+  #zone_links {
+    height: 30px;
+  }
+}
+
+#zone_tabs {
+  margin-left: 500px;
+}
