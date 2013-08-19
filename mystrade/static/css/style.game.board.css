@@ -199,14 +199,44 @@ textarea {
   overflow: auto;
   width: 100%; }
 
-/* line 32, ../../resources/scss/style.game.board.scss */
+/* line 34, ../../resources/scss/style.game.board.scss */
 #zone_hand {
   float: left;
   width: 500px; }
-  /* line 36, ../../resources/scss/style.game.board.scss */
+  /* line 38, ../../resources/scss/style.game.board.scss */
   #zone_hand #zone_links {
     height: 30px; }
+  /* line 42, ../../resources/scss/style.game.board.scss */
+  #zone_hand #zone_commodities {
+    margin-bottom: 20px; }
 
-/* line 41, ../../resources/scss/style.game.board.scss */
+/* line 51, ../../resources/scss/style.game.board.scss */
+.rulecard {
+  border: 1px solid #ffd773;
+  border-radius: 10px;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  float: left;
+  width: 228px;
+  height: 140px;
+  margin: 2px;
+  padding: 4px 8px;
+  font-size: 0.9em; }
+  /* line 65, ../../resources/scss/style.game.board.scss */
+  .rulecard.former {
+    border: 1px dashed #ffd773;
+    color: #644700; }
+  /* line 70, ../../resources/scss/style.game.board.scss */
+  .rulecard .rulecard_name {
+    font-size: 1.4em;
+    font-weight: bold; }
+  /* line 74, ../../resources/scss/style.game.board.scss */
+  .rulecard .rulecard_desc {
+    line-height: 1.2em; }
+  /* line 78, ../../resources/scss/style.game.board.scss */
+  .rulecard .previously_owned {
+    float: right; }
+
+/* line 83, ../../resources/scss/style.game.board.scss */
 #zone_tabs {
   margin-left: 500px; }

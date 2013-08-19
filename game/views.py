@@ -475,7 +475,9 @@ def game_board(request, game_id):
     context = {'game': game, 'players': players}
 
     if request.user in players:
-        commodities = list(commodities_in_hand(game, request.user))
-        context.update({'commodities': commodities})
+        commodities = commodities_in_hand(game, request.user)
+        rulecards = rules_currently_in_hand(game, request.user)
+        former_rulecards = rules_formerly_in_hand(game, request.user, current_rulecards = [r.rulecard for r in rulecards])
+        context.update({'commodities': commodities, 'rulecards': rulecards, 'former_rulecards': former_rulecards})
 
     return render(request, 'game/board.html', context)

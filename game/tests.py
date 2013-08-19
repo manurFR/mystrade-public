@@ -14,6 +14,7 @@ from model_mommy import mommy
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
     prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates
+from game.helpers import rules_currently_in_hand, rules_formerly_in_hand, commodities_in_hand
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer, Message
 from ruleset.models import Ruleset, RuleCard, Commodity
 from scoring.card_scoring import Scoresheet
@@ -495,24 +496,6 @@ class GameBoardMainTest(MystradeTestCase):
 
 class GameBoardHandTest(MystradeTestCase):
 
-    @skip("until redesign")
-    def test_game_board_shows_nb_of_rule_cards_owned_to_players(self):
-        rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
-        rih2 = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
-        rih3 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, abandon_date = now())
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "You own 2 rule cards")
-
-
-    def test_game_board_doesnt_show_nb_of_rule_cards_nor_of_commodities_to_game_master(self):
-        self.login_as(self.master)
-
-        response = self._assertGetGamePage()
-        self.assertNotContains(response, "You own 0 rule cards")
-        self.assertNotContains(response, "and 0 commodities")
-        self.assertNotContains(response, "<span class=\"minicard\"")
-
     def test_game_board_show_commodities_owned_to_players(self):
         cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser,
                           commodity = Commodity.objects.get(ruleset = 1, name = "Blue"), nb_cards = 1)
@@ -558,6 +541,40 @@ class GameBoardHandTest(MystradeTestCase):
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 2)
         self.assertNotContains(response, "<span class=\"minicard\" data-tip=\"Orange\" style=\"background-color: orange\">&nbsp;</span>")
+
+    def test_game_board_displays_rulecards(self):
+        rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = RuleCard.objects.get(ref_name = 'HAG04'),
+                          abandon_date = None)
+        rih2 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = RuleCard.objects.get(ref_name = 'HAG10'),
+                          abandon_date = None)
+
+        response = self._assertGetGamePage()
+
+        self.assertContains(response, '<div class="rulecard_name">4</div>', count = 1)
+        self.assertContains(response, '<div class="rulecard_desc">If a player has more than three white cards, all of his/her white cards lose their value.</div>', count = 1)
+
+        self.assertContains(response, '<div class="rulecard_name">10</div>', count = 1)
+        self.assertContains(response, '<div class="rulecard_desc">Each set of five different colors gives a bonus of 10 points.</div>', count = 1)
+
+    def test_game_board_displays_former_rulecards_given_in_trades(self):
+        rulecard1 = RuleCard.objects.get(ref_name = 'HAG04')
+        rulecard2 = RuleCard.objects.get(ref_name = 'HAG10')
+        rih1_former =           mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
+                                           abandon_date = datetime.datetime(2012, 01, 11, 10, 45, tzinfo = get_default_timezone()))
+        rih1_former_duplicate = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
+                                           abandon_date = datetime.datetime(2012, 01, 13, 18, 00, tzinfo = get_default_timezone()))
+        rih2_current =          mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
+                                           abandon_date = None)
+        rih2_former_but_copy_of_current = \
+                                mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
+                                           abandon_date = datetime.datetime(2013, 01, 13, 8, 5, tzinfo = get_default_timezone()))
+
+        # one should see one rulecard 2 in rules currently owned and only one rulecard 1 in former rules
+        #  (no duplicates and no copies of cards currently in hand)
+        response = self._assertGetGamePage()
+
+        self.assertEqual([rulecard2], [rih.rulecard for rih in response.context['rulecards']])
+        self.assertEqual([rulecard1], [rih.rulecard for rih in response.context['former_rulecards']])
 
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
@@ -619,7 +636,7 @@ class HandViewTest(MystradeTestCase): # TODO detele
         self.assertNotContains(response, "There is no point showing this")
         self.assertNotContains(response, "There is no point showing that")
 
-    def test_show_hand_displays_former_rulecards_given_in_trades(self):
+    def test_show_hand_displays_former_rulecards_given_in_trades(self): # TODO delete
         rulecard1 = mommy.make(RuleCard, public_name = 'C1', description = 'Desc1')
         rulecard2 = mommy.make(RuleCard, public_name = 'C2', description = 'Desc2')
         rih1_former = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
@@ -1242,3 +1259,53 @@ class DealTest(TestCase):
         for commodity in Commodity.objects.filter(ruleset = ruleset):
             nb_cards = CommodityInHand.objects.filter(game = game, commodity = commodity).aggregate(Sum('nb_cards'))
             self.assertEqual(10*6/5, nb_cards['nb_cards__sum'])
+
+class HelpersTest(MystradeTestCase):
+
+    def test_rules_currently_in_hand(self):
+        rmx08 = RuleCard.objects.get(ref_name='RMX08')
+        rmx09 = RuleCard.objects.get(ref_name='RMX09')
+        rmx10 = RuleCard.objects.get(ref_name='RMX10')
+        rmx11 = RuleCard.objects.get(ref_name='RMX11')
+        mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rmx08, abandon_date = None)
+        mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rmx09, abandon_date = None)
+        mommy.make(RuleInHand, game = self.game, player = self.alternativeUser, rulecard = rmx10, abandon_date = None)
+        mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rmx11,
+                          abandon_date = datetime.datetime(2013, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
+
+        rules_in_hand = rules_currently_in_hand(self.game, self.loginUser)
+
+        self.assertEqual([rmx08, rmx09], [r.rulecard for r in rules_in_hand])
+
+    def test_rules_formerly_in_hand(self):
+        hag05 = RuleCard.objects.get(ref_name='HAG05')
+        hag06 = RuleCard.objects.get(ref_name='HAG06')
+        hag07 = RuleCard.objects.get(ref_name='HAG07')
+        mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag05,
+                   abandon_date = datetime.datetime(2013, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
+        mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag06,
+                   abandon_date = datetime.datetime(2013, 4, 4, 12, 0, 0, tzinfo = get_default_timezone()))
+        mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag06,
+                   abandon_date = datetime.datetime(2013, 4, 6, 14, 0, 0, tzinfo = get_default_timezone()))
+        mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag07,
+                   abandon_date = datetime.datetime(2013, 1, 8, 16, 0, 0, tzinfo = get_default_timezone()))
+
+        rules_in_hand = rules_formerly_in_hand(self.game, self.loginUser, [hag07])
+
+        self.assertEqual([hag05, hag06], [r.rulecard for r in rules_in_hand])
+
+    def test_commodities_in_hand(self):
+        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser,
+                          commodity = Commodity.objects.get(name = 'Yellow', ruleset__id = 1), nb_cards = 2)
+        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser,
+                          commodity = Commodity.objects.get(name = 'Orange', ruleset__id = 1), nb_cards = 1)
+        cih3 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser,
+                          commodity = Commodity.objects.get(name = 'White', ruleset__id = 1), nb_cards = 0)
+        cih4 = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser,
+                          commodity = Commodity.objects.get(name = 'Red', ruleset__id = 1), nb_cards = 3)
+
+        commodities = commodities_in_hand(self.game, self.loginUser)
+
+        self.assertEqual([cih2, cih1], list(commodities))
+
+

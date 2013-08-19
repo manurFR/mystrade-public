@@ -37,15 +37,38 @@
     <div id="zone_game_main">
         <div id="zone_hand">
             <div id="zone_links">&nbsp;</div>
+
             <div id="zone_commodities">
                 <h3>Commodities <span class="helptext">Click to create a new trade proposal</span></h3>
-                {% for cih in commodities %}
-                    {% for copy in cih.nb_cards|as_range %}
-                        <span class="minicard" data-tip="{{ cih.commodity.name }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
+                    {% for cih in commodities %}
+                        {% for copy in cih.nb_cards|as_range %}
+                            <span class="minicard" data-tip="{{ cih.commodity.name }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
+                        {% endfor %}
                     {% endfor %}
+            </div>
+
+            <div id="zone_rules">
+                <h3>Rules <span class="helptext">Click to create a new trade proposal</span></h3>
+
+                <div id="zone_rulecards">
+                {% for card in rulecards %}
+                    <div class="rulecard">
+                        <div class="rulecard_name">{{ card.rulecard.public_name }}</div>
+                        <div class="rulecard_desc">{{ card.rulecard.description }}</div>
+                    </div>
                 {% endfor %}
+                {% for card in former_rulecards %}
+                    <div class="rulecard former">
+                        <div class="previously_owned helptext">(previously owned)</div>
+                        <div class="rulecard_name">{{ card.rulecard.public_name }}</div>
+                        <div class="rulecard_desc">{{ card.rulecard.description }}</div>
+                    </div>
+                {% endfor %}
+
+                </div>
             </div>
         </div>
+
         <div id="zone_tabs">
 
         </div>

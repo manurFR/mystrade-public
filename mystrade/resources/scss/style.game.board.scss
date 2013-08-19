@@ -29,15 +29,57 @@
   width: 100%;
 }
 
+$widthZoneHand: 500px;
+
 #zone_hand {
   float: left;
-  width: 500px;
+  width: $widthZoneHand;
 
   #zone_links {
     height: 30px;
   }
+
+  #zone_commodities {
+    margin-bottom: 20px;
+  }
+
+  #zone_rulecards {
+    //display: inline-block;
+  }
+}
+
+.rulecard {
+  border: $lightSolidBorder;
+  @include roundedBorder(10px);
+  float: left;
+  width: $widthZoneHand / 2 - 22px;
+  height: 140px;
+  margin: 2px;
+  padding: 4px 8px;
+  @include font($size: 0.9em);
+
+  //&.with_button {
+  //  height: 200px;
+  //}
+
+  &.former {
+    border: $lightDashedBorder;
+    color: #644700;
+  }
+
+  .rulecard_name {
+    @include font($size: 1.4em, $weight: bold);
+  }
+
+  .rulecard_desc {
+    line-height: 1.2em;
+  }
+
+  .previously_owned {
+    float: right;
+  }
 }
 
 #zone_tabs {
-  margin-left: 500px;
+  margin-left: $widthZoneHand;
 }
