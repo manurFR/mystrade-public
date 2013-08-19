@@ -475,9 +475,23 @@ def game_board(request, game_id):
     context = {'game': game, 'players': players}
 
     if request.user in players:
-        commodities = commodities_in_hand(game, request.user)
+        hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None
+        if hand_submitted:
+            commodities = CommodityInHand.objects.filter(game = game, player = request.user, nb_submitted_cards__gt = 0).order_by('commodity__name')
+            commodities_not_submitted = CommodityInHand.objects.filter(game = game, player = request.user,
+                                                                       nb_cards__gt = F('nb_submitted_cards')).order_by('commodity__name')
+            for cih in commodities:
+                cih.nb_cards = cih.nb_submitted_cards # in 'commodities', feature only the submitted cards
+            for cih in commodities_not_submitted:
+                cih.nb_cards -= cih.nb_submitted_cards
+        else:
+            commodities = commodities_in_hand(game, request.user)
+            commodities_not_submitted = CommodityInHand.objects.none()
+
         rulecards = rules_currently_in_hand(game, request.user)
         former_rulecards = rules_formerly_in_hand(game, request.user, current_rulecards = [r.rulecard for r in rulecards])
-        context.update({'commodities': commodities, 'rulecards': rulecards, 'former_rulecards': former_rulecards})
+
+        context.update({'commodities': commodities, 'rulecards': rulecards, 'former_rulecards': former_rulecards,
+                        'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted})
 
     return render(request, 'game/board.html', context)

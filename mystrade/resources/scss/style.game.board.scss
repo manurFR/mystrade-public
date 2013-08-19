@@ -48,6 +48,10 @@ $widthZoneHand: 500px;
   }
 }
 
+.minicard.not_submitted {
+  background: url(../stripe.png);
+}
+
 .rulecard {
   border: $lightSolidBorder;
   @include roundedBorder(10px);

@@ -39,16 +39,22 @@
             <div id="zone_links">&nbsp;</div>
 
             <div id="zone_commodities">
-                <h3>Commodities <span class="helptext">Click to create a new trade proposal</span></h3>
+                <h3>{% if hand_submitted %}Submitted Commodities
+                    {% else %}Commodities <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
                     {% for cih in commodities %}
                         {% for copy in cih.nb_cards|as_range %}
                             <span class="minicard" data-tip="{{ cih.commodity.name }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
                         {% endfor %}
                     {% endfor %}
+                    {% for cih in commodities_not_submitted %}
+                        {% for copy in cih.nb_cards|as_range %}
+                            <span class="minicard not_submitted" data-tip="{{ cih.commodity.name }} -- not submitted" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
+                        {% endfor %}
+                    {% endfor %}
             </div>
 
             <div id="zone_rules">
-                <h3>Rules <span class="helptext">Click to create a new trade proposal</span></h3>
+                <h3>Rules{% if not hand_submitted %} <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
 
                 <div id="zone_rulecards">
                 {% for card in rulecards %}

@@ -211,6 +211,10 @@ textarea {
     margin-bottom: 20px; }
 
 /* line 51, ../../resources/scss/style.game.board.scss */
+.minicard.not_submitted {
+  background: url(../stripe.png); }
+
+/* line 55, ../../resources/scss/style.game.board.scss */
 .rulecard {
   border: 1px solid #ffd773;
   border-radius: 10px;
@@ -222,21 +226,21 @@ textarea {
   margin: 2px;
   padding: 4px 8px;
   font-size: 0.9em; }
-  /* line 65, ../../resources/scss/style.game.board.scss */
+  /* line 69, ../../resources/scss/style.game.board.scss */
   .rulecard.former {
     border: 1px dashed #ffd773;
     color: #644700; }
-  /* line 70, ../../resources/scss/style.game.board.scss */
+  /* line 74, ../../resources/scss/style.game.board.scss */
   .rulecard .rulecard_name {
     font-size: 1.4em;
     font-weight: bold; }
-  /* line 74, ../../resources/scss/style.game.board.scss */
+  /* line 78, ../../resources/scss/style.game.board.scss */
   .rulecard .rulecard_desc {
     line-height: 1.2em; }
-  /* line 78, ../../resources/scss/style.game.board.scss */
+  /* line 82, ../../resources/scss/style.game.board.scss */
   .rulecard .previously_owned {
     float: right; }
 
-/* line 83, ../../resources/scss/style.game.board.scss */
+/* line 87, ../../resources/scss/style.game.board.scss */
 #zone_tabs {
   margin-left: 500px; }

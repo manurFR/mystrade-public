@@ -521,8 +521,7 @@ class GameBoardHandTest(MystradeTestCase):
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Commodity1\" style=\"background-color: col1\">&nbsp;</span>", count = 1)
         self.assertNotContains(response, "<span class=\"minicard\" data-tip=\"Commodity2\" style=\"background-color: col2\">&nbsp;</span>")
 
-    @skip("until redesign")
-    def test_game_board_show_only_submitted_commodities_to_players_who_have_submitted_their_hand(self):
+    def test_game_board_separate_submitted_and_nonsubmitted_commodities_to_players_who_have_submitted_their_hand(self):
         gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)
         gameplayer.submit_date = now() +  datetime.timedelta(days = -2)
         gameplayer.save()
@@ -535,12 +534,12 @@ class GameBoardHandTest(MystradeTestCase):
                           nb_cards = 1, nb_submitted_cards = 0)
 
         response = self._assertGetGamePage()
-        self.assertContains(response, "you have submitted")
-        self.assertContains(response, "3 commodities")
 
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
+        self.assertContains(response, "<span class=\"minicard not_submitted\" data-tip=\"Blue -- not submitted\" style=\"background-color: blue\">&nbsp;</span>", count = 2)
         self.assertContains(response, "<span class=\"minicard\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 2)
         self.assertNotContains(response, "<span class=\"minicard\" data-tip=\"Orange\" style=\"background-color: orange\">&nbsp;</span>")
+        self.assertContains(response, "<span class=\"minicard not_submitted\" data-tip=\"Orange -- not submitted\" style=\"background-color: orange\">&nbsp;</span>", count = 1)
 
     def test_game_board_displays_rulecards(self):
         rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = RuleCard.objects.get(ref_name = 'HAG04'),
