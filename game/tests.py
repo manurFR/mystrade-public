@@ -607,7 +607,7 @@ class GameBoardZoneHandTest(MystradeTestCase):
 
         initiator_offer2 = mommy.make(Offer, free_information = "There is no point showing that")
         responder_offer2 = mommy.make(Offer)
-        trade = mommy.make(Trade, game = other_game, initiator = self.alternativeUser, responder = self.alternativeUser,
+        trade = mommy.make(Trade, game = other_game, initiator = self.alternativeUser, responder = self.loginUser,
                            status = 'ACCEPTED', initiator_offer = initiator_offer2, responder_offer = responder_offer2)
 
         response = self._assertGetGamePage()
@@ -667,7 +667,7 @@ class HandViewTest(MystradeTestCase): # TODO detele
 
         initiator_offer2 = mommy.make(Offer, free_information = "There is no point showing that")
         responder_offer2 = mommy.make(Offer)
-        trade = mommy.make(Trade, game = other_game, initiator = self.alternativeUser, responder = self.alternativeUser,
+        trade = mommy.make(Trade, game = other_game, initiator = self.alternativeUser, responder = self.loginUser,
                                status = 'ACCEPTED', initiator_offer = initiator_offer2, responder_offer = responder_offer2)
 
         response = self.client.get("/game/{0}/hand/".format(self.game.id))
