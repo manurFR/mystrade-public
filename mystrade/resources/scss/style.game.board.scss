@@ -40,11 +40,12 @@ $widthZoneHand: 500px;
   }
 
   #zone_commodities {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
-  #zone_rulecards {
-    //display: inline-block;
+  #zone_rules {
+    display: inline-block;
+    margin-bottom: 16px;
   }
 }
 
@@ -68,7 +69,7 @@ $widthZoneHand: 500px;
 
   &.former {
     border: $lightDashedBorder;
-    color: #644700;
+    color: $previouslyOwnedRuleColor;
   }
 
   .rulecard_name {
@@ -81,6 +82,22 @@ $widthZoneHand: 500px;
 
   .previously_owned {
     float: right;
+  }
+}
+
+.free_information {
+  border: $lightSolidBorder;
+  @include roundedBorder(5px);
+  padding-top: 10px;
+  padding-left: 30px;
+  @include font($size: 0.9em);
+  color: $previouslyOwnedRuleColor;
+
+  legend {
+    color: #333333;
+    @include font($style: italic);
+    margin-left: -15px;
+    padding: 0 5px;
   }
 }
 

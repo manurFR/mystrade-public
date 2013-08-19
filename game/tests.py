@@ -494,7 +494,7 @@ class GameBoardMainTest(MystradeTestCase):
         self.assertEqual(status_code, response.status_code)
         return response
 
-class GameBoardHandTest(MystradeTestCase):
+class GameBoardZoneHandTest(MystradeTestCase):
 
     def test_game_board_show_commodities_owned_to_players(self):
         cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser,
@@ -575,6 +575,46 @@ class GameBoardHandTest(MystradeTestCase):
         self.assertEqual([rulecard2], [rih.rulecard for rih in response.context['rulecards']])
         self.assertEqual([rulecard1], [rih.rulecard for rih in response.context['former_rulecards']])
 
+    def test_game_board_displays_free_informations_from_ACCEPTED_trades(self):
+        offer1_from_me_as_initiator = mommy.make(Offer, free_information = "I don't need to see that 1")
+        offer1_from_other_as_responder = mommy.make(Offer, free_information = "Show me this 1")
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser, status = 'ACCEPTED',
+                            initiator_offer = offer1_from_me_as_initiator, responder_offer = offer1_from_other_as_responder)
+
+        offer2_from_other_as_initiator = mommy.make(Offer, free_information = "Show me this 2")
+        trade2 = mommy.make(Trade, game = self.game, initiator = self.alternativeUser, responder = self.loginUser, status = 'ACCEPTED',
+                            initiator_offer = offer2_from_other_as_initiator, responder_offer = mommy.make(Offer))
+
+        offer3_from_other_as_responder = mommy.make(Offer, free_information = "I don't need to see that 3")
+        trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser, status = 'DECLINED',
+                            initiator_offer = mommy.make(Offer), responder_offer = offer3_from_other_as_responder)
+
+        response = self._assertGetGamePage()
+
+        self.assertContains(response, "Show me this 1")
+        self.assertContains(response, "Show me this 2")
+        self.assertNotContains(response, "I don't need to see that 1")
+        self.assertNotContains(response, "I don't need to see that 3")
+
+    def test_show_hand_doesnt_display_free_informations_from_ACCEPTED_trades_of_other_games(self):
+        other_game = mommy.make(Game, master = self.master, end_date = now() + datetime.timedelta(days = 7))
+        for player in get_user_model().objects.exclude(username = 'test1'): mommy.make(GamePlayer, game = other_game, player = player)
+
+        initiator_offer1 = mommy.make(Offer)
+        responder_offer1 = mommy.make(Offer, free_information = "There is no point showing this")
+        trade = mommy.make(Trade, game = other_game, initiator = self.loginUser, responder = self.alternativeUser,
+                           status = 'ACCEPTED', initiator_offer = initiator_offer1, responder_offer = responder_offer1)
+
+        initiator_offer2 = mommy.make(Offer, free_information = "There is no point showing that")
+        responder_offer2 = mommy.make(Offer)
+        trade = mommy.make(Trade, game = other_game, initiator = self.alternativeUser, responder = self.alternativeUser,
+                           status = 'ACCEPTED', initiator_offer = initiator_offer2, responder_offer = responder_offer2)
+
+        response = self._assertGetGamePage()
+
+        self.assertNotContains(response, "There is no point showing this")
+        self.assertNotContains(response, "There is no point showing that")
+
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
             game = self.game
@@ -595,7 +635,7 @@ class HandViewTest(MystradeTestCase): # TODO detele
         self.assertContains(response, '<div class="card_name">Commodity#1</div>')
         self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
 
-    def test_show_hand_displays_free_informations_from_ACCEPTED_trades(self):
+    def test_show_hand_displays_free_informations_from_ACCEPTED_trades(self): # TODO delete
         offer1_from_me_as_initiator = mommy.make(Offer, free_information = "I don't need to see that 1")
         offer1_from_other_as_responder = mommy.make(Offer, free_information = "Show me this 1")
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser, status = 'ACCEPTED',
@@ -616,7 +656,7 @@ class HandViewTest(MystradeTestCase): # TODO detele
         self.assertNotContains(response, "I don't need to see that 1")
         self.assertNotContains(response, "I don't need to see that 3")
 
-    def test_show_hand_doesnt_display_free_informations_from_ACCEPTED_trades_of_other_games(self):
+    def test_show_hand_doesnt_display_free_informations_from_ACCEPTED_trades_of_other_games(self): # TODO delete
         other_game = mommy.make(Game, master = self.master, end_date = now() + datetime.timedelta(days = 7))
         for player in get_user_model().objects.exclude(username = 'test1'): mommy.make(GamePlayer, game = other_game, player = player)
 

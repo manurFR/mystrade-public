@@ -491,7 +491,21 @@ def game_board(request, game_id):
         rulecards = rules_currently_in_hand(game, request.user)
         former_rulecards = rules_formerly_in_hand(game, request.user, current_rulecards = [r.rulecard for r in rulecards])
 
+        free_informations = []
+        for offer in Offer.objects.filter(free_information__isnull = False, trade_responded__game = game,
+                                          trade_responded__initiator = request.user, trade_responded__status = 'ACCEPTED'):
+            free_informations.append({'offerer': offer.trade_responded.responder,
+                                      'date': offer.trade_responded.closing_date,
+                                      'free_information': offer.free_information})
+
+        for offer in Offer.objects.filter(free_information__isnull = False, trade_initiated__game = game,
+                                          trade_initiated__responder = request.user, trade_initiated__status = 'ACCEPTED'):
+            free_informations.append({'offerer': offer.trade_initiated.responder,
+                                      'date': offer.trade_initiated.closing_date,
+                                      'free_information': offer.free_information})
+
         context.update({'commodities': commodities, 'rulecards': rulecards, 'former_rulecards': former_rulecards,
-                        'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted})
+                        'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
+                        'free_informations': free_informations})
 
     return render(request, 'game/board.html', context)

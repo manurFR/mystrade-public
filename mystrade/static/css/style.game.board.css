@@ -208,13 +208,17 @@ textarea {
     height: 30px; }
   /* line 42, ../../resources/scss/style.game.board.scss */
   #zone_hand #zone_commodities {
-    margin-bottom: 20px; }
+    margin-bottom: 16px; }
+  /* line 46, ../../resources/scss/style.game.board.scss */
+  #zone_hand #zone_rules {
+    display: inline-block;
+    margin-bottom: 16px; }
 
-/* line 51, ../../resources/scss/style.game.board.scss */
+/* line 52, ../../resources/scss/style.game.board.scss */
 .minicard.not_submitted {
   background: url(../stripe.png); }
 
-/* line 55, ../../resources/scss/style.game.board.scss */
+/* line 56, ../../resources/scss/style.game.board.scss */
 .rulecard {
   border: 1px solid #ffd773;
   border-radius: 10px;
@@ -226,21 +230,38 @@ textarea {
   margin: 2px;
   padding: 4px 8px;
   font-size: 0.9em; }
-  /* line 69, ../../resources/scss/style.game.board.scss */
+  /* line 70, ../../resources/scss/style.game.board.scss */
   .rulecard.former {
     border: 1px dashed #ffd773;
     color: #644700; }
-  /* line 74, ../../resources/scss/style.game.board.scss */
+  /* line 75, ../../resources/scss/style.game.board.scss */
   .rulecard .rulecard_name {
     font-size: 1.4em;
     font-weight: bold; }
-  /* line 78, ../../resources/scss/style.game.board.scss */
+  /* line 79, ../../resources/scss/style.game.board.scss */
   .rulecard .rulecard_desc {
     line-height: 1.2em; }
-  /* line 82, ../../resources/scss/style.game.board.scss */
+  /* line 83, ../../resources/scss/style.game.board.scss */
   .rulecard .previously_owned {
     float: right; }
 
-/* line 87, ../../resources/scss/style.game.board.scss */
+/* line 88, ../../resources/scss/style.game.board.scss */
+.free_information {
+  border: 1px solid #ffd773;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  padding-top: 10px;
+  padding-left: 30px;
+  font-size: 0.9em;
+  color: #644700; }
+  /* line 96, ../../resources/scss/style.game.board.scss */
+  .free_information legend {
+    color: #333333;
+    font-style: italic;
+    margin-left: -15px;
+    padding: 0 5px; }
+
+/* line 104, ../../resources/scss/style.game.board.scss */
 #zone_tabs {
   margin-left: 500px; }

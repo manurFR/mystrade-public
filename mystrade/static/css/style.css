@@ -381,28 +381,14 @@ td.small-height {
   left: 2px; }
 
 /* line 212, ../../resources/scss/style.scss */
-.free_information {
-  border: 1px solid #ffd773;
-  border-radius: 5px;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  padding-left: 30px;
-  padding-top: 10px; }
-  /* line 218, ../../resources/scss/style.scss */
-  .free_information legend {
-    color: #333333;
-    font-style: italic;
-    margin-left: -15px; }
-
-/* line 225, ../../resources/scss/style.scss */
 .end_warning {
   color: red; }
 
-/* line 229, ../../resources/scss/style.scss */
+/* line 216, ../../resources/scss/style.scss */
 .message_area {
   width: 600px; }
 
-/* line 233, ../../resources/scss/style.scss */
+/* line 220, ../../resources/scss/style.scss */
 .message_content {
   border-radius: 5px;
   -moz-border-radius: 5px;
@@ -412,33 +398,33 @@ td.small-height {
   margin: 3px;
   width: 600px;
   font-size: 0.9em; }
-  /* line 241, ../../resources/scss/style.scss */
+  /* line 228, ../../resources/scss/style.scss */
   .message_content.admin {
     background: #d69900;
     position: relative;
     padding-bottom: 15px; }
-    /* line 246, ../../resources/scss/style.scss */
+    /* line 233, ../../resources/scss/style.scss */
     .message_content.admin img {
       margin-left: -65px; }
-    /* line 250, ../../resources/scss/style.scss */
+    /* line 237, ../../resources/scss/style.scss */
     .message_content.admin p {
       position: absolute;
       top: 0;
       width: 95%; }
 
-/* line 258, ../../resources/scss/style.scss */
+/* line 245, ../../resources/scss/style.scss */
 .message_date {
   margin-bottom: 5px; }
 
-/* line 262, ../../resources/scss/style.scss */
+/* line 249, ../../resources/scss/style.scss */
 .form-button {
   display: inline; }
-  /* line 265, ../../resources/scss/style.scss */
+  /* line 252, ../../resources/scss/style.scss */
   .form-button input[type=submit] {
     height: 16px;
     width: 16px;
     border: none;
     background: transparent 0 0 no-repeat; }
-    /* line 271, ../../resources/scss/style.scss */
+    /* line 258, ../../resources/scss/style.scss */
     .form-button input[type=submit].delete {
       background-image: url("../trash.png"); }
