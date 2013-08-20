@@ -13,7 +13,7 @@
 }
 
 #game_label {
-  @include font($size: 1.8em, $weight: bold);
+  @include font($size: 1.9em, $weight: bold);
 }
 
 #zone_player_list {
@@ -29,7 +29,7 @@
   width: 100%;
 }
 
-$widthZoneHand: 500px;
+$widthZoneHand: 520px;
 
 #zone_hand {
   float: left;
@@ -49,6 +49,39 @@ $widthZoneHand: 500px;
   }
 }
 
+#zone_tabs {
+  margin-left: $widthZoneHand + 20px;
+  background: none;
+  border-width: 0px;
+
+}
+
+#zone_tabs .ui-tabs-nav {
+  height:2.2em;
+  background: transparent;
+  border-width: 0px;
+  padding-left: 0px;
+
+  .ui-state-default {
+    background: transparent;
+    border-color: $lightBackgroundColor;
+  }
+
+  .ui-state-active {
+    background-color: $lightBackgroundColor;
+    border-color: $lightBackgroundColor;
+  }
+
+  li {
+    @include font($size: 0.9em);
+  }
+}
+
+#zone_tabs .ui-tabs-panel {
+  background: none;
+  border: $lightSolidBorder;
+}
+
 .minicard.not_submitted {
   background: url(../stripe.png);
 }
@@ -61,7 +94,6 @@ $widthZoneHand: 500px;
   height: 140px;
   margin: 2px;
   padding: 4px 8px;
-  @include font($size: 0.9em);
 
   //&.with_button {
   //  height: 200px;
@@ -73,7 +105,7 @@ $widthZoneHand: 500px;
   }
 
   .rulecard_name {
-    @include font($size: 1.4em, $weight: bold);
+    @include font($size: 1.5em, $weight: bold);
   }
 
   .rulecard_desc {
@@ -90,7 +122,6 @@ $widthZoneHand: 500px;
   @include roundedBorder(5px);
   padding-top: 10px;
   padding-left: 30px;
-  @include font($size: 0.9em);
   color: $previouslyOwnedRuleColor;
 
   legend {
@@ -99,8 +130,4 @@ $widthZoneHand: 500px;
     margin-left: -15px;
     padding: 0 5px;
   }
-}
-
-#zone_tabs {
-  margin-left: $widthZoneHand;
 }

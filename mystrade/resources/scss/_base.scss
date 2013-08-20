@@ -5,11 +5,12 @@ body {
   background-color: $backgroundColor;
   width: 980px;
   margin: 5px auto 0 auto;
-  @include font(('Lucida Grande', Verdana, Arial, sans-serif), 10pt);
+  @include font(('Lucida Grande', Verdana, Arial, sans-serif), 9pt);
 }
 
 h3 {
   margin: 4px 0;
+  @include font($size: 10pt);
 }
 
 a, .dynamic_link {
@@ -78,7 +79,7 @@ textarea {
     position: relative;
     top: -10px;
     left: 15px;
-    @include font(("Garamond", "Times New Roman", serif), 1.3em, $style: italic);
+    @include font(("Garamond", "Times New Roman", serif), 1.4em, $style: italic);
     color: black;
     letter-spacing: 7px;
   }

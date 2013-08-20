@@ -5,37 +5,38 @@ body {
   width: 980px;
   margin: 5px auto 0 auto;
   font-family: "Lucida Grande", Verdana, Arial, sans-serif;
-  font-size: 10pt; }
+  font-size: 9pt; }
 
 /* line 11, ../../resources/scss/_base.scss */
 h3 {
-  margin: 4px 0; }
+  margin: 4px 0;
+  font-size: 10pt; }
 
-/* line 15, ../../resources/scss/_base.scss */
+/* line 16, ../../resources/scss/_base.scss */
 a, .dynamic_link {
   color: #800024;
   font-weight: normal;
   text-decoration: none; }
-  /* line 20, ../../resources/scss/_base.scss */
+  /* line 21, ../../resources/scss/_base.scss */
   a.game-player, .dynamic_link.game-player {
     font-weight: inherit;
     color: darkgreen; }
 
-/* line 26, ../../resources/scss/_base.scss */
+/* line 27, ../../resources/scss/_base.scss */
 a:hover, .dynamic_link:hover {
   text-decoration: underline;
   cursor: pointer; }
 
-/* line 31, ../../resources/scss/_base.scss */
+/* line 32, ../../resources/scss/_base.scss */
 a img, .icon {
   border: 0px;
   vertical-align: text-top; }
 
-/* line 36, ../../resources/scss/_base.scss */
+/* line 37, ../../resources/scss/_base.scss */
 input[type="text"], input[type="password"], textarea, select {
   border: 1px solid #ffd773; }
 
-/* line 40, ../../resources/scss/_base.scss */
+/* line 41, ../../resources/scss/_base.scss */
 input, textarea, select {
   font-size: 10px;
   font-weight: normal;
@@ -43,19 +44,19 @@ input, textarea, select {
   margin: 2px 0;
   padding: 2px 3px; }
 
-/* line 47, ../../resources/scss/_base.scss */
+/* line 48, ../../resources/scss/_base.scss */
 select {
   height: 2em; }
 
-/* line 50, ../../resources/scss/_base.scss */
+/* line 51, ../../resources/scss/_base.scss */
 select[multiple] {
   height: auto; }
 
-/* line 54, ../../resources/scss/_base.scss */
+/* line 55, ../../resources/scss/_base.scss */
 input[type="submit"] {
   background-color: #DDDDDD; }
 
-/* line 58, ../../resources/scss/_base.scss */
+/* line 59, ../../resources/scss/_base.scss */
 textarea {
   -webkit-box-sizing: border-box;
   /* Safari/Chrome, other WebKit */
@@ -66,54 +67,54 @@ textarea {
   width: 100%; }
 
 /* Page structure */
-/* line 66, ../../resources/scss/_base.scss */
+/* line 67, ../../resources/scss/_base.scss */
 #zone_toplinks {
   top: 2px;
   text-align: right;
   margin-bottom: -20px;
   margin-right: 20px; }
 
-/* line 73, ../../resources/scss/_base.scss */
+/* line 74, ../../resources/scss/_base.scss */
 #zone_logobox {
   width: 422px;
   top: 10px; }
-  /* line 77, ../../resources/scss/_base.scss */
+  /* line 78, ../../resources/scss/_base.scss */
   #zone_logobox #zone_motto {
     position: relative;
     top: -10px;
     left: 15px;
     font-family: "Garamond", "Times New Roman", serif;
-    font-size: 1.3em;
+    font-size: 1.4em;
     font-style: italic;
     color: black;
     letter-spacing: 7px; }
-  /* line 86, ../../resources/scss/_base.scss */
+  /* line 87, ../../resources/scss/_base.scss */
   #zone_logobox a:hover {
     text-decoration: none; }
 
-/* line 91, ../../resources/scss/_base.scss */
+/* line 92, ../../resources/scss/_base.scss */
 #zone_content {
   padding: 10px; }
 
 /* Miscellaneous common styles */
-/* line 96, ../../resources/scss/_base.scss */
+/* line 97, ../../resources/scss/_base.scss */
 .helptext, .upperhelptext, .lowerhelptext {
   font-size: 8pt;
   font-weight: normal;
   font-style: italic;
   color: #a67600; }
 
-/* line 101, ../../resources/scss/_base.scss */
+/* line 102, ../../resources/scss/_base.scss */
 .upperhelptext {
   display: block;
   margin-top: -0.6em; }
 
-/* line 107, ../../resources/scss/_base.scss */
+/* line 108, ../../resources/scss/_base.scss */
 .lowerhelptext {
   display: block;
   margin-top: 0.4em; }
 
-/* line 113, ../../resources/scss/_base.scss */
+/* line 114, ../../resources/scss/_base.scss */
 .game-player {
   display: inline;
   border: 1px solid #ffd773;
@@ -123,11 +124,11 @@ textarea {
   padding: 0 3px;
   margin: 0 2px;
   line-height: 20px; }
-  /* line 121, ../../resources/scss/_base.scss */
+  /* line 122, ../../resources/scss/_base.scss */
   .game-player:hover {
     background-color: #ffd773; }
 
-/* line 126, ../../resources/scss/_base.scss */
+/* line 127, ../../resources/scss/_base.scss */
 .minicard {
   display: inline-block;
   border-radius: 2px;
@@ -184,7 +185,7 @@ textarea {
 
 /* line 15, ../../resources/scss/style.game.board.scss */
 #game_label {
-  font-size: 1.8em;
+  font-size: 1.9em;
   font-weight: bold; }
 
 /* line 19, ../../resources/scss/style.game.board.scss */
@@ -202,7 +203,7 @@ textarea {
 /* line 34, ../../resources/scss/style.game.board.scss */
 #zone_hand {
   float: left;
-  width: 500px; }
+  width: 520px; }
   /* line 38, ../../resources/scss/style.game.board.scss */
   #zone_hand #zone_links {
     height: 30px; }
@@ -215,37 +216,65 @@ textarea {
     margin-bottom: 16px; }
 
 /* line 52, ../../resources/scss/style.game.board.scss */
+#zone_tabs {
+  margin-left: 540px;
+  background: none;
+  border-width: 0px; }
+
+/* line 59, ../../resources/scss/style.game.board.scss */
+#zone_tabs .ui-tabs-nav {
+  height: 2.2em;
+  background: transparent;
+  border-width: 0px;
+  padding-left: 0px; }
+  /* line 65, ../../resources/scss/style.game.board.scss */
+  #zone_tabs .ui-tabs-nav .ui-state-default {
+    background: transparent;
+    border-color: #ffd773; }
+  /* line 70, ../../resources/scss/style.game.board.scss */
+  #zone_tabs .ui-tabs-nav .ui-state-active {
+    background-color: #ffd773;
+    border-color: #ffd773; }
+  /* line 75, ../../resources/scss/style.game.board.scss */
+  #zone_tabs .ui-tabs-nav li {
+    font-size: 0.9em; }
+
+/* line 80, ../../resources/scss/style.game.board.scss */
+#zone_tabs .ui-tabs-panel {
+  background: none;
+  border: 1px solid #ffd773; }
+
+/* line 85, ../../resources/scss/style.game.board.scss */
 .minicard.not_submitted {
   background: url(../stripe.png); }
 
-/* line 56, ../../resources/scss/style.game.board.scss */
+/* line 89, ../../resources/scss/style.game.board.scss */
 .rulecard {
   border: 1px solid #ffd773;
   border-radius: 10px;
   -moz-border-radius: 10px;
   -webkit-border-radius: 10px;
   float: left;
-  width: 228px;
+  width: 238px;
   height: 140px;
   margin: 2px;
-  padding: 4px 8px;
-  font-size: 0.9em; }
-  /* line 70, ../../resources/scss/style.game.board.scss */
+  padding: 4px 8px; }
+  /* line 102, ../../resources/scss/style.game.board.scss */
   .rulecard.former {
     border: 1px dashed #ffd773;
     color: #644700; }
-  /* line 75, ../../resources/scss/style.game.board.scss */
+  /* line 107, ../../resources/scss/style.game.board.scss */
   .rulecard .rulecard_name {
-    font-size: 1.4em;
+    font-size: 1.5em;
     font-weight: bold; }
-  /* line 79, ../../resources/scss/style.game.board.scss */
+  /* line 111, ../../resources/scss/style.game.board.scss */
   .rulecard .rulecard_desc {
     line-height: 1.2em; }
-  /* line 83, ../../resources/scss/style.game.board.scss */
+  /* line 115, ../../resources/scss/style.game.board.scss */
   .rulecard .previously_owned {
     float: right; }
 
-/* line 88, ../../resources/scss/style.game.board.scss */
+/* line 120, ../../resources/scss/style.game.board.scss */
 .free_information {
   border: 1px solid #ffd773;
   border-radius: 5px;
@@ -253,15 +282,10 @@ textarea {
   -webkit-border-radius: 5px;
   padding-top: 10px;
   padding-left: 30px;
-  font-size: 0.9em;
   color: #644700; }
-  /* line 96, ../../resources/scss/style.game.board.scss */
+  /* line 127, ../../resources/scss/style.game.board.scss */
   .free_information legend {
     color: #333333;
     font-style: italic;
     margin-left: -15px;
     padding: 0 5px; }
-
-/* line 104, ../../resources/scss/style.game.board.scss */
-#zone_tabs {
-  margin-left: 500px; }
