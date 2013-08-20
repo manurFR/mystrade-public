@@ -367,6 +367,7 @@ class GameBoardMainTest(MystradeTestCase):
         self.assertContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade3.id))
         self.assertNotContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade4.id))
 
+    @skip("until redesign")
     def test_game_board_doesnt_show_pending_trades_to_game_master(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                                 status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
@@ -377,115 +378,6 @@ class GameBoardMainTest(MystradeTestCase):
         response = self._assertGetGamePage()
         self.assertNotContains(response, "Pending trades")
         self.assertNotContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade1.id))
-
-    @skip("until redesign")
-    def test_game_board_post_a_message_works_and_redirect_as_a_GET_request(self):
-        self.assertEqual(0, Message.objects.count())
-
-        response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'test message represents'}, follow = True)
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('GET', response.request['REQUEST_METHOD'])
-
-        self.assertEqual(1, Message.objects.count())
-        try:
-            msg = Message.objects.get(game = self.game, sender = self.loginUser)
-            self.assertEqual('test message represents', msg.content)
-        except Message.DoesNotExist:
-            self.fail("Message was not created for expected game and sender")
-
-    @skip("until redesign")
-    def test_game_board_posting_a_message_fails_for_more_than_255_characters(self):
-        response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'A'*300})
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(0, Message.objects.count())
-        self.assertContains(response, '<span class="errors">* Ensure this value has at most 255 characters (it has 300).</span>')
-
-    @skip("until redesign")
-    def test_game_board_message_with_markdown_are_interpreted(self):
-        response = self.client.post("/game/{0}/".format(self.game.id),
-                                    {'message': 'Hi *this* is __a test__ and [a link](http://example.net/)'},
-                                    follow = True)
-        self.assertEqual(200, response.status_code)
-
-        self.assertEqual('Hi <em>this</em> is <strong>a test</strong> and <a href=\"http://example.net/\">a link</a>',
-                         Message.objects.get(game = self.game, sender = self.loginUser).content)
-
-    @skip("until redesign")
-    def test_game_board_bleach_strips_unwanted_tags_and_attributes(self):
-        response = self.client.post("/game/{0}/".format(self.game.id),
-                                    {'message': '<script>var i=3;</script>Hi an <em class="test">image</em><img src="http://blah.jpg"/>'},
-                                    follow = True)
-        self.assertEqual(200, response.status_code)
-
-        self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)
-
-    @skip("until redesign")
-    def test_game_board_displays_messages_for_the_game(self):
-        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'Show me maybe')
-        mommy.make(Message, game = mommy.make(Game, end_date = now() + datetime.timedelta(days = 2)),
-                       sender = self.loginUser, content = 'Do not display')
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "<div class=\"message_content\">Show me maybe</div>")
-        self.assertNotContains(response, "<div class=\"message_content\">Do not display</div>")
-
-    @skip("until redesign")
-    def test_game_board_messages_are_paginated(self):
-        # 10 messages per page, extensible to 13 to accomodate 1 to 3 last messages we don't want alone on a last page
-        mommy.make(Message, _quantity = 13, game = self.game, sender = self.loginUser, content = 'my test msg')
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 13)
-
-        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg')
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10)
-
-        response = self.client.get("/game/{0}/?page=2".format(self.game.id), follow = True)
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 4)
-
-    @skip("until redesign")
-    def test_game_board_messages_from_the_game_master_stand_out(self):
-        msg = mommy.make(Message, game = self.game, sender = self.master, content = 'some message')
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "(<strong>game master</strong>)")
-        self.assertContains(response, "<div class=\"message_content admin\">")
-
-    def test_delete_message_forbidden_when_you_are_not_the_original_sender(self):
-        msg = mommy.make(Message, game = self.game, sender = self.master)
-
-        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
-        self.assertEqual(403, response.status_code)
-
-    def test_delete_message_forbidden_when_not_in_POST(self):
-        msg = mommy.make(Message, game = self.game, sender = self.loginUser)
-
-        response = self.client.get("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
-        self.assertEqual(403, response.status_code)
-
-    def test_delete_message_returns_404_when_the_message_doesnt_exists(self):
-        response = self.client.post("/game/{0}/deletemessage/987654321/".format(self.game.id), follow = True)
-        self.assertEqual(404, response.status_code)
-
-    def test_delete_message_forbidden_when_grace_period_has_expired(self):
-        msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -120))
-
-        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id))
-        self.assertEqual(403, response.status_code)
-
-    def test_delete_message_works_for_the_sender_during_the_grace_period(self):
-        msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -10))
-
-        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
-        self.assertEqual(200, response.status_code)
-
-        try:
-            Message.objects.get(id = msg.id)
-            self.fail("Message should have been deleted")
-        except Message.DoesNotExist:
-            pass
 
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
@@ -614,6 +506,123 @@ class GameBoardZoneHandTest(MystradeTestCase):
 
         self.assertNotContains(response, "There is no point showing this")
         self.assertNotContains(response, "There is no point showing that")
+
+    def _assertGetGamePage(self, game = None, status_code = 200):
+        if game is None:
+            game = self.game
+        response = self.client.get("/game/{0}/".format(game.id), follow = True)
+        self.assertEqual(status_code, response.status_code)
+        return response
+
+class GameBoardTabRecentlyTest(MystradeTestCase):
+
+    @skip("until redesign")
+    def test_game_board_post_a_message_works_and_redirect_as_a_GET_request(self):
+        self.assertEqual(0, Message.objects.count())
+
+        response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'test message represents'}, follow = True)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('GET', response.request['REQUEST_METHOD'])
+
+        self.assertEqual(1, Message.objects.count())
+        try:
+            msg = Message.objects.get(game = self.game, sender = self.loginUser)
+            self.assertEqual('test message represents', msg.content)
+        except Message.DoesNotExist:
+            self.fail("Message was not created for expected game and sender")
+
+    @skip("until redesign")
+    def test_game_board_posting_a_message_fails_for_more_than_255_characters(self):
+        response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'A'*300})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, Message.objects.count())
+        self.assertContains(response, '<span class="errors">* Ensure this value has at most 255 characters (it has 300).</span>')
+
+    @skip("until redesign")
+    def test_game_board_message_with_markdown_are_interpreted(self):
+        response = self.client.post("/game/{0}/".format(self.game.id),
+                                    {'message': 'Hi *this* is __a test__ and [a link](http://example.net/)'},
+                                    follow = True)
+        self.assertEqual(200, response.status_code)
+
+        self.assertEqual('Hi <em>this</em> is <strong>a test</strong> and <a href=\"http://example.net/\">a link</a>',
+                         Message.objects.get(game = self.game, sender = self.loginUser).content)
+
+    @skip("until redesign")
+    def test_game_board_bleach_strips_unwanted_tags_and_attributes(self):
+        response = self.client.post("/game/{0}/".format(self.game.id),
+                                    {'message': '<script>var i=3;</script>Hi an <em class="test">image</em><img src="http://blah.jpg"/>'},
+                                    follow = True)
+        self.assertEqual(200, response.status_code)
+
+        self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)
+
+    def test_game_board_displays_messages_for_the_game(self):
+        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'Show me maybe')
+        mommy.make(Message, game = mommy.make(Game, end_date = now() + datetime.timedelta(days = 2)),
+                   sender = self.loginUser, content = 'Do not display')
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "<div class=\"message_content\">Show me maybe</div>")
+        self.assertNotContains(response, "<div class=\"message_content\">Do not display</div>")
+
+    @skip("until redesign")
+    def test_game_board_messages_are_paginated(self):
+        # 10 messages per page, extensible to 13 to accomodate 1 to 3 last messages we don't want alone on a last page
+        mommy.make(Message, _quantity = 13, game = self.game, sender = self.loginUser, content = 'my test msg')
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 13)
+
+        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg')
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10)
+
+        response = self.client.get("/game/{0}/?page=2".format(self.game.id), follow = True)
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 4)
+
+    @skip("until redesign")
+    def test_game_board_messages_from_the_game_master_stand_out(self):
+        msg = mommy.make(Message, game = self.game, sender = self.master, content = 'some message')
+
+        response = self._assertGetGamePage()
+        self.assertContains(response, "(<strong>game master</strong>)")
+        self.assertContains(response, "<div class=\"message_content admin\">")
+
+    def test_delete_message_forbidden_when_you_are_not_the_original_sender(self):
+        msg = mommy.make(Message, game = self.game, sender = self.master)
+
+        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
+        self.assertEqual(403, response.status_code)
+
+    def test_delete_message_forbidden_when_not_in_POST(self):
+        msg = mommy.make(Message, game = self.game, sender = self.loginUser)
+
+        response = self.client.get("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
+        self.assertEqual(403, response.status_code)
+
+    def test_delete_message_returns_404_when_the_message_doesnt_exists(self):
+        response = self.client.post("/game/{0}/deletemessage/987654321/".format(self.game.id), follow = True)
+        self.assertEqual(404, response.status_code)
+
+    def test_delete_message_forbidden_when_grace_period_has_expired(self):
+        msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -120))
+
+        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id))
+        self.assertEqual(403, response.status_code)
+
+    def test_delete_message_works_for_the_sender_during_the_grace_period(self):
+        msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -10))
+
+        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
+        self.assertEqual(200, response.status_code)
+
+        try:
+            Message.objects.get(id = msg.id)
+            self.fail("Message should have been deleted")
+        except Message.DoesNotExist:
+            pass
 
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:

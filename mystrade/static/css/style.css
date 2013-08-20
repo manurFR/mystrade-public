@@ -390,42 +390,18 @@ td.small-height {
   width: 600px; }
 
 /* line 220, ../../resources/scss/style.scss */
-.message_content {
-  border-radius: 5px;
-  -moz-border-radius: 5px;
-  -webkit-border-radius: 5px;
-  background-color: #ffbd1a;
-  padding: 4px 4px 4px 14px;
-  margin: 3px;
-  width: 600px;
-  font-size: 0.9em; }
-  /* line 228, ../../resources/scss/style.scss */
-  .message_content.admin {
-    background: #d69900;
-    position: relative;
-    padding-bottom: 15px; }
-    /* line 233, ../../resources/scss/style.scss */
-    .message_content.admin img {
-      margin-left: -65px; }
-    /* line 237, ../../resources/scss/style.scss */
-    .message_content.admin p {
-      position: absolute;
-      top: 0;
-      width: 95%; }
-
-/* line 245, ../../resources/scss/style.scss */
 .message_date {
   margin-bottom: 5px; }
 
-/* line 249, ../../resources/scss/style.scss */
+/* line 224, ../../resources/scss/style.scss */
 .form-button {
   display: inline; }
-  /* line 252, ../../resources/scss/style.scss */
+  /* line 227, ../../resources/scss/style.scss */
   .form-button input[type=submit] {
     height: 16px;
     width: 16px;
     border: none;
     background: transparent 0 0 no-repeat; }
-    /* line 258, ../../resources/scss/style.scss */
+    /* line 233, ../../resources/scss/style.scss */
     .form-button input[type=submit].delete {
       background-image: url("../trash.png"); }

@@ -217,31 +217,6 @@ td.small-height {
   width: 600px;
 }
 
-.message_content {
-  @include roundedBorder(5px);
-  background-color: lighten($backgroundColor, 5%);
-  padding: 4px 4px 4px 14px;
-  margin: 3px;
-  width: 600px;
-  font-size: 0.9em;
-
-  &.admin {
-    background: darken($backgroundColor, 8%);
-    position: relative;
-    padding-bottom: 15px;
-
-    img {
-      margin-left: -65px;
-    }
-
-    p {
-      position: absolute;
-      top: 0;
-      width: 95%;
-    }
-  }
-}
-
 .message_date {
   margin-bottom: 5px;
 }

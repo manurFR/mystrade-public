@@ -131,3 +131,38 @@ $widthZoneHand: 520px;
     padding: 0 5px;
   }
 }
+
+.event_time {
+  display: inline-block;
+  color: $infoTextColor;
+  @include font($size: 0.9em);
+  margin-left: -10px;
+  margin-right: 5px;
+}
+.event_text {
+  display: inline-block;
+}
+
+.message_content {
+  @include roundedBorder(5px);
+  background-color: lighten($backgroundColor, 5%);
+  padding: 4px 10px;
+  margin: 3px 0 10px 3px;
+  font-size: 0.9em;
+
+  //&.admin {
+  //  background: darken($backgroundColor, 8%);
+  //  position: relative;
+  //  padding-bottom: 15px;
+  //
+  //  img {
+  //    margin-left: -65px;
+  //  }
+  //
+  //  p {
+  //    position: absolute;
+  //    top: 0;
+  //    width: 95%;
+  //  }
+  //}
+}

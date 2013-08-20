@@ -289,3 +289,25 @@ textarea {
     font-style: italic;
     margin-left: -15px;
     padding: 0 5px; }
+
+/* line 135, ../../resources/scss/style.game.board.scss */
+.event_time {
+  display: inline-block;
+  color: #a67600;
+  font-size: 0.9em;
+  margin-left: -10px;
+  margin-right: 5px; }
+
+/* line 142, ../../resources/scss/style.game.board.scss */
+.event_text {
+  display: inline-block; }
+
+/* line 146, ../../resources/scss/style.game.board.scss */
+.message_content {
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  background-color: #ffbd1a;
+  padding: 4px 10px;
+  margin: 3px 0 10px 3px;
+  font-size: 0.9em; }

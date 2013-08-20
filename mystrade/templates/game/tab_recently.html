@@ -1,0 +1,28 @@
+{% for msg in messages %}
+    <div class="event">
+        <div class="event_time">{{ msg.posting_date|time }}</div>
+        <div class="event_text">
+            {% include "common/name_or_you.html" with who=msg.sender %}
+            {% if msg.sender == game.master %} (<strong>game master</strong>) {% endif %}
+            {% if msg.sender == user %} have {% else %} has {% endif %}
+            posted a message:
+        </div>
+        <div class="message_content">{{ msg.content|safe|linebreaksbr }}</div>
+
+{#            {% if msg.sender == user and msg.in_grace_period %}#}
+{#                <div class="floatright">#}
+{#                    <form method='POST' action="{% url 'delete_message' game.id msg.id %}" class="form-button">{% csrf_token %}#}
+{#                        <span data-tip="Delete"><input type="submit" class="delete" value=""/></span>#}
+{#                    </form>#}
+{#                </div>#}
+{#            {% endif %}#}
+{#        {% if msg.sender == game.master %}#}
+{#            <div class="message_content admin">#}
+{#                <img src="{% static 'tie.png' %}" alt=""/>#}
+{#                <p>{{ msg.content|safe|linebreaksbr }}</p>#}
+{#            </div>#}
+{#        {% else %}#}
+{#            <div class="message_content">{{ msg.content|safe|linebreaksbr }}</div>#}
+{#        {% endif %}#}
+    </div>
+{% endfor %}

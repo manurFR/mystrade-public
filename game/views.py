@@ -508,4 +508,17 @@ def game_board(request, game_id):
                         'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
                         'free_informations': free_informations})
 
+    # display messages
+    messages = Message.objects.filter(game = game).order_by('-posting_date')
+    paginator = Paginator(messages, per_page = MESSAGES_PAGINATION, orphans = 3)
+    page = request.GET.get('page')
+    try:
+        displayed_messages = paginator.page(page)
+    except PageNotAnInteger:
+        displayed_messages = paginator.page(1) # If page is not an integer, deliver first page.
+    except EmptyPage:
+        displayed_messages = paginator.page(paginator.num_pages) # If page is out of range, deliver last page of results.
+
+    context.update({'messages': displayed_messages})
+
     return render(request, 'game/board.html', context)
