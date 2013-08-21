@@ -508,17 +508,27 @@ def game_board(request, game_id):
                         'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
                         'free_informations': free_informations})
 
-    # display messages
-    messages = Message.objects.filter(game = game).order_by('-posting_date')
-    paginator = Paginator(messages, per_page = MESSAGES_PAGINATION, orphans = 3)
-    page = request.GET.get('page')
-    try:
-        displayed_messages = paginator.page(page)
-    except PageNotAnInteger:
-        displayed_messages = paginator.page(1) # If page is not an integer, deliver first page.
-    except EmptyPage:
-        displayed_messages = paginator.page(paginator.num_pages) # If page is out of range, deliver last page of results.
-
-    context.update({'messages': displayed_messages})
-
     return render(request, 'game/board.html', context)
+
+@login_required
+def events(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+
+    if request.user not in game.players.all() and not game.has_super_access(request.user):
+        raise PermissionDenied
+
+    if request.is_ajax():
+        # display messages
+        messages = Message.objects.filter(game = game).order_by('-posting_date')
+        paginator = Paginator(messages, per_page = MESSAGES_PAGINATION, orphans = 3)
+        page = request.GET.get('page')
+        try:
+            displayed_messages = paginator.page(page)
+        except PageNotAnInteger:
+            displayed_messages = paginator.page(1) # If page is not an integer, deliver first page.
+        except EmptyPage:
+            displayed_messages = paginator.page(paginator.num_pages) # If page is out of range, deliver last page of results.
+
+        return render(request, 'game/tab_recently.html', {'messages': displayed_messages})
+
+    raise PermissionDenied

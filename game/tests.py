@@ -516,8 +516,17 @@ class GameBoardZoneHandTest(MystradeTestCase):
 
 class GameBoardTabRecentlyTest(MystradeTestCase):
 
+    def test_tab_recently_displays_messages_for_the_game(self):
+        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'Show me maybe')
+        mommy.make(Message, game = mommy.make(Game, end_date = now() + datetime.timedelta(days = 2)),
+                   sender = self.loginUser, content = 'Do not display')
+
+        response = self._assertGetTabRecently()
+        self.assertContains(response, "<div class=\"message_content\">Show me maybe</div>")
+        self.assertNotContains(response, "<div class=\"message_content\">Do not display</div>")
+
     @skip("until redesign")
-    def test_game_board_post_a_message_works_and_redirect_as_a_GET_request(self):
+    def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())
 
         response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'test message represents'}, follow = True)
@@ -532,14 +541,14 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
             self.fail("Message was not created for expected game and sender")
 
     @skip("until redesign")
-    def test_game_board_posting_a_message_fails_for_more_than_255_characters(self):
+    def test_tab_recently_posting_a_message_fails_for_more_than_255_characters(self):
         response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'A'*300})
         self.assertEqual(200, response.status_code)
         self.assertEqual(0, Message.objects.count())
         self.assertContains(response, '<span class="errors">* Ensure this value has at most 255 characters (it has 300).</span>')
 
     @skip("until redesign")
-    def test_game_board_message_with_markdown_are_interpreted(self):
+    def test_tab_recently_message_with_markdown_are_interpreted(self):
         response = self.client.post("/game/{0}/".format(self.game.id),
                                     {'message': 'Hi *this* is __a test__ and [a link](http://example.net/)'},
                                     follow = True)
@@ -549,7 +558,7 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
                          Message.objects.get(game = self.game, sender = self.loginUser).content)
 
     @skip("until redesign")
-    def test_game_board_bleach_strips_unwanted_tags_and_attributes(self):
+    def test_tab_recently_bleach_strips_unwanted_tags_and_attributes(self):
         response = self.client.post("/game/{0}/".format(self.game.id),
                                     {'message': '<script>var i=3;</script>Hi an <em class="test">image</em><img src="http://blah.jpg"/>'},
                                     follow = True)
@@ -557,36 +566,27 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
 
         self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)
 
-    def test_game_board_displays_messages_for_the_game(self):
-        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'Show me maybe')
-        mommy.make(Message, game = mommy.make(Game, end_date = now() + datetime.timedelta(days = 2)),
-                   sender = self.loginUser, content = 'Do not display')
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "<div class=\"message_content\">Show me maybe</div>")
-        self.assertNotContains(response, "<div class=\"message_content\">Do not display</div>")
-
     @skip("until redesign")
-    def test_game_board_messages_are_paginated(self):
+    def test_tab_recently_messages_are_paginated(self):
         # 10 messages per page, extensible to 13 to accomodate 1 to 3 last messages we don't want alone on a last page
         mommy.make(Message, _quantity = 13, game = self.game, sender = self.loginUser, content = 'my test msg')
 
-        response = self._assertGetGamePage()
+        response = self._assertGetTabRecently()
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 13)
 
         mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg')
 
-        response = self._assertGetGamePage()
+        response = self._assertGetTabRecently()
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10)
 
         response = self.client.get("/game/{0}/?page=2".format(self.game.id), follow = True)
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 4)
 
     @skip("until redesign")
-    def test_game_board_messages_from_the_game_master_stand_out(self):
+    def test_tab_recently_messages_from_the_game_master_stand_out(self):
         msg = mommy.make(Message, game = self.game, sender = self.master, content = 'some message')
 
-        response = self._assertGetGamePage()
+        response = self._assertGetTabRecently()
         self.assertContains(response, "(<strong>game master</strong>)")
         self.assertContains(response, "<div class=\"message_content admin\">")
 
@@ -624,10 +624,10 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         except Message.DoesNotExist:
             pass
 
-    def _assertGetGamePage(self, game = None, status_code = 200):
+    def _assertGetTabRecently(self, game = None, status_code = 200):
         if game is None:
             game = self.game
-        response = self.client.get("/game/{0}/".format(game.id), follow = True)
+        response = self.client.get("/game/{0}/events".format(game.id), follow = True, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
         self.assertEqual(status_code, response.status_code)
         return response
 
