@@ -1,4 +1,6 @@
 import logging
+import datetime
+
 import bleach
 import markdown
 from django.conf import settings
@@ -10,7 +12,7 @@ from django.db import transaction
 from django.db.models import Q, F
 from django.forms.formsets import formset_factory
 from django.shortcuts import render, get_object_or_404, redirect
-from django.utils.timezone import now
+from django.utils.timezone import now, utc
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse, MessageForm
@@ -23,6 +25,7 @@ from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer, Trade
 from profile.helpers import UserNameCache
 from utils import utils, stats
+
 
 logger = logging.getLogger(__name__)
 
@@ -520,15 +523,51 @@ def events(request, game_id):
     if request.is_ajax():
         # display messages
         messages = Message.objects.filter(game = game).order_by('-posting_date')
-        paginator = Paginator(messages, per_page = MESSAGES_PAGINATION, orphans = 3)
-        page = request.GET.get('page')
-        try:
-            displayed_messages = paginator.page(page)
-        except PageNotAnInteger:
-            displayed_messages = paginator.page(1) # If page is not an integer, deliver first page.
-        except EmptyPage:
-            displayed_messages = paginator.page(paginator.num_pages) # If page is out of range, deliver last page of results.
 
-        return render(request, 'game/tab_recently.html', {'messages': displayed_messages})
+        events = [message for message in messages]
+
+        events.sort(key = lambda evt: evt.posting_date, reverse=True)
+
+        # Pagination by the date of the first or last event displayed
+
+        if request.GET.get('dateprevious'):
+            start_date = datetime.datetime.strptime(request.GET.get('dateprevious'), "%Y-%m-%dT%H:%M:%S.%f%Z").replace(tzinfo = utc)
+            displayed_events = _events_in_the_range(events, start_date = start_date)[-MESSAGES_PAGINATION:]
+        else:
+            if request.GET.get('datenext'):
+                end_date = datetime.datetime.strptime(request.GET.get('datenext'), "%Y-%m-%dT%H:%M:%S.%f%Z").replace(tzinfo = utc)
+            else:
+                end_date = None
+            displayed_events = _events_in_the_range(events, end_date = end_date)[:MESSAGES_PAGINATION]
+
+        if len(displayed_events) > 0 and events.index(displayed_events[0]) > 0: # events later
+            dateprevious = datetime.datetime.strftime(displayed_events[0].posting_date, "%Y-%m-%dT%H:%M:%S.%f%Z")
+        else:
+            dateprevious = None
+
+        if len(displayed_events) > 0 and displayed_events[-1].posting_date > events[-1].posting_date: # events earlier
+            datenext = datetime.datetime.strftime(displayed_events[-1].posting_date, "%Y-%m-%dT%H:%M:%S.%f%Z")
+        else:
+            datenext = None
+
+        return render(request, 'game/tab_recently.html',
+                      {'game': game, 'messages': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious})
 
     raise PermissionDenied
+
+def _events_in_the_range(events, start_date = None, end_date = None):
+    if start_date is None:
+        start_date = datetime.datetime.min.replace(tzinfo = utc)
+    if end_date is None:
+        end_date = datetime.datetime.max.replace(tzinfo = utc)
+
+    start_index = None
+    range = []
+    for index, evt in enumerate(events):
+        if start_date < evt.posting_date < end_date:
+            if start_index is not None:
+                range.append(evt)
+            else:
+                start_index = index
+                range = [evt]
+    return range

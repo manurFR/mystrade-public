@@ -291,6 +291,11 @@ textarea {
     padding: 0 5px; }
 
 /* line 134, ../../resources/scss/style.game.board.scss */
+.show_previous {
+  margin: -5px 0 5px -10px;
+  height: 1em; }
+
+/* line 139, ../../resources/scss/style.game.board.scss */
 .event_time {
   display: inline-block;
   color: #a67600;
@@ -298,11 +303,11 @@ textarea {
   margin-left: -10px;
   margin-right: 5px; }
 
-/* line 141, ../../resources/scss/style.game.board.scss */
+/* line 146, ../../resources/scss/style.game.board.scss */
 .event_text {
   display: inline-block; }
 
-/* line 145, ../../resources/scss/style.game.board.scss */
+/* line 150, ../../resources/scss/style.game.board.scss */
 .message_content {
   border-radius: 5px;
   -moz-border-radius: 5px;
@@ -311,3 +316,9 @@ textarea {
   padding: 4px 10px;
   margin: 3px 0 10px 3px;
   font-size: 0.9em; }
+
+/* line 174, ../../resources/scss/style.game.board.scss */
+.show_more {
+  float: right;
+  margin-right: 1em;
+  text-align: right; }

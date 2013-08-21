@@ -25,3 +25,9 @@ $lightDashedBorder: 1px dashed $lightBackgroundColor;
     @if $style != null { style: $style; }
   };
 }
+
+@mixin floatright() {
+  float: right;
+  margin-right: 1em;
+  text-align: right;
+}

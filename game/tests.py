@@ -566,21 +566,18 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
 
         self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)
 
-    @skip("until redesign")
     def test_tab_recently_messages_are_paginated(self):
-        # 10 messages per page, extensible to 13 to accomodate 1 to 3 last messages we don't want alone on a last page
-        mommy.make(Message, _quantity = 13, game = self.game, sender = self.loginUser, content = 'my test msg')
+        posting_date = datetime.datetime(2012, 01, 01, 12, 00, 00, tzinfo = get_default_timezone())
+        for _i in range(13):
+            mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
+                                posting_date = posting_date)
+            posting_date += datetime.timedelta(hours = 2)
 
         response = self._assertGetTabRecently()
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 13)
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10) # 10 messages per page
 
-        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg')
-
-        response = self._assertGetTabRecently()
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10)
-
-        response = self.client.get("/game/{0}/?page=2".format(self.game.id), follow = True)
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 4)
+        # response = self._assertGetTabRecently(querystring = "datenext=2012-01-01T18:00:00.000000UTC")
+        # self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 3)
 
     @skip("until redesign")
     def test_tab_recently_messages_from_the_game_master_stand_out(self):
@@ -624,10 +621,13 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         except Message.DoesNotExist:
             pass
 
-    def _assertGetTabRecently(self, game = None, status_code = 200):
+    def _assertGetTabRecently(self, game = None, querystring = None, status_code = 200):
         if game is None:
             game = self.game
-        response = self.client.get("/game/{0}/events".format(game.id), follow = True, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
+        url = "/game/{0}/events".format(game.id)
+        if querystring:
+            url += "?" + querystring
+        response = self.client.get(url, follow = True, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
         self.assertEqual(status_code, response.status_code)
         return response
 

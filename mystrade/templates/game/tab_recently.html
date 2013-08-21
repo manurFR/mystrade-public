@@ -1,3 +1,4 @@
+<div class="show_previous">{% if dateprevious %}<a>&lt; show previous events</a>{% endif %}</div>
 {% for msg in messages %}
     <div class="event">
         <div class="event_time">{{ msg.posting_date|time }}</div>
@@ -26,3 +27,15 @@
 {#        {% endif %}#}
     </div>
 {% endfor %}
+<div class="show_more">{% if datenext %}<a>show more &gt;</a>{% endif %}</div>
+
+<script>
+    $(".show_previous a").on("click", function() {
+        $("li.tab-recently a").attr("href", "{% url 'events' game.id %}?dateprevious={{ dateprevious }}");
+        $('#zone_tabs').tabs("load", 0);
+    });
+    $(".show_more a").on("click", function() {
+        $("li.tab-recently a").attr("href", "{% url 'events' game.id %}?datenext={{ datenext }}");
+        $('#zone_tabs').tabs("load", 0);
+    });
+</script>

@@ -131,6 +131,11 @@ $widthZoneHand: 520px;
   }
 }
 
+.show_previous {
+  margin: -5px 0 5px -10px;
+  height: 1em;
+}
+
 .event_time {
   display: inline-block;
   color: $infoTextColor;
@@ -164,4 +169,8 @@ $widthZoneHand: 520px;
   //    width: 95%;
   //  }
   //}
+}
+
+.show_more {
+  @include floatright();
 }
