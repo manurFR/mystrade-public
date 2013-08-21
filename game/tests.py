@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Sum
 from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
-from django.utils.timezone import get_default_timezone, now
+from django.utils.timezone import get_default_timezone, now, utc
 from model_mommy import mommy
 
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
@@ -44,10 +44,10 @@ class WelcomePageViewTest(MystradeTestCase):
 
     def test_welcome_games_query(self):
         game_mastered = mommy.make(Game, master = self.loginUser,
-                                       end_date = datetime.datetime(2022, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
+                                       end_date = utc.localize(datetime.datetime(2022, 11, 1, 12, 0, 0)))
         mommy.make(GamePlayer, game = game_mastered, player = self.alternativeUser)
         other_game = mommy.make(Game, master = self.alternativeUser,
-                               end_date = datetime.datetime(2022, 11, 5, 12, 0, 0, tzinfo = get_default_timezone()))
+                               end_date = utc.localize(datetime.datetime(2022, 11, 5, 12, 0, 0)))
 
         response = self.client.get(reverse("welcome"))
 
@@ -87,7 +87,6 @@ class GameCreationViewsTest(TestCase):
                                                       'players': self.testUsersNoCreate[0].id})
         self.assertFormError(response, 'form', None, 'Please select at least 3 players (as many as there are mandatory rule cards in this ruleset).')
 
-    @override_settings(TIME_ZONE = 'UTC')
     def test_create_game_first_page(self):
         response = self.client.post("/game/create/", {'ruleset': 1,
                                                       'start_date': '11/10/2012 18:30',
@@ -95,8 +94,8 @@ class GameCreationViewsTest(TestCase):
                                                       'players': [player.id for player in self.testUsersNoCreate]})
         self.assertRedirects(response, "/game/selectrules/")
         self.assertEqual(1, self.client.session['ruleset'].id)
-        self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), self.client.session['start_date'])
-        self.assertEqual(datetime.datetime(2012, 11, 13, 00, 15, tzinfo = get_default_timezone()), self.client.session['end_date'])
+        self.assertEqual(get_default_timezone().localize(datetime.datetime(2012, 11, 10, 18, 30)), self.client.session['start_date'])
+        self.assertEqual(get_default_timezone().localize(datetime.datetime(2012, 11, 13, 00, 15)), self.client.session['end_date'])
         self.assertItemsEqual(list(self.testUsersNoCreate), self.client.session['players'])
 
     def test_access_select_rules_with_incomplete_session_redirects_to_first_page(self):
@@ -167,7 +166,7 @@ class GameCreationViewsTest(TestCase):
         self.assertEqual("Please select at most 4 rule cards (including the mandatory ones)", response.context['error'])
 
     @skip("until redesign")
-    @override_settings(ADMINS = (('admin', 'admin@mystrade.com'),), TIME_ZONE = 'UTC')
+    @override_settings(ADMINS = (('admin', 'admin@mystrade.com'),))
     def test_create_game_complete_save_and_clean_session(self):
         response = self.client.post("/game/create/", {'ruleset': 1,
                                                       'start_date': '11/10/2012 18:30',
@@ -197,8 +196,8 @@ class GameCreationViewsTest(TestCase):
         self.assertRedirects(response, "/game/{0}/".format(created_game.id))
 
         self.assertEqual(1, created_game.ruleset_id)
-        self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), created_game.start_date)
-        self.assertEqual(datetime.datetime(2037, 11, 13, 00, 15, tzinfo = get_default_timezone()), created_game.end_date)
+        self.assertEqual(get_default_timezone().localize(datetime.datetime(2012, 11, 10, 18, 30)), created_game.start_date)
+        self.assertEqual(get_default_timezone().localize(datetime.datetime(2037, 11, 13, 00, 15)), created_game.end_date)
         self.assertItemsEqual(list(self.testUsersNoCreate)[:4], list(created_game.players.all()))
         self.assertListEqual([1, 2, 3, 9], [rule.id for rule in created_game.rules.all()])
         self.assertFalse('ruleset' in self.client.session)
@@ -451,14 +450,14 @@ class GameBoardZoneHandTest(MystradeTestCase):
         rulecard1 = RuleCard.objects.get(ref_name = 'HAG04')
         rulecard2 = RuleCard.objects.get(ref_name = 'HAG10')
         rih1_former =           mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
-                                           abandon_date = datetime.datetime(2012, 01, 11, 10, 45, tzinfo = get_default_timezone()))
+                                           abandon_date = utc.localize(datetime.datetime(2012, 01, 11, 10, 45)))
         rih1_former_duplicate = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
-                                           abandon_date = datetime.datetime(2012, 01, 13, 18, 00, tzinfo = get_default_timezone()))
+                                           abandon_date = utc.localize(datetime.datetime(2012, 01, 13, 18, 00)))
         rih2_current =          mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
                                            abandon_date = None)
         rih2_former_but_copy_of_current = \
                                 mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
-                                           abandon_date = datetime.datetime(2013, 01, 13, 8, 5, tzinfo = get_default_timezone()))
+                                           abandon_date = utc.localize(datetime.datetime(2013, 01, 13, 8, 5)))
 
         # one should see one rulecard 2 in rules currently owned and only one rulecard 1 in former rules
         #  (no duplicates and no copies of cards currently in hand)
@@ -525,6 +524,21 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, "<div class=\"message_content\">Show me maybe</div>")
         self.assertNotContains(response, "<div class=\"message_content\">Do not display</div>")
 
+    def test_tab_recently_messages_are_paginated(self):
+        posting_date = utc.localize(datetime.datetime(2012, 01, 01, 12, 00, 00))
+        for _i in range(13):
+            mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
+                       posting_date = posting_date)
+            posting_date += datetime.timedelta(hours = 2)
+
+        response = self._assertGetTabRecently()
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10) # 10 messages per page
+
+        response = self._assertGetTabRecently(querystring = "datenext=2012-01-01T18:00:00.000000")
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 3)
+
+        # TODO add test for dateprevious
+
     @skip("until redesign")
     def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())
@@ -565,19 +579,6 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertEqual(200, response.status_code)
 
         self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)
-
-    def test_tab_recently_messages_are_paginated(self):
-        posting_date = datetime.datetime(2012, 01, 01, 12, 00, 00, tzinfo = get_default_timezone())
-        for _i in range(13):
-            mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
-                                posting_date = posting_date)
-            posting_date += datetime.timedelta(hours = 2)
-
-        response = self._assertGetTabRecently()
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10) # 10 messages per page
-
-        # response = self._assertGetTabRecently(querystring = "datenext=2012-01-01T18:00:00.000000UTC")
-        # self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 3)
 
     @skip("until redesign")
     def test_tab_recently_messages_from_the_game_master_stand_out(self):
@@ -688,17 +689,17 @@ class HandViewTest(MystradeTestCase): # TODO detele
         rulecard1 = mommy.make(RuleCard, public_name = 'C1', description = 'Desc1')
         rulecard2 = mommy.make(RuleCard, public_name = 'C2', description = 'Desc2')
         rih1_former = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
-                                     ownership_date = datetime.datetime(2013, 01, 10, 18, 30, tzinfo = get_default_timezone()),
-                                     abandon_date = datetime.datetime(2012, 01, 11, 10, 45, tzinfo = get_default_timezone()))
+                                     ownership_date = utc.localize(datetime.datetime(2013, 01, 10, 18, 30)),
+                                     abandon_date = utc.localize(datetime.datetime(2012, 01, 11, 10, 45)))
         rih1_former_duplicate = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
-                                               ownership_date = datetime.datetime(2013, 01, 12, 16, 00, tzinfo = get_default_timezone()),
-                                               abandon_date = datetime.datetime(2012, 01, 13, 18, 00, tzinfo = get_default_timezone()))
+                                               ownership_date = utc.localize(datetime.datetime(2013, 01, 12, 16, 00)),
+                                               abandon_date = utc.localize(datetime.datetime(2012, 01, 13, 18, 00)))
         rih2_current = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
-                                      ownership_date = datetime.datetime(2013, 01, 15, 15, 25, tzinfo = get_default_timezone()),
+                                      ownership_date = utc.localize(datetime.datetime(2013, 01, 15, 15, 25)),
                                       abandon_date = None)
         rih2_former_but_copy_of_current = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
-                                                         ownership_date = datetime.datetime(2013, 01, 12, 12, 00, tzinfo = get_default_timezone()),
-                                                         abandon_date = datetime.datetime(2013, 01, 13, 8, 5, tzinfo = get_default_timezone()))
+                                                         ownership_date = utc.localize(datetime.datetime(2013, 01, 12, 12, 00)),
+                                                         abandon_date = utc.localize(datetime.datetime(2013, 01, 13, 8, 5)))
 
         # one should see one rulecard 2 in rules currently owned and only one rulecard 1 in former rules
         #  (no duplicates and no copies of cards currently in hand)
@@ -918,7 +919,7 @@ class ControlBoardViewTest(MystradeTestCase):
                                 initiator_offer = mommy.make(Offer))
         trade3 = mommy.make(Trade, game = self.game_ended, initiator = self.alternativeUser, finalizer = self.alternativeUser,
                                 status = 'CANCELLED', initiator_offer = mommy.make(Offer),
-                                closing_date = datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()))
+                                closing_date = utc.localize(datetime.datetime(2012, 11, 10, 18, 30)))
 
         self._assertOperation_post(self.game_ended, "close")
 
@@ -936,7 +937,7 @@ class ControlBoardViewTest(MystradeTestCase):
         self.assertIsNotNone(game.closing_date, trade2.closing_date)
 
         self.assertEqual(self.alternativeUser, trade3.finalizer)
-        self.assertEqual(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), trade3.closing_date)
+        self.assertEqual(utc.localize(datetime.datetime(2012, 11, 10, 18, 30)), trade3.closing_date)
 
     def test_close_game_submits_the_commodity_cards_of_players_who_havent_manually_submitted(self):
         gp1 = mommy.make(GamePlayer, game = self.game_ended, player = self.alternativeUser)
@@ -1201,14 +1202,14 @@ class FormsTest(TestCase):
     def test_validate_dates(self):
         self.assertRaisesMessage(ValidationError, 'End date must be strictly posterior to start date.',
                                  validate_dates,
-                                 datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()),
-                                 datetime.datetime(2011, 11, 10, 18, 30, tzinfo = get_default_timezone()))
+                                 utc.localize(datetime.datetime(2012, 11, 10, 18, 30)),
+                                 utc.localize(datetime.datetime(2011, 11, 10, 18, 30)))
         self.assertRaisesMessage(ValidationError, 'End date must be strictly posterior to start date.',
                                  validate_dates,
-                                 datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()),
-                                 datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()))
+                                 utc.localize(datetime.datetime(2012, 11, 10, 18, 30)),
+                                 utc.localize(datetime.datetime(2012, 11, 10, 18, 30)))
         try:
-            validate_dates(datetime.datetime(2012, 11, 10, 18, 30, tzinfo = get_default_timezone()), datetime.datetime(2012, 11, 10, 18, 50, tzinfo = get_default_timezone()))
+            validate_dates(utc.localize(datetime.datetime(2012, 11, 10, 18, 30)), utc.localize(datetime.datetime(2012, 11, 10, 18, 50)))
         except ValidationError:
             self.fail("validate_dates should not fail when end_date is strictly posterior to start_date")
 
@@ -1319,7 +1320,7 @@ class HelpersTest(MystradeTestCase):
         mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rmx09, abandon_date = None)
         mommy.make(RuleInHand, game = self.game, player = self.alternativeUser, rulecard = rmx10, abandon_date = None)
         mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rmx11,
-                          abandon_date = datetime.datetime(2013, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
+                          abandon_date = utc.localize(datetime.datetime(2013, 11, 1, 12, 0, 0)))
 
         rules_in_hand = rules_currently_in_hand(self.game, self.loginUser)
 
@@ -1330,13 +1331,13 @@ class HelpersTest(MystradeTestCase):
         hag06 = RuleCard.objects.get(ref_name='HAG06')
         hag07 = RuleCard.objects.get(ref_name='HAG07')
         mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag05,
-                   abandon_date = datetime.datetime(2013, 11, 1, 12, 0, 0, tzinfo = get_default_timezone()))
+                   abandon_date = utc.localize(datetime.datetime(2013, 11, 1, 12, 0, 0)))
         mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag06,
-                   abandon_date = datetime.datetime(2013, 4, 4, 12, 0, 0, tzinfo = get_default_timezone()))
+                   abandon_date = utc.localize(datetime.datetime(2013, 4, 4, 12, 0, 0)))
         mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag06,
-                   abandon_date = datetime.datetime(2013, 4, 6, 14, 0, 0, tzinfo = get_default_timezone()))
+                   abandon_date = utc.localize(datetime.datetime(2013, 4, 6, 14, 0, 0)))
         mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag07,
-                   abandon_date = datetime.datetime(2013, 1, 8, 16, 0, 0, tzinfo = get_default_timezone()))
+                   abandon_date = utc.localize(datetime.datetime(2013, 1, 8, 16, 0, 0)))
 
         rules_in_hand = rules_formerly_in_hand(self.game, self.loginUser, [hag07])
 

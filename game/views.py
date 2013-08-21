@@ -12,7 +12,7 @@ from django.db import transaction
 from django.db.models import Q, F
 from django.forms.formsets import formset_factory
 from django.shortcuts import render, get_object_or_404, redirect
-from django.utils.timezone import now, utc
+from django.utils.timezone import now, utc, make_naive
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse, MessageForm
@@ -531,22 +531,22 @@ def events(request, game_id):
         # Pagination by the date of the first or last event displayed
 
         if request.GET.get('dateprevious'):
-            start_date = datetime.datetime.strptime(request.GET.get('dateprevious'), "%Y-%m-%dT%H:%M:%S.%f%Z").replace(tzinfo = utc)
+            start_date = datetime.datetime.strptime(request.GET.get('dateprevious'), "%Y-%m-%dT%H:%M:%S.%f")
             displayed_events = _events_in_the_range(events, start_date = start_date)[-MESSAGES_PAGINATION:]
         else:
             if request.GET.get('datenext'):
-                end_date = datetime.datetime.strptime(request.GET.get('datenext'), "%Y-%m-%dT%H:%M:%S.%f%Z").replace(tzinfo = utc)
+                end_date = datetime.datetime.strptime(request.GET.get('datenext'), "%Y-%m-%dT%H:%M:%S.%f")
             else:
                 end_date = None
             displayed_events = _events_in_the_range(events, end_date = end_date)[:MESSAGES_PAGINATION]
 
         if len(displayed_events) > 0 and events.index(displayed_events[0]) > 0: # events later
-            dateprevious = datetime.datetime.strftime(displayed_events[0].posting_date, "%Y-%m-%dT%H:%M:%S.%f%Z")
+            dateprevious = datetime.datetime.strftime(displayed_events[0].posting_date, "%Y-%m-%dT%H:%M:%S.%f")
         else:
             dateprevious = None
 
         if len(displayed_events) > 0 and displayed_events[-1].posting_date > events[-1].posting_date: # events earlier
-            datenext = datetime.datetime.strftime(displayed_events[-1].posting_date, "%Y-%m-%dT%H:%M:%S.%f%Z")
+            datenext = datetime.datetime.strftime(displayed_events[-1].posting_date, "%Y-%m-%dT%H:%M:%S.%f")
         else:
             datenext = None
 
@@ -557,14 +557,14 @@ def events(request, game_id):
 
 def _events_in_the_range(events, start_date = None, end_date = None):
     if start_date is None:
-        start_date = datetime.datetime.min.replace(tzinfo = utc)
+        start_date = datetime.datetime.min
     if end_date is None:
-        end_date = datetime.datetime.max.replace(tzinfo = utc)
+        end_date = datetime.datetime.max
 
     start_index = None
     range = []
     for index, evt in enumerate(events):
-        if start_date < evt.posting_date < end_date:
+        if start_date < make_naive(evt.posting_date, utc)< end_date:
             if start_index is not None:
                 range.append(evt)
             else:
