@@ -513,6 +513,8 @@ def game_board(request, game_id):
 
     return render(request, 'game/board.html', context)
 
+FORMAT_EVENT_PERMALINK = "%Y-%m-%dT%H:%M:%S.%f"
+
 @login_required
 def events(request, game_id):
     game = get_object_or_404(Game, id = game_id)
@@ -531,7 +533,7 @@ def events(request, game_id):
         # Pagination by the date of the first or last event displayed
 
         if request.GET.get('dateprevious'):
-            start_date = datetime.datetime.strptime(request.GET.get('dateprevious'), "%Y-%m-%dT%H:%M:%S.%f")
+            start_date = datetime.datetime.strptime(request.GET.get('dateprevious'), FORMAT_EVENT_PERMALINK)
             events_in_the_range = _events_in_the_range(events, start_date=start_date)
             if len(events_in_the_range) >= EVENTS_PAGINATION:
                 displayed_events = events_in_the_range[-EVENTS_PAGINATION:] # take the *last* EVENTS_PAGINATION events
@@ -539,18 +541,18 @@ def events(request, game_id):
                 displayed_events = events[:EVENTS_PAGINATION]
         else:
             if request.GET.get('datenext'):
-                end_date = datetime.datetime.strptime(request.GET.get('datenext'), "%Y-%m-%dT%H:%M:%S.%f")
+                end_date = datetime.datetime.strptime(request.GET.get('datenext'), FORMAT_EVENT_PERMALINK)
             else:
                 end_date = None
             displayed_events = _events_in_the_range(events, end_date = end_date)[:EVENTS_PAGINATION] # take the *first* EVENTS_PAGINATION events
 
         if len(displayed_events) > 0 and events.index(displayed_events[0]) > 0: # events later
-            dateprevious = datetime.datetime.strftime(displayed_events[0].posting_date, "%Y-%m-%dT%H:%M:%S.%f")
+            dateprevious = datetime.datetime.strftime(displayed_events[0].posting_date, FORMAT_EVENT_PERMALINK)
         else:
             dateprevious = None
 
         if len(displayed_events) > 0 and displayed_events[-1].posting_date > events[-1].posting_date: # events earlier
-            datenext = datetime.datetime.strftime(displayed_events[-1].posting_date, "%Y-%m-%dT%H:%M:%S.%f")
+            datenext = datetime.datetime.strftime(displayed_events[-1].posting_date, FORMAT_EVENT_PERMALINK)
         else:
             datenext = None
 

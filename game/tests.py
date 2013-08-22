@@ -8,8 +8,10 @@ from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Sum
 from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
+from django.utils.datetime_safe import strftime
 from django.utils.timezone import get_default_timezone, now, utc
 from model_mommy import mommy
+from game import views
 
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
     prepare_deck, dispatch_cards, CommodityCardDealer
@@ -525,33 +527,53 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertNotContains(response, "<div class=\"message_content\">Do not display</div>")
 
     def test_tab_recently_messages_are_paginated(self):
-        posting_date = utc.localize(datetime.datetime(2012, 01, 01, 00, 00, 00))
-        for _i in range(24):
+        """ This test automatically adapts to the chosen value of EVENTS_PAGINATION in game.views """
+        pagination = views.EVENTS_PAGINATION
+        last_date = utc.localize(datetime.datetime(2012, 01, 10, 23, 00, 00))
+        for i in range(int(2.5 * pagination)): # prepare 2 full pages and one last partial page of messages
             mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
-                       posting_date = posting_date)
-            posting_date += datetime.timedelta(hours = 1)
+                       posting_date = last_date + datetime.timedelta(hours = -i))
+
+        somewhere_in_page_1 = last_date + datetime.timedelta(hours = -(int(pagination / 2)))
+        last_in_page_1 = last_date + datetime.timedelta(hours = -(pagination - 1))
+        first_in_page_2 = last_date + datetime.timedelta(hours = -pagination)
+        last_in_page_2 = last_date + datetime.timedelta(hours = -(2 * pagination - 1))
+        first_in_page_3 = last_date + datetime.timedelta(hours = -(2 * pagination))
 
         response = self._assertGetTabRecently()
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10) # 10 messages per page
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination) # 'pagination' messages per page
         self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious=None");'.format(self.game.id))
-        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext=2012-01-01T14:00:00.000000");'.format(self.game.id))
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext={1}");'.
+                                        format(self.game.id, strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK)))
 
-        response = self._assertGetTabRecently(querystring = "datenext=2012-01-01T04:00:00.000000")
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 4)
-        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious=2012-01-01T03:00:00.000000");'.format(self.game.id))
+        response = self._assertGetTabRecently(querystring = "datenext=" + strftime(last_in_page_2, views.FORMAT_EVENT_PERMALINK))
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = int(pagination / 2))
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious={1}");'.
+                                        format(self.game.id, strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK)))
         self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext=None");'.format(self.game.id))
 
-        response = self._assertGetTabRecently(querystring = "dateprevious=2012-01-01T03:00:00.000000")
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10)
-        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious=2012-01-01T13:00:00.000000");'.format(self.game.id))
-        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext=2012-01-01T04:00:00.000000");'.format(self.game.id))
+        response = self._assertGetTabRecently(querystring = "dateprevious=" + strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK))
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious={1}");'.
+                                        format(self.game.id, strftime(first_in_page_2, views.FORMAT_EVENT_PERMALINK)))
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext={1}");'.
+                                        format(self.game.id, strftime(last_in_page_2, views.FORMAT_EVENT_PERMALINK)))
 
-        # case when new events have appeared: there are less than 10 events after dateprevious, but we should
-        #  display the first 10 events anyway and not take into account the dateprevious
-        response = self._assertGetTabRecently(querystring = "dateprevious=2012-01-01T21:00:00.000000")
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10)
+        # case when new events have appeared: there are less than 'pagination' events after dateprevious, but we should
+        #  display the first 'pagination' events anyway and not take into account the dateprevious
+        response = self._assertGetTabRecently(querystring = "dateprevious=" + strftime(somewhere_in_page_1, views.FORMAT_EVENT_PERMALINK))
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
         self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious=None");'.format(self.game.id)) # like the default
-        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext=2012-01-01T14:00:00.000000");'.format(self.game.id)) # like the default
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext={1}");'.
+                                        format(self.game.id, strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK))) # like the default
+
+    @skip("until redesign")
+    def test_tab_recently_messages_from_the_game_master_stand_out(self):
+        msg = mommy.make(Message, game = self.game, sender = self.master, content = 'some message')
+
+        response = self._assertGetTabRecently()
+        self.assertContains(response, "(<strong>game master</strong>)")
+        self.assertContains(response, "<div class=\"message_content admin\">")
 
     @skip("until redesign")
     def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):
@@ -593,14 +615,6 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertEqual(200, response.status_code)
 
         self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)
-
-    @skip("until redesign")
-    def test_tab_recently_messages_from_the_game_master_stand_out(self):
-        msg = mommy.make(Message, game = self.game, sender = self.master, content = 'some message')
-
-        response = self._assertGetTabRecently()
-        self.assertContains(response, "(<strong>game master</strong>)")
-        self.assertContains(response, "<div class=\"message_content admin\">")
 
     def test_delete_message_forbidden_when_you_are_not_the_original_sender(self):
         msg = mommy.make(Message, game = self.game, sender = self.master)
