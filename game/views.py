@@ -556,8 +556,11 @@ def events(request, game_id):
         else:
             datenext = None
 
+        message_form = MessageForm()
+
         return render(request, 'game/tab_recently.html',
-                      {'game': game, 'messages': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious})
+                      {'game': game, 'messages': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious,
+                       'message_form': message_form, 'maxMessageLength': Message.MAX_LENGTH})
 
     raise PermissionDenied
 

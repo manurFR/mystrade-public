@@ -380,22 +380,18 @@ td.small-height {
   color: red; }
 
 /* line 210, ../../resources/scss/style.scss */
-.message_area {
-  width: 600px; }
-
-/* line 214, ../../resources/scss/style.scss */
 .message_date {
   margin-bottom: 5px; }
 
-/* line 218, ../../resources/scss/style.scss */
+/* line 214, ../../resources/scss/style.scss */
 .form-button {
   display: inline; }
-  /* line 221, ../../resources/scss/style.scss */
+  /* line 217, ../../resources/scss/style.scss */
   .form-button input[type=submit] {
     height: 16px;
     width: 16px;
     border: none;
     background: transparent 0 0 no-repeat; }
-    /* line 227, ../../resources/scss/style.scss */
+    /* line 223, ../../resources/scss/style.scss */
     .form-button input[type=submit].delete {
       background-image: url("../trash.png"); }

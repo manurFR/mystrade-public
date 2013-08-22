@@ -162,3 +162,14 @@ $widthZoneHand: 520px;
 .show_more {
   text-align: right;
 }
+
+.chars_left {
+  @include floatright();
+}
+
+#post_message {
+  // hack to have the button closer to the textarea
+  position: relative;
+  top: -10px;
+}
+

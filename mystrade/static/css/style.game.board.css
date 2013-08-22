@@ -323,3 +323,14 @@ textarea {
 /* line 162, ../../resources/scss/style.game.board.scss */
 .show_more {
   text-align: right; }
+
+/* line 166, ../../resources/scss/style.game.board.scss */
+.chars_left {
+  float: right;
+  margin-right: 1em;
+  text-align: right; }
+
+/* line 170, ../../resources/scss/style.game.board.scss */
+#post_message {
+  position: relative;
+  top: -10px; }
