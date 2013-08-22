@@ -567,7 +567,6 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext={1}");'.
                                         format(self.game.id, strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK))) # like the default
 
-    @skip("until redesign")
     def test_tab_recently_messages_from_the_game_master_stand_out(self):
         msg = mommy.make(Message, game = self.game, sender = self.master, content = 'some message')
 

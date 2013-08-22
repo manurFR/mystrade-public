@@ -305,7 +305,7 @@ textarea {
 
 /* line 146, ../../resources/scss/style.game.board.scss */
 .event_text {
-  display: inline-block; }
+  display: inline; }
 
 /* line 150, ../../resources/scss/style.game.board.scss */
 .message_content {
@@ -316,7 +316,10 @@ textarea {
   padding: 4px 10px;
   margin: 3px 0 10px 3px;
   font-size: 0.9em; }
+  /* line 157, ../../resources/scss/style.game.board.scss */
+  .message_content.admin {
+    background: #d69900; }
 
-/* line 174, ../../resources/scss/style.game.board.scss */
+/* line 162, ../../resources/scss/style.game.board.scss */
 .show_more {
   text-align: right; }

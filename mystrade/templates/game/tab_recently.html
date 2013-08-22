@@ -8,7 +8,7 @@
             {% if msg.sender == user %} have {% else %} has {% endif %}
             posted a message:
         </div>
-        <div class="message_content">{{ msg.content|safe|linebreaksbr }}</div>
+        <div class="message_content{% if msg.sender == game.master %} admin{% endif %}">{{ msg.content|safe|linebreaksbr }}</div>
 
 {#            {% if msg.sender == user and msg.in_grace_period %}#}
 {#                <div class="floatright">#}
