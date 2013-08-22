@@ -525,19 +525,33 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertNotContains(response, "<div class=\"message_content\">Do not display</div>")
 
     def test_tab_recently_messages_are_paginated(self):
-        posting_date = utc.localize(datetime.datetime(2012, 01, 01, 12, 00, 00))
-        for _i in range(13):
+        posting_date = utc.localize(datetime.datetime(2012, 01, 01, 00, 00, 00))
+        for _i in range(24):
             mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
                        posting_date = posting_date)
-            posting_date += datetime.timedelta(hours = 2)
+            posting_date += datetime.timedelta(hours = 1)
 
         response = self._assertGetTabRecently()
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10) # 10 messages per page
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious=None");'.format(self.game.id))
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext=2012-01-01T14:00:00.000000");'.format(self.game.id))
 
-        response = self._assertGetTabRecently(querystring = "datenext=2012-01-01T18:00:00.000000")
-        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 3)
+        response = self._assertGetTabRecently(querystring = "datenext=2012-01-01T04:00:00.000000")
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 4)
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious=2012-01-01T03:00:00.000000");'.format(self.game.id))
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext=None");'.format(self.game.id))
 
-        # TODO add test for dateprevious
+        response = self._assertGetTabRecently(querystring = "dateprevious=2012-01-01T03:00:00.000000")
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10)
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious=2012-01-01T13:00:00.000000");'.format(self.game.id))
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext=2012-01-01T04:00:00.000000");'.format(self.game.id))
+
+        # case when new events have appeared: there are less than 10 events after dateprevious, but we should
+        #  display the first 10 events anyway and not take into account the dateprevious
+        response = self._assertGetTabRecently(querystring = "dateprevious=2012-01-01T21:00:00.000000")
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 10)
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious=None");'.format(self.game.id)) # like the default
+        self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext=2012-01-01T14:00:00.000000");'.format(self.game.id)) # like the default
 
     @skip("until redesign")
     def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):

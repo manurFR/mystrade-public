@@ -49,7 +49,7 @@ def welcome(request):
 #############################################################################
 ##                            Game Views                                   ##
 #############################################################################
-MESSAGES_PAGINATION = 10
+EVENTS_PAGINATION = 10
 
 @login_required
 def game(request, game_id):
@@ -97,7 +97,7 @@ def game(request, game_id):
 
     # display messages
     messages = Message.objects.filter(game = game).order_by('-posting_date')
-    paginator = Paginator(messages, per_page = MESSAGES_PAGINATION, orphans = 3)
+    paginator = Paginator(messages, per_page = EVENTS_PAGINATION, orphans = 3)
     page = request.GET.get('page')
     try:
         displayed_messages = paginator.page(page)
@@ -532,13 +532,17 @@ def events(request, game_id):
 
         if request.GET.get('dateprevious'):
             start_date = datetime.datetime.strptime(request.GET.get('dateprevious'), "%Y-%m-%dT%H:%M:%S.%f")
-            displayed_events = _events_in_the_range(events, start_date = start_date)[-MESSAGES_PAGINATION:]
+            events_in_the_range = _events_in_the_range(events, start_date=start_date)
+            if len(events_in_the_range) >= EVENTS_PAGINATION:
+                displayed_events = events_in_the_range[-EVENTS_PAGINATION:] # take the *last* EVENTS_PAGINATION events
+            else: # if there are less than EVENTS_PAGINATION events after start_date, it's the beginning of the list and we take as much events as we can
+                displayed_events = events[:EVENTS_PAGINATION]
         else:
             if request.GET.get('datenext'):
                 end_date = datetime.datetime.strptime(request.GET.get('datenext'), "%Y-%m-%dT%H:%M:%S.%f")
             else:
                 end_date = None
-            displayed_events = _events_in_the_range(events, end_date = end_date)[:MESSAGES_PAGINATION]
+            displayed_events = _events_in_the_range(events, end_date = end_date)[:EVENTS_PAGINATION] # take the *first* EVENTS_PAGINATION events
 
         if len(displayed_events) > 0 and events.index(displayed_events[0]) > 0: # events later
             dateprevious = datetime.datetime.strftime(displayed_events[0].posting_date, "%Y-%m-%dT%H:%M:%S.%f")
