@@ -12,6 +12,7 @@ urlpatterns = patterns('game.views',
     url(r'^(\d+)/close/$',               'close_game',     name = 'close_game'),
     url(r'^(\d+)/$',                     'game_board',     name = 'game_board'), # TODO rename to 'game' after redesign
     url(r'^(\d+)/events/$',              'events',         name = 'events'),
+    url(r'^(\d+)/postmessage/$',         'post_message',   name = 'post_message'),
     url(r'^(\d+)/old/$',                 'game',           name = 'game'),
 )
 

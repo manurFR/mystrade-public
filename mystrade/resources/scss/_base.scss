@@ -132,4 +132,9 @@ textarea {
   margin: 1px 1px;
 }
 
+.errors {
+  @include font($size: 0.8em);
+  color: $infoTextColor;
+}
+
 @import "responsive";

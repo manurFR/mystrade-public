@@ -522,7 +522,7 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         mommy.make(Message, game = mommy.make(Game, end_date = now() + datetime.timedelta(days = 2)),
                    sender = self.loginUser, content = 'Do not display')
 
-        response = self._assertGetTabRecently()
+        response = self._getTabRecently()
         self.assertContains(response, "<div class=\"message_content\">Show me maybe</div>")
         self.assertNotContains(response, "<div class=\"message_content\">Do not display</div>")
 
@@ -540,19 +540,19 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         last_in_page_2 = last_date + datetime.timedelta(hours = -(2 * pagination - 1))
         first_in_page_3 = last_date + datetime.timedelta(hours = -(2 * pagination))
 
-        response = self._assertGetTabRecently()
+        response = self._getTabRecently()
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination) # 'pagination' messages per page
         self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious=None");'.format(self.game.id))
         self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext={1}");'.
                                         format(self.game.id, strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK)))
 
-        response = self._assertGetTabRecently(querystring = "datenext=" + strftime(last_in_page_2, views.FORMAT_EVENT_PERMALINK))
+        response = self._getTabRecently(querystring = "datenext=" + strftime(last_in_page_2, views.FORMAT_EVENT_PERMALINK))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = int(pagination / 2))
         self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious={1}");'.
                                         format(self.game.id, strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK)))
         self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext=None");'.format(self.game.id))
 
-        response = self._assertGetTabRecently(querystring = "dateprevious=" + strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK))
+        response = self._getTabRecently(querystring = "dateprevious=" + strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
         self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious={1}");'.
                                         format(self.game.id, strftime(first_in_page_2, views.FORMAT_EVENT_PERMALINK)))
@@ -561,7 +561,7 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
 
         # case when new events have appeared: there are less than 'pagination' events after dateprevious, but we should
         #  display the first 'pagination' events anyway and not take into account the dateprevious
-        response = self._assertGetTabRecently(querystring = "dateprevious=" + strftime(somewhere_in_page_1, views.FORMAT_EVENT_PERMALINK))
+        response = self._getTabRecently(querystring = "dateprevious=" + strftime(somewhere_in_page_1, views.FORMAT_EVENT_PERMALINK))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
         self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?dateprevious=None");'.format(self.game.id)) # like the default
         self.assertContains(response, '$("li.tab-recently a").attr("href", "/game/{0}/events/?datenext={1}");'.
@@ -570,17 +570,15 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
     def test_tab_recently_messages_from_the_game_master_stand_out(self):
         msg = mommy.make(Message, game = self.game, sender = self.master, content = 'some message')
 
-        response = self._assertGetTabRecently()
+        response = self._getTabRecently()
         self.assertContains(response, "(<strong>game master</strong>)")
         self.assertContains(response, "<div class=\"message_content admin\">")
 
-    @skip("until redesign")
     def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())
 
-        response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'test message represents'}, follow = True)
+        response = self._postMessage('test message represents')
         self.assertEqual(200, response.status_code)
-        self.assertEqual('GET', response.request['REQUEST_METHOD'])
 
         self.assertEqual(1, Message.objects.count())
         try:
@@ -589,54 +587,51 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         except Message.DoesNotExist:
             self.fail("Message was not created for expected game and sender")
 
-    @skip("until redesign")
     def test_tab_recently_posting_a_message_fails_for_more_than_255_characters(self):
-        response = self.client.post("/game/{0}/".format(self.game.id), {'message': 'A'*300})
-        self.assertEqual(200, response.status_code)
+        response = self._postMessage('A'*300)
+        self.assertContains(response, 'Ensure this value has at most 255 characters (it has 300).', status_code = 422)
         self.assertEqual(0, Message.objects.count())
-        self.assertContains(response, '<span class="errors">* Ensure this value has at most 255 characters (it has 300).</span>')
 
-    @skip("until redesign")
     def test_tab_recently_message_with_markdown_are_interpreted(self):
-        response = self.client.post("/game/{0}/".format(self.game.id),
-                                    {'message': 'Hi *this* is __a test__ and [a link](http://example.net/)'},
-                                    follow = True)
+        response = self._postMessage('Hi *this* is __a test__ and [a link](http://example.net/)')
         self.assertEqual(200, response.status_code)
 
         self.assertEqual('Hi <em>this</em> is <strong>a test</strong> and <a href=\"http://example.net/\">a link</a>',
                          Message.objects.get(game = self.game, sender = self.loginUser).content)
 
-    @skip("until redesign")
     def test_tab_recently_bleach_strips_unwanted_tags_and_attributes(self):
-        response = self.client.post("/game/{0}/".format(self.game.id),
-                                    {'message': '<script>var i=3;</script>Hi an <em class="test">image</em><img src="http://blah.jpg"/>'},
-                                    follow = True)
+        response = self._postMessage( '<script>var i=3;</script>Hi an <em class="test">image</em><img src="http://blah.jpg"/>')
         self.assertEqual(200, response.status_code)
 
         self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)
 
+    @skip("until redesign")
     def test_delete_message_forbidden_when_you_are_not_the_original_sender(self):
         msg = mommy.make(Message, game = self.game, sender = self.master)
 
         response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
         self.assertEqual(403, response.status_code)
 
+    @skip("until redesign")
     def test_delete_message_forbidden_when_not_in_POST(self):
         msg = mommy.make(Message, game = self.game, sender = self.loginUser)
 
         response = self.client.get("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
         self.assertEqual(403, response.status_code)
 
+    @skip("until redesign")
     def test_delete_message_returns_404_when_the_message_doesnt_exists(self):
         response = self.client.post("/game/{0}/deletemessage/987654321/".format(self.game.id), follow = True)
         self.assertEqual(404, response.status_code)
 
+    @skip("until redesign")
     def test_delete_message_forbidden_when_grace_period_has_expired(self):
         msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -120))
 
         response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id))
         self.assertEqual(403, response.status_code)
 
+    @skip("until redesign")
     def test_delete_message_works_for_the_sender_during_the_grace_period(self):
         msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -10))
 
@@ -649,15 +644,15 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         except Message.DoesNotExist:
             pass
 
-    def _assertGetTabRecently(self, game = None, querystring = None, status_code = 200):
-        if game is None:
-            game = self.game
-        url = "/game/{0}/events".format(game.id)
-        if querystring:
-            url += "?" + querystring
-        response = self.client.get(url, follow = True, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
-        self.assertEqual(status_code, response.status_code)
-        return response
+    def _getTabRecently(self, querystring = None):
+        url = "/game/{0}/events".format(self.game.id)
+        if querystring: url += "?" + querystring
+        return self.client.get(url, follow = True, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
+
+    def _postMessage(self, message):
+        return self.client.post("/game/{0}/postmessage/".format(self.game.id),
+                                {'message': message},
+                                follow = True, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
 
 class HandViewTest(MystradeTestCase): # TODO detele
 

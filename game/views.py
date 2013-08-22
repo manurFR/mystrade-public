@@ -2,6 +2,7 @@ import logging
 import datetime
 
 import bleach
+from django.http import HttpResponse
 import markdown
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required, login_required
@@ -580,3 +581,22 @@ def _events_in_the_range(events, start_date = None, end_date = None):
                 start_index = index
                 range = [evt]
     return range
+
+@login_required
+def post_message(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+
+    if request.user not in game.players.all() and not game.has_super_access(request.user):
+        raise PermissionDenied
+
+    if request.is_ajax() and request.method == 'POST':
+        message_form = MessageForm(data = request.POST)
+        if message_form.is_valid() and len(message_form.cleaned_data['message']) > 0:
+            # bleach allowed tags : 'a','abbr','acronym','b','blockquote','code','em','i','li','ol','strong', 'ul'
+            secure_message = bleach.clean(markdown.markdown(message_form.cleaned_data['message']), strip = True)
+            Message.objects.create(game = game, sender = request.user, content = secure_message)
+            return HttpResponse()
+        else:
+            return HttpResponse(message_form.errors['message'], status = 422)
+
+    raise PermissionDenied

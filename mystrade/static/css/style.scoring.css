@@ -138,6 +138,11 @@ textarea {
   height: 50px;
   margin: 1px 1px; }
 
+/* line 135, ../../resources/scss/_base.scss */
+.errors {
+  font-size: 0.8em;
+  color: #a67600; }
+
 @media handheld, only screen and (max-device-width: 767px) {
   /* line 4, ../../resources/scss/_responsive.scss */
   body, .fullwidth {
