@@ -319,6 +319,4 @@ textarea {
 
 /* line 174, ../../resources/scss/style.game.board.scss */
 .show_more {
-  float: right;
-  margin-right: 1em;
   text-align: right; }

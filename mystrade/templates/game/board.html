@@ -107,7 +107,7 @@
 
         $(window).load(function() {
             $( "#zone_tabs" ).tabs({
-                heightStyle: "auto",
+                heightStyle: "content",
                 beforeLoad: function( event, ui ) {
                     ui.jqXHR.fail(function() {
                         ui.panel.html(

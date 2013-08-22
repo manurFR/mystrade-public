@@ -172,5 +172,5 @@ $widthZoneHand: 520px;
 }
 
 .show_more {
-  @include floatright();
+  text-align: right;
 }

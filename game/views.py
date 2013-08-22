@@ -49,7 +49,7 @@ def welcome(request):
 #############################################################################
 ##                            Game Views                                   ##
 #############################################################################
-EVENTS_PAGINATION = 10
+EVENTS_PAGINATION = 8
 
 @login_required
 def game(request, game_id):
