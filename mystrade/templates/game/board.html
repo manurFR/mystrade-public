@@ -2,6 +2,7 @@
 
 {% load filters %}
 {% load staticfiles %}
+{% load widget_tweaks %}
 
 {% block styles %}
     <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.1.custom.min.css' %}" />
@@ -91,10 +92,24 @@
 
         <div id="zone_tabs">
             <ul>
-                <li class="tab-recently"><a href="{% url 'events' game.id %}">Recently</a></li>
-                <li><a href="#tabs-2">New Trade</a></li>
+                <li><a href="#tab-event">Recently</a></li>
+                <li><a href="#tab-trade">New Trade</a></li>
             </ul>
-            <div id="tabs-2">
+            <div id="tab-event">
+                <div id="zone_events"></div>
+
+                <h3>Post a public message</h3>
+                <div>
+                    <span class="helptext">(<a href="https://github.com/fletcher/MultiMarkdown/blob/master/Documentation/Markdown%20Syntax.md">Markdown</a> allowed)</span>
+                    <span class="helptext chars_left"><span id="charactersLeft">{{ maxMessageLength }}</span> characters left</span>
+                </div>
+                <form id="post_message">{% csrf_token %}
+                    {{ message_form.message|attr:"rows:3" }}&nbsp;
+                    <span class="errors" id="error_message"></span>
+                    <div class="show_more"><input type="submit" id="button_post_message" value="Post"/></div>
+                </form>
+            </div>
+            <div id="tab-trade">
                 <p>Morbi tincidunt, dui sit amet facilisis feugiat, odio metus gravida ante, ut pharetra massa metus id nunc. Duis scelerisque molestie turpis. Sed fringilla, massa eget luctus malesuada, metus eros molestie lectus, ut tempus eros massa ut dolor. Aenean aliquet fringilla sem. Suspendisse sed ligula in ligula suscipit aliquam. Praesent in eros vestibulum mi adipiscing adipiscing. Morbi facilisis. Curabitur ornare consequat nunc. Aenean vel metus. Ut posuere viverra nulla. Aliquam erat volutpat. Pellentesque convallis. Maecenas feugiat, tellus pellentesque pretium posuere, felis lorem euismod felis, eu ornare leo nisi vel felis. Mauris consectetur tortor et purus.</p>
             </div>
         </div>
@@ -103,18 +118,54 @@
     <script>
         var color_list = ["blue", "red", "green", "magenta", "gray", "brown"];
         var idx = {{ game.id }} % color_list.length;
-        $('#zone_game_label *').css('color', color_list[idx]);
 
-        $(window).load(function() {
-            $( "#zone_tabs" ).tabs({
-                heightStyle: "content",
-                beforeLoad: function( event, ui ) {
-                    ui.jqXHR.fail(function() {
-                        ui.panel.html(
-                                "Error loading this tab. Please try again." );
-                    });
-                }
-            });
+        function refreshEvents(datenext, dateprevious) {
+            var url = "{% url 'events' game.id %}";
+            if (datenext) url += "?datenext=" + datenext;
+            if (dateprevious) url += "?dateprevious=" + dateprevious;
+            $.get(url)
+                .fail(function() {
+                    $("#zone_events").text("Error loading recent events. Please try again.");
+                })
+                .done(function(data) {
+                    $("#zone_events").html(data);
+                });
+        }
+
+        $(function() {
+            $('#zone_game_label *').css('color', color_list[idx]);
+            $("#zone_tabs").tabs({heightStyle: "content"});
+            $("input#button_post_message").button();
+
+            refreshEvents();
+        });
+
+        var maxlength = {{ maxMessageLength }};
+        $('#id_message').attr('maxlength', maxlength); // direct support for HTML5-enabled browsers
+
+        $('#id_message').on('keyup', function() {
+            var vallength = $(this).val().length;
+            $("#charactersLeft").html(maxlength - vallength);
+
+            // Trim the field if it has content over the maxlength, for non-HTML5 browsers
+            if (vallength > maxlength) {
+                $(this).val($(this).val().slice(0, maxlength));
+            }
+        });
+
+        $("#post_message").on("submit", function() {
+            $.post("{% url 'post_message' game.id %}", $(this).serialize())
+                .fail(function(jqXHR) {
+                    var error;
+                    if (jqXHR.status == 422) error = jqXHR.responseText;
+                    else error = "Error sending data. Please try again.";
+                    $('#error_message').text(error);
+                })
+                .done(function() {
+                    refreshEvents();
+                    $("#id_message").val("").focus(); // clear the textarea
+                });
+            return false;
         });
     </script>
 {% endblock %}

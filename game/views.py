@@ -476,7 +476,7 @@ def game_board(request, game_id):
     if request.user not in players and not game.has_super_access(request.user):
         raise PermissionDenied
 
-    context = {'game': game, 'players': players}
+    context = {'game': game, 'players': players, 'message_form': MessageForm(), 'maxMessageLength': Message.MAX_LENGTH}
 
     if request.user in players:
         hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None
@@ -557,11 +557,8 @@ def events(request, game_id):
         else:
             datenext = None
 
-        message_form = MessageForm()
-
-        return render(request, 'game/tab_recently.html',
-                      {'game': game, 'messages': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious,
-                       'message_form': message_form, 'maxMessageLength': Message.MAX_LENGTH})
+        return render(request, 'game/events.html',
+                      {'game': game, 'messages': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious})
 
     raise PermissionDenied
 
