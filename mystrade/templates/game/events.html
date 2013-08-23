@@ -1,17 +1,21 @@
 {% load staticfiles %}
 {% load humanize %}
 <div class="show_previous">{% if dateprevious %}<a>&lt; show previous events</a>{% endif %}</div>
-{% regroup events by posting_date|naturalday as grouped_events %}
+{% regroup events by date|naturalday as grouped_events %}
 {% for group in grouped_events %}
     {% if dateprevious or group.grouper != 'today' %}<div class="event_date">{{ group.grouper|capfirst }}</div>{% endif %}
     {% for evt in group.list %}
         <div class="event">
-            <div class="event_time">{{ evt.posting_date|time }}</div>
+            <div class="event_time">{{ evt.date|time }}</div>
             <div class="event_text">
+            {% if evt.event_type == 'message' %}
                 {% include "common/name_or_you.html" with who=evt.sender %}
                 {% if evt.sender == game.master %} (<strong>game master</strong>) {% endif %}
                 {% if evt.sender == user %} have {% else %} has {% endif %}
                 posted a message:
+            {% elif evt.event_type == 'game_start' %}
+                Game #{{ game.id }} has started.
+            {% endif %}
             </div>
             {% if evt.sender == user and evt.deletable %}
                 <form class="delete_message">{% csrf_token %}
@@ -19,7 +23,9 @@
                     <img alt="Delete" title="Delete" class="delete_icon" src="{% static 'trash.png' %}"/>
                 </form>
             {% endif %}
+            {% if evt.content %}
             <div class="message_content{% if evt.sender == game.master %} admin{% endif %}">{{ evt.content|safe|linebreaksbr }}</div>
+            {% endif %}
         </div>
     {% endfor %}
 {% endfor %}

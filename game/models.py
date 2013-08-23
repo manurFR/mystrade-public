@@ -92,6 +92,7 @@ class CommodityInHand(models.Model):
 class Message(models.Model):
     MAX_LENGTH = 255
     GRACE_PERIOD = 20 # in minutes
+    event_type = 'message'
 
     game = models.ForeignKey(Game)
     sender = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -102,3 +103,7 @@ class Message(models.Model):
     @property
     def deletable(self):
         return now() <= self.posting_date + datetime.timedelta(minutes = self.GRACE_PERIOD)
+
+    @property
+    def date(self):
+        return self.posting_date

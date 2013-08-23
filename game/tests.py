@@ -598,6 +598,10 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, '<div class="event_date">Yesterday</div>')
         self.assertContains(response, '<div class="event_date">{0}</div>'.format(date_format(now_date + datetime.timedelta(days = -2))))
 
+    def test_tab_recently_events_include_game_start(self):
+        response = self._getTabRecently()
+        self.assertContains(response, 'Game #{0} has started.'.format(self.game.id))
+
     def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())
 

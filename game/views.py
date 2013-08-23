@@ -499,6 +499,13 @@ def game_board(request, game_id):
 
     return render(request, 'game/board.html', context)
 
+class Event(object):
+    def __init__(self, event_type, date, sender):
+        self.event_type = event_type
+        self.date = date
+        self.sender = sender
+        self.deletable = False
+
 FORMAT_EVENT_PERMALINK = "%Y-%m-%dT%H:%M:%S.%f"
 
 @login_required
@@ -509,12 +516,13 @@ def events(request, game_id):
         raise PermissionDenied
 
     if request.is_ajax():
-        # display messages
         messages = Message.objects.filter(game = game).order_by('-posting_date')
+        events = list(messages)
 
-        events = [message for message in messages]
+        # noinspection PyTypeChecker
+        events.append(Event('game_start', game.start_date, game.master))
 
-        events.sort(key = lambda evt: evt.posting_date, reverse=True)
+        events.sort(key = lambda evt: evt.date, reverse=True)
 
         # Pagination by the date of the first or last event displayed
 
@@ -533,12 +541,12 @@ def events(request, game_id):
             displayed_events = _events_in_the_range(events, end_date = end_date)[:EVENTS_PAGINATION] # take the *first* EVENTS_PAGINATION events
 
         if len(displayed_events) > 0 and events.index(displayed_events[0]) > 0: # events later
-            dateprevious = datetime.datetime.strftime(displayed_events[0].posting_date, FORMAT_EVENT_PERMALINK)
+            dateprevious = datetime.datetime.strftime(displayed_events[0].date, FORMAT_EVENT_PERMALINK)
         else:
             dateprevious = None
 
-        if len(displayed_events) > 0 and displayed_events[-1].posting_date > events[-1].posting_date: # events earlier
-            datenext = datetime.datetime.strftime(displayed_events[-1].posting_date, FORMAT_EVENT_PERMALINK)
+        if len(displayed_events) > 0 and displayed_events[-1].date > events[-1].date: # events earlier
+            datenext = datetime.datetime.strftime(displayed_events[-1].date, FORMAT_EVENT_PERMALINK)
         else:
             datenext = None
 
@@ -556,7 +564,7 @@ def _events_in_the_range(events, start_date = None, end_date = None):
     start_index = None
     range = []
     for index, evt in enumerate(events):
-        if start_date < make_naive(evt.posting_date, utc)< end_date:
+        if start_date < make_naive(evt.date, utc) < end_date:
             if start_index is not None:
                 range.append(evt)
             else:
