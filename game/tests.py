@@ -9,6 +9,7 @@ from django.db.models.aggregates import Sum
 from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
 from django.utils.datetime_safe import strftime
+from django.utils.formats import date_format
 from django.utils.timezone import get_default_timezone, now, utc
 from model_mommy import mommy
 from game import views
@@ -546,13 +547,13 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, '$(".show_more a").on("click", function() {{ refreshEvents("{0}"); }});'
                                         .format(strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK)))
 
-        response = self._getTabRecently(querystring = "datenext=" + strftime(last_in_page_2, views.FORMAT_EVENT_PERMALINK))
+        response = self._getTabRecently("datenext=" + strftime(last_in_page_2, views.FORMAT_EVENT_PERMALINK))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = int(pagination / 2))
         self.assertContains(response, '$(".show_previous a").on("click", function() {{ refreshEvents(null, "{0}"); }});'
                                         .format(strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK)))
         self.assertContains(response, '$(".show_more a").on("click", function() { refreshEvents(); });')
 
-        response = self._getTabRecently(querystring = "dateprevious=" + strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK))
+        response = self._getTabRecently("dateprevious=" + strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
         self.assertContains(response, '$(".show_previous a").on("click", function() {{ refreshEvents(null, "{0}"); }});'.
                                         format(strftime(first_in_page_2, views.FORMAT_EVENT_PERMALINK)))
@@ -561,7 +562,7 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
 
         # case when new events have appeared: there are less than 'pagination' events after dateprevious, but we should
         #  display the first 'pagination' events anyway and not take into account the dateprevious
-        response = self._getTabRecently(querystring = "dateprevious=" + strftime(somewhere_in_page_1, views.FORMAT_EVENT_PERMALINK))
+        response = self._getTabRecently("dateprevious=" + strftime(somewhere_in_page_1, views.FORMAT_EVENT_PERMALINK))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
         self.assertContains(response, '$(".show_previous a").on("click", function() { refreshEvents(); });') # like the default
         self.assertContains(response, '$(".show_more a").on("click", function() {{ refreshEvents("{0}"); }});'
@@ -573,6 +574,29 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         response = self._getTabRecently()
         self.assertContains(response, "(<strong>game master</strong>)")
         self.assertContains(response, "<div class=\"message_content admin\">")
+
+    def test_tab_recently_events_are_separated_by_date(self):
+        pagination = views.EVENTS_PAGINATION
+        now_date = now()
+        for i in range(int(pagination + 1)): # ('pagination' + 1) messages today
+            mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
+                       posting_date = now_date + datetime.timedelta(seconds = -i))
+        last_in_page_1 = now_date + datetime.timedelta(seconds = -(pagination - 1))
+        # add 1 message yesterday and 1 message the day before yesterday
+        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
+                   posting_date = now_date + datetime.timedelta(days = -1))
+        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
+                   posting_date = now_date + datetime.timedelta(days = -2))
+
+        # on the first page there must be no day specified ('today' should not be specified when it is the first item on the first page)
+        response = self._getTabRecently()
+        self.assertNotContains(response, '<div class="event_date">')
+
+        # on the seconde page, the days should be specified for 'today', 'yesterday' and the day before yesterday, duly formatted
+        response = self._getTabRecently("datenext=" + strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK))
+        self.assertContains(response, '<div class="event_date">Today</div>')
+        self.assertContains(response, '<div class="event_date">Yesterday</div>')
+        self.assertContains(response, '<div class="event_date">{0}</div>'.format(date_format(now_date + datetime.timedelta(days = -2))))
 
     def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())

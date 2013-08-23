@@ -136,6 +136,14 @@ $widthZoneHand: 520px;
   height: 1em;
 }
 
+.event_date {
+  @include font($size: 0.9em);
+  color: $infoTextColor;
+  border-bottom: thin dotted $infoTextColor;
+  margin: 8px 0 4px -10px;
+  padding-bottom: 2px;
+}
+
 .event_time {
   display: inline-block;
   color: $infoTextColor;
