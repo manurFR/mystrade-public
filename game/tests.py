@@ -605,37 +605,36 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
 
         self.assertEqual('var i=3;\n\nHi an <em>image</em>', Message.objects.get(game = self.game, sender = self.loginUser).content)
 
-    @skip("until redesign")
     def test_delete_message_forbidden_when_you_are_not_the_original_sender(self):
         msg = mommy.make(Message, game = self.game, sender = self.master)
 
-        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
+        response = self._deleteMessage(msg)
         self.assertEqual(403, response.status_code)
 
-    @skip("until redesign")
     def test_delete_message_forbidden_when_not_in_POST(self):
         msg = mommy.make(Message, game = self.game, sender = self.loginUser)
 
-        response = self.client.get("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
+        response = self.client.get("/game/{0}/deletemessage/".format(self.game.id),
+                                   {'event_id': msg.id},
+                                   follow = True, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
         self.assertEqual(403, response.status_code)
 
-    @skip("until redesign")
-    def test_delete_message_returns_404_when_the_message_doesnt_exists(self):
-        response = self.client.post("/game/{0}/deletemessage/987654321/".format(self.game.id), follow = True)
+    def test_delete_message_returns_404_when_the_message_doesnt_exists_in_database(self):
+        response = self._deleteMessage(Message(id = 987654321))
         self.assertEqual(404, response.status_code)
 
-    @skip("until redesign")
     def test_delete_message_forbidden_when_grace_period_has_expired(self):
-        msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -120))
+        msg = mommy.make(Message, game = self.game, sender = self.loginUser,
+                         posting_date = now() + datetime.timedelta(minutes = -(Message.GRACE_PERIOD + 20))) # 20 min after the end of the grace period
 
-        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id))
+        response = self._deleteMessage(msg)
         self.assertEqual(403, response.status_code)
 
-    @skip("until redesign")
     def test_delete_message_works_for_the_sender_during_the_grace_period(self):
-        msg = mommy.make(Message, game = self.game, sender = self.loginUser, posting_date = now() + datetime.timedelta(minutes = -10))
+        msg = mommy.make(Message, game = self.game, sender = self.loginUser,
+                         posting_date = now() + datetime.timedelta(minutes = -(Message.GRACE_PERIOD - 1))) # 1 min before the end of the grace period
 
-        response = self.client.post("/game/{0}/deletemessage/{1}/".format(self.game.id, msg.id), follow = True)
+        response = self._deleteMessage(msg)
         self.assertEqual(200, response.status_code)
 
         try:
@@ -652,6 +651,11 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
     def _postMessage(self, message):
         return self.client.post("/game/{0}/postmessage/".format(self.game.id),
                                 {'message': message},
+                                follow = True, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
+
+    def _deleteMessage(self, message):
+        return self.client.post("/game/{0}/deletemessage/".format(self.game.id),
+                                {'event_id': message.id},
                                 follow = True, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
 
 class HandViewTest(MystradeTestCase): # TODO detele

@@ -100,5 +100,5 @@ class Message(models.Model):
     posting_date = models.DateTimeField(default = now)
 
     @property
-    def in_grace_period(self):
+    def deletable(self):
         return now() <= self.posting_date + datetime.timedelta(minutes = self.GRACE_PERIOD)

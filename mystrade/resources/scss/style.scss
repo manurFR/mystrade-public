@@ -50,8 +50,6 @@ td.small-height {
   margin-left: 250px;
 }
 
-
-
 .done {
   color: $infoTextColor;
 }
@@ -216,9 +214,5 @@ td.small-height {
     width: 16px;
     border: none;
     background: transparent 0 0 no-repeat;
-
-    &.delete {
-      background-image: url("../trash.png");
-    }
   }
 }

@@ -138,7 +138,7 @@
                 <div class="message_sender">{% include "common/name_or_you.html" with who=msg.sender %}
                     {% if msg.sender == game.master %} (<strong>game master</strong>) {% endif %}
                     said:
-                    {% if msg.sender == user and msg.in_grace_period %}
+                    {% if msg.sender == user and msg.deletable %}
                         <div class="floatright">
                             <form method='POST' action="{% url 'delete_message' game.id msg.id %}" class="form-button">{% csrf_token %}
                                 <span data-tip="Delete"><input type="submit" class="delete" value=""/></span>

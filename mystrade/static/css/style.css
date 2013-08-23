@@ -224,20 +224,20 @@ td.small-height {
 .submit-button {
   margin-left: 250px; }
 
-/* line 55, ../../resources/scss/style.scss */
+/* line 53, ../../resources/scss/style.scss */
 .done {
   color: #a67600; }
 
-/* line 59, ../../resources/scss/style.scss */
+/* line 57, ../../resources/scss/style.scss */
 .cancelled {
   text-decoration: line-through; }
 
-/* line 63, ../../resources/scss/style.scss */
+/* line 61, ../../resources/scss/style.scss */
 .frame {
   border: thin inset white;
   padding: 2px; }
 
-/* line 68, ../../resources/scss/style.scss */
+/* line 66, ../../resources/scss/style.scss */
 .card {
   position: relative;
   padding: 5px;
@@ -248,29 +248,29 @@ td.small-height {
   text-align: center;
   width: 225px;
   height: 170px; }
-  /* line 77, ../../resources/scss/style.scss */
+  /* line 75, ../../resources/scss/style.scss */
   .card.with_button {
     height: 200px; }
-  /* line 81, ../../resources/scss/style.scss */
+  /* line 79, ../../resources/scss/style.scss */
   .card.dashed {
     border: 1px dashed #ffd773;
     color: #644700; }
 
-/* line 87, ../../resources/scss/style.scss */
+/* line 85, ../../resources/scss/style.scss */
 .card_name {
   font-size: 1.5em;
   font-weight: bold;
   padding: 3px; }
 
-/* line 92, ../../resources/scss/style.scss */
+/* line 90, ../../resources/scss/style.scss */
 .card_desc {
   padding: 3px; }
 
-/* line 96, ../../resources/scss/style.scss */
+/* line 94, ../../resources/scss/style.scss */
 .card_copies {
   margin-top: 30px; }
 
-/* line 100, ../../resources/scss/style.scss */
+/* line 98, ../../resources/scss/style.scss */
 .minicard {
   display: inline-block;
   border-radius: 2px;
@@ -279,119 +279,116 @@ td.small-height {
   width: 25px;
   height: 50px; }
 
-/* line 107, ../../resources/scss/style.scss */
+/* line 105, ../../resources/scss/style.scss */
 .excluded {
   background: url(../stripe.png); }
 
-/* line 111, ../../resources/scss/style.scss */
+/* line 109, ../../resources/scss/style.scss */
 .clicked {
   border: gray solid 3px;
   border-radius: 2px;
   -moz-border-radius: 2px;
   -webkit-border-radius: 2px; }
 
-/* line 116, ../../resources/scss/style.scss */
+/* line 114, ../../resources/scss/style.scss */
 .card_select {
   width: 220px;
   text-align: center; }
 
-/* line 121, ../../resources/scss/style.scss */
+/* line 119, ../../resources/scss/style.scss */
 .css_table {
   display: table;
   border-spacing: 2px; }
 
-/* line 126, ../../resources/scss/style.scss */
+/* line 124, ../../resources/scss/style.scss */
 .css_table-row {
   display: table-row; }
 
-/* line 130, ../../resources/scss/style.scss */
+/* line 128, ../../resources/scss/style.scss */
 .css_table-cell {
   display: table-cell;
   padding: 1px 4px; }
 
-/* line 135, ../../resources/scss/style.scss */
+/* line 133, ../../resources/scss/style.scss */
 .header-row {
   text-align: center;
   font-weight: bold;
   padding: 1px 4px;
   background-color: #eba700; }
 
-/* line 142, ../../resources/scss/style.scss */
+/* line 140, ../../resources/scss/style.scss */
 .even_color {
   background-color: #ffc533; }
-  /* line 145, ../../resources/scss/style.scss */
+  /* line 143, ../../resources/scss/style.scss */
   .even_color:hover {
     background-color: #FFD800; }
 
-/* line 150, ../../resources/scss/style.scss */
+/* line 148, ../../resources/scss/style.scss */
 .odd_color {
   background-color: #eba700; }
-  /* line 153, ../../resources/scss/style.scss */
+  /* line 151, ../../resources/scss/style.scss */
   .odd_color:hover {
     background-color: #FFD800; }
 
-/* line 158, ../../resources/scss/style.scss */
+/* line 156, ../../resources/scss/style.scss */
 .middle-align {
   vertical-align: middle; }
 
-/* line 162, ../../resources/scss/style.scss */
+/* line 160, ../../resources/scss/style.scss */
 .centered {
   text-align: center; }
 
-/* line 166, ../../resources/scss/style.scss */
+/* line 164, ../../resources/scss/style.scss */
 .pagination {
   font-size: 0.8em;
   text-align: center; }
 
-/* line 171, ../../resources/scss/style.scss */
+/* line 169, ../../resources/scss/style.scss */
 .points {
   min-width: 4em;
   text-align: right; }
 
-/* line 176, ../../resources/scss/style.scss */
+/* line 174, ../../resources/scss/style.scss */
 .align_to_bottom {
   position: absolute;
   bottom: 5px; }
 
-/* line 181, ../../resources/scss/style.scss */
+/* line 179, ../../resources/scss/style.scss */
 .reminder {
   margin: 4px 4px 4px 10px;
   padding: 3px;
   border: thin dotted gray;
   background-color: #ffbf00; }
 
-/* line 188, ../../resources/scss/style.scss */
+/* line 186, ../../resources/scss/style.scss */
 .new {
   color: red;
   font-weight: bold; }
 
-/* line 193, ../../resources/scss/style.scss */
+/* line 191, ../../resources/scss/style.scss */
 .underline[data-tip] {
   border-bottom: dotted 1px black; }
 
-/* line 197, ../../resources/scss/style.scss */
+/* line 195, ../../resources/scss/style.scss */
 .ui-datepicker-trigger {
   position: relative;
   top: 4px;
   left: 2px; }
 
-/* line 203, ../../resources/scss/style.scss */
+/* line 201, ../../resources/scss/style.scss */
 .end_warning {
   color: red; }
 
-/* line 207, ../../resources/scss/style.scss */
+/* line 205, ../../resources/scss/style.scss */
 .message_date {
   margin-bottom: 5px; }
 
-/* line 211, ../../resources/scss/style.scss */
+/* line 209, ../../resources/scss/style.scss */
 .form-button {
   display: inline; }
-  /* line 214, ../../resources/scss/style.scss */
+  /* line 212, ../../resources/scss/style.scss */
   .form-button input[type=submit] {
     height: 16px;
     width: 16px;
     border: none;
     background: transparent 0 0 no-repeat; }
-    /* line 220, ../../resources/scss/style.scss */
-    .form-button input[type=submit].delete {
-      background-image: url("../trash.png"); }

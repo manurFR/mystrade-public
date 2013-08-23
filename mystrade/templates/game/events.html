@@ -1,19 +1,27 @@
+{% load staticfiles %}
 <div class="show_previous">{% if dateprevious %}<a>&lt; show previous events</a>{% endif %}</div>
-{% for msg in messages %}
+{% for evt in events %}
     <div class="event">
-        <div class="event_time">{{ msg.posting_date|time }}</div>
+        <div class="event_time">{{ evt.posting_date|time }}</div>
         <div class="event_text">
-            {% include "common/name_or_you.html" with who=msg.sender %}
-            {% if msg.sender == game.master %} (<strong>game master</strong>) {% endif %}
-            {% if msg.sender == user %} have {% else %} has {% endif %}
+            {% include "common/name_or_you.html" with who=evt.sender %}
+            {% if evt.sender == game.master %} (<strong>game master</strong>) {% endif %}
+            {% if evt.sender == user %} have {% else %} has {% endif %}
             posted a message:
         </div>
-        <div class="message_content{% if msg.sender == game.master %} admin{% endif %}">{{ msg.content|safe|linebreaksbr }}</div>
+        {% if evt.sender == user and evt.deletable %}
+            <form class="delete_message">{% csrf_token %}
+                <input type="hidden" name="event_id" value="{{ evt.id }}"/>
+                <img alt="Delete" title="Delete" class="delete_icon" src="{% static 'trash.png' %}"/>
+            </form>
+        {% endif %}
+        <div class="message_content{% if evt.sender == game.master %} admin{% endif %}">{{ evt.content|safe|linebreaksbr }}</div>
     </div>
 {% endfor %}
 <div class="show_more">{% if datenext %}<a>show more events &gt;</a>{% endif %}</div>
 
-<script>
+<script> {# deleteMessage() and refreshEvents() functions are found in board.html, which encloses this file #}
+    $(".delete_icon").tooltip({ show: false }).on("click", function(event) { deleteMessage(event.target); });
     $(".show_previous a").on("click", function() { refreshEvents({% if dateprevious %}null, "{{ dateprevious }}"{% endif %}); });
     $(".show_more a").on("click", function() { refreshEvents({% if datenext %}"{{ datenext }}"{% endif %}); });
 </script>

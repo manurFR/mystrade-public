@@ -111,21 +111,6 @@ def game(request, game_id):
 
     return render(request, 'game/game.html', context)
 
-@login_required
-def delete_message(request, game_id, message_id):
-    game = get_object_or_404(Game, id = game_id)
-    message = get_object_or_404(Message, id = message_id, game = game)
-
-    if request.method != 'POST' or message.sender != request.user:
-        raise PermissionDenied
-
-    if not message.in_grace_period:
-        raise PermissionDenied
-
-    message.delete()
-
-    return redirect('game', game.id)
-
 #############################################################################
 ##                            Hand Views                                   ##
 #############################################################################
@@ -558,7 +543,7 @@ def events(request, game_id):
             datenext = None
 
         return render(request, 'game/events.html',
-                      {'game': game, 'messages': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious})
+                      {'game': game, 'events': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious})
 
     raise PermissionDenied
 
@@ -595,5 +580,18 @@ def post_message(request, game_id):
             return HttpResponse()
         else:
             return HttpResponse(message_form.errors['message'], status = 422)
+
+    raise PermissionDenied
+
+@login_required
+def delete_message(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+
+    if request.is_ajax() and request.method == 'POST':
+        message = get_object_or_404(Message, game = game, id = request.POST['event_id'])
+
+        if message.sender == request.user and message.deletable:
+            message.delete()
+            return HttpResponse()
 
     raise PermissionDenied

@@ -167,5 +167,17 @@
                 });
             return false;
         });
+
+        function deleteMessage(trash_icon) {
+            $(trash_icon).hide(); // to prevent multi-clicks
+            $.post("{% url 'delete_message' game.id %}", $(trash_icon).parent("form").serialize())
+                .fail(function(jqXHR) {
+                    $(trash_icon).show(); // show it again to enable re-trying
+                    alert("Error deleting message. Please try again.");
+                })
+                .done(function() {
+                    refreshEvents();
+                });
+        }
     </script>
 {% endblock %}

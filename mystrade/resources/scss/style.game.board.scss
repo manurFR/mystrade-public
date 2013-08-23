@@ -147,6 +147,17 @@ $widthZoneHand: 520px;
   display: inline;
 }
 
+.delete_message {
+  float: right;
+}
+
+.delete_icon {
+  background-image: url("../trash.png");
+  border: none;
+  height: 16px;
+  width: 16px;
+}
+
 .message_content {
   @include roundedBorder(5px);
   background-color: lighten($backgroundColor, 5%);
