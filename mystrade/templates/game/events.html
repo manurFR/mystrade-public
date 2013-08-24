@@ -15,6 +15,11 @@
                 posted a message:
             {% elif evt.event_type == 'game_start' %}
                 Game #{{ game.id }} has started.
+            {% elif evt.event_type == 'game_end' %}
+                Game #{{ game.id }} has ended.
+                {% include "common/name_or_you.html" with who=evt.sender %} will soon calculate scores.
+            {% elif evt.event_type == 'game_close' %}
+                Game #{{ game.id }} is over. <a href="{% if user in game.players.all %}{% url 'player_score' game.id %}{% else %}{% url 'control' game.id %}{% endif %}">Scores</a> have been calculated.
             {% endif %}
             </div>
             {% if evt.sender == user and evt.deletable %}
@@ -24,7 +29,7 @@
                 </form>
             {% endif %}
             {% if evt.content %}
-            <div class="message_content{% if evt.sender == game.master %} admin{% endif %}">{{ evt.content|safe|linebreaksbr }}</div>
+                <div class="message_content{% if evt.sender == game.master %} admin{% endif %}">{{ evt.content|safe|linebreaksbr }}</div>
             {% endif %}
         </div>
     {% endfor %}

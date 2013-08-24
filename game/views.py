@@ -508,6 +508,7 @@ class Event(object):
 
 FORMAT_EVENT_PERMALINK = "%Y-%m-%dT%H:%M:%S.%f"
 
+# noinspection PyTypeChecker
 @login_required
 def events(request, game_id):
     game = get_object_or_404(Game, id = game_id)
@@ -519,8 +520,11 @@ def events(request, game_id):
         messages = Message.objects.filter(game = game).order_by('-posting_date')
         events = list(messages)
 
-        # noinspection PyTypeChecker
         events.append(Event('game_start', game.start_date, game.master))
+        if game.has_ended():
+            events.append(Event('game_end', game.end_date, game.master))
+            if game.is_closed():
+                events.append(Event('game_close', game.closing_date, game.master))
 
         events.sort(key = lambda evt: evt.date, reverse=True)
 

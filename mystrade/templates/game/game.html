@@ -16,8 +16,8 @@
 {% block content %}
     <div class="header">Game #{{ game }}
         {% if game.is_active %} (started {{ game.start_date|timesince }} ago, ending in {{ game.end_date|timeuntil }})
+        {% elif game.has_ended %} (started {{ game.start_date|timesince }} ago, ended {{ game.end_date|timesince }} ago)
         {% elif game.is_closed %} (started {{ game.start_date|timesince }} ago, closed {{ game.closing_date|timesince }} ago)
-        {% elif game.is_ended %} (started {{ game.start_date|timesince }} ago, ended {{ game.end_date|timesince }} ago)
         {% else %} (starting in {{ game.start_date|timeuntil }}, ending in {{ game.end_date|timeuntil }}){% endif %}
         <span class="floatright">&lt; <a href="{% url 'welcome' %}">Back</a></span>
     </div>

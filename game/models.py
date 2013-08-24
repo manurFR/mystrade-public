@@ -25,8 +25,8 @@ class Game(models.Model):
     def is_active(self):
         return self.start_date <= now() <= self.end_date
 
-    def is_ended(self):
-        return self.closing_date is None and now() >= self.end_date
+    def has_ended(self):
+        return now() >= self.end_date
 
     def is_closed(self):
         return self.closing_date and now() >= self.closing_date

@@ -81,6 +81,10 @@ $widthZoneHand: 520px;
   border: $lightSolidBorder;
 }
 
+#zone_post_message {
+  margin-top: 10px;
+}
+
 .minicard.not_submitted {
   background: url(../stripe.png);
 }

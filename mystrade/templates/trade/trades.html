@@ -16,13 +16,13 @@
 
     {% if not game.is_active %}
     <div class="reminder">
-        {% if game.is_ended %}
-            This game has ended. No more trades can be created or finalized.<br/>
-            The game master will close this game soon, so that scores are calculated.
-        {% elif game.is_closed %}
+        {% if game.is_closed %}
             This game has been closed by the game master. No more trades can be created or finalized.<br/>
             Scores have been calculated.
-        {% elif not game.is_active %}
+        {% elif game.has_ended %}
+            This game has ended. No more trades can be created or finalized.<br/>
+            The game master will close this game soon, so that scores are calculated.
+        {% else %}
             This game has not started yet. Please come back in {{ game.start_date|timeuntil }}.
         {% endif %}
     </div>

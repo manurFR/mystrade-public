@@ -52,10 +52,10 @@
                         {% else %}
                             &nbsp;
                         {% endif %}
-                    {% elif game.is_ended %}
-                        <span class="helptext">game ended</span>
                     {% elif game.is_closed %}
                         <span class="helptext">game closed</span>
+                    {% elif game.has_ended %}
+                        <span class="helptext">game ended</span>
                     {% else %}
                         <span class="helptext">not started</span>
                     {% endif %}

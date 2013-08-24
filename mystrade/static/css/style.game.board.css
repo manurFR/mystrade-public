@@ -250,10 +250,14 @@ textarea {
   border: 1px solid #ffd773; }
 
 /* line 84, ../../resources/scss/style.game.board.scss */
+#zone_post_message {
+  margin-top: 10px; }
+
+/* line 88, ../../resources/scss/style.game.board.scss */
 .minicard.not_submitted {
   background: url(../stripe.png); }
 
-/* line 88, ../../resources/scss/style.game.board.scss */
+/* line 92, ../../resources/scss/style.game.board.scss */
 .rulecard {
   border: 1px solid #ffd773;
   border-radius: 10px;
@@ -264,22 +268,22 @@ textarea {
   height: 140px;
   margin: 2px;
   padding: 4px 8px; }
-  /* line 101, ../../resources/scss/style.game.board.scss */
+  /* line 105, ../../resources/scss/style.game.board.scss */
   .rulecard.former {
     border: 1px dashed #ffd773;
     color: #644700; }
-  /* line 106, ../../resources/scss/style.game.board.scss */
+  /* line 110, ../../resources/scss/style.game.board.scss */
   .rulecard .rulecard_name {
     font-size: 1.5em;
     font-weight: bold; }
-  /* line 110, ../../resources/scss/style.game.board.scss */
+  /* line 114, ../../resources/scss/style.game.board.scss */
   .rulecard .rulecard_desc {
     line-height: 1.2em; }
-  /* line 114, ../../resources/scss/style.game.board.scss */
+  /* line 118, ../../resources/scss/style.game.board.scss */
   .rulecard .previously_owned {
     float: right; }
 
-/* line 119, ../../resources/scss/style.game.board.scss */
+/* line 123, ../../resources/scss/style.game.board.scss */
 .free_information {
   border: 1px solid #ffd773;
   border-radius: 5px;
@@ -288,19 +292,19 @@ textarea {
   padding-top: 10px;
   padding-left: 30px;
   color: #644700; }
-  /* line 126, ../../resources/scss/style.game.board.scss */
+  /* line 130, ../../resources/scss/style.game.board.scss */
   .free_information legend {
     color: #333333;
     font-style: italic;
     margin-left: -15px;
     padding: 0 5px; }
 
-/* line 134, ../../resources/scss/style.game.board.scss */
+/* line 138, ../../resources/scss/style.game.board.scss */
 .show_previous {
   margin: -5px 0 5px -10px;
   height: 1em; }
 
-/* line 139, ../../resources/scss/style.game.board.scss */
+/* line 143, ../../resources/scss/style.game.board.scss */
 .event_date {
   font-size: 0.9em;
   color: #a67600;
@@ -308,7 +312,7 @@ textarea {
   margin: 8px 0 4px -10px;
   padding-bottom: 2px; }
 
-/* line 147, ../../resources/scss/style.game.board.scss */
+/* line 151, ../../resources/scss/style.game.board.scss */
 .event_time {
   display: inline-block;
   color: #a67600;
@@ -316,22 +320,22 @@ textarea {
   margin-left: -10px;
   margin-right: 5px; }
 
-/* line 154, ../../resources/scss/style.game.board.scss */
+/* line 158, ../../resources/scss/style.game.board.scss */
 .event_text {
   display: inline; }
 
-/* line 158, ../../resources/scss/style.game.board.scss */
+/* line 162, ../../resources/scss/style.game.board.scss */
 .delete_message {
   float: right; }
 
-/* line 162, ../../resources/scss/style.game.board.scss */
+/* line 166, ../../resources/scss/style.game.board.scss */
 .delete_icon {
   background-image: url("../trash.png");
   border: none;
   height: 16px;
   width: 16px; }
 
-/* line 169, ../../resources/scss/style.game.board.scss */
+/* line 173, ../../resources/scss/style.game.board.scss */
 .message_content {
   border-radius: 5px;
   -moz-border-radius: 5px;
@@ -340,21 +344,21 @@ textarea {
   padding: 4px 10px;
   margin: 3px 0 10px 3px;
   font-size: 0.9em; }
-  /* line 176, ../../resources/scss/style.game.board.scss */
+  /* line 180, ../../resources/scss/style.game.board.scss */
   .message_content.admin {
     background: #d69900; }
 
-/* line 181, ../../resources/scss/style.game.board.scss */
+/* line 185, ../../resources/scss/style.game.board.scss */
 .show_more {
   text-align: right; }
 
-/* line 185, ../../resources/scss/style.game.board.scss */
+/* line 189, ../../resources/scss/style.game.board.scss */
 .chars_left {
   float: right;
   margin-right: 1em;
   text-align: right; }
 
-/* line 189, ../../resources/scss/style.game.board.scss */
+/* line 193, ../../resources/scss/style.game.board.scss */
 #button_post_message {
   position: relative;
   top: -10px; }

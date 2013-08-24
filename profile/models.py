@@ -31,7 +31,7 @@ class MystradeUser(AbstractUser):
 class MystradeUserQuerySet(QuerySet):
     """ There is no easy way a queryset can be sorted by a field not present in the database, such as the name @property above.
     The only (and inelegant) way seems to inject SQL code thanks to the extra() modifier, and "order by" the calculated SQL column.
-    It violates the DRY principle as the algorithm is duplicated in the name @property abobe and in the SQL below, but again
+    It violates the DRY principle as the algorithm is duplicated in the name @property above and in the SQL below, but again
     there seems not to be another way in Django 1.5.
     (see http://stackoverflow.com/questions/1652577/django-ordering-queryset-by-a-calculated-field)
     """
