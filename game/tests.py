@@ -10,7 +10,7 @@ from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
 from django.utils.datetime_safe import strftime
 from django.utils.formats import date_format
-from django.utils.timezone import get_default_timezone, now, utc
+from django.utils.timezone import get_default_timezone, now, utc, localtime
 from model_mommy import mommy
 from game import views
 
@@ -588,15 +588,21 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
                    posting_date = now_date + datetime.timedelta(days = -2))
 
-        # on the first page there must be no day specified ('today' should not be specified when it is the first item on the first page)
+        # 'today' should not be specified when it is the first item on the first page
         response = self._getTabRecently()
         self.assertNotContains(response, '<div class="event_date">')
 
-        # on the seconde page, the days should be specified for 'today', 'yesterday' and the day before yesterday, duly formatted
+        # on the second page, the days should be specified for 'today', 'yesterday' and the day before yesterday, duly formatted
         response = self._getTabRecently("datenext=" + strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK))
         self.assertContains(response, '<div class="event_date">Today</div>')
         self.assertContains(response, '<div class="event_date">Yesterday</div>')
-        self.assertContains(response, '<div class="event_date">{0}</div>'.format(date_format(now_date + datetime.timedelta(days = -2))))
+        # BEWARE timezone hell : now_date and all aware date variables in this test are in UTC, but the display for the user
+        #   will be in the get_default_timezone(). Thus in the case when the UTC date and its corresponding localtime are
+        #   not in the same day (ex: 01/01 23:30:00+00:00 is actually 02/01 01:30:00+02:00 in France), the date formatting
+        #   below MUST convert from a date that has been translated to localtime beforehand !
+        #   (ie. the page will display 'Jan. 02' and not 'Jan. 01')
+        self.assertContains(response, '<div class="event_date">{0}</div>'
+                                      .format(date_format(localtime(now_date + datetime.timedelta(days = -2)))))
 
     def test_tab_recently_events_include_game_start(self):
         response = self._getTabRecently()
