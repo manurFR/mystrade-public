@@ -35,7 +35,7 @@
                         <div class="card_name">{{ card.commodityinhand.commodity.name }}</div>
                         <div class="card_copies">
                             {% for copy in card.nb_traded_cards|as_range %}
-                                <span class="minicard" style="background-color: {{ card.commodityinhand.commodity.color }}">&nbsp;</span>
+                                <span class="commodity_card" style="background-color: {{ card.commodityinhand.commodity.color }}">&nbsp;</span>
                             {% endfor %}
                         </div>
                     </div>

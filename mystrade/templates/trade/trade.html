@@ -1,0 +1,33 @@
+{% load widget_tweaks %}
+
+{% if not trade %} {# Trade creation #}
+<form action="{% url 'create_trade' game.id %}" method="post">{% csrf_token %}
+    <p>With who?
+        {{ new_trade_form.responder }}&nbsp;
+            <span class="errors">{{ new_trade_form.responder.errors.as_text }}</span></p>
+    <p>Click on commodities and rules to select your offer:</p>
+    <h3>Commodities</h3>
+    <div id="zone_selected_commodities"></div>
+    <h3>Rules</h3>
+    <div id="zone_selected_rules"></div>
+    <h3>Free Information(s) <span class="helptext">(optional)</span></h3>
+    {{ new_offer_form.free_information|attr:"rows:3" }}<br/>
+        <span class="helptext">That piece of information will NOT be revealed until both players have accepted the trade.</span>
+{#        For now, the other player will only be informed that there IS a free information with the trade, not its content. You should give an hint of what it is in the comment below.<br/>#}
+        <span class="errors">{{ new_offer_form.free_information.errors.as_text }}</span>
+    <h3>Comment <span class="helptext">(optional)</span></h3>
+    {{ new_offer_form.comment|attr:"rows:3" }}<br/>
+        <span class="helptext">Your comment will be immediately shown to the other player.</span><br/>
+        <span class="errors">{{ new_offer_form.comment.errors.as_text }}</span>
+{#    {% include "trade/create_offer.html" with submit="Propose this trade" %}#}
+    <div class="submit"><input type="submit" id="button_submit_new_trade" value="Propose this trade"/></div>
+</form>
+{% else %}
+duh
+{% endif %}
+
+<script>
+    $(function() {
+        $("input#button_submit_new_trade").button();
+    });
+</script>

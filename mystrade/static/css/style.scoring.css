@@ -128,17 +128,58 @@ textarea {
   .game-player:hover {
     background-color: #ffd773; }
 
-/* line 127, ../../resources/scss/_base.scss */
-.minicard {
+/* line 128, ../../resources/scss/_base.scss */
+.commodity_card {
   display: inline-block;
   border-radius: 2px;
   -moz-border-radius: 2px;
   -webkit-border-radius: 2px;
   width: 25px;
   height: 50px;
-  margin: 1px 1px; }
+  margin: 1px; }
 
-/* line 135, ../../resources/scss/_base.scss */
+/* line 139, ../../resources/scss/_base.scss */
+.rulecard {
+  border: 1px solid #ffd773;
+  border-radius: 10px;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  float: left;
+  width: 235px;
+  height: 140px;
+  margin: 2px;
+  padding: 4px 8px; }
+  /* line 152, ../../resources/scss/_base.scss */
+  .rulecard.former {
+    border: 1px dashed #ffd773;
+    color: #644700; }
+  /* line 157, ../../resources/scss/_base.scss */
+  .rulecard .rulecard_name {
+    font-size: 1.5em;
+    font-weight: bold; }
+  /* line 161, ../../resources/scss/_base.scss */
+  .rulecard .rulecard_desc {
+    line-height: 1.2em; }
+  /* line 165, ../../resources/scss/_base.scss */
+  .rulecard .previously_owned {
+    float: right; }
+
+/* line 171, ../../resources/scss/_base.scss */
+.rulecard_thumbnail {
+  display: inline-block;
+  text-align: center;
+  border: 1px solid #ffd773;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  height: 20px;
+  min-width: 1em;
+  margin: 1px;
+  padding: 4px;
+  font-size: 1.5em;
+  font-weight: bold; }
+
+/* line 183, ../../resources/scss/_base.scss */
 .errors {
   font-size: 0.8em;
   color: #a67600; }
@@ -239,7 +280,7 @@ textarea {
   -webkit-border-radius: 5px; }
 
 /* line 63, ../../resources/scss/style.scoring.scss */
-.minicard {
+.commodity_card {
   border: 1px solid black; }
 
 /* line 67, ../../resources/scss/style.scoring.scss */

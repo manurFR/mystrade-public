@@ -36,7 +36,7 @@
                         <div class="card_name">{{ form.name.value }}</div>
                         <div class="card_copies">
                             {% for copy in form.nb_cards.value|as_range %}
-                                <span class="minicard clickable{% if form.nb_submitted_cards.value > copy %} clicked"{% else %}"{% endif %}
+                                <span class="commodity_card clickable{% if form.nb_submitted_cards.value > copy %} clicked"{% else %}"{% endif %}
                                 style="background-color: {{ form.color.value }}">&nbsp;</span>
                             {% endfor %}
                         </div>
@@ -55,7 +55,7 @@
     <script>
         $(function() {
             $('input[type=submit], button').button();
-            $('.minicard.clickable').on('click', function() {
+            $('.commodity_card.clickable').on('click', function() {
                 $(this).toggleClass("clicked")
                 $(this).toggleClass("reserved")
                 // set the corresponding hidden form field to hold the number of commodities from this type that are now "clicked"

@@ -1,5 +1,8 @@
 @import "base";
 
+$fullWidthOfARuleCard: 2 * $marginOfRuleCards + 2 * $horizontalPaddingOfRuleCards + 2 * 1px /* border */ + $widthOfRuleCards;
+$widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
+
 #zone_content {}
 
 #zone_game_header {
@@ -29,11 +32,9 @@
   width: 100%;
 }
 
-$widthZoneHand: 520px;
-
 #zone_hand {
   float: left;
-  width: $widthZoneHand;
+  width: $widthOfZoneHand;
 
   #zone_links {
     height: 30px;
@@ -50,7 +51,7 @@ $widthZoneHand: 520px;
 }
 
 #zone_tabs {
-  margin-left: $widthZoneHand + 20px;
+  margin-left: $widthOfZoneHand + 20px;
   background: none;
   border-width: 0px;
 }
@@ -85,39 +86,16 @@ $widthZoneHand: 520px;
   margin-top: 10px;
 }
 
-.minicard.not_submitted {
-  background: url(../stripe.png);
+#zone_selected_commodities {
+  min-height: $heightOfCommodityCards;
 }
 
-.rulecard {
-  border: $lightSolidBorder;
-  @include roundedBorder(10px);
-  float: left;
-  width: $widthZoneHand / 2 - 22px;
-  height: 140px;
-  margin: 2px;
-  padding: 4px 8px;
+#zone_selected_rules {
+  min-height: $heightOfThumbnailRuleCards;
+}
 
-  //&.with_button {
-  //  height: 200px;
-  //}
-
-  &.former {
-    border: $lightDashedBorder;
-    color: $previouslyOwnedRuleColor;
-  }
-
-  .rulecard_name {
-    @include font($size: 1.5em, $weight: bold);
-  }
-
-  .rulecard_desc {
-    line-height: 1.2em;
-  }
-
-  .previously_owned {
-    float: right;
-  }
+.commodity_card.not_submitted {
+  background: url(../stripe.png);
 }
 
 .free_information {
@@ -190,9 +168,17 @@ $widthZoneHand: 520px;
   @include floatright();
 }
 
+form .submit {
+  text-align: right;
+}
+
 #button_post_message {
   // hack to have the button closer to the textarea
   position: relative;
   top: -10px;
+}
+
+#id_responder {
+  margin-left: 8px;
 }
 

@@ -22,7 +22,7 @@ from game.models import Game, CommodityInHand, GamePlayer, Message
 from ruleset.models import RuleCard, Ruleset
 from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
-from trade.forms import RuleCardFormParse, RuleCardFormDisplay
+from trade.forms import RuleCardFormParse, RuleCardFormDisplay, TradeForm, OfferForm
 from trade.models import Offer, Trade
 from profile.helpers import UserNameCache
 from utils import utils, stats
@@ -496,6 +496,13 @@ def game_board(request, game_id):
         context.update({'commodities': commodities, 'rulecards': rulecards, 'former_rulecards': former_rulecards,
                         'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
                         'free_informations': free_informations})
+
+        # trades
+        if not hand_submitted:
+            new_trade_form = TradeForm(request.user, game)
+            new_offer_form = OfferForm()
+
+            context.update({'new_trade_form': new_trade_form, 'new_offer_form': new_offer_form})
 
     return render(request, 'game/board.html', context)
 

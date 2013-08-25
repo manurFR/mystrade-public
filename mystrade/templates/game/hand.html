@@ -45,11 +45,11 @@
                 <div class="card_copies">
                 {% if hand_submitted %}
                     {% for copy in card.nb_submitted_cards|as_range %}
-                        <span class="minicard" style="background-color: {{ card.commodity.color }}">&nbsp;</span>
+                        <span class="commodity_card" style="background-color: {{ card.commodity.color }}">&nbsp;</span>
                     {% endfor %}
                 {% else %}
                     {% for copy in card.nb_cards|as_range %}
-                        <span class="minicard" style="background-color: {{ card.commodity.color }}">&nbsp;</span>
+                        <span class="commodity_card" style="background-color: {{ card.commodity.color }}">&nbsp;</span>
                     {% endfor %}
                 {% endif %}
                 </div>
@@ -66,7 +66,7 @@
                         <div class="card_name">{{ card.commodity.name }}</div>
                         <div class="card_copies">
                             {% for copy in card.nb_cards|as_range %}
-                                <span class="minicard" style="background-color: {{ card.commodity.color }}">&nbsp;</span>
+                                <span class="commodity_card" style="background-color: {{ card.commodity.color }}">&nbsp;</span>
                             {% endfor %}
                         </div>
                     </div>

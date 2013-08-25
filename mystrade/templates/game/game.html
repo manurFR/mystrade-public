@@ -55,7 +55,7 @@
                         {{ nb_commodities }} commodit{{ nb_commodities|pluralize:"y,ies" }}{% if nb_commodities == 0 %}.{% else %}:<br/>
                         {% for cih in commodities %}
                             {% for copy in cih.nb_cards|as_range %}
-                                <span class="minicard" data-tip="{{ cih.commodity.name }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
+                                <span class="commodity_card" data-tip="{{ cih.commodity.name }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
                             {% endfor %}
                         {% endfor %}{% endif %}
                     </div>

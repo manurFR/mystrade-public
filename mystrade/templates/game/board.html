@@ -46,12 +46,12 @@
                     {% else %}Commodities <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
                 {% for cih in commodities %}
                     {% for copy in cih.nb_cards|as_range %}
-                        <span class="minicard" data-tip="{{ cih.commodity.name }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
+                        <span class="commodity_card" data-tip="{{ cih.commodity.name }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
                     {% endfor %}
                 {% endfor %}
                 {% for cih in commodities_not_submitted %}
                     {% for copy in cih.nb_cards|as_range %}
-                        <span class="minicard not_submitted" data-tip="{{ cih.commodity.name }} -- not submitted" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
+                        <span class="commodity_card not_submitted" data-tip="{{ cih.commodity.name }} -- not submitted" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
                     {% endfor %}
                 {% endfor %}
             </div>
@@ -107,12 +107,14 @@
                     <form id="post_message">{% csrf_token %}
                         {{ message_form.message|attr:"rows:3" }}&nbsp;
                         <span class="errors" id="error_message"></span>
-                        <div class="show_more"><input type="submit" id="button_post_message" value="Post"/></div>
+                        <div class="submit"><input type="submit" id="button_post_message" value="Post"/></div>
                     </form>
                 </div>
             </div>
             <div id="tab-trade">
-                <p>Morbi tincidunt, dui sit amet facilisis feugiat, odio metus gravida ante, ut pharetra massa metus id nunc. Duis scelerisque molestie turpis. Sed fringilla, massa eget luctus malesuada, metus eros molestie lectus, ut tempus eros massa ut dolor. Aenean aliquet fringilla sem. Suspendisse sed ligula in ligula suscipit aliquam. Praesent in eros vestibulum mi adipiscing adipiscing. Morbi facilisis. Curabitur ornare consequat nunc. Aenean vel metus. Ut posuere viverra nulla. Aliquam erat volutpat. Pellentesque convallis. Maecenas feugiat, tellus pellentesque pretium posuere, felis lorem euismod felis, eu ornare leo nisi vel felis. Mauris consectetur tortor et purus.</p>
+                <div id="zone_trade">
+                    {% include "trade/trade.html" %}
+                </div>
             </div>
         </div>
    </div>

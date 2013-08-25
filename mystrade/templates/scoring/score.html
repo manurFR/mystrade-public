@@ -96,7 +96,7 @@
                 <div class="css_table-row">
                     <div class="css_table-cell {% cycle color %}">
                         {% for copy in sfc.nb_submitted_cards|as_range %}
-                            <span class="minicard
+                            <span class="commodity_card
                             {% if copy >= sfc.nb_scored_cards %} excluded" data-tip="{{ sfc.commodity.name }} &mdash; not scored"
                             {% else %}" data-tip="{{ sfc.commodity.name }} &mdash; scored"{% endif %}
                             style="background-color: {{ sfc.commodity.color }}">&nbsp;</span>
