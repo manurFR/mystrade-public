@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 from django.forms.formsets import BaseFormSet
 from game.models import RuleInHand, CommodityInHand
 
-
 class TradeForm(forms.Form):
     responder = forms.ModelChoiceField(queryset = get_user_model().objects.none(), empty_label = u'- Choose a player -',
                                        error_messages = {'invalid_choice': "This player doesn't participate to this game or has already submitted his hand to the game master"})
@@ -24,11 +23,30 @@ class OfferForm(forms.Form):
     nb_selected_commodities = 0
 
     def __init__(self, *args, **kwargs):
-        if kwargs.has_key('nb_selected_rules'):
-            self.nb_selected_rules = kwargs.pop('nb_selected_rules')
-        if kwargs.has_key('nb_selected_commodities'):
-            self.nb_selected_commodities = kwargs.pop('nb_selected_commodities')
+        # if kwargs.has_key('nb_selected_rules'):
+        #     self.nb_selected_rules = kwargs.pop('nb_selected_rules')
+        # if kwargs.has_key('nb_selected_commodities'):
+        #     self.nb_selected_commodities = kwargs.pop('nb_selected_commodities')
+        # super(OfferForm, self).__init__(*args, **kwargs)
+        rulecards = kwargs.pop('rulecards')
+        commodities = kwargs.pop('commodities')
         super(OfferForm, self).__init__(*args, **kwargs)
+
+        for rih in rulecards:
+            self.fields['rulecard_{0}'.format(rih.id)] = forms.BooleanField(widget = forms.HiddenInput, required = False)
+        for cih in commodities:
+            self.fields['commodity_{0}'.format(cih.commodity_id)] = forms.IntegerField(widget = forms.HiddenInput, initial = 2,
+                                                                                       min_value = 0, max_value = cih.nb_cards)
+
+    def rulecards(self):
+        for name in self.fields:
+            if name.startswith('rulecard_'):
+                yield(self[name])
+
+    def commodities(self):
+        for name in self.fields:
+            if name.startswith('commodity_'):
+                yield(self[name])
 
     def clean(self):
         cleaned_data = super(OfferForm, self).clean()
