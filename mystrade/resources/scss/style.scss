@@ -106,11 +106,6 @@ td.small-height {
   background: url(../stripe.png);
 }
 
-.clicked {
-  border: gray solid 3px;
-  @include roundedBorder(2px);
-}
-
 .card_select {
   width: 220px;
   text-align: center;

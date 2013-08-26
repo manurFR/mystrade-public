@@ -395,14 +395,17 @@ class GameBoardZoneHandTest(MystradeTestCase):
                           commodity = Commodity.objects.get(ruleset = 1, name = "Blue"), nb_cards = 1)
 
         response = self._assertGetGamePage()
-        self.assertContains(response, "<span class=\"commodity_card\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
+        self.assertContains(response, "<span class=\"commodity_card\" title=\"Blue\" data-cih-id=\"{0}\" style=\"background-color: blue\">&nbsp;</span>"
+                                       .format(cih1.commodity_id), count = 1)
 
         cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser,
                           commodity = Commodity.objects.get(ruleset = 1, name = "Red"), nb_cards = 4, nb_submitted_cards = 2)
 
         response = self._assertGetGamePage()
-        self.assertContains(response, "<span class=\"commodity_card\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
-        self.assertContains(response, "<span class=\"commodity_card\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 4)
+        self.assertContains(response, "<span class=\"commodity_card\" title=\"Blue\" data-cih-id=\"{0}\" style=\"background-color: blue\">&nbsp;</span>"
+                                       .format(cih1.commodity_id), count = 1)
+        self.assertContains(response, "<span class=\"commodity_card\" title=\"Red\" data-cih-id=\"{0}\" style=\"background-color: red\">&nbsp;</span>"
+                                       .format(cih2.commodity_id), count = 4)
 
     def test_game_board_doesnt_show_commodities_with_no_cards(self):
         commodity1 = mommy.make(Commodity, name = 'Commodity1', color="col1")
@@ -412,8 +415,10 @@ class GameBoardZoneHandTest(MystradeTestCase):
 
         response = self._assertGetGamePage()
 
-        self.assertContains(response, "<span class=\"commodity_card\" data-tip=\"Commodity1\" style=\"background-color: col1\">&nbsp;</span>", count = 1)
-        self.assertNotContains(response, "<span class=\"commodity_card\" data-tip=\"Commodity2\" style=\"background-color: col2\">&nbsp;</span>")
+        self.assertContains(response, "<span class=\"commodity_card\" title=\"Commodity1\" data-cih-id=\"{0}\" style=\"background-color: col1\">&nbsp;</span>"
+                                       .format(commodity1.id), count = 1)
+        self.assertNotContains(response, "<span class=\"commodity_card\" title=\"Commodity2\" data-cih-id=\"{0}\" style=\"background-color: col2\">&nbsp;</span>"
+                                          .format(commodity2.id))
 
     def test_game_board_separate_submitted_and_nonsubmitted_commodities_to_players_who_have_submitted_their_hand(self):
         gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)
@@ -429,11 +434,14 @@ class GameBoardZoneHandTest(MystradeTestCase):
 
         response = self._assertGetGamePage()
 
-        self.assertContains(response, "<span class=\"commodity_card\" data-tip=\"Blue\" style=\"background-color: blue\">&nbsp;</span>", count = 1)
-        self.assertContains(response, "<span class=\"commodity_card not_submitted\" data-tip=\"Blue -- not submitted\" style=\"background-color: blue\">&nbsp;</span>", count = 2)
-        self.assertContains(response, "<span class=\"commodity_card\" data-tip=\"Red\" style=\"background-color: red\">&nbsp;</span>", count = 2)
-        self.assertNotContains(response, "<span class=\"commodity_card\" data-tip=\"Orange\" style=\"background-color: orange\">&nbsp;</span>")
-        self.assertContains(response, "<span class=\"commodity_card not_submitted\" data-tip=\"Orange -- not submitted\" style=\"background-color: orange\">&nbsp;</span>", count = 1)
+        self.assertContains(response, "<span class=\"commodity_card\" title=\"Blue\" data-cih-id=\"{0}\" style=\"background-color: blue\">&nbsp;</span>"
+                                       .format(cih1.commodity_id), count = 1)
+        self.assertContains(response, "<span class=\"commodity_card not_submitted\" title=\"Blue -- not submitted\" style=\"background-color: blue\">&nbsp;</span>", count = 2)
+        self.assertContains(response, "<span class=\"commodity_card\" title=\"Red\" data-cih-id=\"{0}\" style=\"background-color: red\">&nbsp;</span>"
+                                       .format(cih2.commodity_id), count = 2)
+        self.assertNotContains(response, "<span class=\"commodity_card\" title=\"Orange\" data-cih-id=\"{0}\" style=\"background-color: orange\">&nbsp;</span>"
+                                          .format(cih3.commodity_id))
+        self.assertContains(response, "<span class=\"commodity_card not_submitted\" title=\"Orange -- not submitted\" style=\"background-color: orange\">&nbsp;</span>", count = 1)
 
     def test_game_board_displays_rulecards(self):
         rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = RuleCard.objects.get(ref_name = 'HAG04'),

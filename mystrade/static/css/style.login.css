@@ -136,9 +136,19 @@ textarea {
   -webkit-border-radius: 2px;
   width: 25px;
   height: 50px;
-  margin: 1px; }
+  margin: 3px; }
+  /* line 135, ../../resources/scss/_base.scss */
+  .commodity_card.excluded {
+    background: url(../stripe.png); }
+  /* line 139, ../../resources/scss/_base.scss */
+  .commodity_card.card_selected {
+    border: gray solid 3px;
+    margin: 0;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px; }
 
-/* line 139, ../../resources/scss/_base.scss */
+/* line 149, ../../resources/scss/_base.scss */
 .rulecard {
   border: 1px solid #ffd773;
   border-radius: 10px;
@@ -147,24 +157,34 @@ textarea {
   float: left;
   width: 235px;
   height: 140px;
-  margin: 2px;
+  margin: 3px;
   padding: 4px 8px; }
-  /* line 152, ../../resources/scss/_base.scss */
+  /* line 158, ../../resources/scss/_base.scss */
   .rulecard.former {
     border: 1px dashed #ffd773;
     color: #644700; }
-  /* line 157, ../../resources/scss/_base.scss */
+  /* line 163, ../../resources/scss/_base.scss */
   .rulecard .rulecard_name {
     font-size: 1.5em;
     font-weight: bold; }
-  /* line 161, ../../resources/scss/_base.scss */
+  /* line 167, ../../resources/scss/_base.scss */
   .rulecard .rulecard_desc {
     line-height: 1.2em; }
-  /* line 165, ../../resources/scss/_base.scss */
-  .rulecard .previously_owned {
+  /* line 171, ../../resources/scss/_base.scss */
+  .rulecard .note {
     float: right; }
+  /* line 175, ../../resources/scss/_base.scss */
+  .rulecard.excluded {
+    background: url(../stripe.png); }
+  /* line 180, ../../resources/scss/_base.scss */
+  .rulecard.card_selected {
+    border: gray solid 3px;
+    margin: 1px;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px; }
 
-/* line 171, ../../resources/scss/_base.scss */
+/* line 188, ../../resources/scss/_base.scss */
 .rulecard_thumbnail {
   display: inline-block;
   text-align: center;
@@ -179,7 +199,7 @@ textarea {
   font-size: 1.5em;
   font-weight: bold; }
 
-/* line 183, ../../resources/scss/_base.scss */
+/* line 200, ../../resources/scss/_base.scss */
 .errors {
   font-size: 0.8em;
   color: #a67600; }

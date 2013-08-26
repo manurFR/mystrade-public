@@ -100,8 +100,8 @@ def create_trade(request, game_id):
 
         else:
             new_trade_form = TradeForm(request.user, game)
-            new_offer_form = OfferForm(rulecards = rules_currently_in_hand(game, request.user), commodities = commodities_in_hand(game, request.user))
-
+            new_offer_form = OfferForm(commodities = commodities_in_hand(game, request.user),
+                                       rulecards = rules_currently_in_hand(game, request.user))
 
         return render(request, 'trade/trade.html', {'game': game, 'new_trade_form': new_trade_form, 'new_offer_form': new_offer_form})
 
