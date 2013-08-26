@@ -112,9 +112,7 @@
                 </div>
             </div>
             <div id="tab-trade">
-                <div id="zone_trade">
-                    {% include "trade/trade.html" %}
-                </div>
+                <div id="zone_trade"></div>
             </div>
         </div>
    </div>
@@ -136,12 +134,23 @@
                 });
         }
 
+        function refreshTrade() {
+            $.get("{% url 'create_trade' game.id %}")
+                .fail(function() {
+                    $("#zone_trade").text("Error loading trade. Please try again.");
+                })
+                .done(function(data) {
+                    $("#zone_trade").html(data);
+                });
+        }
+
         $(function() {
             $('#zone_game_label *').css('color', color_list[idx]);
             $("#zone_tabs").tabs({heightStyle: "content"});
             $("input#button_post_message").button();
 
             refreshEvents();
+            refreshTrade();
         });
 
         var maxlength = {{ maxMessageLength }};

@@ -497,13 +497,6 @@ def game_board(request, game_id):
                         'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
                         'free_informations': free_informations})
 
-        # trades
-        if not hand_submitted:
-            new_trade_form = TradeForm(request.user, game)
-            new_offer_form = OfferForm(rulecards = rulecards, commodities = commodities)
-
-            context.update({'new_trade_form': new_trade_form, 'new_offer_form': new_offer_form})
-
     return render(request, 'game/board.html', context)
 
 class Event(object):
