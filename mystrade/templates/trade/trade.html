@@ -1,7 +1,7 @@
 {% load widget_tweaks %}
 
 {% if not trade %} {# Trade creation #}
-<form action="{% url 'create_trade' game.id %}" method="post">{% csrf_token %}
+<form id="new_trade">{% csrf_token %}
     <p>With who?
         {{ new_trade_form.responder }}&nbsp;
             <span class="errors">{{ new_trade_form.responder.errors.as_text }}</span></p>
@@ -31,5 +31,12 @@ duh
 <script>
     $(function() {
         $("input#button_submit_new_trade").button();
+        $("input[id^=id_commodity]").val(0);
+        $("input[id^=id_rulecard]").val('False');
+    });
+
+    $("#new_trade").on("submit", function() {
+        postTrade(this); {# postTrade() is defined in game/board.html, which will enclose this code #}
+        return false;
     });
 </script>

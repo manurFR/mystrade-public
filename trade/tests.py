@@ -11,29 +11,25 @@ from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from ruleset.models import Ruleset, RuleCard, Commodity
 from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet, TradeForm, OfferForm
 from trade.models import Offer, Trade, TradedCommodities
-from trade.views import _prepare_offer_forms
+from trade.views import _prepare_offer_form
 from utils.tests import MystradeTestCase
 
 class CreateTradeViewTest(MystradeTestCase):
 
-    @skip("until redesign")
     def test_create_trade_without_responder_fails_and_keeps_text_fields(self):
         response = self.client.post("/trade/{0}/create/".format(self.game.id),
-                                    {'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
-                                     'rulecards-0-card_id': 1,
-                                     'rulecards-1-card_id': 2,
-                                     'commodity-TOTAL_FORMS': 5, 'commodity-INITIAL_FORMS': 5,
-                                     'commodity-0-commodity_id': 1, 'commodity-0-nb_traded_cards': 0,
-                                     'commodity-1-commodity_id': 2, 'commodity-1-nb_traded_cards': 1,
-                                     'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
-                                     'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 0,
-                                     'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
-                                     'free_information': 'secret!',
-                                     'comment': 'a comment'
-                                    })
-        self.assertFormError(response, 'trade_form', 'responder', 'This field is required.')
-        self.assertContains(response, "secret!")
-        self.assertContains(response, "a comment")
+                                    {'free_information': 'secret!',
+                                     'comment': 'a comment',
+                                     'rulecard_1': 'True',
+                                     'rulecard_2': 'True',
+                                     'commodity_1': 0,
+                                     'commodity_2': 1,
+                                     'commodity_3': 0
+                                    }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertFormError(response, 'new_trade_form', 'responder', 'This field is required.')
+        self.assertContains(response, "secret!", status_code = 422)
+        self.assertContains(response, "a comment", status_code = 422)
+        # TODO add keep cards
 
     @skip("until redesign")
     def test_create_trade_without_selecting_cards_or_giving_a_free_information_fails_and_keeps_text_fields(self):
@@ -766,7 +762,7 @@ class ManageViewsTest(MystradeTestCase):
 
         request = RequestFactory().get("/trade/{0}/create/".format(self.game.id))
         request.user = self.loginUser
-        offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, self.game,
+        offer_form, rulecards_formset, commodities_formset = _prepare_offer_form(request, self.game,
                                                                                   selected_rules = [rih2],
                                                                                   selected_commodities = {cih1: 1})
 

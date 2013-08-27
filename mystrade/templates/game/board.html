@@ -191,7 +191,7 @@
         function clickOnCommodity(cardElement) {
             var cihId = $(cardElement).data("cihId");
             var hiddenInput = $("input#id_commodity_" + cihId);
-            var currentNumber = parseInt(hiddenInput.val(), 10) || 0; // defaults to 0 the first time
+            var currentNumber = parseInt(hiddenInput.val(), 10) || 0;
             if ($(cardElement).hasClass("card_selected")) {
                 hiddenInput.val(currentNumber - 1);
             } else {
@@ -212,6 +212,7 @@
             cardElement.toggleClass("card_selected");
             refreshSelectedRulecards();
         }
+
         function prepareTradeInteractions(event, ui) {
             var commodities = $(".commodity_card");
             var rulecards = $(".rulecard");
@@ -235,6 +236,20 @@
                 rulecards.not(".not_tradable, .former").off("click.tradeselect").removeClass("card_selected selectable");
                 rulecards.filter(".not_tradable").removeClass("excluded").children(".note").text("");
             }
+        }
+
+        function postTrade(tradeForm) {
+            $.post("{% url 'create_trade' game.id %}", $(tradeForm).serialize())
+                .fail(function(jqXHR) {
+                    var tab_trade;
+                    if (jqXHR.status == 422) tab_trade = jqXHR.responseText;
+                    else tab_trade = "Error sending data. Please try again.";
+                    $("#zone_trade").html(tab_trade);
+                })
+                .done(function() {
+                    $("#zone_tabs").tabs("option", "active", 0);
+                    refreshEvents();
+                });
         }
 
         // on load
