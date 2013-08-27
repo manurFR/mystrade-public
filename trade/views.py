@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q
 from django.forms.formsets import formset_factory
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.timezone import now
 from game.helpers import rules_currently_in_hand, commodities_in_hand
@@ -67,41 +68,65 @@ def create_trade(request, game_id):
         raise PermissionDenied
 
     if request.is_ajax():
+        commodities = commodities_in_hand(game, request.user)
+        rulecards = [rule for rule in rules_currently_in_hand(game, request.user) if not rule.is_in_a_pending_trade()]
+
         if request.method == 'POST':
             trade_form = TradeForm(request.user, game, request.POST)
-
-            try:
-                offer, selected_rules, selected_commodities = _parse_offer_forms(request, game)
+            offer_form = OfferForm(request.POST, commodities = commodities, rulecards = rulecards)
+            if offer_form.is_valid():
                 if trade_form.is_valid():
+                    offer = Offer(free_information = bleach.clean(offer_form.cleaned_data['free_information'], tags = [], strip = True) or None, # 'or None' necessary to insert null (not empty) values
+                                  comment          = bleach.clean(offer_form.cleaned_data['comment'], tags = [], strip = True) or None)
                     offer.save()
-                    for card in selected_rules:
-                        offer.rules.add(card)
-                    for commodityinhand, nb_traded_cards in selected_commodities.iteritems():
+                    for rih in rulecards:
+                        if offer_form.cleaned_data['rulecard_{0}'.format(rih.id)]:
+                            offer.rules.add(rih)
+                    for cih in commodities:
+                        nb_traded_cards = offer_form.cleaned_data['commodity_{0}'.format(cih.commodity_id)]
                         if nb_traded_cards > 0:
-                            TradedCommodities.objects.create(offer = offer, commodityinhand = commodityinhand, nb_traded_cards = nb_traded_cards)
+                            TradedCommodities.objects.create(offer = offer, commodityinhand = cih, nb_traded_cards = nb_traded_cards)
 
                     trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
-                                                 responder = trade_form.cleaned_data['responder'])
+                                                              responder = trade_form.cleaned_data['responder'])
 
                     # email notification
                     _trade_event_notification(request, trade)
 
-                    return redirect('trades', game.id)
-                else:
-                    offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, selected_commodities, offer)
-            except FormInvalidException as ex:
-                offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game,
-                                                                                          ex.formdata['selected_rules'],
-                                                                                          ex.formdata['selected_commodities'],
-                                                                                          ex.formdata['offer'])
-                rulecards_formset._non_form_errors = ex.formdata['rulecards_errors']
-                commodities_formset._non_form_errors = ex.formdata['commodities_errors']
-                offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
+                    return HttpResponse("create trade ok")
+
+
+            # try:
+            #     offer, selected_rules, selected_commodities = _parse_offer_forms(request, game)
+            #     if trade_form.is_valid():
+            #         offer.save()
+            #         for card in selected_rules:
+            #             offer.rules.add(card)
+            #         for commodityinhand, nb_traded_cards in selected_commodities.iteritems():
+            #             if nb_traded_cards > 0:
+            #                 TradedCommodities.objects.create(offer = offer, commodityinhand = commodityinhand, nb_traded_cards = nb_traded_cards)
+            #
+            #         trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
+            #                                      responder = trade_form.cleaned_data['responder'])
+            #
+            #         # email notification
+            #         _trade_event_notification(request, trade)
+            #
+            #         return redirect('trades', game.id)
+            #     else:
+            #         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, selected_commodities, offer)
+            # except FormInvalidException as ex:
+            #     offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game,
+            #                                                                               ex.formdata['selected_rules'],
+            #                                                                               ex.formdata['selected_commodities'],
+            #                                                                               ex.formdata['offer'])
+            #     rulecards_formset._non_form_errors = ex.formdata['rulecards_errors']
+            #     commodities_formset._non_form_errors = ex.formdata['commodities_errors']
+            #     offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
 
         else:
             new_trade_form = TradeForm(request.user, game)
-            new_offer_form = OfferForm(commodities = commodities_in_hand(game, request.user),
-                                       rulecards = rules_currently_in_hand(game, request.user))
+            new_offer_form = OfferForm(commodities = commodities, rulecards = rulecards)
 
         return render(request, 'trade/trade.html', {'game': game, 'new_trade_form': new_trade_form, 'new_offer_form': new_offer_form})
 

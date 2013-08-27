@@ -109,7 +109,6 @@ class CreateTradeViewTest(MystradeTestCase):
         else:
             self.assertEqual(403, response.status_code)
 
-    @skip("until redesign")
     def test_create_trade_complete_save(self):
         ruleset = mommy.make(Ruleset)
         rulecard = mommy.make(RuleCard, ruleset = ruleset, ref_name = 'rulecard_1')
@@ -120,14 +119,12 @@ class CreateTradeViewTest(MystradeTestCase):
                                                            commodity = commodity, nb_cards = 2)
         response = self.client.post("/trade/{0}/create/".format(self.game.id),
                                     {'responder': 4,
-                                     'rulecards-TOTAL_FORMS': 1,               'rulecards-INITIAL_FORMS': 1,
-                                     'rulecards-0-card_id': rule_in_hand.id,   'rulecards-0-selected_rule': 'on',
-                                     'commodity-TOTAL_FORMS': 1,               'commodity-INITIAL_FORMS': 1,
-                                     'commodity-0-commodity_id': commodity.id, 'commodity-0-nb_traded_cards': 1,
                                      'free_information': 'some "secret" info',
-                                     'comment': 'a comment'
-                                    })
-        self.assertRedirects(response, "/trade/{0}/".format(self.game.id))
+                                     'comment': 'a comment',
+                                     'rulecard_{0}'.format(rule_in_hand.id): 'True',
+                                     'commodity_{0}'.format(commodity.id): 1
+                                    }, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # AJAX
+        self.assertEquals(200, response.status_code)
 
         trade = Trade.objects.get(game = self.game, initiator__username = 'test2')
         self.assertEqual(4, trade.responder.id)
