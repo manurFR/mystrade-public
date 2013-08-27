@@ -45,14 +45,16 @@
                     {% else %}Commodities <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
                 {% for cih in commodities %}
                     {% for copy in cih.nb_cards|as_range %}
-                        <span class="commodity_card{% if copy >= cih.nb_tradable_cards %} not_tradable{% endif %}" title="{{ cih.commodity.name }}"
-                              data-cih-id="{{ cih.commodity_id }}" data-name="{{ cih.commodity.name }}"
-                              style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
+                        {% if copy >= cih.nb_tradable_cards %}
+                            {% include "common/commodity_card.html" with name=cih.commodity.name cih_id=cih.commodity_id color=cih.commodity.color extra_classes="not_tradable" %}
+                        {% else %}
+                            {% include "common/commodity_card.html" with name=cih.commodity.name cih_id=cih.commodity_id color=cih.commodity.color %}
+                        {% endif %}
                     {% endfor %}
                 {% endfor %}
                 {% for cih in commodities_not_submitted %}
                     {% for copy in cih.nb_cards|as_range %}
-                        <span class="commodity_card not_submitted" title="{{ cih.commodity.name }} -- not submitted" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
+                        {% include "common/commodity_card.html" with name=cih.commodity.name cih_id=cih.commodity_id color=cih.commodity.color extra_classes="not_submitted" title_note="not submitted" %}
                     {% endfor %}
                 {% endfor %}
             </div>
@@ -146,14 +148,43 @@
                 });
         }
 
+        function refreshSelectedCommodities() {
+            var selectedCommodities = "";
+            var currentCihId = 0;
+            $("#zone_commodities .commodity_card").not(".not_tradable, .not_submitted").each(function () {
+                if ($(this).data("cihId") != currentCihId) {
+                    currentCihId = $(this).data("cihId");
+                    var numberOfThisCommodity = parseInt($("input#id_commodity_" + currentCihId).val(), 10);
+                    for (var i = 0; i < numberOfThisCommodity; i++) {
+                        selectedCommodities +=
+                                '{% include "common/commodity_card.html" with name="#name#" cih_id="#cihId#" color="#color#" %}'
+                                        .replace("#name#", $(this).data("name")).replace("#cihId#", ""+currentCihId)
+                                        .replace("#color#", $(this).css("background-color"));
+                    }
+                }
+            });
+            $("#zone_selected_commodities").html(selectedCommodities);
+        }
+
+        function clickOnCommodity(cardElement) {
+            var cihId = $(cardElement).data("cihId");
+            var hiddenInput = $("input#id_commodity_" + cihId);
+            var currentNumber = parseInt(hiddenInput.val(), 10) || 0; // defaults to 0 the first time
+            if ($(cardElement).hasClass("card_selected")) {
+                hiddenInput.val(currentNumber - 1);
+            } else {
+                hiddenInput.val(currentNumber + 1);
+            }
+            $(cardElement).toggleClass("card_selected");
+            refreshSelectedCommodities();
+        }
+
         function prepareTradeInteractions(event, ui) {
             var commodities = $(".commodity_card");
             var rulecards = $(".rulecard");
             if ($(ui.newTab).attr("aria-controls") === "tab-trade") {
                 commodities.not(".not_tradable").addClass("selectable").on("click.tradeselect", function(event) {
-                    console.log($(event.target).data("cihId"));
-                    $("#zone_selected_commodities").append($(event.target).clone());
-                    $(event.target).toggleClass("card_selected");
+                    clickOnCommodity(event.target)
                 });
                 commodities.filter(".not_tradable").addClass("excluded").each(function() {
                     $(this).attr("title", $(this).data("name") + " - Reserved for a pending trade");
