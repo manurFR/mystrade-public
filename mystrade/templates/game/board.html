@@ -157,7 +157,7 @@
                     var numberOfThisCommodity = parseInt($("input#id_commodity_" + currentCihId).val(), 10);
                     for (var i = 0; i < numberOfThisCommodity; i++) {
                         selectedCommodities +=
-                                '{% include "common/commodity_card.html" with name="#name#" cih_id="#cihId#" color="#color#" %}'
+                                '{% include "common/commodity_card.html" with name="#name#" cih_id="#cihId#" color="#color#" extra_classes="selectable"%}'
                                         .replace("#name#", $(this).data("name")).replace("#cihId#", ""+currentCihId)
                                         .replace("#color#", $(this).css("background-color"));
                     }
@@ -170,6 +170,22 @@
                         var correspondingCardInHand = $("#zone_commodities").find(".commodity_card.card_selected[data-cih-id=" + cihId + "]").get(indexInThisCommodity);
                         clickOnCommodity(correspondingCardInHand);
             });
+        }
+
+        function refreshSelectedRulecards() {
+            var selectedRulecards = "";
+            $("#zone_rulecards").find(".rulecard").not(".not_tradable, .former").each(function() {
+                var currentRihId = $(this).data("rihId");
+                if ($("input#id_rulecard_" + currentRihId).val() === "True") {
+                    selectedRulecards += '<div class="rulecard_thumbnail selectable" data-rih-id="' + currentRihId + '">' + $(this).data("publicName") + '</div>';
+                }
+            });
+            $("#zone_selected_rulecards").html(selectedRulecards)
+                    .find(".rulecard_thumbnail").on("click", function(event) {
+                        var rihId = $(event.target).data("rihId");
+                        var correspondingCardInHand = $("#zone_rulecards").find(".rulecard.card_selected[data-rih-id=" + rihId + "]");
+                        clickOnRulecard(correspondingCardInHand);
+                    });
         }
 
         function clickOnCommodity(cardElement) {
@@ -185,6 +201,17 @@
             refreshSelectedCommodities();
         }
 
+        function clickOnRulecard(cardElement) {
+            var rihId = $(cardElement).data("rihId");
+            var hiddenInput = $("input#id_rulecard_" + rihId);
+            if ($(cardElement).hasClass("card_selected")) {
+                hiddenInput.val("False");
+            } else {
+                hiddenInput.val("True");
+            }
+            cardElement.toggleClass("card_selected");
+            refreshSelectedRulecards();
+        }
         function prepareTradeInteractions(event, ui) {
             var commodities = $(".commodity_card");
             var rulecards = $(".rulecard");
@@ -197,10 +224,7 @@
                 });
 
                 rulecards.not(".not_tradable, .former").addClass("selectable").on("click.tradeselect", function(event) {
-                    var rulecard = $(event.target).closest(".rulecard"); // find the main rulecard div
-                    console.log(rulecard);
-                    $("#zone_selected_rules").append($("<div></div>").addClass("rulecard_thumbnail").text(rulecard.data("publicName")));
-                    rulecard.toggleClass("card_selected");
+                    clickOnRulecard($(event.target).closest(".rulecard")); // step up to the main div.rulecard if the click was on a sub-div
                 });
                 rulecards.filter(".not_tradable").addClass("excluded").children(".note").text("(reserved for a pending trade)");
             } else {

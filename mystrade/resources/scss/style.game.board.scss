@@ -90,7 +90,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   min-height: $heightOfCommodityCards + 2 * $marginOfCommodityCards;
 }
 
-#zone_selected_rules {
+#zone_selected_rulecards {
   min-height: $heightOfThumbnailRuleCards + 16px;
 }
 
