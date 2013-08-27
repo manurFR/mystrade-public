@@ -123,7 +123,7 @@
 
     <script>
         var color_list = ["blue", "red", "green", "magenta", "gray", "brown"];
-        var idx = {{ game.id }} % color_list.length;
+        var idx = ({{ game.id }}) % color_list.length;
 
         function refreshEvents(datenext, dateprevious) {
             var url = "{% url 'events' game.id %}";
@@ -151,7 +151,7 @@
         function refreshSelectedCommodities() {
             var selectedCommodities = "";
             var currentCihId = 0;
-            $("#zone_commodities .commodity_card").not(".not_tradable, .not_submitted").each(function () {
+            $("#zone_commodities").find(".commodity_card").not(".not_tradable, .not_submitted").each(function () {
                 if ($(this).data("cihId") != currentCihId) {
                     currentCihId = $(this).data("cihId");
                     var numberOfThisCommodity = parseInt($("input#id_commodity_" + currentCihId).val(), 10);
@@ -163,7 +163,13 @@
                     }
                 }
             });
-            $("#zone_selected_commodities").html(selectedCommodities);
+            $("#zone_selected_commodities").html(selectedCommodities)
+                    .find(".commodity_card").on("click", function(event) {
+                        var cihId = $(event.target).data("cihId");
+                        var indexInThisCommodity = $("#zone_selected_commodities").find(".commodity_card[data-cih-id=" + cihId + "]").index(event.target);
+                        var correspondingCardInHand = $("#zone_commodities").find(".commodity_card.card_selected[data-cih-id=" + cihId + "]").get(indexInThisCommodity);
+                        clickOnCommodity(correspondingCardInHand);
+            });
         }
 
         function clickOnCommodity(cardElement) {
@@ -223,16 +229,15 @@
 
         // messages
         var maxlength = {{ maxMessageLength }};
-        $('#id_message').attr('maxlength', maxlength); // direct support for HTML5-enabled browsers
+        $('#id_message').attr('maxlength', maxlength) // direct support for HTML5-enabled browsers
+            .on('keyup', function() {
+                var vallength = $(this).val().length;
+                $("#charactersLeft").html(maxlength - vallength);
 
-        $('#id_message').on('keyup', function() {
-            var vallength = $(this).val().length;
-            $("#charactersLeft").html(maxlength - vallength);
-
-            // Trim the field if it has content over the maxlength, for non-HTML5 browsers
-            if (vallength > maxlength) {
-                $(this).val($(this).val().slice(0, maxlength));
-            }
+                // Trim the field if it has content over the maxlength, for non-HTML5 browsers
+                if (vallength > maxlength) {
+                    $(this).val($(this).val().slice(0, maxlength));
+                }
         });
 
         $("#post_message").on("submit", function() {
@@ -253,7 +258,7 @@
         function deleteMessage(trash_icon) {
             $(trash_icon).hide(); // to prevent multi-clicks
             $.post("{% url 'delete_message' game.id %}", $(trash_icon).parent("form").serialize())
-                .fail(function(jqXHR) {
+                .fail(function() {
                     $(trash_icon).show(); // show it again to enable re-trying
                     alert("Error deleting message. Please try again.");
                 })
