@@ -45,7 +45,9 @@
                     {% else %}Commodities <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
                 {% for cih in commodities %}
                     {% for copy in cih.nb_cards|as_range %}
-                        <span class="commodity_card{% if copy >= cih.nb_tradable_cards %} not_tradable{% endif %}" title="{{ cih.commodity.name }}" data-cih-id="{{ cih.commodity_id }}" style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
+                        <span class="commodity_card{% if copy >= cih.nb_tradable_cards %} not_tradable{% endif %}" title="{{ cih.commodity.name }}"
+                              data-cih-id="{{ cih.commodity_id }}" data-name="{{ cih.commodity.name }}"
+                              style="background-color: {{ cih.commodity.color }}">&nbsp;</span>
                     {% endfor %}
                 {% endfor %}
                 {% for cih in commodities_not_submitted %}
@@ -144,18 +146,20 @@
                 });
         }
 
-        function prepareTradeEvents(event, ui) {
+        function prepareTradeInteractions(event, ui) {
             var commodities = $(".commodity_card");
             var rulecards = $(".rulecard");
             if ($(ui.newTab).attr("aria-controls") === "tab-trade") {
-                commodities.not(".not_tradable").on("click.tradeselect", function(event) {
+                commodities.not(".not_tradable").addClass("selectable").on("click.tradeselect", function(event) {
                     console.log($(event.target).data("cihId"));
                     $("#zone_selected_commodities").append($(event.target).clone());
                     $(event.target).toggleClass("card_selected");
                 });
-                commodities.filter(".not_tradable").addClass("excluded");
+                commodities.filter(".not_tradable").addClass("excluded").each(function() {
+                    $(this).attr("title", $(this).data("name") + " - Reserved for a pending trade");
+                });
 
-                rulecards.not(".not_tradable").on("click.tradeselect", function(event) {
+                rulecards.not(".not_tradable, .former").addClass("selectable").on("click.tradeselect", function(event) {
                     var rulecard = $(event.target).closest(".rulecard"); // find the main rulecard div
                     console.log(rulecard);
                     $("#zone_selected_rules").append($("<div></div>").addClass("rulecard_thumbnail").text(rulecard.data("publicName")));
@@ -163,9 +167,11 @@
                 });
                 rulecards.filter(".not_tradable").addClass("excluded").children(".note").text("(reserved for a pending trade)");
             } else {
-                commodities.not(".not_tradable").off("click.tradeselect").removeClass("card_selected");
-                commodities.filter(".not_tradable").removeClass("excluded");
-                rulecards.not(".not_tradable").off("click.tradeselect");
+                commodities.not(".not_tradable").off("click.tradeselect").removeClass("card_selected selectable");
+                commodities.filter(".not_tradable").removeClass("excluded").each(function() {
+                    $(this).attr("title", $(this).data("name"));
+                });
+                rulecards.not(".not_tradable, .former").off("click.tradeselect").removeClass("card_selected selectable");
                 rulecards.filter(".not_tradable").removeClass("excluded").children(".note").text("");
             }
         }
@@ -175,7 +181,7 @@
             $('#zone_game_label *').css('color', color_list[idx]);
             $("#zone_tabs").tabs({
                 heightStyle: "content",
-                beforeActivate: prepareTradeEvents
+                beforeActivate: prepareTradeInteractions
             });
             $("input#button_post_message").button();
             $(".commodity_card").tooltip({ position: { my: "left+15" } });

@@ -125,12 +125,13 @@ textarea {
 }
 
 $heightOfCommodityCards: 50px;
+$marginOfCommodityCards: 3px;
 .commodity_card {
   display: inline-block;
   @include roundedBorder(2px);
   width: 25px;
   height: $heightOfCommodityCards;
-  margin: 3px;
+  margin: $marginOfCommodityCards;
 
   &.excluded {
     background: url(../stripe.png);
@@ -184,7 +185,7 @@ $horizontalPaddingOfRuleCards: 8px;
   }
 }
 
-$heightOfThumbnailRuleCards: 20px;
+$heightOfThumbnailRuleCards: 22px;
 .rulecard_thumbnail {
   display: inline-block;
   text-align: center;
@@ -194,12 +195,16 @@ $heightOfThumbnailRuleCards: 20px;
   min-width: 1em;
   margin: 1px;
   padding: 4px;
-  @include font($size: 1.5em, $weight: bold);
+  @include font($size: 1.4em, $weight: bold);
 }
 
 .errors {
   @include font($size: 0.8em);
   color: $infoTextColor;
+}
+
+.selectable:hover {
+  cursor: pointer;
 }
 
 @import "responsive";
