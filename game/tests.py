@@ -395,14 +395,14 @@ class GameBoardZoneHandTest(MystradeTestCase):
                           commodity = Commodity.objects.get(ruleset = 1, name = "Blue"), nb_cards = 1)
 
         response = self._assertGetGamePage()
-        self.assertContains(response, '<span class="commodity_card" title="Blue"', count = 1)
+        self.assertContains(response, '<span class="commodity_card selectable" title="Blue"', count = 1)
 
         cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser,
                           commodity = Commodity.objects.get(ruleset = 1, name = "Red"), nb_cards = 4, nb_submitted_cards = 2)
 
         response = self._assertGetGamePage()
-        self.assertContains(response, '<span class="commodity_card" title="Blue"', count = 1)
-        self.assertContains(response, '<span class="commodity_card" title="Red"', count = 4)
+        self.assertContains(response, '<span class="commodity_card selectable" title="Blue"', count = 1)
+        self.assertContains(response, '<span class="commodity_card selectable" title="Red"', count = 4)
 
     def test_game_board_doesnt_show_commodities_with_no_cards(self):
         commodity1 = mommy.make(Commodity, name = 'Commodity1', color="col1")
@@ -412,8 +412,8 @@ class GameBoardZoneHandTest(MystradeTestCase):
 
         response = self._assertGetGamePage()
 
-        self.assertContains(response, '<span class="commodity_card" title="Commodity1"', count = 1)
-        self.assertNotContains(response, '<span class="commodity_card" title="Commodity2"')
+        self.assertContains(response, '<span class="commodity_card selectable" title="Commodity1"', count = 1)
+        self.assertNotContains(response, '<span class="commodity_card selectable" title="Commodity2"')
 
     def test_game_board_separate_submitted_and_nonsubmitted_commodities_to_players_who_have_submitted_their_hand(self):
         gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)
@@ -429,10 +429,10 @@ class GameBoardZoneHandTest(MystradeTestCase):
 
         response = self._assertGetGamePage()
 
-        self.assertContains(response, '<span class="commodity_card" title="Blue"', count = 1)
+        self.assertContains(response, '<span class="commodity_card selectable" title="Blue"', count = 1)
         self.assertContains(response, '<span class="commodity_card not_submitted" title="Blue -- not submitted"', count = 2)
-        self.assertContains(response, '<span class="commodity_card" title="Red"', count = 2)
-        self.assertNotContains(response, '<span class="commodity_card" title="Orange"')
+        self.assertContains(response, '<span class="commodity_card selectable" title="Red"', count = 2)
+        self.assertNotContains(response, '<span class="commodity_card selectable" title="Orange"')
         self.assertContains(response, '<span class="commodity_card not_submitted" title="Orange -- not submitted"', count = 1)
 
     def test_game_board_displays_rulecards(self):

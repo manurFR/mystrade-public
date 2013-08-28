@@ -51,7 +51,7 @@
                         {% if copy >= cih.nb_tradable_cards %}
                             {% include "common/commodity_card.html" with name=cih.commodity.name cih_id=cih.commodity_id color=cih.commodity.color extra_classes="not_tradable" %}
                         {% else %}
-                            {% include "common/commodity_card.html" with name=cih.commodity.name cih_id=cih.commodity_id color=cih.commodity.color %}
+                            {% include "common/commodity_card.html" with name=cih.commodity.name cih_id=cih.commodity_id color=cih.commodity.color extra_classes="selectable"%}
                         {% endif %}
                     {% endfor %}
                 {% endfor %}
@@ -67,7 +67,7 @@
 
                 <div id="zone_rulecards">
                     {% for rih in rulecards %}
-                    <div class="rulecard{% if rih.is_in_a_pending_trade %} not_tradable{% endif %}" data-rih-id="{{ rih.id }}" data-public-name="{{ rih.rulecard.public_name }}">
+                    <div class="rulecard{% if rih.is_in_a_pending_trade %} not_tradable{% else %} selectable{% endif %}" data-rih-id="{{ rih.id }}" data-public-name="{{ rih.rulecard.public_name }}">
                         <div class="note helptext"></div>
                         <div class="rulecard_name">{{ rih.rulecard.public_name }}</div>
                         <div class="rulecard_desc">{{ rih.rulecard.description }}</div>
@@ -151,6 +151,17 @@
                 });
         }
 
+        function correspondingCommodityInHand(commodityInTabTrade) {
+            var cihId = $(commodityInTabTrade).data("cihId");
+            var indexInThisCommodity = $("#zone_selected_commodities").find(".commodity_card[data-cih-id=" + cihId + "]").index(commodityInTabTrade);
+            return $("#zone_commodities").find(".commodity_card[data-cih-id=" + cihId + "]").get(indexInThisCommodity);
+        }
+
+        function correspondingRulecardInHand(rulecardInTabTrade) {
+            var rihId = $(rulecardInTabTrade).data("rihId");
+            return $("#zone_rulecards").find(".rulecard[data-rih-id=" + rihId + "]");
+        }
+
         function refreshSelectedCommodities() {
             var selectedCommodities = "";
             var currentCihId = 0;
@@ -168,10 +179,7 @@
             });
             $("#zone_selected_commodities").html(selectedCommodities)
                     .find(".commodity_card").on("click.tradeselect", function(event) {
-                        var cihId = $(event.target).data("cihId");
-                        var indexInThisCommodity = $("#zone_selected_commodities").find(".commodity_card[data-cih-id=" + cihId + "]").index(event.target);
-                        var correspondingCardInHand = $("#zone_commodities").find(".commodity_card.card_selected[data-cih-id=" + cihId + "]").get(indexInThisCommodity);
-                        clickOnCommodity(correspondingCardInHand);
+                        clickOnCommodity(correspondingCommodityInHand(event.target));
             });
         }
 
@@ -185,13 +193,13 @@
             });
             $("#zone_selected_rulecards").html(selectedRulecards)
                     .find(".rulecard_thumbnail").on("click.tradeselect", function(event) {
-                        var rihId = $(event.target).data("rihId");
-                        var correspondingCardInHand = $("#zone_rulecards").find(".rulecard.card_selected[data-rih-id=" + rihId + "]");
-                        clickOnRulecard(correspondingCardInHand);
+                        clickOnRulecard(correspondingRulecardInHand(event.target));
                     });
         }
 
-        function clickOnCommodity(cardElement) {
+        // in trade mode, clicking on a card will add/remove it from the trade
+        // in standard mode, it will initiate a new trade and add the card
+        function clickOnCommodity(cardElement, standardMode) {
             var cihId = $(cardElement).data("cihId");
             var hiddenInput = $("input#id_commodity_" + cihId);
             var currentNumber = parseInt(hiddenInput.val(), 10) || 0;
@@ -201,10 +209,13 @@
                 hiddenInput.val(currentNumber + 1);
             }
             $(cardElement).toggleClass("card_selected");
+            if (standardMode) {
+                $("#zone_tabs").tabs("option", "active", 1);
+            }
             refreshSelectedCommodities();
         }
 
-        function clickOnRulecard(cardElement) {
+        function clickOnRulecard(cardElement, standardMode) {
             var rihId = $(cardElement).data("rihId");
             var hiddenInput = $("input#id_rulecard_" + rihId);
             if ($(cardElement).hasClass("card_selected")) {
@@ -213,22 +224,35 @@
                 hiddenInput.val("True");
             }
             cardElement.toggleClass("card_selected");
+            if (standardMode) {
+                $("#zone_tabs").tabs("option", "active", 1);
+            }
             refreshSelectedRulecards();
         }
 
         function prepareTradeInteractions(event, ui) {
-            var commodities = $(".commodity_card");
-            var rulecards = $(".rulecard");
+            var commodities = $("#zone_commodities").find(".commodity_card");
+            var rulecards = $("#zone_rulecards").find(".rulecard");
             if ($(ui.newTab).attr("aria-controls") === "tab-trade") {
-                commodities.not(".not_tradable").addClass("selectable").on("click.tradeselect", function(event) {
-                    clickOnCommodity(event.target)
+                commodities.not(".not_tradable").addClass("selectable").off("click.tradecreate")
+                        .on("click.tradeselect", function(event) {
+                            clickOnCommodity(event.target)
+                        });
+                // mark as selected the cards in hand that are selected in the trade tab
+                $("#zone_selected_commodities").find(".commodity_card").each(function() {
+                    $(correspondingCommodityInHand(this)).addClass("card_selected");
                 });
                 commodities.filter(".not_tradable").addClass("excluded").each(function() {
                     $(this).attr("title", $(this).data("name") + " - Reserved for a pending trade");
                 });
 
-                rulecards.not(".not_tradable, .former").addClass("selectable").on("click.tradeselect", function(event) {
-                    clickOnRulecard($(event.target).closest(".rulecard")); // step up to the main div.rulecard if the click was on a sub-div
+                rulecards.not(".not_tradable, .former").addClass("selectable").off("click.tradecreate")
+                        .on("click.tradeselect", function(event) {
+                            clickOnRulecard($(event.target).closest(".rulecard")); // step up to the main div.rulecard if the click was on a sub-div
+                        });
+                // mark as selected the cards in hand that are selected in the trade tab
+                $("#zone_selected_rulecards").find(".rulecard_thumbnail").each(function() {
+                    $(correspondingRulecardInHand(this)).addClass("card_selected");
                 });
                 rulecards.filter(".not_tradable").addClass("excluded").children(".note").text("(reserved for a pending trade)");
             } else {
@@ -252,9 +276,7 @@
                     refreshSelectedRulecards();
                 })
                 .done(function() {
-                    $("#zone_tabs").tabs("option", "active", 0);
-                    refreshEvents();
-                    refreshTrade();
+                    window.location.reload(true);
                 });
             $(tradeForm).find(":input").prop("disabled", true);
             $(tradeForm).find(".selectable").off("click.tradeselect");
@@ -275,6 +297,14 @@
 
             refreshEvents();
             refreshTrade();
+
+            // Initially, the cards are in standard mode (see above). They will lose this mode definitely once a new trade is initiated.
+            $(".commodity_card").not(".not_tradable").on("click.tradecreate", function(event) {
+                clickOnCommodity(event.target, true);
+            });
+            $(".rulecard").not(".not_tradable, .former").on("click.tradecreate", function(event) {
+                clickOnRulecard($(event.target).closest(".rulecard"), true);
+            });
         });
 
         // messages

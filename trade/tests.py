@@ -129,7 +129,6 @@ class CreateTradeViewTest(MystradeTestCase):
         offer.tradedcommodities_set.add(tc)
         other_trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED', initiator_offer = offer)
 
-
         response = self._postCreateTrade({'responder': 4,
                                           'rulecard_{0}'.format(rih.id): 'True',
                                           'commodity_{0}'.format(cih.commodity_id): 2,
