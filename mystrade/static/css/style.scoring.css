@@ -171,12 +171,9 @@ textarea {
   .rulecard .rulecard_desc {
     line-height: 1.2em; }
   /* line 172, ../../resources/scss/_base.scss */
-  .rulecard .note {
-    float: right; }
-  /* line 176, ../../resources/scss/_base.scss */
   .rulecard.excluded {
     background: url(../stripe.png); }
-  /* line 181, ../../resources/scss/_base.scss */
+  /* line 177, ../../resources/scss/_base.scss */
   .rulecard.card_selected {
     border: gray solid 3px;
     margin: 1px;
@@ -184,7 +181,7 @@ textarea {
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px; }
 
-/* line 189, ../../resources/scss/_base.scss */
+/* line 185, ../../resources/scss/_base.scss */
 .rulecard_thumbnail {
   display: inline-block;
   text-align: center;
@@ -198,6 +195,10 @@ textarea {
   padding: 4px;
   font-size: 1.4em;
   font-weight: bold; }
+
+/* line 197, ../../resources/scss/_base.scss */
+.note {
+  float: right; }
 
 /* line 201, ../../resources/scss/_base.scss */
 .errors {

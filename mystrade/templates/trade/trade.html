@@ -1,4 +1,5 @@
 {% load widget_tweaks %}
+{% load staticfiles %}
 
 {% if not trade %} {# Trade creation #}
 <form id="new_trade">{% csrf_token %}
@@ -13,8 +14,7 @@
     <h3>Free Information(s) <span class="helptext">(optional)</span></h3>
     {{ new_offer_form.free_information|attr:"rows:3" }}<br/>
         <span class="helptext">That piece of information will NOT be revealed until both players have accepted the trade.</span>
-        {# TODO help icon with tooltip: #}
-{#        For now, the other player will only be informed that there IS a free information with the trade, not its content. You should give an hint of what it is in the comment below.<br/>#}
+        <img class="note" src="{% static 'info.png' %}" height="16" width="16" alt="" title="For now, the other player will only be informed that there IS a free information with the trade, not its content. You should give an hint of what it is in the comment below."/>
         <span class="errors">{{ new_offer_form.free_information.errors.as_text }}</span>
     <h3>Comment <span class="helptext">(optional)</span></h3>
     {{ new_offer_form.comment|attr:"rows:3" }}<br/>
@@ -31,6 +31,7 @@ duh
 <script>
     $(function() {
         $("input#button_submit_new_trade").button();
+        $("img").tooltip();
     });
 
     $("#new_trade").on("submit", function() {

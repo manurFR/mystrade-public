@@ -169,10 +169,6 @@ $horizontalPaddingOfRuleCards: 8px;
     line-height: 1.2em;
   }
 
-  .note {
-    float: right;
-  }
-
   &.excluded {
     //color: $previouslyOwnedRuleColor;
     background: url(../stripe.png);
@@ -196,6 +192,10 @@ $heightOfThumbnailRuleCards: 22px;
   margin: 1px;
   padding: 4px;
   @include font($size: 1.4em, $weight: bold);
+}
+
+.note {
+  float: right;
 }
 
 .errors {
