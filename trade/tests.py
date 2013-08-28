@@ -16,20 +16,21 @@ from utils.tests import MystradeTestCase
 
 class CreateTradeViewTest(MystradeTestCase):
 
-    def test_create_trade_without_responder_fails_and_keeps_text_fields(self):
+    def test_create_trade_without_responder_fails_but_keeps_text_fields_and_cards(self):
+        rih = RuleInHand.objects.create(game = self.game, player = self.loginUser, rulecard = mommy.make(RuleCard), ownership_date = now())
+        cih = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = mommy.make(Commodity), nb_cards = 3)
+
         response = self.client.post("/trade/{0}/create/".format(self.game.id),
                                     {'free_information': 'secret!',
                                      'comment': 'a comment',
-                                     'rulecard_1': 'True',
-                                     'rulecard_2': 'True',
-                                     'commodity_1': 0,
-                                     'commodity_2': 1,
-                                     'commodity_3': 0
+                                     'rulecard_{0}'.format(rih.id): 'True',
+                                     'commodity_{0}'.format(cih.commodity_id): 2
                                     }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertFormError(response, 'new_trade_form', 'responder', 'This field is required.')
         self.assertContains(response, "secret!", status_code = 422)
         self.assertContains(response, "a comment", status_code = 422)
-        # TODO add keep cards
+        self.assertContains(response, '<input id="id_rulecard_{0}" name="rulecard_{0}" type="hidden" value="True"'.format(rih.id), status_code = 422)
+        self.assertContains(response, '<input id="id_commodity_{0}" name="commodity_{0}" type="hidden" value="2"'.format(cih.commodity_id), status_code = 422)
 
     @skip("until redesign")
     def test_create_trade_without_selecting_cards_or_giving_a_free_information_fails_and_keeps_text_fields(self):
@@ -763,7 +764,7 @@ class ManageViewsTest(MystradeTestCase):
         request = RequestFactory().get("/trade/{0}/create/".format(self.game.id))
         request.user = self.loginUser
         offer_form, rulecards_formset, commodities_formset = _prepare_offer_form(request, self.game,
-                                                                                  selected_rules = [rih2],
+                                                                                  selected_rulecards= [rih2],
                                                                                   selected_commodities = {cih1: 1})
 
         self.assertIn({'card_id':       rih1.id,

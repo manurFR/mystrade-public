@@ -245,6 +245,8 @@
                     if (jqXHR.status == 422) tab_trade = jqXHR.responseText;
                     else tab_trade = "Error sending data. Please try again.";
                     $("#zone_trade").html(tab_trade);
+                    refreshSelectedCommodities(); // re-display cards in the trade tab
+                    refreshSelectedRulecards();
                 })
                 .done(function() {
                     $("#zone_tabs").tabs("option", "active", 0);

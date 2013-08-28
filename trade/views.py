@@ -71,11 +71,11 @@ def create_trade(request, game_id):
         status_code = 200
         if request.method == 'POST':
             new_trade_form = TradeForm(request.user, game, request.POST)
-            offer, selected_commodities, selected_rules = _parse_offer_form(request, game)
+            offer, selected_commodities, selected_rulecards = _parse_offer_form(request, game)
 
             if new_trade_form.is_valid():
                 offer.save()
-                for rih in selected_rules:
+                for rih in selected_rulecards:
                     offer.rules.add(rih)
                 for cih, nb_traded_cards in selected_commodities.iteritems():
                     if nb_traded_cards > 0:
@@ -90,7 +90,7 @@ def create_trade(request, game_id):
                 return HttpResponse()
             else:
                 status_code = 422
-                new_offer_form = _prepare_offer_form(request, game, offer, selected_commodities, selected_rules)
+                new_offer_form = _prepare_offer_form(request, game, offer, selected_commodities, selected_rulecards)
 
             # try:
             #     offer, selected_rules, selected_commodities = _parse_offer_forms(request, game)
@@ -282,7 +282,7 @@ def decline_trade(request, game_id, trade_id):
 
     raise PermissionDenied
 
-def _prepare_offer_form(request, game, offer = None, selected_commodities = {}, selected_rules = []):
+def _prepare_offer_form(request, game, offer = None, selected_commodities = {}, selected_rulecards = []):
     commodity_hand = commodities_in_hand(game, request.user)
     rule_hand = [rule for rule in rules_currently_in_hand(game, request.user) if not rule.is_in_a_pending_trade()]
 
@@ -305,14 +305,18 @@ def _prepare_offer_form(request, game, offer = None, selected_commodities = {}, 
     #                                                      for card in commodity_hand],
     #                                             prefix='commodity')
 
-    if offer:
-        offer_form = OfferForm({'free_information': offer.free_information,
-                                'comment':          offer.comment},
-                               commodities = commodity_hand, rulecards = rule_hand)
-    else:
-        offer_form = OfferForm(commodities = commodity_hand, rulecards = rule_hand)
+    initial = {}
+    for cih in commodity_hand:
+        initial.update({'commodity_{0}'.format(cih.commodity_id): selected_commodities.get(cih, 0)})
+    for rih in rule_hand:
+        initial.update({'rulecard_{0}'.format(rih.id): (rih in selected_rulecards)})
 
-    return offer_form
+    if offer:
+        initial.update({'free_information': offer.free_information,
+                        'comment':          offer.comment})
+
+    return OfferForm(commodities = commodity_hand, rulecards = rule_hand,
+                     initial = initial)
 
 def _parse_offer_form(request, game):
     commodity_hand = commodities_in_hand(game, request.user)

@@ -19,15 +19,7 @@ class OfferForm(forms.Form):
     free_information = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
     comment = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
 
-    # nb_selected_rules = 0
-    # nb_selected_commodities = 0
-
     def __init__(self, *args, **kwargs):
-        # if kwargs.has_key('nb_selected_rules'):
-        #     self.nb_selected_rules = kwargs.pop('nb_selected_rules')
-        # if kwargs.has_key('nb_selected_commodities'):
-        #     self.nb_selected_commodities = kwargs.pop('nb_selected_commodities')
-        # super(OfferForm, self).__init__(*args, **kwargs)
         commodities = kwargs.pop('commodities')
         rulecards = kwargs.pop('rulecards')
         super(OfferForm, self).__init__(*args, **kwargs)
@@ -35,7 +27,7 @@ class OfferForm(forms.Form):
         for cih in commodities:
             self.fields['commodity_{0}'.format(cih.commodity_id)] = forms.IntegerField(widget = forms.HiddenInput, min_value = 0, max_value = cih.nb_cards)
         for rih in rulecards:
-            self.fields['rulecard_{0}'.format(rih.id)] = forms.BooleanField(widget=forms.HiddenInput, required=False)
+            self.fields['rulecard_{0}'.format(rih.id)] = forms.BooleanField(widget = forms.HiddenInput, required = False)
 
     def commodities(self):
         for name in self.fields:
@@ -47,11 +39,11 @@ class OfferForm(forms.Form):
             if name.startswith('rulecard_'):
                 yield(self[name])
 
-    def clean(self):
-        cleaned_data = super(OfferForm, self).clean()
-        # if not self.selected_rulecards() and not self.selected_commodities() and not cleaned_data['free_information']:
-        #     raise forms.ValidationError("At least one card or one free information should be offered.")
-        return cleaned_data
+    # def clean(self):
+    #     cleaned_data = super(OfferForm, self).clean()
+    #     # if not self.selected_rulecards() and not self.selected_commodities() and not cleaned_data['free_information']:
+    #     #     raise forms.ValidationError("At least one card or one free information should be offered.")
+    #     return cleaned_data
 
 class RuleCardFormParse(forms.Form):
     card_id = forms.IntegerField(widget = forms.HiddenInput)
