@@ -2,6 +2,12 @@
 {% load staticfiles %}
 
 {% if not trade %} {# Trade creation #}
+{% if new_offer_form.non_field_errors %}
+    {% for err in new_offer_form.non_field_errors %}
+        <span class="errors"><img class="warning" src="{% static 'warning.png' %}" height="16" width="16" alt=""/>{{ err }}</span>
+
+    {% endfor %}
+{% endif %}
 <form id="new_trade">{% csrf_token %}
     <p>With who?
         {{ new_trade_form.responder }}&nbsp;

@@ -206,6 +206,11 @@ textarea {
   color: #a67600; }
 
 /* line 206, ../../resources/scss/_base.scss */
+.warning {
+  margin-right: 5px;
+  vertical-align: bottom; }
+
+/* line 211, ../../resources/scss/_base.scss */
 .selectable:hover {
   cursor: pointer; }
 
@@ -420,4 +425,5 @@ form .submit {
 
 /* line 185, ../../resources/scss/style.game.board.scss */
 #id_responder {
-  margin-left: 8px; }
+  margin-left: 8px;
+  font-size: 9pt; }

@@ -17,39 +17,36 @@ from utils.tests import MystradeTestCase
 class CreateTradeViewTest(MystradeTestCase):
 
     def test_create_trade_without_responder_fails_but_keeps_text_fields_and_cards(self):
-        rih = RuleInHand.objects.create(game = self.game, player = self.loginUser, rulecard = mommy.make(RuleCard), ownership_date = now())
         cih = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = mommy.make(Commodity), nb_cards = 3)
+        rih = RuleInHand.objects.create(game = self.game, player = self.loginUser, rulecard = mommy.make(RuleCard), ownership_date = now())
 
         response = self.client.post("/trade/{0}/create/".format(self.game.id),
                                     {'free_information': 'secret!',
                                      'comment': 'a comment',
+                                     'commodity_{0}'.format(cih.commodity_id): 2,
                                      'rulecard_{0}'.format(rih.id): 'True',
-                                     'commodity_{0}'.format(cih.commodity_id): 2
                                     }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(422, response.status_code)
         self.assertFormError(response, 'new_trade_form', 'responder', 'This field is required.')
         self.assertContains(response, "secret!", status_code = 422)
         self.assertContains(response, "a comment", status_code = 422)
         self.assertContains(response, '<input id="id_rulecard_{0}" name="rulecard_{0}" type="hidden" value="True"'.format(rih.id), status_code = 422)
         self.assertContains(response, '<input id="id_commodity_{0}" name="commodity_{0}" type="hidden" value="2"'.format(cih.commodity_id), status_code = 422)
 
-    @skip("until redesign")
     def test_create_trade_without_selecting_cards_or_giving_a_free_information_fails_and_keeps_text_fields(self):
+        cih = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = mommy.make(Commodity), nb_cards = 3)
+        rih = RuleInHand.objects.create(game = self.game, player = self.loginUser, rulecard = mommy.make(RuleCard), ownership_date = now())
+
         response = self.client.post("/trade/{0}/create/".format(self.game.id),
                                     {'responder': 4,
-                                     'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
-                                     'rulecards-0-card_id': 1,
-                                     'rulecards-1-card_id': 2,
-                                     'commodity-TOTAL_FORMS': 5, 'commodity-INITIAL_FORMS': 5,
-                                     'commodity-0-commodity_id': 1, 'commodity-0-nb_traded_cards': 0,
-                                     'commodity-1-commodity_id': 2, 'commodity-1-nb_traded_cards': 0,
-                                     'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
-                                     'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 0,
-                                     'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
                                      'free_information': '',
-                                     'comment': 'a comment'
-                                    })
-        self.assertFormError(response, 'offer_form', None, 'At least one card or one free information should be offered.')
-        self.assertContains(response, "a comment")
+                                     'comment': 'a comment',
+                                     'commodity_{0}'.format(cih.commodity_id): 0,
+                                     'rulecard_{0}'.format(rih.id): 'False',
+                                    }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(422, response.status_code)
+        self.assertFormError(response, 'new_offer_form', None, 'At least one card or one free information should be offered.')
+        self.assertContains(response, "a comment", status_code = 422)
 
     def test_create_trade_is_forbidden_if_you_have_submitted_your_hand(self):
         gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)

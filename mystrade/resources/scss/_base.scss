@@ -203,6 +203,11 @@ $heightOfThumbnailRuleCards: 22px;
   color: $infoTextColor;
 }
 
+.warning {
+  margin-right: 5px;
+  vertical-align: bottom;
+}
+
 .selectable:hover {
   cursor: pointer;
 }

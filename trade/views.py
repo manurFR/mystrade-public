@@ -71,26 +71,32 @@ def create_trade(request, game_id):
         status_code = 200
         if request.method == 'POST':
             new_trade_form = TradeForm(request.user, game, request.POST)
-            offer, selected_commodities, selected_rulecards = _parse_offer_form(request, game)
 
-            if new_trade_form.is_valid():
-                offer.save()
-                for rih in selected_rulecards:
-                    offer.rules.add(rih)
-                for cih, nb_traded_cards in selected_commodities.iteritems():
-                    if nb_traded_cards > 0:
-                        TradedCommodities.objects.create(offer = offer, commodityinhand = cih, nb_traded_cards = nb_traded_cards)
+            try:
+                offer, selected_commodities, selected_rulecards = _parse_offer_form(request, game)
 
-                trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
-                                                          responder = new_trade_form.cleaned_data['responder'])
+                if new_trade_form.is_valid():
+                    offer.save()
+                    for rih in selected_rulecards:
+                        offer.rules.add(rih)
+                    for cih, nb_traded_cards in selected_commodities.iteritems():
+                        if nb_traded_cards > 0:
+                            TradedCommodities.objects.create(offer = offer, commodityinhand = cih, nb_traded_cards = nb_traded_cards)
 
-                # email notification
-                _trade_event_notification(request, trade)
+                    trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
+                                                              responder = new_trade_form.cleaned_data['responder'])
 
-                return HttpResponse()
-            else:
+                    # email notification
+                    _trade_event_notification(request, trade)
+
+                    return HttpResponse()
+                else:
+                    status_code = 422
+                    new_offer_form = _prepare_offer_form(request, game, offer, selected_commodities, selected_rulecards)
+            except FormInvalidException as ex:
                 status_code = 422
-                new_offer_form = _prepare_offer_form(request, game, offer, selected_commodities, selected_rulecards)
+                new_offer_form = _prepare_offer_form(request, game, ex.formdata['offer'], ex.formdata['selected_commodities'], ex.formdata['selected_rules'])
+                new_offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
 
             # try:
             #     offer, selected_rules, selected_commodities = _parse_offer_forms(request, game)
@@ -126,12 +132,6 @@ def create_trade(request, game_id):
 
         return render(request, 'trade/trade.html', {'game': game, 'new_trade_form': new_trade_form, 'new_offer_form': new_offer_form},
                       status = status_code)
-
-            # offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game)
-            # trade_form = TradeForm(request.user, game)
-
-    # return render(request, 'trade/trade_offer.html', {'game': game, 'trade_form': trade_form, 'offer_form': offer_form,
-    #                                                   'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
 
     raise PermissionDenied
 
@@ -348,9 +348,9 @@ def _parse_offer_form(request, game):
                   comment          = bleach.clean(offer_form.cleaned_data['comment'], tags = [], strip = True) or None)
 
     if not offer_valid:
-        raise FormInvalidException({'selected_rules': selected_rules,
+        raise FormInvalidException({'offer': offer,
                                     'selected_commodities': selected_commodities,
-                                    'offer': offer,
+                                    'selected_rules': selected_rules,
                                     'offer_errors': offer_form.non_field_errors()})
 
     return offer, selected_commodities, selected_rules

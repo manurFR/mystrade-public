@@ -184,5 +184,6 @@ form .submit {
 
 #id_responder {
   margin-left: 8px;
+  @include font($size: 9pt);
 }
 

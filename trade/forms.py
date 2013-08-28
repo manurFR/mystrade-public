@@ -39,11 +39,18 @@ class OfferForm(forms.Form):
             if name.startswith('rulecard_'):
                 yield(self[name])
 
-    # def clean(self):
-    #     cleaned_data = super(OfferForm, self).clean()
-    #     # if not self.selected_rulecards() and not self.selected_commodities() and not cleaned_data['free_information']:
-    #     #     raise forms.ValidationError("At least one card or one free information should be offered.")
-    #     return cleaned_data
+    def clean(self):
+        cleaned_data = super(OfferForm, self).clean()
+        nb_selected_commodities = 0
+        nb_selected_rulecards = 0
+        for name in self.cleaned_data.keys():
+            if name.startswith('commodity_'):
+                nb_selected_commodities += self.cleaned_data[name]
+            elif name.startswith('rulecard_') and self.cleaned_data[name]:
+                nb_selected_rulecards += 1
+        if nb_selected_commodities == 0 and nb_selected_rulecards == 0 and not cleaned_data['free_information']:
+            raise forms.ValidationError("At least one card or one free information should be offered.")
+        return cleaned_data
 
 class RuleCardFormParse(forms.Form):
     card_id = forms.IntegerField(widget = forms.HiddenInput)
