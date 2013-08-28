@@ -164,7 +164,7 @@
                 }
             });
             $("#zone_selected_commodities").html(selectedCommodities)
-                    .find(".commodity_card").on("click", function(event) {
+                    .find(".commodity_card").on("click.tradeselect", function(event) {
                         var cihId = $(event.target).data("cihId");
                         var indexInThisCommodity = $("#zone_selected_commodities").find(".commodity_card[data-cih-id=" + cihId + "]").index(event.target);
                         var correspondingCardInHand = $("#zone_commodities").find(".commodity_card.card_selected[data-cih-id=" + cihId + "]").get(indexInThisCommodity);
@@ -181,7 +181,7 @@
                 }
             });
             $("#zone_selected_rulecards").html(selectedRulecards)
-                    .find(".rulecard_thumbnail").on("click", function(event) {
+                    .find(".rulecard_thumbnail").on("click.tradeselect", function(event) {
                         var rihId = $(event.target).data("rihId");
                         var correspondingCardInHand = $("#zone_rulecards").find(".rulecard.card_selected[data-rih-id=" + rihId + "]");
                         clickOnRulecard(correspondingCardInHand);
@@ -252,6 +252,8 @@
                     $("#zone_tabs").tabs("option", "active", 0);
                     refreshEvents();
                 });
+            $(tradeForm).find(":input").prop("disabled", true);
+            $(tradeForm).find(".selectable").off("click.tradeselect");
         }
 
         // on load
@@ -288,11 +290,13 @@
                     if (jqXHR.status == 422) error = jqXHR.responseText;
                     else error = "Error sending data. Please try again.";
                     $('#error_message').text(error);
+                    $("#post_message").find(":input").prop("disabled", false);
                 })
                 .done(function() {
                     refreshEvents();
                     $("#id_message").val("").focus(); // clear the textarea
                 });
+            $("#post_message").find(":input").prop("disabled", true);
             return false;
         });
 
