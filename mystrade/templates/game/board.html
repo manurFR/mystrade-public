@@ -254,6 +254,7 @@
                 .done(function() {
                     $("#zone_tabs").tabs("option", "active", 0);
                     refreshEvents();
+                    refreshTrade();
                 });
             $(tradeForm).find(":input").prop("disabled", true);
             $(tradeForm).find(".selectable").off("click.tradeselect");

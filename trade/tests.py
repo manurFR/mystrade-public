@@ -20,12 +20,11 @@ class CreateTradeViewTest(MystradeTestCase):
         cih = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = mommy.make(Commodity), nb_cards = 3)
         rih = RuleInHand.objects.create(game = self.game, player = self.loginUser, rulecard = mommy.make(RuleCard), ownership_date = now())
 
-        response = self.client.post("/trade/{0}/create/".format(self.game.id),
-                                    {'free_information': 'secret!',
-                                     'comment': 'a comment',
-                                     'commodity_{0}'.format(cih.commodity_id): 2,
-                                     'rulecard_{0}'.format(rih.id): 'True',
-                                    }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        response = self._postCreateTrade({'free_information': 'secret!',
+                                          'comment': 'a comment',
+                                          'commodity_{0}'.format(cih.commodity_id): 2,
+                                          'rulecard_{0}'.format(rih.id): 'True'
+                                         })
         self.assertEqual(422, response.status_code)
         self.assertFormError(response, 'new_trade_form', 'responder', 'This field is required.')
         self.assertContains(response, "secret!", status_code = 422)
@@ -37,13 +36,12 @@ class CreateTradeViewTest(MystradeTestCase):
         cih = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = mommy.make(Commodity), nb_cards = 3)
         rih = RuleInHand.objects.create(game = self.game, player = self.loginUser, rulecard = mommy.make(RuleCard), ownership_date = now())
 
-        response = self.client.post("/trade/{0}/create/".format(self.game.id),
-                                    {'responder': 4,
-                                     'free_information': '',
-                                     'comment': 'a comment',
-                                     'commodity_{0}'.format(cih.commodity_id): 0,
-                                     'rulecard_{0}'.format(rih.id): 'False',
-                                    }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        response = self._postCreateTrade({'responder': 4,
+                                          'free_information': '',
+                                          'comment': 'a comment',
+                                          'commodity_{0}'.format(cih.commodity_id): 0,
+                                          'rulecard_{0}'.format(rih.id): 'False',
+                                         })
         self.assertEqual(422, response.status_code)
         self.assertFormError(response, 'new_offer_form', None, 'At least one card or one free information should be offered.')
         self.assertContains(response, "a comment", status_code = 422)
@@ -55,7 +53,6 @@ class CreateTradeViewTest(MystradeTestCase):
 
         self._assertIsCreateTradeAllowed(False)
 
-    @skip("until redesign")
     def test_create_trade_only_allowed_for_the_game_players(self):
         # most notably: the game master, the admins (when not in the players' list) and the users not in this game are denied
         self._assertIsCreateTradeAllowed(True)
@@ -64,7 +61,7 @@ class CreateTradeViewTest(MystradeTestCase):
         self._assertIsCreateTradeAllowed(False)
 
         self.login_as(self.unrelated_user)
-        self._assertIsCreateTradeAllowed(False, list_allowed = False) # a random non-player user can not even see the list of trades
+        self._assertIsCreateTradeAllowed(False)
 
         self.login_as(self.admin)
         self._assertIsCreateTradeAllowed(False)
@@ -72,36 +69,22 @@ class CreateTradeViewTest(MystradeTestCase):
         self.login_as(self.admin_player)
         self._assertIsCreateTradeAllowed(True)
 
-    def _assertIsCreateTradeAllowed(self, create_allowed, list_allowed = True):
+    def _assertIsCreateTradeAllowed(self, create_allowed):
         expected_status = 200 if create_allowed else 403
 
-        response = self.client.get("/trade/{0}/create/".format(self.game.id))
+        response = self.client.get("/trade/{0}/create/".format(self.game.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(expected_status, response.status_code)
 
-        response = self.client.post("/trade/{0}/create/".format(self.game.id),
-                                    {'responder': 4,
-                                     'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
-                                     'rulecards-0-card_id': 1,
-                                     'rulecards-1-card_id': 2,
-                                     'commodity-TOTAL_FORMS': 5, 'commodity-INITIAL_FORMS': 5,
-                                     'commodity-0-commodity_id': 1, 'commodity-0-nb_traded_cards': 0,
-                                     'commodity-1-commodity_id': 2, 'commodity-1-nb_traded_cards': 1,
-                                     'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
-                                     'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 1,
-                                     'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
-                                     'free_information': 'secret!',
-                                     'comment': 'a comment'
-                                    }, follow = True)
-        self.assertEqual(expected_status, response.status_code)
+        cih = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = mommy.make(Commodity), nb_cards = 3)
+        rih = RuleInHand.objects.create(game = self.game, player = self.loginUser, rulecard = mommy.make(RuleCard), ownership_date = now())
 
-        response = self.client.get("/trade/{0}/".format(self.game.id))
-        if list_allowed:
-            if create_allowed:
-                self.assertContains(response, '<input type="submit" value="Set up trade proposal" />')
-            else:
-                self.assertNotContains(response, '<input type="submit" value="Set up trade proposal" />')
-        else:
-            self.assertEqual(403, response.status_code)
+        response = self._postCreateTrade({'responder': 4,
+                                          'free_information': 'secret!',
+                                          'comment': 'a comment',
+                                          'commodity_{0}'.format(cih.commodity_id): 2,
+                                          'rulecard_{0}'.format(rih.id): 'True',
+                                         })
+        self.assertEqual(expected_status, response.status_code)
 
     def test_create_trade_complete_save(self):
         ruleset = mommy.make(Ruleset)
@@ -111,13 +94,12 @@ class CreateTradeViewTest(MystradeTestCase):
         commodity = mommy.make(Commodity, ruleset = ruleset, name = 'commodity_1')
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = self.loginUser,
                                                            commodity = commodity, nb_cards = 2)
-        response = self.client.post("/trade/{0}/create/".format(self.game.id),
-                                    {'responder': 4,
-                                     'free_information': 'some "secret" info',
-                                     'comment': 'a comment',
-                                     'rulecard_{0}'.format(rule_in_hand.id): 'True',
-                                     'commodity_{0}'.format(commodity.id): 1
-                                    }, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # AJAX
+        response = self._postCreateTrade({'responder': 4,
+                                          'free_information': 'some "secret" info',
+                                          'comment': 'a comment',
+                                          'rulecard_{0}'.format(rule_in_hand.id): 'True',
+                                          'commodity_{0}'.format(commodity.id): 1
+                                         })
         self.assertEquals(200, response.status_code)
 
         trade = Trade.objects.get(game = self.game, initiator__username = 'test2')
@@ -138,38 +120,28 @@ class CreateTradeViewTest(MystradeTestCase):
         self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test4@test.com'], email.to)
 
-    @skip("until redesign")
-    def test_create_trade_page_doesnt_show_commodities_with_no_cards(self):
-        commodity1 = mommy.make(Commodity, name = 'Commodity#1')
-        commodity2 = mommy.make(Commodity, name = 'Commodity#2')
-        cih1 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 1)
-        cih2 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity2, nb_cards = 0)
+    def test_create_trade_with_reserved_elements_fails(self):
+        cih = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = mommy.make(Commodity), nb_cards = 3)
+        rih = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = mommy.make(RuleCard))
+        # reserving the cards for another trade
+        offer = mommy.make(Offer, rules = [rih])
+        tc = mommy.make(TradedCommodities, offer = offer, commodityinhand = cih, nb_traded_cards = 2)
+        offer.tradedcommodities_set.add(tc)
+        other_trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED', initiator_offer = offer)
 
-        response = self.client.get("/trade/{0}/create/".format(self.game.id))
 
-        self.assertContains(response, '<div class="card_name">Commodity#1</div>')
-        self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
+        response = self._postCreateTrade({'responder': 4,
+                                          'rulecard_{0}'.format(rih.id): 'True',
+                                          'commodity_{0}'.format(cih.commodity_id): 2,
+                                         })
+        self.assertFormError(response, 'new_offer_form', None, 'A rule card in a pending trade can not be offered in another trade.')
+        self.assertFormError(response, 'new_offer_form', None, 'A commodity card in a pending trade can not be offered in another trade.')
+        self.assertContains(response, 'A rule card in a pending trade can not be offered in another trade.', status_code = 422)
+        self.assertContains(response, 'A commodity card in a pending trade can not be offered in another trade.', status_code = 422)
 
-    @skip("until redesign")
-    def test_create_trade_with_reserved_elements_fails_gracefully(self):
-        rulecard = mommy.make(RuleCard, public_name = 'R1', description = 'my rulecard')
-        rih = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard)
-        # reserving the rule in hand for another trade
-        other_trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
-                                 initiator_offer = mommy.make(Offer, rules=[rih]))
-
-        response = self.client.post("/trade/{0}/create/".format(self.game.id),
-                                    {'responder': 4,
-                                     'rulecards-TOTAL_FORMS': 1,      'rulecards-INITIAL_FORMS': 1,
-                                     'rulecards-0-card_id': rih.id,   'rulecards-0-selected_rule': 'on',
-                                     'commodity-TOTAL_FORMS': 0,      'commodity-INITIAL_FORMS': 0,
-                                     'comment': 'a comment'
-                                    })
-        self.assertContains(response, '<div class="card_name">R1</div>')
-        self.assertContains(response, '<div class="card_desc">my rulecard</div>')
-        self.assertContains(response, '<span class="helptext">Reserved for a pending trade</span>')
-        self.assertContains(response, 'a comment')
-        self.assertContains(response, 'A rule card in a pending trade can not be offered in another trade.')
+    def _postCreateTrade(self, data):
+        return self.client.post("/trade/{0}/create/".format(self.game.id),
+                                data, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
 
 class ManageViewsTest(MystradeTestCase):
 

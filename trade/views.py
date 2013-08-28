@@ -286,25 +286,6 @@ def _prepare_offer_form(request, game, offer = None, selected_commodities = {}, 
     commodity_hand = commodities_in_hand(game, request.user)
     rule_hand = [rule for rule in rules_currently_in_hand(game, request.user) if not rule.is_in_a_pending_trade()]
 
-    # RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra=0)
-    # rulecards_formset = RuleCardsFormSet(initial=sorted([{'card_id':       card.id,
-    #                                                       'public_name':   card.rulecard.public_name,
-    #                                                       'description':   card.rulecard.description,
-    #                                                       'reserved':      card.is_in_a_pending_trade(),
-    #                                                       'selected_rule': bool(card in selected_rules)}
-    #                                                      for card in rule_hand], key=lambda card: card['reserved']),
-    #                                      prefix='rulecards')
-    #
-    # CommodityCardsFormSet = formset_factory(TradeCommodityCardFormDisplay, extra=0)
-    # commodities_formset = CommodityCardsFormSet(initial=[{'commodity_id':      card.commodity_id,
-    #                                                       'name':              card.commodity.name,
-    #                                                       'color':             card.commodity.color,
-    #                                                       'nb_cards':          card.nb_cards,
-    #                                                       'nb_tradable_cards': card.nb_tradable_cards(),
-    #                                                       'nb_traded_cards':   selected_commodities.get(card, 0)}
-    #                                                      for card in commodity_hand],
-    #                                             prefix='commodity')
-
     initial = {}
     for cih in commodity_hand:
         initial.update({'commodity_{0}'.format(cih.commodity_id): selected_commodities.get(cih, 0)})
@@ -320,38 +301,35 @@ def _prepare_offer_form(request, game, offer = None, selected_commodities = {}, 
 
 def _parse_offer_form(request, game):
     commodity_hand = commodities_in_hand(game, request.user)
-    rule_hand = [rule for rule in rules_currently_in_hand(game, request.user) if not rule.is_in_a_pending_trade()]
-
-    # RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
-    # rulecards_formset = RuleCardsFormSet(request.POST, prefix = 'rulecards')
-    # CommodityCardsFormSet = formset_factory(TradeCommodityCardFormParse, formset = BaseCommodityCardFormSet)
-    # commodities_formset = CommodityCardsFormSet(request.POST, prefix = 'commodity')
-    # commodities_formset.set_game(game)
-    # commodities_formset.set_player(request.user)
-
-    # fill the cleaned_data arrays
-    # rulecards_valid = rulecards_formset.is_valid()
-    # commodities_valid = commodities_formset.is_valid()
+    rule_hand = rules_currently_in_hand(game, request.user) # include rules reserved for another trade as they are errors that have to be detected
 
     offer_form = OfferForm(request.POST, commodities = commodity_hand, rulecards = rule_hand)
     offer_valid = offer_form.is_valid() # fill the cleaned_data array
 
+    errors = offer_form.non_field_errors()
+
     selected_commodities = {}
     for cih in commodity_hand:
-        selected_commodities[cih] = offer_form.cleaned_data['commodity_{0}'.format(cih.commodity_id)]
-    selected_rules = [rih for rih in rule_hand if offer_form.cleaned_data['rulecard_{0}'.format(rih.id)]]
+        nb_traded_cards = offer_form.cleaned_data['commodity_{0}'.format(cih.commodity_id)]
+        selected_commodities[cih] = nb_traded_cards
+        if nb_traded_cards > cih.nb_tradable_cards():
+            errors.append(u"A commodity card in a pending trade can not be offered in another trade.")
 
-    # offer_form = OfferForm(request.POST,
-    #                        nb_selected_rules = len(selected_rules), nb_selected_commodities = sum(selected_commodities.values()))
+    selected_rules = []
+    for rih in rule_hand:
+        if offer_form.cleaned_data['rulecard_{0}'.format(rih.id)]:
+            selected_rules.append(rih)
+            if rih.is_in_a_pending_trade():
+                errors.append(u"A rule card in a pending trade can not be offered in another trade.")
 
     offer = Offer(free_information = bleach.clean(offer_form.cleaned_data['free_information'], tags = [], strip = True) or None, # 'or None' necessary to insert null (not empty) values
                   comment          = bleach.clean(offer_form.cleaned_data['comment'], tags = [], strip = True) or None)
 
-    if not offer_valid:
+    if not offer_valid or errors:
         raise FormInvalidException({'offer': offer,
                                     'selected_commodities': selected_commodities,
                                     'selected_rules': selected_rules,
-                                    'offer_errors': offer_form.non_field_errors()})
+                                    'offer_errors': errors})
 
     return offer, selected_commodities, selected_rules
 
