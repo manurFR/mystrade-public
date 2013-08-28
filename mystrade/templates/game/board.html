@@ -38,7 +38,10 @@
 
     <div id="zone_game_main">
         <div id="zone_hand">
-            <div id="zone_links">&nbsp;</div>
+            <div id="zone_links">
+                <img src="{% static 'action.png' %}" width="16" height="16" alt="&gt;"/>
+                <a id="link_new_trade">Propose new trade</a>
+            </div>
 
             <div id="zone_commodities">
                 <h3>{% if hand_submitted %}Submitted Commodities
@@ -263,6 +266,9 @@
                 heightStyle: "content",
                 beforeActivate: prepareTradeInteractions
             });
+            $("#link_new_trade").on("click", function() {
+                $("#zone_tabs").tabs("option", "active", 1);
+            })
             $("input#button_post_message").button();
             $(".commodity_card").tooltip({ position: { my: "left+15" } });
 

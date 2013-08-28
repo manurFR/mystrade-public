@@ -277,61 +277,64 @@ textarea {
   width: 518px; }
   /* line 39, ../../resources/scss/style.game.board.scss */
   #zone_hand #zone_links {
-    height: 30px; }
-  /* line 43, ../../resources/scss/style.game.board.scss */
+    margin: 8px 0; }
+    /* line 42, ../../resources/scss/style.game.board.scss */
+    #zone_hand #zone_links img {
+      vertical-align: -4px; }
+  /* line 47, ../../resources/scss/style.game.board.scss */
   #zone_hand #zone_commodities {
     margin-bottom: 16px; }
-  /* line 47, ../../resources/scss/style.game.board.scss */
+  /* line 51, ../../resources/scss/style.game.board.scss */
   #zone_hand #zone_rules {
     display: inline-block;
     margin-bottom: 16px; }
 
-/* line 53, ../../resources/scss/style.game.board.scss */
+/* line 57, ../../resources/scss/style.game.board.scss */
 #zone_tabs {
   margin-left: 538px;
   background: none;
   border-width: 0px; }
 
-/* line 59, ../../resources/scss/style.game.board.scss */
+/* line 63, ../../resources/scss/style.game.board.scss */
 #zone_tabs .ui-tabs-nav {
   height: 2.2em;
   background: transparent;
   border-width: 0px;
   padding-left: 0px; }
-  /* line 65, ../../resources/scss/style.game.board.scss */
+  /* line 69, ../../resources/scss/style.game.board.scss */
   #zone_tabs .ui-tabs-nav .ui-state-default {
     background: transparent;
     border-color: #ffd773; }
-  /* line 70, ../../resources/scss/style.game.board.scss */
+  /* line 74, ../../resources/scss/style.game.board.scss */
   #zone_tabs .ui-tabs-nav .ui-state-active {
     background-color: #ffd773;
     border-color: #ffd773; }
-  /* line 75, ../../resources/scss/style.game.board.scss */
+  /* line 79, ../../resources/scss/style.game.board.scss */
   #zone_tabs .ui-tabs-nav li {
     font-size: 0.9em; }
 
-/* line 80, ../../resources/scss/style.game.board.scss */
+/* line 84, ../../resources/scss/style.game.board.scss */
 #zone_tabs .ui-tabs-panel {
   background: none;
   border: 1px solid #ffd773; }
 
-/* line 85, ../../resources/scss/style.game.board.scss */
+/* line 89, ../../resources/scss/style.game.board.scss */
 #zone_post_message {
   margin-top: 10px; }
 
-/* line 89, ../../resources/scss/style.game.board.scss */
+/* line 93, ../../resources/scss/style.game.board.scss */
 #zone_selected_commodities {
   min-height: 56px; }
 
-/* line 93, ../../resources/scss/style.game.board.scss */
+/* line 97, ../../resources/scss/style.game.board.scss */
 #zone_selected_rulecards {
   min-height: 38px; }
 
-/* line 97, ../../resources/scss/style.game.board.scss */
+/* line 101, ../../resources/scss/style.game.board.scss */
 .commodity_card.not_submitted {
   background: url(../stripe.png); }
 
-/* line 101, ../../resources/scss/style.game.board.scss */
+/* line 105, ../../resources/scss/style.game.board.scss */
 .free_information {
   border: 1px solid #ffd773;
   border-radius: 5px;
@@ -340,19 +343,19 @@ textarea {
   padding-top: 10px;
   padding-left: 30px;
   color: #644700; }
-  /* line 108, ../../resources/scss/style.game.board.scss */
+  /* line 112, ../../resources/scss/style.game.board.scss */
   .free_information legend {
     color: #333333;
     font-style: italic;
     margin-left: -15px;
     padding: 0 5px; }
 
-/* line 116, ../../resources/scss/style.game.board.scss */
+/* line 120, ../../resources/scss/style.game.board.scss */
 .show_previous {
   margin: -5px 0 5px -10px;
   height: 1em; }
 
-/* line 121, ../../resources/scss/style.game.board.scss */
+/* line 125, ../../resources/scss/style.game.board.scss */
 .event_date {
   font-size: 0.9em;
   color: #a67600;
@@ -360,7 +363,7 @@ textarea {
   margin: 8px 0 4px -10px;
   padding-bottom: 2px; }
 
-/* line 129, ../../resources/scss/style.game.board.scss */
+/* line 133, ../../resources/scss/style.game.board.scss */
 .event_time {
   display: inline-block;
   color: #a67600;
@@ -368,22 +371,22 @@ textarea {
   margin-left: -10px;
   margin-right: 5px; }
 
-/* line 136, ../../resources/scss/style.game.board.scss */
+/* line 140, ../../resources/scss/style.game.board.scss */
 .event_text {
   display: inline; }
 
-/* line 140, ../../resources/scss/style.game.board.scss */
+/* line 144, ../../resources/scss/style.game.board.scss */
 .delete_message {
   float: right; }
 
-/* line 144, ../../resources/scss/style.game.board.scss */
+/* line 148, ../../resources/scss/style.game.board.scss */
 .delete_icon {
   background-image: url("../trash.png");
   border: none;
   height: 16px;
   width: 16px; }
 
-/* line 151, ../../resources/scss/style.game.board.scss */
+/* line 155, ../../resources/scss/style.game.board.scss */
 .message_content {
   border-radius: 5px;
   -moz-border-radius: 5px;
@@ -392,29 +395,29 @@ textarea {
   padding: 4px 10px;
   margin: 3px 0 10px 3px;
   font-size: 0.9em; }
-  /* line 158, ../../resources/scss/style.game.board.scss */
+  /* line 162, ../../resources/scss/style.game.board.scss */
   .message_content.admin {
     background: #d69900; }
 
-/* line 163, ../../resources/scss/style.game.board.scss */
+/* line 167, ../../resources/scss/style.game.board.scss */
 .show_more {
   text-align: right; }
 
-/* line 167, ../../resources/scss/style.game.board.scss */
+/* line 171, ../../resources/scss/style.game.board.scss */
 .chars_left {
   float: right;
   margin-right: 1em;
   text-align: right; }
 
-/* line 171, ../../resources/scss/style.game.board.scss */
+/* line 175, ../../resources/scss/style.game.board.scss */
 form .submit {
   text-align: right; }
 
-/* line 175, ../../resources/scss/style.game.board.scss */
+/* line 179, ../../resources/scss/style.game.board.scss */
 #button_post_message {
   position: relative;
   top: -10px; }
 
-/* line 181, ../../resources/scss/style.game.board.scss */
+/* line 185, ../../resources/scss/style.game.board.scss */
 #id_responder {
   margin-left: 8px; }
