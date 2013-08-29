@@ -44,6 +44,7 @@
     $(".show_more a").on("click", function() { refreshEvents({% if datenext %}"{{ datenext }}"{% endif %}); });
     $(".link_trade").on("click", function(event) {
         refreshTrade($(event.target).data("tradeId"));
-        $("#zone_tabs").tabs("option", "active", 1);
+        $("#zone_tabs").tabs("option", "active", 1)
+                .find("li[aria-controls=tab-trade]").find("a").text("View Trade");
     });
 </script>
