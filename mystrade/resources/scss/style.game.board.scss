@@ -176,6 +176,10 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   @include floatright();
 }
 
+.lighter_text {
+  color: $previouslyOwnedRuleColor;
+}
+
 form .submit {
   text-align: right;
 }

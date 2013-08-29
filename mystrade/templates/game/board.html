@@ -125,9 +125,6 @@
    </div>
 
     <script>
-        var color_list = ["blue", "red", "green", "magenta", "gray", "brown"];
-        var idx = ({{ game.id }}) % color_list.length;
-
         function refreshEvents(datenext, dateprevious) {
             var url = "{% url 'events' game.id %}";
             if (datenext) url += "?datenext=" + datenext;
@@ -155,6 +152,7 @@
                 .done(function(data) {
                     $("#zone_trade").html(data);
                 });
+            $("#zone_trade").text("Loading...");
         }
 
         function correspondingCommodityInHand(commodityInTabTrade, filterOnlySelected) {
@@ -308,9 +306,14 @@
             $("#zone_rulecards").find(".rulecard").removeClass("card_selected")
         }
 
+        function activateTooltips() {
+            $(".commodity_card").tooltip({ position: { my: "left bottom", at: "right+5 top-5" } });
+        }
+
         // on load
+        var color_list = ["blue", "red", "green", "magenta", "gray", "brown"];
         $(function() {
-            $('#zone_game_label *').css('color', color_list[idx]);
+            $('#zone_game_label *').css('color', color_list[({{ game.id }}) % color_list.length]);
             $("#zone_tabs").tabs({
                 heightStyle: "content",
                 beforeActivate: prepareTradeInteractions
@@ -319,8 +322,8 @@
                 $("#zone_tabs").tabs("option", "active", 1);
             })
             $("input#button_post_message").button();
-            $(".commodity_card").tooltip({ position: { my: "left bottom", at: "right+5 top-5" } });
 
+            activateTooltips();
             refreshEvents();
             refreshTrade();
 

@@ -26,7 +26,7 @@ class CreateTradeViewTest(MystradeTestCase):
                                           'rulecard_{0}'.format(rih.id): 'True'
                                          })
         self.assertEqual(422, response.status_code)
-        self.assertFormError(response, 'new_trade_form', 'responder', 'This field is required.')
+        self.assertFormError(response, 'trade_form', 'responder', 'This field is required.')
         self.assertContains(response, "secret!", status_code = 422)
         self.assertContains(response, "a comment", status_code = 422)
         self.assertContains(response, '<input id="id_rulecard_{0}" name="rulecard_{0}" type="hidden" value="True"'.format(rih.id), status_code = 422)
@@ -43,7 +43,7 @@ class CreateTradeViewTest(MystradeTestCase):
                                           'rulecard_{0}'.format(rih.id): 'False',
                                          })
         self.assertEqual(422, response.status_code)
-        self.assertFormError(response, 'new_offer_form', None, 'At least one card or one free information should be offered.')
+        self.assertFormError(response, 'offer_form', None, 'At least one card or one free information should be offered.')
         self.assertContains(response, "a comment", status_code = 422)
 
     def test_create_trade_is_forbidden_if_you_have_submitted_your_hand(self):
@@ -133,8 +133,8 @@ class CreateTradeViewTest(MystradeTestCase):
                                           'rulecard_{0}'.format(rih.id): 'True',
                                           'commodity_{0}'.format(cih.commodity_id): 2,
                                          })
-        self.assertFormError(response, 'new_offer_form', None, 'A rule card in a pending trade can not be offered in another trade.')
-        self.assertFormError(response, 'new_offer_form', None, 'A commodity card in a pending trade can not be offered in another trade.')
+        self.assertFormError(response, 'offer_form', None, 'A rule card in a pending trade can not be offered in another trade.')
+        self.assertFormError(response, 'offer_form', None, 'A commodity card in a pending trade can not be offered in another trade.')
         self.assertContains(response, 'A rule card in a pending trade can not be offered in another trade.', status_code = 422)
         self.assertContains(response, 'A commodity card in a pending trade can not be offered in another trade.', status_code = 422)
 
@@ -142,7 +142,7 @@ class CreateTradeViewTest(MystradeTestCase):
         return self.client.post("/trade/{0}/create/".format(self.game.id),
                                 data, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
 
-class ManageViewsTest(MystradeTestCase):
+class ShowTradeViewTest(MystradeTestCase):
 
     def test_trade_list(self):
         right_now = now()
@@ -174,39 +174,40 @@ class ManageViewsTest(MystradeTestCase):
         self.assertContains(response, "offered 5 days ago")
         self.assertRegexpMatches(response.content, "response submitted by <div class=\"game-player\"><a href=\".*\">test5</a></div>")
 
-    @skip("until redesign")
     def test_show_trade_only_allowed_for_authorized_players(self):
         """ Authorized players are : - the initiator
                                      - the responder
                                      - the game master
                                      - admins ("staff" in django terminology)
         """
-        trade = self._prepare_trade('INITIATED')
+        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                          status = 'INITIATED', initiator_offer = mommy.make(Offer))
 
         # the initiator
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(200, response.status_code)
 
         # the responder
         self.login_as(self.alternativeUser)
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(200, response.status_code)
 
         # the game master
         self.login_as(self.master)
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(200, response.status_code)
 
         # an admin
         self.login_as(self.admin)
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), follow = True)
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(200, response.status_code)
 
         # anybody else
         self.login_as(self.admin_player)
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(403, response.status_code)
 
+    @skip("until redesign")
     def test_buttons_in_show_trade_with_own_initiated_trade(self):
         trade = self._prepare_trade('INITIATED')
 
@@ -230,6 +231,7 @@ class ManageViewsTest(MystradeTestCase):
         self.assertContains(response, '<button type="button" id="decline">Decline</button>')
         self.assertContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
 
+    @skip("until redesign")
     def test_buttons_in_show_trade_for_the_responder_when_REPLIED(self):
         trade = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser,
                                     responder_offer = mommy.make(Offer))
@@ -243,6 +245,7 @@ class ManageViewsTest(MystradeTestCase):
         self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
 
+    @skip("until redesign")
     def test_buttons_in_show_trade_for_the_initiator_when_REPLIED(self):
         trade = self._prepare_trade('REPLIED', responder_offer = mommy.make(Offer))
 
@@ -253,6 +256,7 @@ class ManageViewsTest(MystradeTestCase):
         self.assertContains(response, '<button type="button" id="decline">Decline</button>')
         self.assertContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
 
+    @skip("until redesign")
     def test_buttons_in_show_trade_with_trade_CANCELLED(self):
         trade = self._prepare_trade('CANCELLED', finalizer = self.alternativeUser)
 
@@ -284,6 +288,7 @@ class ManageViewsTest(MystradeTestCase):
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
 
+    @skip("until redesign")
     def test_decline_reason_displayed_in_show_trade_when_DECLINED(self):
         trade = self._prepare_trade('DECLINED', finalizer = self.alternativeUser)
         response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
@@ -299,6 +304,8 @@ class ManageViewsTest(MystradeTestCase):
         self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\"><a href=\".*\">test5</a>")
         self.assertContains(response, "gave the following reason to decline:")
         self.assertContains(response, "Because I do not need it")
+
+class ModifyTradeViewsTest(MystradeTestCase):
 
     def test_cancel_trade_not_allowed_in_GET(self):
         response = self.client.get("/trade/{0}/{1}/cancel/".format(self.game.id, 1))
@@ -805,6 +812,7 @@ class SensitiveTradeElementsTest(MystradeTestCase):
         self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False)
         self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True)
 
+    @skip("until redesign")
     def test_display_of_sensitive_trade_elements_in_status_REPLIED(self):
         """same as INITIATED for the initiator offer, plus the responder should see the sensitive elements of
            her offer, but not the initiator
@@ -815,6 +823,7 @@ class SensitiveTradeElementsTest(MystradeTestCase):
         self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
         self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
 
+    @skip("until redesign")
     def test_display_of_sensitive_trade_elements_in_status_CANCELLED(self):
         """ CANCELLED : same as REPLIED """
         self._prepare_trade('CANCELLED')
@@ -823,6 +832,7 @@ class SensitiveTradeElementsTest(MystradeTestCase):
         self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
         self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
 
+    @skip("until redesign")
     def test_display_of_sensitive_trade_elements_in_status_DECLINED(self):
         """ DECLINED : same as REPLIED """
         self._prepare_trade('DECLINED')
@@ -831,6 +841,7 @@ class SensitiveTradeElementsTest(MystradeTestCase):
         self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
         self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
 
+    @skip("until redesign")
     def test_display_of_sensitive_trade_elements_in_status_ACCEPTED(self):
         """ ACCEPTED : both players should at least be able to see all sensitive information """
         self._prepare_trade('ACCEPTED')

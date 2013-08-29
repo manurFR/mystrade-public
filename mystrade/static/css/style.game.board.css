@@ -417,15 +417,19 @@ textarea {
   text-align: right; }
 
 /* line 179, ../../resources/scss/style.game.board.scss */
+.lighter_text {
+  color: #644700; }
+
+/* line 183, ../../resources/scss/style.game.board.scss */
 form .submit {
   text-align: right; }
 
-/* line 183, ../../resources/scss/style.game.board.scss */
+/* line 187, ../../resources/scss/style.game.board.scss */
 #button_post_message {
   position: relative;
   top: -10px; }
 
-/* line 189, ../../resources/scss/style.game.board.scss */
+/* line 193, ../../resources/scss/style.game.board.scss */
 #id_responder {
   margin-left: 8px;
   font-size: 9pt; }

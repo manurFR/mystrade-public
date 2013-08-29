@@ -1,0 +1,44 @@
+{% load filters %}
+
+Offered by {% include "common/name_or_you.html" with who=giver %}:
+
+{% if offer.tradedcommodities_set.all %}
+<div id="zone_commodities_offered">
+    <h3>Commodities</h3>
+    {% for card in offer.tradedcommodities_set.all %}
+        {% for copy in card.nb_traded_cards|as_range %}
+            {% include "common/commodity_card.html" with name=card.commodityinhand.commodity.name cih_id=card.commodityinhand.commodity_id color=card.commodityinhand.commodity.color %}
+        {% endfor %}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if offer.rules.all %}
+<div id="zone_rulecards_offered">
+    <h3>Rules{% if user != giver %} <span class="helptext">(Hidden until trade accepted)</span>{% endif %}</h3>
+    {% for card in offer.rules.all %}
+        <div class="rulecard_thumbnail" data-rih-id="{{ card.id }}">{{ card.rulecard.public_name }}</div>
+    {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if offer.free_information %}
+    <h3>Free information(s)</h3>
+    {% if trade.status == 'ACCEPTED' or giver == user or super_access %}
+        <div class="lighter_text">{{ offer.free_information }}</div>
+    {% else %}
+        <span class="helptext">Some information(s), hidden until trade accepted by both players.</span>
+    {% endif %}
+{% endif %}
+
+{% if offer.comment %}
+    <h3>Comment</h3>
+    <div class="message_content">{{ offer.comment }}</div>
+{% endif %}
+
+<script>
+    $(function() {
+        activateTooltips(); {# function in board.html #}
+    });
+</script>

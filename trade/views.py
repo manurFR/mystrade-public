@@ -43,16 +43,19 @@ def show_trade(request, game_id, trade_id):
     if request.user != trade.initiator and request.user != trade.responder and not super_access:
         raise PermissionDenied
 
-    if trade.status == 'INITIATED' and request.user == trade.responder:
-        offer_form, rulecards_formset, commodities_formset = _prepare_offer_form(request, trade.game)
-        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access,
-                                                          'decline_reason_form': DeclineReasonForm(), 'offer_form': offer_form,
-                                                          'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
-    elif trade.status == 'REPLIED' and request.user == trade.initiator:
-        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access,
-                                                          'decline_reason_form': DeclineReasonForm()})
-    else:
-        return render(request, 'trade/trade_offer.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access})
+    if request.is_ajax():
+        if trade.status == 'INITIATED' and request.user == trade.responder:
+            offer_form = _prepare_offer_form(request, trade.game)
+            return render(request, 'trade/trade.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access,
+                                                        'decline_reason_form': DeclineReasonForm(), 'offer_form': offer_form})
+        elif trade.status == 'REPLIED' and request.user == trade.initiator:
+            return render(request, 'trade/trade.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access,
+                                                        'decline_reason_form': DeclineReasonForm()})
+        else:
+            return render(request, 'trade/trade.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access})
+
+    raise PermissionDenied
+
 
 @login_required
 def create_trade(request, game_id):
@@ -70,12 +73,12 @@ def create_trade(request, game_id):
     if request.is_ajax():
         status_code = 200
         if request.method == 'POST':
-            new_trade_form = TradeForm(request.user, game, request.POST)
+            trade_form = TradeForm(request.user, game, request.POST)
 
             try:
                 offer, selected_commodities, selected_rulecards = _parse_offer_form(request, game)
 
-                if new_trade_form.is_valid():
+                if trade_form.is_valid():
                     offer.save()
                     for rih in selected_rulecards:
                         offer.rules.add(rih)
@@ -84,7 +87,7 @@ def create_trade(request, game_id):
                             TradedCommodities.objects.create(offer = offer, commodityinhand = cih, nb_traded_cards = nb_traded_cards)
 
                     trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
-                                                              responder = new_trade_form.cleaned_data['responder'])
+                                                              responder = trade_form.cleaned_data['responder'])
 
                     # email notification
                     _trade_event_notification(request, trade)
@@ -92,17 +95,16 @@ def create_trade(request, game_id):
                     return HttpResponse()
                 else:
                     status_code = 422
-                    new_offer_form = _prepare_offer_form(request, game, offer, selected_commodities, selected_rulecards)
+                    offer_form = _prepare_offer_form(request, game, offer, selected_commodities, selected_rulecards)
             except FormInvalidException as ex:
                 status_code = 422
-                new_offer_form = _prepare_offer_form(request, game, ex.formdata['offer'], ex.formdata['selected_commodities'], ex.formdata['selected_rules'])
-                new_offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
+                offer_form = _prepare_offer_form(request, game, ex.formdata['offer'], ex.formdata['selected_commodities'], ex.formdata['selected_rules'])
+                offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
         else:
-            new_trade_form = TradeForm(request.user, game)
-            new_offer_form = _prepare_offer_form(request, game)
+            trade_form = TradeForm(request.user, game)
+            offer_form = _prepare_offer_form(request, game)
 
-        return render(request, 'trade/trade.html', {'game': game, 'new_trade_form': new_trade_form, 'new_offer_form': new_offer_form},
-                      status = status_code)
+        return render(request, 'trade/trade.html', {'game': game, 'trade_form': trade_form, 'offer_form': offer_form}, status = status_code)
 
     raise PermissionDenied
 

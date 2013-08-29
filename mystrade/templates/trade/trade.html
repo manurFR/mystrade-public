@@ -1,49 +1,7 @@
-{% load widget_tweaks %}
-{% load staticfiles %}
-
 {% if not trade %} {# Trade creation #}
-{% if new_offer_form.non_field_errors %}
-    {% for err in new_offer_form.non_field_errors %}
-        <span class="errors"><img class="warning" src="{% static 'warning.png' %}" height="16" width="16" alt=""/>{{ err }}</span>
-
-    {% endfor %}
-{% endif %}
-<form id="new_trade">{% csrf_token %}
-    <p>With who?
-        {{ new_trade_form.responder }}&nbsp;
-            <span class="errors">{{ new_trade_form.responder.errors.as_text }}</span></p>
-    <p>Click on commodities and rules to select your offer:</p>
-    <h3>Commodities</h3>
-    <div id="zone_selected_commodities"></div>
-    <h3>Rules</h3>
-    <div id="zone_selected_rulecards"></div>
-    <h3>Free Information(s) <span class="helptext">(optional)</span></h3>
-    {{ new_offer_form.free_information|attr:"rows:3" }}<br/>
-        <span class="helptext">That piece of information will NOT be revealed until both players have accepted the trade.</span>
-        <img class="note" src="{% static 'info.png' %}" height="16" width="16" alt="" title="For now, the other player will only be informed that there IS a free information with the trade, not its content. You should give an hint of what it is in the comment below."/>
-        <span class="errors">{{ new_offer_form.free_information.errors.as_text }}</span>
-    <h3>Comment <span class="helptext">(optional)</span></h3>
-    {{ new_offer_form.comment|attr:"rows:3" }}<br/>
-        <span class="helptext">Your comment will be immediately shown to the other player.</span><br/>
-        <span class="errors">{{ new_offer_form.comment.errors.as_text }}</span>
-    <div class="submit"><input type="submit" id="button_submit_new_trade" value="Propose this trade"/>&nbsp;
-                        <a id="link_reset_offer">reset</a></div>
-    {% for rulecard in new_offer_form.rulecards %}{{ rulecard }}{% endfor %}
-    {% for commodity in new_offer_form.commodities %}{{ commodity }}{% endfor %}
-</form>
+    {% include "trade/edit_offer.html" with submit="Propose this trade" %}
 {% else %}
-duh
+    {# First, display the initiator's offer. #}
+    {% include "trade/show_offer.html" with offer=trade.initiator_offer giver=trade.initiator %}
 {% endif %}
 
-<script>
-    $(function() {
-        $("input#button_submit_new_trade").button();
-        $("img").tooltip();
-    });
-
-    $("#new_trade").on("submit", function() {
-        postTrade(this); {# postTrade() and resetOffer() are defined in game/board.html, which will enclose this code #}
-        return false;
-    });
-    $("#link_reset_offer").on("click", resetOffer);
-</script>
