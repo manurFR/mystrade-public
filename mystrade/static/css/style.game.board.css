@@ -14,29 +14,25 @@ h3 {
 
 /* line 16, ../../resources/scss/_base.scss */
 a, .dynamic_link {
-  color: #800024;
+  color: darkgreen;
   font-weight: normal;
   text-decoration: none; }
-  /* line 21, ../../resources/scss/_base.scss */
-  a.game-player, .dynamic_link.game-player {
-    font-weight: inherit;
-    color: darkgreen; }
 
-/* line 27, ../../resources/scss/_base.scss */
+/* line 22, ../../resources/scss/_base.scss */
 a:hover, .dynamic_link:hover {
   text-decoration: underline;
   cursor: pointer; }
 
-/* line 32, ../../resources/scss/_base.scss */
+/* line 27, ../../resources/scss/_base.scss */
 a img, .icon {
   border: 0px;
   vertical-align: text-top; }
 
-/* line 37, ../../resources/scss/_base.scss */
+/* line 32, ../../resources/scss/_base.scss */
 input[type="text"], input[type="password"], textarea, select {
   border: 1px solid #ffd773; }
 
-/* line 41, ../../resources/scss/_base.scss */
+/* line 36, ../../resources/scss/_base.scss */
 input, textarea, select {
   font-size: 10px;
   font-weight: normal;
@@ -44,19 +40,19 @@ input, textarea, select {
   margin: 2px 0;
   padding: 2px 3px; }
 
-/* line 48, ../../resources/scss/_base.scss */
+/* line 43, ../../resources/scss/_base.scss */
 select {
   height: 2em; }
 
-/* line 51, ../../resources/scss/_base.scss */
+/* line 46, ../../resources/scss/_base.scss */
 select[multiple] {
   height: auto; }
 
-/* line 55, ../../resources/scss/_base.scss */
+/* line 50, ../../resources/scss/_base.scss */
 input[type="submit"] {
   background-color: #DDDDDD; }
 
-/* line 59, ../../resources/scss/_base.scss */
+/* line 54, ../../resources/scss/_base.scss */
 textarea {
   -webkit-box-sizing: border-box;
   /* Safari/Chrome, other WebKit */
@@ -67,18 +63,18 @@ textarea {
   width: 100%; }
 
 /* Page structure */
-/* line 67, ../../resources/scss/_base.scss */
+/* line 62, ../../resources/scss/_base.scss */
 #zone_toplinks {
   top: 2px;
   text-align: right;
   margin-bottom: -20px;
   margin-right: 20px; }
 
-/* line 74, ../../resources/scss/_base.scss */
+/* line 69, ../../resources/scss/_base.scss */
 #zone_logobox {
   width: 422px;
   top: 10px; }
-  /* line 78, ../../resources/scss/_base.scss */
+  /* line 73, ../../resources/scss/_base.scss */
   #zone_logobox #zone_motto {
     position: relative;
     top: -10px;
@@ -88,33 +84,33 @@ textarea {
     font-style: italic;
     color: black;
     letter-spacing: 7px; }
-  /* line 87, ../../resources/scss/_base.scss */
+  /* line 82, ../../resources/scss/_base.scss */
   #zone_logobox a:hover {
     text-decoration: none; }
 
-/* line 92, ../../resources/scss/_base.scss */
+/* line 87, ../../resources/scss/_base.scss */
 #zone_content {
   padding: 10px; }
 
 /* Miscellaneous common styles */
-/* line 97, ../../resources/scss/_base.scss */
+/* line 92, ../../resources/scss/_base.scss */
 .helptext, .upperhelptext, .lowerhelptext {
   font-size: 8pt;
   font-weight: normal;
   font-style: italic;
   color: #a67600; }
 
-/* line 102, ../../resources/scss/_base.scss */
+/* line 97, ../../resources/scss/_base.scss */
 .upperhelptext {
   display: block;
   margin-top: -0.6em; }
 
-/* line 108, ../../resources/scss/_base.scss */
+/* line 103, ../../resources/scss/_base.scss */
 .lowerhelptext {
   display: block;
   margin-top: 0.4em; }
 
-/* line 114, ../../resources/scss/_base.scss */
+/* line 109, ../../resources/scss/_base.scss */
 .game-player {
   display: inline;
   border: 1px solid #ffd773;
@@ -124,11 +120,14 @@ textarea {
   padding: 0 3px;
   margin: 0 2px;
   line-height: 20px; }
-  /* line 122, ../../resources/scss/_base.scss */
+  /* line 117, ../../resources/scss/_base.scss */
+  .game-player a {
+    color: darkgreen; }
+  /* line 121, ../../resources/scss/_base.scss */
   .game-player:hover {
     background-color: #ffd773; }
 
-/* line 129, ../../resources/scss/_base.scss */
+/* line 128, ../../resources/scss/_base.scss */
 .commodity_card {
   display: inline-block;
   border-radius: 2px;
@@ -137,10 +136,10 @@ textarea {
   width: 25px;
   height: 50px;
   margin: 3px; }
-  /* line 136, ../../resources/scss/_base.scss */
+  /* line 135, ../../resources/scss/_base.scss */
   .commodity_card.excluded {
     background: url(../stripe.png); }
-  /* line 140, ../../resources/scss/_base.scss */
+  /* line 139, ../../resources/scss/_base.scss */
   .commodity_card.card_selected {
     border: gray solid 3px;
     margin: 0;
@@ -148,7 +147,7 @@ textarea {
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px; }
 
-/* line 150, ../../resources/scss/_base.scss */
+/* line 149, ../../resources/scss/_base.scss */
 .rulecard {
   border: 1px solid #ffd773;
   border-radius: 10px;
@@ -159,21 +158,21 @@ textarea {
   height: 140px;
   margin: 3px;
   padding: 4px 8px; }
-  /* line 159, ../../resources/scss/_base.scss */
+  /* line 158, ../../resources/scss/_base.scss */
   .rulecard.former {
     border: 1px dashed #ffd773;
     color: #644700; }
-  /* line 164, ../../resources/scss/_base.scss */
+  /* line 163, ../../resources/scss/_base.scss */
   .rulecard .rulecard_name {
     font-size: 1.5em;
     font-weight: bold; }
-  /* line 168, ../../resources/scss/_base.scss */
+  /* line 167, ../../resources/scss/_base.scss */
   .rulecard .rulecard_desc {
     line-height: 1.2em; }
-  /* line 172, ../../resources/scss/_base.scss */
+  /* line 171, ../../resources/scss/_base.scss */
   .rulecard.excluded {
     background: url(../stripe.png); }
-  /* line 177, ../../resources/scss/_base.scss */
+  /* line 176, ../../resources/scss/_base.scss */
   .rulecard.card_selected {
     border: gray solid 3px;
     margin: 1px;
@@ -181,7 +180,7 @@ textarea {
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px; }
 
-/* line 185, ../../resources/scss/_base.scss */
+/* line 184, ../../resources/scss/_base.scss */
 .rulecard_thumbnail {
   display: inline-block;
   text-align: center;
@@ -196,21 +195,21 @@ textarea {
   font-size: 1.4em;
   font-weight: bold; }
 
-/* line 197, ../../resources/scss/_base.scss */
+/* line 196, ../../resources/scss/_base.scss */
 .note {
   float: right; }
 
-/* line 201, ../../resources/scss/_base.scss */
+/* line 200, ../../resources/scss/_base.scss */
 .errors {
   font-size: 0.8em;
   color: #a67600; }
 
-/* line 206, ../../resources/scss/_base.scss */
+/* line 205, ../../resources/scss/_base.scss */
 .warning {
   margin-right: 5px;
   vertical-align: bottom; }
 
-/* line 211, ../../resources/scss/_base.scss */
+/* line 210, ../../resources/scss/_base.scss */
 .selectable:hover {
   cursor: pointer; }
 
@@ -379,19 +378,22 @@ textarea {
 /* line 140, ../../resources/scss/style.game.board.scss */
 .event_text {
   display: inline; }
+  /* line 143, ../../resources/scss/style.game.board.scss */
+  .event_text a {
+    color: darkgreen; }
 
-/* line 144, ../../resources/scss/style.game.board.scss */
+/* line 148, ../../resources/scss/style.game.board.scss */
 .delete_message {
   float: right; }
 
-/* line 148, ../../resources/scss/style.game.board.scss */
+/* line 152, ../../resources/scss/style.game.board.scss */
 .delete_icon {
   background-image: url("../trash.png");
   border: none;
   height: 16px;
   width: 16px; }
 
-/* line 155, ../../resources/scss/style.game.board.scss */
+/* line 159, ../../resources/scss/style.game.board.scss */
 .message_content {
   border-radius: 5px;
   -moz-border-radius: 5px;
@@ -400,30 +402,30 @@ textarea {
   padding: 4px 10px;
   margin: 3px 0 10px 3px;
   font-size: 0.9em; }
-  /* line 162, ../../resources/scss/style.game.board.scss */
+  /* line 166, ../../resources/scss/style.game.board.scss */
   .message_content.admin {
     background: #d69900; }
 
-/* line 167, ../../resources/scss/style.game.board.scss */
+/* line 171, ../../resources/scss/style.game.board.scss */
 .show_more {
   text-align: right; }
 
-/* line 171, ../../resources/scss/style.game.board.scss */
+/* line 175, ../../resources/scss/style.game.board.scss */
 .chars_left {
   float: right;
   margin-right: 1em;
   text-align: right; }
 
-/* line 175, ../../resources/scss/style.game.board.scss */
+/* line 179, ../../resources/scss/style.game.board.scss */
 form .submit {
   text-align: right; }
 
-/* line 179, ../../resources/scss/style.game.board.scss */
+/* line 183, ../../resources/scss/style.game.board.scss */
 #button_post_message {
   position: relative;
   top: -10px; }
 
-/* line 185, ../../resources/scss/style.game.board.scss */
+/* line 189, ../../resources/scss/style.game.board.scss */
 #id_responder {
   margin-left: 8px;
   font-size: 9pt; }

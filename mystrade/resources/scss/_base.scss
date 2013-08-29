@@ -14,14 +14,9 @@ h3 {
 }
 
 a, .dynamic_link {
-  color: #800024;
+  color: $linkColor;
   @include font($weight: normal);
   text-decoration: none;
-
-  &.game-player {
-    font-weight: inherit;
-    color: darkgreen;
-  }
 }
 
 a:hover, .dynamic_link:hover {
@@ -118,6 +113,10 @@ textarea {
   padding: 0 3px;
   margin: 0 2px;
   line-height: 20px;
+
+  a {
+    color: $linkColor;
+  }
 
   &:hover {
     background-color: $lightBackgroundColor;

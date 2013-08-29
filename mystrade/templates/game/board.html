@@ -141,8 +141,14 @@
                 });
         }
 
-        function refreshTrade() {
-            $.get("{% url 'create_trade' game.id %}")
+        function refreshTrade(tradeId) {
+            var url;
+            if (tradeId) {
+                url = "{% url 'show_trade' game.id 0 %}".replace('/0/', '/' + tradeId + '/');
+            } else {
+                url = "{% url 'create_trade' game.id %}"
+            }
+            $.get(url)
                 .fail(function() {
                     $("#zone_trade").text("Error loading trade. Please try again.");
                 })

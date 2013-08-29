@@ -97,35 +97,6 @@ def create_trade(request, game_id):
                 status_code = 422
                 new_offer_form = _prepare_offer_form(request, game, ex.formdata['offer'], ex.formdata['selected_commodities'], ex.formdata['selected_rules'])
                 new_offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
-
-            # try:
-            #     offer, selected_rules, selected_commodities = _parse_offer_forms(request, game)
-            #     if trade_form.is_valid():
-            #         offer.save()
-            #         for card in selected_rules:
-            #             offer.rules.add(card)
-            #         for commodityinhand, nb_traded_cards in selected_commodities.iteritems():
-            #             if nb_traded_cards > 0:
-            #                 TradedCommodities.objects.create(offer = offer, commodityinhand = commodityinhand, nb_traded_cards = nb_traded_cards)
-            #
-            #         trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
-            #                                      responder = trade_form.cleaned_data['responder'])
-            #
-            #         # email notification
-            #         _trade_event_notification(request, trade)
-            #
-            #         return redirect('trades', game.id)
-            #     else:
-            #         offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game, selected_rules, selected_commodities, offer)
-            # except FormInvalidException as ex:
-            #     offer_form, rulecards_formset, commodities_formset = _prepare_offer_forms(request, game,
-            #                                                                               ex.formdata['selected_rules'],
-            #                                                                               ex.formdata['selected_commodities'],
-            #                                                                               ex.formdata['offer'])
-            #     rulecards_formset._non_form_errors = ex.formdata['rulecards_errors']
-            #     commodities_formset._non_form_errors = ex.formdata['commodities_errors']
-            #     offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
-
         else:
             new_trade_form = TradeForm(request.user, game)
             new_offer_form = _prepare_offer_form(request, game)

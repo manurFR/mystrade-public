@@ -139,6 +139,10 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 }
 .event_text {
   display: inline;
+
+  a {
+    color: $linkColor;
+  }
 }
 
 .delete_message {

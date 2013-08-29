@@ -500,11 +500,12 @@ def game_board(request, game_id):
     return render(request, 'game/board.html', context)
 
 class Event(object):
-    def __init__(self, event_type, date, sender):
+    def __init__(self, event_type, date, sender, trade = None):
         self.event_type = event_type
         self.date = date
         self.sender = sender
         self.deletable = False
+        self.trade = trade # only for trade-related events
 
 FORMAT_EVENT_PERMALINK = "%Y-%m-%dT%H:%M:%S.%f"
 
@@ -517,8 +518,8 @@ def events(request, game_id):
         raise PermissionDenied
 
     if request.is_ajax():
-        messages = Message.objects.filter(game = game).order_by('-posting_date')
-        events = list(messages)
+        # Make a list of all events to display
+        events = list(Message.objects.filter(game = game))
 
         events.append(Event('game_start', game.start_date, game.master))
         if game.has_ended():
@@ -526,10 +527,13 @@ def events(request, game_id):
             if game.is_closed():
                 events.append(Event('game_close', game.closing_date, game.master))
 
+        for trade in Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game):
+            if trade.status == 'INITIATED':
+                events.append(Event('create_trade', trade.creation_date, trade.initiator, trade))
+
         events.sort(key = lambda evt: evt.date, reverse=True)
 
         # Pagination by the date of the first or last event displayed
-
         if request.GET.get('dateprevious'):
             start_date = datetime.datetime.strptime(request.GET.get('dateprevious'), FORMAT_EVENT_PERMALINK)
             events_in_the_range = _events_in_the_range(events, start_date=start_date)

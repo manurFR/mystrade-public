@@ -329,58 +329,6 @@ class GameBoardMainTest(MystradeTestCase):
         response = self._assertGetGamePage()
         self.assertNotContains(response, "<a href=\"/game/{0}/control/\">&gt; Access to control board</a>".format(self.game.id))
 
-    @skip("until redesign")
-    def test_game_board_show_pending_trades_with_less_than_3_pending_trades(self):
-        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
-                                initiator_offer = mommy.make(Offer))
-        trade2 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                                status = 'REPLIED',   creation_date = now() + datetime.timedelta(days = -2),
-                                initiator_offer = mommy.make(Offer))
-        trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                                status = 'DECLINED',  creation_date = now() + datetime.timedelta(days = -3),
-                                initiator_offer = mommy.make(Offer)) # not pending
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "Pending trades")
-        self.assertContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade1.id))
-        self.assertContains(response, "trade/{0}/{1}/\"><span class=\"new\">Decide".format(self.game.id, trade2.id))
-        self.assertNotContains(response, "trade/{0}/{1}/\">".format(self.game.id, trade3.id))
-
-    @skip("until redesign")
-    def test_game_board_show_last_3_pending_trades_when_more_than_three_are_pending(self):
-        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
-                                initiator_offer = mommy.make(Offer))
-        trade2 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -2),
-                                initiator_offer = mommy.make(Offer))
-        trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -3),
-                                initiator_offer = mommy.make(Offer))
-        trade4 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -4),
-                                initiator_offer = mommy.make(Offer))
-
-        response = self._assertGetGamePage()
-        self.assertContains(response, "Last 3 pending trades")
-        self.assertContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade1.id))
-        self.assertContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade2.id))
-        self.assertContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade3.id))
-        self.assertNotContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade4.id))
-
-    @skip("until redesign")
-    def test_game_board_doesnt_show_pending_trades_to_game_master(self):
-        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                                status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
-                                initiator_offer = mommy.make(Offer))
-
-        self.login_as(self.master)
-
-        response = self._assertGetGamePage()
-        self.assertNotContains(response, "Pending trades")
-        self.assertNotContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade1.id))
-
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
             game = self.game
@@ -617,6 +565,38 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertTrue(self.client.login(username = self.master.username, password = 'test'))
         response = self._getTabRecently()
         self.assertContains(response, 'Game #{0} is over. <a href="/game/{0}/control/">Scores</a> have been calculated.'.format(self.game.id))
+
+    def test_tab_recently_events_include_own_trades(self):
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'INITIATED', creation_date = now() + datetime.timedelta(hours = -1),
+                            initiator_offer = mommy.make(Offer))
+        trade2 = mommy.make(Trade, game = self.game, initiator = self.alternativeUser, responder = self.loginUser,
+                            status = 'INITIATED',   creation_date = now() + datetime.timedelta(hours = -2),
+                            initiator_offer = mommy.make(Offer))
+        trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'INITIATED',  creation_date = now() + datetime.timedelta(hours = -3),
+                            initiator_offer = mommy.make(Offer))
+        trade4 = mommy.make(Trade, game = self.game, initiator = self.admin_player, responder = self.alternativeUser,
+                            status = 'INITIATED',  creation_date = now() + datetime.timedelta(hours = -4),
+                            initiator_offer = mommy.make(Offer)) # not displayed
+
+        response = self._getTabRecently()
+        self.assertContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade1.id))
+        self.assertContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade2.id))
+        self.assertContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
+        self.assertNotContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade4.id))
+
+    @skip("until redesign")
+    def test_game_board_doesnt_show_pending_trades_to_game_master(self):
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
+                            initiator_offer = mommy.make(Offer))
+
+        self.login_as(self.master)
+
+        response = self._assertGetGamePage()
+        self.assertNotContains(response, "Pending trades")
+        self.assertNotContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade1.id))
 
     def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())
