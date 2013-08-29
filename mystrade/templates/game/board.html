@@ -151,15 +151,23 @@
                 });
         }
 
-        function correspondingCommodityInHand(commodityInTabTrade) {
+        function correspondingCommodityInHand(commodityInTabTrade, filterOnlySelected) {
             var cihId = $(commodityInTabTrade).data("cihId");
             var indexInThisCommodity = $("#zone_selected_commodities").find(".commodity_card[data-cih-id=" + cihId + "]").index(commodityInTabTrade);
-            return $("#zone_commodities").find(".commodity_card[data-cih-id=" + cihId + "]").get(indexInThisCommodity);
+            var candidates = $("#zone_commodities").find(".commodity_card[data-cih-id=" + cihId + "]");
+            if (filterOnlySelected) {
+                candidates = candidates.filter(".card_selected");
+            }
+            return candidates.get(indexInThisCommodity);
         }
 
-        function correspondingRulecardInHand(rulecardInTabTrade) {
+        function correspondingRulecardInHand(rulecardInTabTrade, filterOnlySelected) {
             var rihId = $(rulecardInTabTrade).data("rihId");
-            return $("#zone_rulecards").find(".rulecard[data-rih-id=" + rihId + "]");
+            var candidates = $("#zone_rulecards").find(".rulecard[data-rih-id=" + rihId + "]");
+            if (filterOnlySelected) {
+                candidates = candidates.filter(".card_selected");
+            }
+            return candidates;
         }
 
         function refreshSelectedCommodities() {
@@ -179,7 +187,7 @@
             });
             $("#zone_selected_commodities").html(selectedCommodities)
                     .find(".commodity_card").on("click.tradeselect", function(event) {
-                        clickOnCommodity(correspondingCommodityInHand(event.target));
+                        clickOnCommodity(correspondingCommodityInHand(event.target, true));
             });
         }
 
@@ -193,7 +201,7 @@
             });
             $("#zone_selected_rulecards").html(selectedRulecards)
                     .find(".rulecard_thumbnail").on("click.tradeselect", function(event) {
-                        clickOnRulecard(correspondingRulecardInHand(event.target));
+                        clickOnRulecard(correspondingRulecardInHand(event.target, true));
                     });
         }
 
@@ -240,7 +248,7 @@
                         });
                 // mark as selected the cards in hand that are selected in the trade tab
                 $("#zone_selected_commodities").find(".commodity_card").each(function() {
-                    $(correspondingCommodityInHand(this)).addClass("card_selected");
+                    $(correspondingCommodityInHand(this, false)).addClass("card_selected");
                 });
                 commodities.filter(".not_tradable").addClass("excluded").each(function() {
                     $(this).attr("title", $(this).data("name") + " - Reserved for a pending trade");
@@ -252,7 +260,7 @@
                         });
                 // mark as selected the cards in hand that are selected in the trade tab
                 $("#zone_selected_rulecards").find(".rulecard_thumbnail").each(function() {
-                    $(correspondingRulecardInHand(this)).addClass("card_selected");
+                    $(correspondingRulecardInHand(this, false)).addClass("card_selected");
                 });
                 rulecards.filter(".not_tradable").addClass("excluded").children(".note").text("(reserved for a pending trade)");
             } else {
@@ -268,6 +276,7 @@
         function postTrade(tradeForm) {
             $.post("{% url 'create_trade' game.id %}", $(tradeForm).serialize())
                 .fail(function(jqXHR) {
+                    $("body").css("cursor", "");
                     var tab_trade;
                     if (jqXHR.status == 422) tab_trade = jqXHR.responseText;
                     else tab_trade = "Error sending data. Please try again.";
@@ -278,8 +287,19 @@
                 .done(function() {
                     window.location.reload(true);
                 });
+            $("body").css("cursor", "wait");
             $(tradeForm).find(":input").prop("disabled", true);
             $(tradeForm).find(".selectable").off("click.tradeselect");
+        }
+
+        function resetOffer() {
+            $("#id_responder").add("#id_free_information").add("#id_comment").val("");
+            $("input[name^=commodity]").val(0);
+            refreshSelectedCommodities();
+            $("#zone_commodities").find(".commodity_card").removeClass("card_selected");
+            $("input[name^=rulecard]").val("False");
+            refreshSelectedRulecards();
+            $("#zone_rulecards").find(".rulecard").removeClass("card_selected")
         }
 
         // on load
@@ -293,7 +313,7 @@
                 $("#zone_tabs").tabs("option", "active", 1);
             })
             $("input#button_post_message").button();
-            $(".commodity_card").tooltip({ position: { my: "left+15" } });
+            $(".commodity_card").tooltip({ position: { my: "left bottom", at: "right+5 top-5" } });
 
             refreshEvents();
             refreshTrade();
@@ -323,6 +343,7 @@
         $("#post_message").on("submit", function() {
             $.post("{% url 'post_message' game.id %}", $(this).serialize())
                 .fail(function(jqXHR) {
+                    $("body").css("cursor", "");
                     var error;
                     if (jqXHR.status == 422) error = jqXHR.responseText;
                     else error = "Error sending data. Please try again.";
@@ -330,21 +351,26 @@
                     $("#post_message").find(":input").prop("disabled", false);
                 })
                 .done(function() {
+                    $("body").css("cursor", "");
                     refreshEvents();
                     $("#id_message").val("").focus(); // clear the textarea
                 });
+            $("body").css("cursor", "wait");
             $("#post_message").find(":input").prop("disabled", true);
             return false;
         });
 
         function deleteMessage(trash_icon) {
             $(trash_icon).hide(); // to prevent multi-clicks
+            $("body").css("cursor", "wait");
             $.post("{% url 'delete_message' game.id %}", $(trash_icon).parent("form").serialize())
                 .fail(function() {
+                    $("body").css("cursor", "");
                     $(trash_icon).show(); // show it again to enable re-trying
                     alert("Error deleting message. Please try again.");
                 })
                 .done(function() {
+                    $("body").css("cursor", "");
                     refreshEvents();
                 });
         }

@@ -26,7 +26,8 @@
     {{ new_offer_form.comment|attr:"rows:3" }}<br/>
         <span class="helptext">Your comment will be immediately shown to the other player.</span><br/>
         <span class="errors">{{ new_offer_form.comment.errors.as_text }}</span>
-    <div class="submit"><input type="submit" id="button_submit_new_trade" value="Propose this trade"/></div>
+    <div class="submit"><input type="submit" id="button_submit_new_trade" value="Propose this trade"/>&nbsp;
+                        <a id="link_reset_offer">reset</a></div>
     {% for rulecard in new_offer_form.rulecards %}{{ rulecard }}{% endfor %}
     {% for commodity in new_offer_form.commodities %}{{ commodity }}{% endfor %}
 </form>
@@ -41,7 +42,8 @@ duh
     });
 
     $("#new_trade").on("submit", function() {
-        postTrade(this); {# postTrade() is defined in game/board.html, which will enclose this code #}
+        postTrade(this); {# postTrade() and resetOffer() are defined in game/board.html, which will enclose this code #}
         return false;
     });
+    $("#link_reset_offer").on("click", resetOffer);
 </script>
