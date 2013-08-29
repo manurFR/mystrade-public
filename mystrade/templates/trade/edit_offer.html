@@ -4,7 +4,6 @@
 {% if offer_form.non_field_errors %}
     {% for err in offer_form.non_field_errors %}
         <span class="errors"><img class="warning" src="{% static 'warning.png' %}" height="16" width="16" alt=""/>{{ err }}</span>
-
     {% endfor %}
 {% endif %}
 <form id="new_trade">{% csrf_token %}
@@ -25,21 +24,8 @@
     {{ offer_form.comment|attr:"rows:3" }}<br/>
     <span class="helptext">Your comment will be immediately shown to the other player.</span><br/>
     <span class="errors">{{ offer_form.comment.errors.as_text }}</span>
-    <div class="submit"><input type="submit" id="button_submit_new_trade" value="Propose this trade"/>&nbsp;
+    <div class="submit"><input type="submit" class="trade_submit_button" value="Propose this trade"/>&nbsp;
         <a id="link_reset_offer">reset</a></div>
     {% for rulecard in offer_form.rulecards %}{{ rulecard }}{% endfor %}
     {% for commodity in offer_form.commodities %}{{ commodity }}{% endfor %}
 </form>
-
-<script>
-    $(function() {
-        $("input#button_submit_new_trade").button();
-        $("img").tooltip();
-    });
-
-    $("#new_trade").on("submit", function() {
-        postTrade(this); {# postTrade() and resetOffer() are defined in game/board.html, which will enclose this code #}
-        return false;
-    });
-    $("#link_reset_offer").on("click", resetOffer);
-</script>

@@ -299,6 +299,22 @@
             $(tradeForm).find(".selectable").off("click.tradeselect");
         }
 
+        function cancelTrade(tradeForm) {
+            var url = "{% url 'cancel_trade' game.id 0 %}".replace('/0/', '/' + $(tradeForm).data("tradeId") + '/');
+            $.post(url, $(tradeForm).serialize())
+                .fail(function(jqXHR) {
+                    $("body").css("cursor", "");
+                    var tab_trade;
+                    if (jqXHR.status == 422) tab_trade = jqXHR.responseText;
+                    else tab_trade = "Error sending data. Please try again.";
+                    $("#zone_trade").html(tab_trade);
+                })
+                .done(function() {
+                    window.location.reload(true);
+                });
+            $("body").css("cursor", "wait");
+        }
+
         function resetOffer() {
             $("#id_responder").add("#id_free_information").add("#id_comment").val("");
             $("input[name^=commodity]").val(0);

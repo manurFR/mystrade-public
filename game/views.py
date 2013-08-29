@@ -528,8 +528,7 @@ def events(request, game_id):
                 events.append(Event('game_close', game.closing_date, game.master))
 
         for trade in Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game):
-            if trade.status == 'INITIATED':
-                events.append(Event('create_trade', trade.creation_date, trade.initiator, trade))
+            events.append(Event('create_trade', trade.creation_date, trade.initiator, trade))
 
         events.sort(key = lambda evt: evt.date, reverse=True)
 

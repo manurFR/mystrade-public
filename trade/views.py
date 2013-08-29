@@ -56,7 +56,6 @@ def show_trade(request, game_id, trade_id):
 
     raise PermissionDenied
 
-
 @login_required
 def create_trade(request, game_id):
     game = get_object_or_404(Game, id = game_id)
@@ -110,7 +109,7 @@ def create_trade(request, game_id):
 
 @login_required
 def cancel_trade(request, game_id, trade_id):
-    if request.method == 'POST':
+    if request.is_ajax() and request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
         if (trade.game_id == int(game_id) and trade.game.is_active() and
             ((trade.status == 'INITIATED' and request.user == trade.initiator) or
@@ -123,7 +122,7 @@ def cancel_trade(request, game_id, trade_id):
             # email notification                               x
             _trade_event_notification(request, trade)
 
-            return redirect('trades', game_id)
+            return HttpResponse()
 
     raise PermissionDenied
 
@@ -229,7 +228,7 @@ def accept_trade(request, game_id, trade_id):
                 # if anything crappy happens, rollback the transaction and do nothing else except logging
                 logger.error("Error in accept_trace({0}, {1})".format(game_id, trade_id), exc_info = ex)
 
-            return redirect('trades', game_id)
+            return HttpResponse()
 
     raise PermissionDenied
 

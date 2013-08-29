@@ -184,36 +184,35 @@ class ShowTradeViewTest(MystradeTestCase):
                           status = 'INITIATED', initiator_offer = mommy.make(Offer))
 
         # the initiator
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        response = self._getShowTrade(trade)
         self.assertEqual(200, response.status_code)
 
         # the responder
         self.login_as(self.alternativeUser)
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        response = self._getShowTrade(trade)
         self.assertEqual(200, response.status_code)
 
         # the game master
         self.login_as(self.master)
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        response = self._getShowTrade(trade)
         self.assertEqual(200, response.status_code)
 
         # an admin
         self.login_as(self.admin)
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        response = self._getShowTrade(trade)
         self.assertEqual(200, response.status_code)
 
         # anybody else
         self.login_as(self.admin_player)
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        response = self._getShowTrade(trade)
         self.assertEqual(403, response.status_code)
 
-    @skip("until redesign")
     def test_buttons_in_show_trade_with_own_initiated_trade(self):
         trade = self._prepare_trade('INITIATED')
 
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
-
-        self.assertContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
+        response = self._getShowTrade(trade)
+        self.assertContains(response, '<form id="cancel_trade" data-trade-id="{0}">'.format(trade.id))
+        # TODO check below
         self.assertNotContains(response, '<button type="button" id="reply">Reply with your offer</button>')
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/reply/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
@@ -305,10 +304,21 @@ class ShowTradeViewTest(MystradeTestCase):
         self.assertContains(response, "gave the following reason to decline:")
         self.assertContains(response, "Because I do not need it")
 
+    def _prepare_trade(self, status, initiator = None, responder = None, initiator_offer = None,
+                       responder_offer = None, finalizer = None):
+        if initiator is None: initiator = self.loginUser
+        if responder is None: responder = self.alternativeUser
+        if initiator_offer is None: initiator_offer = mommy.make(Offer)
+        return mommy.make(Trade, game = self.game, initiator = initiator, responder = responder, finalizer = finalizer,
+                          status = status, initiator_offer = initiator_offer, responder_offer = responder_offer)
+
+    def _getShowTrade(self, trade):
+        return self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
 class ModifyTradeViewsTest(MystradeTestCase):
 
     def test_cancel_trade_not_allowed_in_GET(self):
-        response = self.client.get("/trade/{0}/{1}/cancel/".format(self.game.id, 1))
+        response = self.client.get("/trade/{0}/{1}/cancel/".format(self.game.id, 1), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(403, response.status_code)
 
     def test_cancel_trade_not_allowed_for_trades_when_you_re_not_the_player_that_can_cancel(self):
@@ -317,7 +327,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
         self._assertOperationNotAllowed(trade.id, 'cancel')
 
         # trade REPLIED but we're not the responder
-        trade.responder = get_user_model().objects.get(username = 'test3')
+        trade.responder = self.admin_player
         trade.status = 'REPLIED'
         trade.save()
         self._assertOperationNotAllowed(trade.id, 'cancel')
@@ -363,9 +373,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
 
     def test_cancel_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_INITIATED(self):
         trade = self._prepare_trade('INITIATED')
-        response = self.client.post("/trade/{0}/{1}/cancel/".format(self.game.id, trade.id), follow = True)
-
-        self.assertEqual(200, response.status_code)
+        response = self._assertOperationAllowed(trade.id, "cancel")
 
         trade = Trade.objects.get(pk = trade.id)
         self.assertEqual("CANCELLED", trade.status)
@@ -382,9 +390,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
 
     def test_cancel_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_REPLIED(self):
         trade = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser)
-        response = self.client.post("/trade/{0}/{1}/cancel/".format(self.game.id, trade.id), follow = True)
-
-        self.assertEqual(200, response.status_code)
+        response = self._assertOperationAllowed(trade.id, "cancel")
 
         trade = Trade.objects.get(pk = trade.id)
         self.assertEqual("CANCELLED", trade.status)
@@ -569,9 +575,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
 
         trade = self._prepare_trade('REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
 
-        response = self.client.post("/trade/{0}/{1}/accept/".format(self.game.id, trade.id), follow = True)
-
-        self.assertEqual(200, response.status_code)
+        response = self._assertOperationAllowed(trade.id, "accept")
 
         # trade
         trade = Trade.objects.get(pk = trade.id)
@@ -780,8 +784,13 @@ class ModifyTradeViewsTest(MystradeTestCase):
                               status = status, initiator_offer = initiator_offer, responder_offer = responder_offer)
 
     def _assertOperationNotAllowed(self, trade_id, operation):
-        response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation), follow=True)
+        response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(403, response.status_code)
+
+    def _assertOperationAllowed(self, trade_id, operation):
+        response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(200, response.status_code)
+        return response
 
 class SensitiveTradeElementsTest(MystradeTestCase):
     """ The description of the rules and the free information should not be shown to the other player until/unless

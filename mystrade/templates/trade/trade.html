@@ -3,5 +3,39 @@
 {% else %}
     {# First, display the initiator's offer. #}
     {% include "trade/show_offer.html" with offer=trade.initiator_offer giver=trade.initiator %}
+    <hr>
+
+    {# The responder's offer #}
+    {% if trade.status == 'INITIATED' and game.is_active %}
+        {% if user == trade.initiator  %}
+        Waiting for reply by {% include "common/name_or_you.html" with who=trade.responder %}...
+        <form id="cancel_trade" data-trade-id="{{ trade.id }}">{% csrf_token %}
+            <div class="submit"><input type="submit" class="trade_submit_button" value="Cancel this trade"/></div>
+        </form>
+        {% elif user == trade.responder %}
+            <div class="floatright">
+                <button type="button" id="reply" class="trade_submit_button" >Reply with your offer</button> &nbsp;&nbsp;
+                <button type="button" id="decline" class="trade_submit_button" >Decline</button>
+            </div>
+            <div id="offer"><h3>Your offer:</h3>
+                <form action="{% url 'reply_trade' game.id trade.id %}" method="post">{% csrf_token %}
+                    {% include "trade/create_offer.html" with submit="Reply with this offer" %}
+                </form>
+            </div>
+            {% include "trade/decline_trade.html" %}
+        {% endif %}
+    {% endif %}
 {% endif %}
 
+{#action="{% url 'cancel_trade' trade.game.id trade.id %}"#}
+
+<script>
+    $(function() {
+        $("input.trade_submit_button").button();
+        $("img").tooltip();
+    });
+
+    $("#new_trade").on("submit", function() { postTrade(this); return false; });
+    $("#cancel_trade").on("submit", function() { cancelTrade(this); return false; });
+    $("#link_reset_offer").on("click", resetOffer);
+</script>

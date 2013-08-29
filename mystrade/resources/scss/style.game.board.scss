@@ -58,32 +58,41 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   margin-left: $widthOfZoneHand + 20px;
   background: none;
   border-width: 0px;
-}
 
-#zone_tabs .ui-tabs-nav {
-  height:2.2em;
-  background: transparent;
-  border-width: 0px;
-  padding-left: 0px;
+  .ui-tabs-nav {
+     height:2.2em;
+     background: transparent;
+     border-width: 0px;
+     padding-left: 0px;
 
-  .ui-state-default {
-    background: transparent;
-    border-color: $lightBackgroundColor;
+     .ui-state-default {
+       background: transparent;
+       border-color: $lightBackgroundColor;
+     }
+
+     .ui-state-active {
+       background-color: $lightBackgroundColor;
+       border-color: $lightBackgroundColor;
+     }
+
+     li {
+       @include font($size: 0.9em);
+     }
   }
 
-  .ui-state-active {
-    background-color: $lightBackgroundColor;
-    border-color: $lightBackgroundColor;
+  .ui-tabs-panel {
+     background: none;
+     border: $lightSolidBorder;
   }
 
-  li {
-    @include font($size: 0.9em);
+  hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid $lightBackgroundColor;
+    margin: 1em 10%;
+    padding: 0;
   }
-}
-
-#zone_tabs .ui-tabs-panel {
-  background: none;
-  border: $lightSolidBorder;
 }
 
 #zone_post_message {
