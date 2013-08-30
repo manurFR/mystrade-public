@@ -245,6 +245,32 @@
             refreshSelectedRulecards();
         }
 
+        function prepareCardsInHandForSelection() {
+            // mark as selected the cards in hand that are selected in the trade tab
+            $("#zone_selected_commodities").find(".commodity_card").each(function() {
+                $(correspondingCommodityInHand(this, false)).addClass("card_selected");
+            });
+            $("#zone_selected_rulecards").find(".rulecard_thumbnail").each(function() {
+                $(correspondingRulecardInHand(this, false)).addClass("card_selected");
+            });
+
+            // mark as excluded the non tradable cards
+            $("#zone_commodities").find(".commodity_card").filter(".not_tradable").addClass("excluded").each(function() {
+                $(this).attr("title", $(this).data("name") + " - Reserved for a pending trade");
+            });
+            $("#zone_rulecards").find(".rulecard").filter(".not_tradable").addClass("excluded").children(".note")
+                .text("(reserved for a pending trade)");
+        }
+
+        function resetCardsInHandWhenSelectionIsDisabled() {
+            $("#zone_commodities").find(".commodity_card").not(".not_tradable").removeClass("card_selected selectable");
+            $("#zone_commodities").find(".commodity_card").filter(".not_tradable").removeClass("excluded").each(function() {
+                $(this).attr("title", $(this).data("name"));
+            });
+            $("#zone_rulecards").find(".rulecard").not(".not_tradable, .former").removeClass("card_selected selectable");
+            $("#zone_rulecards").find(".rulecard").filter(".not_tradable").removeClass("excluded").children(".note").text("");
+        }
+
         function prepareTradeInteractions(event, ui) {
             var commodities = $("#zone_commodities").find(".commodity_card");
             var rulecards = $("#zone_rulecards").find(".rulecard");
@@ -253,30 +279,17 @@
                         .on("click.tradeselect", function(event) {
                             clickOnCommodity(event.target)
                         });
-                // mark as selected the cards in hand that are selected in the trade tab
-                $("#zone_selected_commodities").find(".commodity_card").each(function() {
-                    $(correspondingCommodityInHand(this, false)).addClass("card_selected");
-                });
-                commodities.filter(".not_tradable").addClass("excluded").each(function() {
-                    $(this).attr("title", $(this).data("name") + " - Reserved for a pending trade");
-                });
 
                 rulecards.not(".not_tradable, .former").addClass("selectable").off("click.tradecreate")
                         .on("click.tradeselect", function(event) {
                             clickOnRulecard($(event.target).closest(".rulecard")); // step up to the main div.rulecard if the click was on a sub-div
                         });
-                // mark as selected the cards in hand that are selected in the trade tab
-                $("#zone_selected_rulecards").find(".rulecard_thumbnail").each(function() {
-                    $(correspondingRulecardInHand(this, false)).addClass("card_selected");
-                });
-                rulecards.filter(".not_tradable").addClass("excluded").children(".note").text("(reserved for a pending trade)");
+
+                $("form#new_offer").length ? prepareCardsInHandForSelection() : resetCardsInHandWhenSelectionIsDisabled();
             } else {
-                commodities.not(".not_tradable").off("click.tradeselect").removeClass("card_selected selectable");
-                commodities.filter(".not_tradable").removeClass("excluded").each(function() {
-                    $(this).attr("title", $(this).data("name"));
-                });
-                rulecards.not(".not_tradable, .former").off("click.tradeselect").removeClass("card_selected selectable");
-                rulecards.filter(".not_tradable").removeClass("excluded").children(".note").text("");
+                commodities.not(".not_tradable").off("click.tradeselect");
+                rulecards.not(".not_tradable, .former").off("click.tradeselect");
+                resetCardsInHandWhenSelectionIsDisabled();
             }
         }
 
@@ -340,12 +353,12 @@
                 beforeActivate: prepareTradeInteractions
             });
             $("#link_new_trade").on("click", function() {
-                $("#zone_trade").text("Loading...");
                 if (currentMode === "editTrade") {
+                    $("#zone_trade").text("Loading...");
                     $("#zone_tabs").find("li[aria-controls=tab-trade]").find("a").text("New Trade");
                     refreshTrade();
                 }
-                $("#zone_trade").tabs("option", "active", 1)
+                $("#zone_tabs").tabs("option", "active", 1)
                 currentMode = "createTrade";
             })
             $("input#button_post_message").button();

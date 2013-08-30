@@ -6,7 +6,7 @@
         <span class="errors"><img class="warning" src="{% static 'warning.png' %}" height="16" width="16" alt=""/>{{ err }}</span>
     {% endfor %}
 {% endif %}
-<form id="new_trade">{% csrf_token %}
+<form id="new_offer">{% csrf_token %}
     <p>With who?
         {{ trade_form.responder }}&nbsp;
         <span class="errors">{{ trade_form.responder.errors.as_text }}</span></p>
