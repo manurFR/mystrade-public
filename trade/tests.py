@@ -211,31 +211,31 @@ class ShowTradeViewTest(MystradeTestCase):
         trade = self._prepare_trade('INITIATED')
 
         response = self._getShowTrade(trade)
-        self.assertContains(response, '<form id="cancel_trade" data-trade-id="{0}">'.format(trade.id))
-        # TODO check below
-        self.assertNotContains(response, '<button type="button" id="reply">Reply with your offer</button>')
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/reply/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<form id="cancel_trade" data-trade-status="cancel" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, 'Reply with your offer</button>')
+        self.assertNotContains(response, '<form id="new_offer" data-trade-status="reply" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, 'Decline</button>')
+        # TODO
+        # self.assertNotContains(response, '<form id="decline_trade" data-trade-status="decline" data-trade-id="{0}">'.format(trade.id))
 
-    @skip("until redesign")
     def test_buttons_in_show_trade_for_the_responder_when_INITIATED(self):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
 
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self._getShowTrade(trade)
 
-        self.assertNotContains(response, 'form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
-        self.assertContains(response, '<button type="button" id="reply">Reply with your offer</button>')
-        self.assertContains(response, '<form action="/trade/{0}/{1}/reply/"'.format(self.game.id, trade.id))
-        self.assertContains(response, '<button type="button" id="decline">Decline</button>')
-        self.assertContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form id="cancel_trade" data-trade-status="cancel" data-trade-id="{0}">'.format(trade.id))
+        self.assertContains(response, 'Reply with your offer</button>')
+        self.assertContains(response, '<form id="new_offer" data-trade-status="reply" data-trade-id="{0}">'.format(trade.id))
+        self.assertContains(response, 'Decline</button>')
+        # TODO
+        # self.assertContains(response, '<form id="decline_trade" data-trade-status="decline" data-trade-id="{0}">'.format(trade.id))
 
     @skip("until redesign")
     def test_buttons_in_show_trade_for_the_responder_when_REPLIED(self):
         trade = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser,
                                     responder_offer = mommy.make(Offer))
 
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self._getShowTrade(trade)
 
         self.assertContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
@@ -248,7 +248,7 @@ class ShowTradeViewTest(MystradeTestCase):
     def test_buttons_in_show_trade_for_the_initiator_when_REPLIED(self):
         trade = self._prepare_trade('REPLIED', responder_offer = mommy.make(Offer))
 
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self._getShowTrade(trade)
 
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
         self.assertContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
@@ -259,7 +259,7 @@ class ShowTradeViewTest(MystradeTestCase):
     def test_buttons_in_show_trade_with_trade_CANCELLED(self):
         trade = self._prepare_trade('CANCELLED', finalizer = self.alternativeUser)
 
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self._getShowTrade(trade)
 
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
@@ -272,17 +272,17 @@ class ShowTradeViewTest(MystradeTestCase):
         self.game.save()
 
         trade = self._prepare_trade('INITIATED')
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self._getShowTrade(trade)
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
 
         trade.responder = self.loginUser
         trade.save()
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self._getShowTrade(trade)
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/reply/"'.format(self.game.id, trade.id))
 
         trade.status = 'REPLIED'
         trade.save()
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self._getShowTrade(trade)
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
         self.assertNotContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
@@ -290,7 +290,7 @@ class ShowTradeViewTest(MystradeTestCase):
     @skip("until redesign")
     def test_decline_reason_displayed_in_show_trade_when_DECLINED(self):
         trade = self._prepare_trade('DECLINED', finalizer = self.alternativeUser)
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self._getShowTrade(trade)
 
         self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\"><a href=\".*\">test5</a>")
         self.assertNotContains(response, "with the following reason given:")
@@ -298,7 +298,7 @@ class ShowTradeViewTest(MystradeTestCase):
         trade.decline_reason = "Because I do not need it"
         trade.save()
 
-        response = self.client.get("/trade/{0}/{1}/".format(self.game.id, trade.id))
+        response = self._getShowTrade(trade)
 
         self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\"><a href=\".*\">test5</a>")
         self.assertContains(response, "gave the following reason to decline:")
@@ -424,25 +424,23 @@ class ModifyTradeViewsTest(MystradeTestCase):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
         self._assertOperationNotAllowed(trade.id, 'reply')
 
-    @skip("until redesign")
     def test_reply_trade_without_selecting_cards_or_typing_a_free_information_fails(self):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
         response = self.client.post("/trade/{0}/{1}/reply/".format(self.game.id, trade.id),
-                                    {'rulecards-TOTAL_FORMS': 2, 'rulecards-INITIAL_FORMS': 2,
-                                     'rulecards-0-card_id': 1,
-                                     'rulecards-1-card_id': 2,
-                                     'commodity-TOTAL_FORMS': 5, 'commodity-INITIAL_FORMS': 5,
-                                     'commodity-0-commodity_id': 1, 'commodity-0-nb_traded_cards': 0,
-                                     'commodity-1-commodity_id': 2, 'commodity-1-nb_traded_cards': 0,
-                                     'commodity-2-commodity_id': 3, 'commodity-2-nb_traded_cards': 0,
-                                     'commodity-3-commodity_id': 4, 'commodity-3-nb_traded_cards': 0,
-                                     'commodity-4-commodity_id': 5, 'commodity-4-nb_traded_cards': 0,
+                                    {'rulecard_0': 'False',
+                                     'rulecard_1': 'False',
+                                     'commodity_0': 0,
+                                     'commodity_1': 0,
+                                     'commodity_2': 0,
+                                     'commodity_3': 0,
+                                     'commodity_4': 0,
                                      'free_information': '',
                                      'comment': 'a comment'
-                                    })
+                                    }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(422, response.status_code)
         self.assertFormError(response, 'offer_form', None, 'At least one card or one free information should be offered.')
+        self.assertContains(response, 'At least one card or one free information should be offered.', status_code = 422)
 
-    @skip("until redesign")
     def test_reply_trade_with_reserved_elements_fails_gracefully(self):
         commodity = mommy.make(Commodity, name = 'commodity_1')
         commodity_in_hand = CommodityInHand.objects.create(game = self.game, player = self.loginUser,
@@ -455,19 +453,17 @@ class ModifyTradeViewsTest(MystradeTestCase):
         other_trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
                                  initiator_offer = offer_initiator)
 
-        response = self.client.post("/trade/{0}/create/".format(self.game.id),
-                                    {'responder': 4,
-                                     'rulecards-TOTAL_FORMS': 0,      'rulecards-INITIAL_FORMS': 0,
-                                     'commodity-TOTAL_FORMS': 1,               'commodity-INITIAL_FORMS': 1,
-                                     'commodity-0-commodity_id': commodity.id, 'commodity-0-nb_traded_cards': 1,
-                                     'comment': 'a comment'
-                                    })
-        self.assertContains(response, '<div class="card_name">commodity_1</div>')
-        self.assertContains(response, 'excluded" data-tip="Reserved for a pending trade"')
-        self.assertContains(response, 'a comment')
-        self.assertContains(response, 'A commodity card in a pending trade can not be offered in another trade.')
+        trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
 
-    @skip("until redesign")
+        response = self.client.post("/trade/{0}/{1}/reply/".format(self.game.id, trade.id),
+                                    {'commodity_{0}'.format(commodity.id): 1,
+                                     'comment': 'a comment'
+                                    }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(422, response.status_code)
+        self.assertContains(response, 'a comment</textarea>', status_code = 422)
+        self.assertContains(response, 'A commodity card in a pending trade can not be offered in another trade.', status_code = 422)
+        self.assertFormError(response, 'offer_form', None, 'A commodity card in a pending trade can not be offered in another trade.')
+
     def test_reply_trade_complete_save(self):
         ruleset = mommy.make(Ruleset)
         rulecard = mommy.make(RuleCard, ruleset = ruleset)
@@ -479,15 +475,12 @@ class ModifyTradeViewsTest(MystradeTestCase):
 
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
 
-        response = self.client.post("/trade/{0}/{1}/reply/".format(self.game.id, trade.id),
-                                    {'rulecards-TOTAL_FORMS': 1,               'rulecards-INITIAL_FORMS': 1,
-                                     'rulecards-0-card_id': rule_in_hand.id,   'rulecards-0-selected_rule': 'on',
-                                     'commodity-TOTAL_FORMS': 1,               'commodity-INITIAL_FORMS': 1,
-                                     'commodity-0-commodity_id': commodity.id, 'commodity-0-nb_traded_cards': 2,
-                                     'free_information': 'some "secret" info',
-                                     'comment': 'a comment'
-                                    })
-        self.assertRedirects(response, "/trade/{0}/".format(self.game.id))
+        response = self._assertOperationAllowed(trade.id, "reply",
+                                                {'rulecard_{0}'.format(rule_in_hand.id): 'True',
+                                                 'commodity_{0}'.format(commodity.id): 2,
+                                                 'free_information': 'some "secret" info',
+                                                 'comment': 'a comment'
+                                                })
 
         trade = Trade.objects.get(pk = trade.id)
         self.assertEqual('REPLIED', trade.status)
@@ -787,8 +780,9 @@ class ModifyTradeViewsTest(MystradeTestCase):
         response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(403, response.status_code)
 
-    def _assertOperationAllowed(self, trade_id, operation):
-        response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+    def _assertOperationAllowed(self, trade_id, operation, data = {}):
+        response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation),
+                                    data, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(200, response.status_code)
         return response
 

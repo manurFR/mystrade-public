@@ -6,10 +6,13 @@
         <span class="errors"><img class="warning" src="{% static 'warning.png' %}" height="16" width="16" alt=""/>{{ err }}</span>
     {% endfor %}
 {% endif %}
-<form id="new_offer">{% csrf_token %}
+<form id="new_offer" {% if not trade %}data-trade-status="new"{% else %}data-trade-status="reply" data-trade-id="{{ trade.id }}"{% endif %}>
+    {% csrf_token %}
+{% if not trade %}
     <p>With who?
         {{ trade_form.responder }}&nbsp;
         <span class="errors">{{ trade_form.responder.errors.as_text }}</span></p>
+{% endif %}
     <p>Click on commodities and rules to select your offer:</p>
     <h3>Commodities</h3>
     <div id="zone_selected_commodities"></div>
@@ -24,8 +27,17 @@
     {{ offer_form.comment|attr:"rows:3" }}<br/>
     <span class="helptext">Your comment will be immediately shown to the other player.</span><br/>
     <span class="errors">{{ offer_form.comment.errors.as_text }}</span>
-    <div class="submit"><input type="submit" class="trade_submit_button" value="Propose this trade"/>&nbsp;
-        <a id="link_reset_offer">reset</a></div>
+
+    <div class="submit">
+    {% if trade %}
+        <input type="submit" class="trade_submit_button" value="Reply with this offer"/>&nbsp;
+        <a id="link_reset_offer">cancel</a>
+    {% else %}
+        <input type="submit" class="trade_submit_button" value="Propose this trade"/>&nbsp;
+        <a id="link_reset_offer">reset</a>
+    {% endif %}
+    </div>
+
     {% for rulecard in offer_form.rulecards %}{{ rulecard }}{% endfor %}
     {% for commodity in offer_form.commodities %}{{ commodity }}{% endfor %}
 </form>

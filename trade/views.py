@@ -79,11 +79,11 @@ def create_trade(request, game_id):
 
                 if trade_form.is_valid():
                     offer.save()
-                    for rih in selected_rulecards:
-                        offer.rules.add(rih)
                     for cih, nb_traded_cards in selected_commodities.iteritems():
                         if nb_traded_cards > 0:
                             TradedCommodities.objects.create(offer = offer, commodityinhand = cih, nb_traded_cards = nb_traded_cards)
+                    for rih in selected_rulecards:
+                        offer.rules.add(rih)
 
                     trade = Trade.objects.create(game = game, initiator = request.user, initiator_offer = offer,
                                                               responder = trade_form.cleaned_data['responder'])
@@ -128,20 +128,20 @@ def cancel_trade(request, game_id, trade_id):
 
 @login_required
 def reply_trade(request, game_id, trade_id):
-    if request.method == 'POST':
+    if request.is_ajax() and request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
 
         if (trade.game_id == int(game_id) and trade.game.is_active() and
            trade.status == 'INITIATED' and request.user == trade.responder):
             try:
-                offer, selected_rules, selected_commodities = _parse_offer_form(request, trade.game)
+                offer, selected_commodities, selected_rulecards = _parse_offer_form(request, trade.game)
 
                 offer.save()
-                for card in selected_rules:
-                    offer.rules.add(card)
-                for commodityinhand, nb_traded_cards in selected_commodities.iteritems():
+                for cih, nb_traded_cards in selected_commodities.iteritems():
                     if nb_traded_cards > 0:
-                        TradedCommodities.objects.create(offer = offer, commodityinhand = commodityinhand, nb_traded_cards = nb_traded_cards)
+                        TradedCommodities.objects.create(offer = offer, commodityinhand = cih, nb_traded_cards = nb_traded_cards)
+                for rih in selected_rulecards:
+                    offer.rules.add(rih)
 
                 trade.status = 'REPLIED'
                 trade.responder_offer = offer
@@ -150,21 +150,15 @@ def reply_trade(request, game_id, trade_id):
                 # email notification
                 _trade_event_notification(request, trade)
 
-                return redirect('trades', trade.game_id)
+                return HttpResponse()
             except FormInvalidException as ex:
-                offer_form, rulecards_formset, commodities_formset = _prepare_offer_form(request, trade.game,
-                                                                                          ex.formdata['selected_rules'],
-                                                                                          ex.formdata['selected_commodities'],
-                                                                                          ex.formdata['offer'])
-                rulecards_formset._non_form_errors = ex.formdata['rulecards_errors']
-                commodities_formset._non_form_errors = ex.formdata['commodities_errors']
+                status_code = 422
+                offer_form = _prepare_offer_form(request, trade.game, ex.formdata['offer'], ex.formdata['selected_commodities'], ex.formdata['selected_rules'])
                 offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
 
-                return render(request, 'trade/trade_offer.html', {'game': trade.game, 'trade': trade,
-                                                                  'errors': True, 'offer_form': offer_form,
-                                                                  'rulecards_formset': rulecards_formset, 'commodities_formset': commodities_formset})
+                return render(request, 'trade/trade.html', {'game': trade.game, 'trade': trade, 'offer_form': offer_form, 'errors': True}, status = status_code)
 
-    raise PermissionDenied # if the method is not POST or the user is not the responder or the status is not INITIATED or the game has ended
+    raise PermissionDenied
 
 @login_required
 def accept_trade(request, game_id, trade_id):

@@ -427,7 +427,7 @@ textarea {
   color: #644700; }
 
 /* line 192, ../../resources/scss/style.game.board.scss */
-form .submit {
+.submit {
   text-align: right; }
 
 /* line 196, ../../resources/scss/style.game.board.scss */
