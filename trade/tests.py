@@ -215,8 +215,7 @@ class ShowTradeViewTest(MystradeTestCase):
         self.assertNotContains(response, 'Reply with your offer</button>')
         self.assertNotContains(response, '<form id="new_offer" data-trade-status="reply" data-trade-id="{0}">'.format(trade.id))
         self.assertNotContains(response, 'Decline</button>')
-        # TODO
-        # self.assertNotContains(response, '<form id="decline_trade" data-trade-status="decline" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, '<form id="decline_trade" data-trade-status="decline" data-trade-id="{0}">'.format(trade.id))
 
     def test_buttons_in_show_trade_for_the_responder_when_INITIATED(self):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
@@ -227,8 +226,7 @@ class ShowTradeViewTest(MystradeTestCase):
         self.assertContains(response, 'Reply with your offer</button>')
         self.assertContains(response, '<form id="new_offer" data-trade-status="reply" data-trade-id="{0}">'.format(trade.id))
         self.assertContains(response, 'Decline</button>')
-        # TODO
-        # self.assertContains(response, '<form id="decline_trade" data-trade-status="decline" data-trade-id="{0}">'.format(trade.id))
+        self.assertContains(response, '<form id="decline_trade" data-trade-status="decline" data-trade-id="{0}">'.format(trade.id))
 
     @skip("until redesign")
     def test_buttons_in_show_trade_for_the_responder_when_REPLIED(self):
@@ -636,7 +634,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
         trade.status = 'DECLINED'
         trade.save()
         self._assertOperationNotAllowed(trade.id, 'decline')
-# ----
+
     def test_decline_trade_not_allowed_for_the_initiator_for_trades_not_in_status_REPLIED(self):
         trade = self._prepare_trade('INITIATED')
         self._assertOperationNotAllowed(trade.id, 'decline')
@@ -662,10 +660,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
 
     def test_decline_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_INITIATED(self):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
-        response = self.client.post("/trade/{0}/{1}/decline/".format(self.game.id, trade.id),
-                                    {'decline_reason': "this is my reason"}, follow = True)
-
-        self.assertEqual(200, response.status_code)
+        response = self._assertOperationAllowed(trade.id, "decline", {'decline_reason': "this is my reason"})
 
         trade = Trade.objects.get(pk = trade.id)
         self.assertEqual("DECLINED", trade.status)
@@ -684,10 +679,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
 
     def test_decline_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_REPLIED(self):
         trade = self._prepare_trade('REPLIED')
-        response = self.client.post("/trade/{0}/{1}/decline/".format(self.game.id, trade.id),
-                                    {'decline_reason': "this is my reason"}, follow = True)
-
-        self.assertEqual(200, response.status_code)
+        response = self._assertOperationAllowed(trade.id, "decline", {'decline_reason': "this is my reason"})
 
         trade = Trade.objects.get(pk = trade.id)
         self.assertEqual("DECLINED", trade.status)

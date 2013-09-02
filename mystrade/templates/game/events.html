@@ -38,7 +38,7 @@
 {% endfor %}
 <div class="show_more">{% if datenext %}<a>show more events &gt;</a>{% endif %}</div>
 
-<script> {# deleteMessage() and refreshEvents() functions are found in board.html, which encloses this file #}
+<script> {# deleteMessage(), refreshEvents() and refreshTrade() functions are found in board.html, which encloses this file #}
     $(".delete_icon").tooltip({ show: false }).on("click", function(event) { deleteMessage(event.target); });
     $(".show_previous a").on("click", function() { refreshEvents({% if dateprevious %}null, "{{ dateprevious }}"{% endif %}); });
     $(".show_more a").on("click", function() { refreshEvents({% if datenext %}"{{ datenext }}"{% endif %}); });

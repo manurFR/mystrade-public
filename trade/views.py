@@ -228,7 +228,7 @@ def accept_trade(request, game_id, trade_id):
 
 @login_required
 def decline_trade(request, game_id, trade_id):
-    if request.method == 'POST':
+    if request.is_ajax() and request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
         if (trade.game_id == int(game_id) and trade.game.is_active() and
             ((trade.status == 'INITIATED' and request.user == trade.responder) or
@@ -244,7 +244,7 @@ def decline_trade(request, game_id, trade_id):
                 # email notification
                 _trade_event_notification(request, trade)
 
-                return redirect('trades', game_id)
+                return HttpResponse()
 
     raise PermissionDenied
 

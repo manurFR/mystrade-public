@@ -314,6 +314,9 @@
                 case "reply":
                     url = replaceTradeId(tradeForm, "{% url 'reply_trade' game.id 0 %}");
                     break;
+                case "decline":
+                    url = replaceTradeId(tradeForm, "{% url 'decline_trade' game.id 0 %}");
+                    break;
             }
             $.post(url, $(tradeForm).serialize())
                 .fail(function(jqXHR) {

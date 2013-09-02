@@ -13,14 +13,16 @@
             <div class="submit"><input type="submit" class="trade_submit_button" value="Cancel this trade"/></div>
         </form>
         {% elif user == trade.responder %}
-            <div class="submit" id="choice_buttons">
+            <div class="submit" id="zone_choice_buttons">
                 <button type="button" id="reply" class="trade_submit_button">Reply with your offer</button> &nbsp;&nbsp;
                 <button type="button" id="decline" class="trade_submit_button">Decline</button>
             </div>
-            <div id="offer">
+            <div id="zone_offer">
                 {% include "trade/edit_offer.html" %}
             </div>
-{#            {% include "trade/decline_trade.html" %}#}
+            <div id="zone_decline">
+                {% include "trade/decline_trade.html" %}
+            </div>
         {% endif %}
     {% endif %}
 {% endif %}
@@ -29,16 +31,17 @@
     $(function() {
         $(".trade_submit_button").button();
         $("img").tooltip();
+        $("#zone_decline").hide();
         {% if errors %}
-            $('#choice_buttons').hide("blind");
+            $('#zone_choice_buttons').hide("blind");
         {% else %}
-            $('#offer').hide();
+            $('#zone_offer').hide();
         {% endif %}
     });
 
-    $("#new_offer, #cancel_trade").on("submit", function() { postTrade(this); return false; });
+    $("#new_offer, #cancel_trade, #decline_trade").on("submit", function() { postTrade(this); return false; });
 
-    $("#link_reset_offer").on("click", function() {
+    $(".link_reset_offer").on("click", function() {
         $("#id_responder").add("#id_free_information").add("#id_comment").val("");
         $("input[name^=commodity]").val(0);
         refreshSelectedCommodities();
@@ -49,14 +52,20 @@
         $(".errors").html("");
     {% if trade %} {# in reply mode, we also hide the offer and re-show the choice buttons #}
         resetCardsInHandWhenSelectionIsDisabled();
-        $("#offer").hide("blind");
-        $("#choice_buttons").show("blind");
+        $("#zone_offer").hide("blind");
+        $("#zone_decline").hide();
+        $("#zone_choice_buttons").show("blind");
+        $("#id_decline_reason").val("")
     {% endif %}
     });
 
-    $('#reply').on("click", function() {
-        $('#offer').show("blind");
-        $('#choice_buttons').hide("blind");
+    $("#reply").on("click", function() {
+        $("#zone_offer").show("blind");
+        $("#zone_choice_buttons").hide("blind");
         prepareCardsInHandForSelection();
-    })
+    });
+    $("#decline").on("click", function() {
+        $("#zone_decline").show("blind");
+        $("#zone_choice_buttons").hide("blind");
+    });
 </script>
