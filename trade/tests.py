@@ -211,79 +211,77 @@ class ShowTradeViewTest(MystradeTestCase):
         trade = self._prepare_trade('INITIATED')
 
         response = self._getShowTrade(trade)
-        self.assertContains(response, '<form id="cancel_trade" data-trade-status="cancel" data-trade-id="{0}">'.format(trade.id))
+        self.assertContains(response, '<form id="cancel_trade" data-trade-action="cancel" data-trade-id="{0}">'.format(trade.id))
         self.assertNotContains(response, 'Reply with your offer</button>')
-        self.assertNotContains(response, '<form id="new_offer" data-trade-status="reply" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, '<form id="new_offer" data-trade-action="reply" data-trade-id="{0}">'.format(trade.id))
         self.assertNotContains(response, 'Decline</button>')
-        self.assertNotContains(response, '<form id="decline_trade" data-trade-status="decline" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
     def test_buttons_in_show_trade_for_the_responder_when_INITIATED(self):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
 
         response = self._getShowTrade(trade)
 
-        self.assertNotContains(response, '<form id="cancel_trade" data-trade-status="cancel" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, '<form id="cancel_trade" data-trade-action="cancel" data-trade-id="{0}">'.format(trade.id))
         self.assertContains(response, 'Reply with your offer</button>')
-        self.assertContains(response, '<form id="new_offer" data-trade-status="reply" data-trade-id="{0}">'.format(trade.id))
+        self.assertContains(response, '<form id="new_offer" data-trade-action="reply" data-trade-id="{0}">'.format(trade.id))
         self.assertContains(response, 'Decline</button>')
-        self.assertContains(response, '<form id="decline_trade" data-trade-status="decline" data-trade-id="{0}">'.format(trade.id))
+        self.assertContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
-    @skip("until redesign")
     def test_buttons_in_show_trade_for_the_responder_when_REPLIED(self):
         trade = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser,
                                     responder_offer = mommy.make(Offer))
 
         response = self._getShowTrade(trade)
 
-        self.assertContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<button type="button" id="reply">Reply with your offer</button>')
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/reply/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
+        self.assertContains(response, '<form id="cancel_trade" data-trade-action="cancel" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, '<form id="accept_trade" data-trade-action="accept" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, 'Reply with your offer</button>')
+        self.assertNotContains(response, '<form id="new_offer" data-trade-action="reply" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, 'Decline</button>')
+        self.assertNotContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
-    @skip("until redesign")
     def test_buttons_in_show_trade_for_the_initiator_when_REPLIED(self):
         trade = self._prepare_trade('REPLIED', responder_offer = mommy.make(Offer))
 
         response = self._getShowTrade(trade)
 
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
-        self.assertContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
-        self.assertContains(response, '<button type="button" id="decline">Decline</button>')
-        self.assertContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form id="cancel_trade" data-trade-action="cancel" data-trade-id="{0}">'.format(trade.id))
+        self.assertContains(response, '<form id="accept_trade" data-trade-action="accept" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, 'Reply with your offer</button>')
+        self.assertNotContains(response, '<form id="new_offer" data-trade-action="reply" data-trade-id="{0}">'.format(trade.id))
+        self.assertContains(response, 'Decline</button>')
+        self.assertContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
-    @skip("until redesign")
     def test_buttons_in_show_trade_with_trade_CANCELLED(self):
         trade = self._prepare_trade('CANCELLED', finalizer = self.alternativeUser)
 
         response = self._getShowTrade(trade)
 
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<button type="button" id="decline">Decline</button>')
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form id="cancel_trade" data-trade-action="cancel" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, '<form id="accept_trade" data-trade-action="accept" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, 'Decline</button>')
+        self.assertNotContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
-    @skip("until redesign")
     def test_buttons_in_show_trade_when_the_game_has_ended(self):
         self.game.end_date = now() + datetime.timedelta(days = -5)
         self.game.save()
 
         trade = self._prepare_trade('INITIATED')
         response = self._getShowTrade(trade)
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form id="cancel_trade" data-trade-action="cancel" data-trade-id="{0}">'.format(trade.id))
 
         trade.responder = self.loginUser
         trade.save()
         response = self._getShowTrade(trade)
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/reply/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form id="new_offer" data-trade-action="reply" data-trade-id="{0}">'.format(trade.id))
 
         trade.status = 'REPLIED'
         trade.save()
         response = self._getShowTrade(trade)
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/cancel/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/accept/"'.format(self.game.id, trade.id))
-        self.assertNotContains(response, '<form action="/trade/{0}/{1}/decline/"'.format(self.game.id, trade.id))
+        self.assertNotContains(response, '<form id="cancel_trade" data-trade-action="cancel" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, '<form id="accept_trade" data-trade-action="accept" data-trade-id="{0}">'.format(trade.id))
+        self.assertNotContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
     @skip("until redesign")
     def test_decline_reason_displayed_in_show_trade_when_DECLINED(self):
@@ -607,7 +605,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
         response = self.client.get("/trade/{0}/{1}/decline/".format(self.game.id, 1))
         self.assertEqual(403, response.status_code)
 
-    def test_decine_trade_not_allowed_for_trades_when_you_re_not_the_player_that_can_decline(self):
+    def test_decline_trade_not_allowed_for_trades_when_you_re_not_the_player_that_can_decline(self):
         # trade INITIATED but we're not the responder
         trade = self._prepare_trade('INITIATED')
         self._assertOperationNotAllowed(trade.id, 'decline')
@@ -696,20 +694,17 @@ class ModifyTradeViewsTest(MystradeTestCase):
         self.assertIn("this is my reason", email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
-    @skip("until redesign")
-    def test_prepare_offer_forms_sets_up_the_correct_cards_formset_with_cards_in_pending_trades_reserved(self):
+    def test_prepare_offer_form_sets_up_the_correct_cards_excluding_those_in_pending_trades(self):
         rulecard1, rulecard2, rulecard3 = mommy.make(RuleCard, _quantity = 3)
         commodity1, commodity2 = mommy.make(Commodity, _quantity = 2)
 
         rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1)
         rih2 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2)
         rih3 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard3)
-        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity1,
-                              nb_cards = 3)
-        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity2,
-                              nb_cards = 2)
+        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 3)
+        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity2, nb_cards = 2)
 
-        # rulecard1 and 1 card of commodity1 are in the initator offer of a pending trade
+        # rulecard1 and 1 card of commodity1 are in the initiator offer of a pending trade
         offer1 = mommy.make(Offer, rules = [rih1])
         tc1 = mommy.make(TradedCommodities, offer = offer1, commodityinhand = cih1, nb_traded_cards = 1)
         offer1.tradedcommodities_set.add(tc1)
@@ -725,40 +720,16 @@ class ModifyTradeViewsTest(MystradeTestCase):
         offer3.tradedcommodities_set.add(tc3)
         trade1 = self._prepare_trade('REPLIED', initiator = self.alternativeUser, responder = self.loginUser, responder_offer = offer3)
 
-        request = RequestFactory().get("/trade/{0}/create/".format(self.game.id))
+        request = RequestFactory().get("/trade/{0}/create/".format(self.game.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         request.user = self.loginUser
-        offer_form, rulecards_formset, commodities_formset = _prepare_offer_form(request, self.game,
-                                                                                  selected_rulecards= [rih2],
-                                                                                  selected_commodities = {cih1: 1})
+        offer_form = _prepare_offer_form(request, self.game, selected_rulecards= [rih1, rih2], selected_commodities = {cih1: 1})
 
-        self.assertIn({'card_id':       rih1.id,
-                       'public_name':   rulecard1.public_name,
-                       'description':   rulecard1.description,
-                       'reserved':      True, # in a pending trade
-                       'selected_rule': False}, rulecards_formset.initial)
-        self.assertIn({'card_id':       rih2.id,
-                       'public_name':   rulecard2.public_name,
-                       'description':   rulecard2.description,
-                       'reserved':      False, # the trade is finalized
-                       'selected_rule': True}, rulecards_formset.initial)
-        self.assertIn({'card_id':       rih3.id,
-                       'public_name':   rulecard3.public_name,
-                       'description':   rulecard3.description,
-                       'reserved':      True, # in a pending trade
-                       'selected_rule': False}, rulecards_formset.initial)
+        self.assertNotIn('rulecard_{0}'.format(rih1.id), offer_form.initial.keys()) # in a pending trade, so not in the prepared form
+        self.assertEqual(True, offer_form.initial.get('rulecard_{0}'.format(rih2.id))) # in a finalized trade, so included in the form
+        self.assertNotIn('rulecard_{0}'.format(rih3.id), offer_form.initial.keys()) # in a pending trade, so not in the prepared form
 
-        self.assertIn({'commodity_id':      commodity1.id,
-                       'name':              commodity1.name,
-                       'color':             commodity1.color,
-                       'nb_cards':          3,
-                       'nb_tradable_cards': 2, # one card is in a pending trade
-                       'nb_traded_cards':   1}, commodities_formset.initial)
-        self.assertIn({'commodity_id':      commodity2.id,
-                       'name':              commodity2.name,
-                       'color':             commodity2.color,
-                       'nb_cards':          2,
-                       'nb_tradable_cards': 1, # one card is in a pending trade
-                       'nb_traded_cards':   0}, commodities_formset.initial)
+        self.assertEqual(1, offer_form.initial.get('commodity_{0}'.format(commodity1.id)))
+        self.assertEqual(0, offer_form.initial.get('commodity_{0}'.format(commodity2.id)))
 
     def _prepare_trade(self, status, initiator = None, responder = None, initiator_offer = None,
                        responder_offer = None, finalizer = None):
@@ -886,6 +857,7 @@ class TransactionalViewsTest(TransactionTestCase):
 
         self.client.login(username = self.loginUser.username, password = 'test')
 
+    @skip("until redesign")
     def test_accept_trade_cards_exchange_is_transactional(self):
         # let's make the responder offer 1 commodity for which he doesn't have any cards
         #  (because it's the last save() in the process, so we can assert that everything else has been rollbacked)

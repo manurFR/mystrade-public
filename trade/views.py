@@ -162,7 +162,7 @@ def reply_trade(request, game_id, trade_id):
 
 @login_required
 def accept_trade(request, game_id, trade_id):
-    if request.method == 'POST':
+    if request.is_ajax() and request.method == 'POST':
         trade = get_object_or_404(Trade, id = trade_id)
         if (trade.game_id == int(game_id) and trade.game.is_active() and
             trade.status == 'REPLIED' and request.user == trade.initiator):
@@ -262,8 +262,7 @@ def _prepare_offer_form(request, game, offer = None, selected_commodities = {}, 
         initial.update({'free_information': offer.free_information,
                         'comment':          offer.comment})
 
-    return OfferForm(commodities = commodity_hand, rulecards = rule_hand,
-                     initial = initial)
+    return OfferForm(commodities = commodity_hand, rulecards = rule_hand, initial = initial)
 
 def _parse_offer_form(request, game):
     commodity_hand = commodities_in_hand(game, request.user)

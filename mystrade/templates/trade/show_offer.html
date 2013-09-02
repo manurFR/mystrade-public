@@ -15,11 +15,10 @@ Offered by {% include "common/name_or_you.html" with who=giver %}:
 
 {% if offer.rules.all %}
 <div id="zone_rulecards_offered">
-    <h3>Rules{% if user != giver %} <span class="helptext">(Hidden until trade accepted)</span>{% endif %}</h3>
+    <h3>Rules{% if trade.status != 'ACCEPTED' and giver != user and not super_access %} <span class="helptext">(Text hidden until trade accepted)</span>{% endif %}</h3>
     {% for card in offer.rules.all %}
         <div class="rulecard_thumbnail" data-rih-id="{{ card.id }}">{{ card.rulecard.public_name }}</div>
     {% endfor %}
-    </div>
 </div>
 {% endif %}
 

@@ -6,7 +6,7 @@
         <span class="errors"><img class="warning" src="{% static 'warning.png' %}" height="16" width="16" alt=""/>{{ err }}</span>
     {% endfor %}
 {% endif %}
-<form id="new_offer" {% if not trade %}data-trade-status="new"{% else %}data-trade-status="reply" data-trade-id="{{ trade.id }}"{% endif %}>
+<form id="new_offer" {% if not trade %}data-trade-action="create"{% else %}data-trade-action="reply" data-trade-id="{{ trade.id }}"{% endif %}>
     {% csrf_token %}
 {% if not trade %}
     <p>With who?

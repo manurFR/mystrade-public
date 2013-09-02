@@ -5,13 +5,12 @@
     {% include "trade/show_offer.html" with offer=trade.initiator_offer giver=trade.initiator %}
     <hr>
 
-    {# The responder's offer #}
     {% if trade.status == 'INITIATED' and game.is_active %}
         {% if user == trade.initiator  %}
-        Waiting for reply by {% include "common/name_or_you.html" with who=trade.responder %}...
-        <form id="cancel_trade" data-trade-status="cancel" data-trade-id="{{ trade.id }}">{% csrf_token %}
-            <div class="submit"><input type="submit" class="trade_submit_button" value="Cancel this trade"/></div>
-        </form>
+            Waiting for reply by {% include "common/name_or_you.html" with who=trade.responder %}...
+            <form id="cancel_trade" data-trade-action="cancel" data-trade-id="{{ trade.id }}">{% csrf_token %}
+                <div class="submit"><input type="submit" class="trade_submit_button" value="Cancel this trade"/></div>
+            </form>
         {% elif user == trade.responder %}
             <div class="submit" id="zone_choice_buttons">
                 <button type="button" id="reply" class="trade_submit_button">Reply with your offer</button> &nbsp;&nbsp;
@@ -23,6 +22,25 @@
             <div id="zone_decline">
                 {% include "trade/decline_trade.html" %}
             </div>
+        {% endif %}
+    {% elif trade.responder_offer %}
+        {% include "trade/show_offer.html" with offer=trade.responder_offer giver=trade.responder %}
+        {% if trade.status == 'REPLIED' and game.is_active %}
+            {% if user == trade.responder %}
+                <form id="cancel_trade" data-trade-action="cancel" data-trade-id="{{ trade.id }}">{% csrf_token %}
+                    <div class="submit"><input type="submit" class="trade_submit_button" value="Cancel this trade"/></div>
+                </form>
+            {% elif user == trade.initiator %}
+                <div class="submit" id="zone_choice_buttons">
+                    <form id="accept_trade" data-trade-action="accept" data-trade-id="{{ trade.id }}">{% csrf_token %}
+                        <input type="submit" class="trade_submit_button" value="Accept this trade"/> &nbsp;&nbsp;
+                        <button type="button" id="decline" class="trade_submit_button">Decline</button>
+                    </form>
+                </div>
+                <div id="zone_decline">
+                    {% include "trade/decline_trade.html" %}
+                </div>
+            {% endif %}
         {% endif %}
     {% endif %}
 {% endif %}
@@ -39,7 +57,7 @@
         {% endif %}
     });
 
-    $("#new_offer, #cancel_trade, #decline_trade").on("submit", function() { postTrade(this); return false; });
+    $("#new_offer, #cancel_trade, #decline_trade, #accept_trade").on("submit", function() { postTrade(this); return false; });
 
     $(".link_reset_offer").on("click", function() {
         $("#id_responder").add("#id_free_information").add("#id_comment").val("");

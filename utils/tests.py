@@ -243,6 +243,7 @@ class StatsTest(MystradeTestCase):
         self.assertGreater(stats[1].score, 0)
         self.assertGreater(stats[2].score, 0)
 
+    @skip("until redesign")
     def test_record_scores_when_trades_are_performed(self):
         y = Commodity.objects.get(ruleset = 1, name = 'Yellow')
         b = Commodity.objects.get(ruleset = 1, name = 'Blue')

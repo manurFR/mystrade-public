@@ -304,8 +304,8 @@
             }
 
             var url;
-            switch($(tradeForm).data("tradeStatus")) {
-                case "new":
+            switch($(tradeForm).data("tradeAction")) {
+                case "create":
                     url = "{% url 'create_trade' game.id %}";
                     break;
                 case "cancel":
@@ -316,6 +316,9 @@
                     break;
                 case "decline":
                     url = replaceTradeId(tradeForm, "{% url 'decline_trade' game.id 0 %}");
+                    break;
+                case "accept":
+                    url = replaceTradeId(tradeForm, "{% url 'accept_trade' game.id 0 %}");
                     break;
             }
             $.post(url, $(tradeForm).serialize())
