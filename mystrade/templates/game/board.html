@@ -278,9 +278,9 @@
         function resetCardsInHandWhenSelectionIsDisabled() {
             // unmark the selectable cards
             $("#zone_commodities").find(".commodity_card").not(".not_tradable").removeClass("card_selected selectable")
-                    .off("click.tradeselect");
+                    .off("click.tradecreate").off("click.tradeselect");
             $("#zone_rulecards").find(".rulecard").not(".not_tradable, .former").removeClass("card_selected selectable")
-                    .off("click.tradeselect");
+                    .off("click.tradecreate").off("click.tradeselect");
 
             // unmark the non-tradable cards
             $("#zone_commodities").find(".commodity_card").filter(".not_tradable").removeClass("excluded").each(function() {
