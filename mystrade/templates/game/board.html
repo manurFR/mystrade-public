@@ -45,7 +45,8 @@
 
             <div id="zone_commodities">
                 <h3>{% if hand_submitted %}Submitted Commodities
-                    {% else %}Commodities <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
+                    {% elif game.is_active %}Commodities <span class="helptext">Click to create a new trade proposal</span>
+                    {% else %}Commodities{% endif %}</h3>
                 {% for cih in commodities %}
                     {% for copy in cih.nb_cards|as_range %}
                         {% if copy >= cih.nb_tradable_cards %}
@@ -63,7 +64,7 @@
             </div>
 
             <div id="zone_rules">
-                <h3>Rules{% if not hand_submitted %} <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
+                <h3>Rules{% if game.is_active and not hand_submitted %} <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
 
                 <div id="zone_rulecards">
                     {% for rih in rulecards %}
@@ -100,7 +101,7 @@
         <div id="zone_tabs">
             <ul>
                 <li><a href="#tab-event">Recently</a></li>
-                <li><a href="#tab-trade">New Trade</a></li>
+                <li><a href="#tab-trade">{% if user in players %}New Trade{% else %}View Trade{% endif %}</a></li>
             </ul>
             <div id="tab-event">
                 <div id="zone_events"></div>
@@ -367,10 +368,10 @@
 
             activateTooltips();
             refreshEvents();
-        {% if game.is_active %}
-            refreshTrade();
-        {% else %}
+        {% if not game.is_active %}
             $("#zone_trade").text("This game has ended. Trade creation is not permitted.");
+        {% elif user in players%}
+            refreshTrade();
         {% endif %}
 
             $(".commodity_card").not(".not_tradable").on("click.tradecreate", function(event) {
