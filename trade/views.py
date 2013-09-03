@@ -5,13 +5,12 @@ from django.core.exceptions import PermissionDenied, NON_FIELD_ERRORS
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q
-from django.forms.formsets import formset_factory
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404, render
 from django.utils.timezone import now
 from game.helpers import rules_currently_in_hand, commodities_in_hand
 from game.models import RuleInHand, CommodityInHand, Game, GamePlayer
-from trade.forms import DeclineReasonForm, TradeForm, RuleCardFormDisplay, TradeCommodityCardFormDisplay, OfferForm, RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet
+from trade.forms import DeclineReasonForm, TradeForm, OfferForm
 from trade.models import Trade, TradedCommodities, Offer
 from utils import utils, stats
 

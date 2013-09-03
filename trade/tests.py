@@ -1,17 +1,14 @@
 import datetime
 from django.contrib.auth import get_user_model
 from django.core import mail
-from django.forms.formsets import formset_factory
 from django.test import RequestFactory, Client, TransactionTestCase
 from django.utils.timezone import now
-from django.test import TestCase
-from django.utils.unittest.case import skip
 from model_mommy import mommy
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer
 from ruleset.models import Ruleset, RuleCard, Commodity
-from trade.forms import RuleCardFormParse, BaseRuleCardsFormSet, TradeCommodityCardFormParse, BaseCommodityCardFormSet, TradeForm, OfferForm
+from trade.forms import TradeForm, OfferForm
 from trade.models import Offer, Trade, TradedCommodities
-from trade.views import _prepare_offer_form
+from trade.views import _prepare_offer_form, _parse_offer_form, FormInvalidException
 from utils.tests import MystradeTestCase
 
 class CreateTradeViewTest(MystradeTestCase):
@@ -150,6 +147,7 @@ class CreateTradeViewTest(MystradeTestCase):
 
 class ShowTradeViewTest(MystradeTestCase):
 
+    # TODO
     def test_trade_list(self):
         right_now = now()
         trade_initiated = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
@@ -699,6 +697,155 @@ class ModifyTradeViewsTest(MystradeTestCase):
         self.assertIn("this is my reason", email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
+    def _prepare_trade(self, status, initiator = None, responder = None, initiator_offer = None,
+                       responder_offer = None, finalizer = None):
+        if initiator is None: initiator = self.loginUser
+        if responder is None: responder = self.alternativeUser
+        if initiator_offer is None: initiator_offer = mommy.make(Offer)
+        return mommy.make(Trade, game = self.game, initiator = initiator, responder = responder, finalizer = finalizer,
+                              status = status, initiator_offer = initiator_offer, responder_offer = responder_offer)
+
+    def _assertOperationNotAllowed(self, trade_id, operation):
+        response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(403, response.status_code)
+
+    def _assertOperationAllowed(self, trade_id, operation, data = {}):
+        response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation),
+                                    data, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(200, response.status_code)
+        return response
+
+class SensitiveTradeElementsTest(MystradeTestCase):
+    """ The free information should not be shown to the other player until/unless the trade has reached the status ACCEPTED.
+        The game master can always see them though. """
+
+    def setUp(self):
+        super(SensitiveTradeElementsTest, self).setUp()
+
+        self.clientInitiator = self.client
+        self.clientResponder = Client()
+        self.assertTrue(self.clientResponder.login(username = self.alternativeUser.username, password = 'test'))
+        self.clientMaster = Client()
+        self.assertTrue(self.clientMaster.login(username = self.master.username, password = 'test'))
+
+        rih_initiator = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = mommy.make(RuleCard))
+        rih_responder = mommy.make(RuleInHand, game = self.game, player = self.alternativeUser, rulecard = mommy.make(RuleCard))
+        self.offer_initiator = mommy.make(Offer, rules = [rih_initiator], free_information = 'this is sensitive')
+        self.offer_responder = mommy.make(Offer, rules = [rih_responder], free_information = 'these are sensitive')
+
+    def test_display_of_sensitive_trade_elements_in_status_INITIATED(self):
+        """ the initiator should see the sensitive elements of his offer, the responder should not """
+        self._prepare_trade('INITIATED')
+
+        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True)
+        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False)
+        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True)
+
+    def test_display_of_sensitive_trade_elements_in_status_REPLIED(self):
+        """same as INITIATED for the initiator offer, plus the responder should see the sensitive elements of
+           her offer, but not the initiator
+        """
+        self._prepare_trade('REPLIED')
+
+        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = False)
+        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
+        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
+
+    def test_display_of_sensitive_trade_elements_in_status_CANCELLED(self):
+        """ CANCELLED : same as REPLIED """
+        self._prepare_trade('CANCELLED')
+
+        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = False)
+        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
+        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
+
+    def test_display_of_sensitive_trade_elements_in_status_DECLINED(self):
+        """ DECLINED : same as REPLIED """
+        self._prepare_trade('DECLINED')
+
+        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = False)
+        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
+        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
+
+    def test_display_of_sensitive_trade_elements_in_status_ACCEPTED(self):
+        """ ACCEPTED : both players should at least be able to see all sensitive information """
+        self._prepare_trade('ACCEPTED')
+
+        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = True)
+        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = True, responder_elements = True)
+        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
+
+    def _prepare_trade(self, status):
+        self.trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                                status = status, initiator_offer = self.offer_initiator,
+                                responder_offer = self.offer_responder if status <> 'INITIATED' else None,
+                                finalizer = self.loginUser if status in ['CANCELLED', 'DECLINED', 'ACCEPTED'] else None)
+
+    def _assert_sensitive_elements(self, client, initiator_elements = None, responder_elements = None):
+        response = client.get("/trade/{0}/{1}/".format(self.game.id, self.trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        if initiator_elements is not None:
+            if initiator_elements:
+                self.assertContains(response, 'this is sensitive')
+            else:
+                self.assertNotContains(response, 'this is sensitive')
+        if responder_elements is not None:
+            if responder_elements:
+                self.assertContains(response, 'these are sensitive')
+            else:
+                self.assertNotContains(response, 'these are sensitive')
+        if initiator_elements == False or responder_elements == False:
+            self.assertContains(response, 'Some information(s), hidden until trade accepted by both players.')
+        else:
+            self.assertNotContains(response, 'Some information(s), hidden until trade accepted by both players.')
+
+class TransactionalViewsTest(TransactionTestCase):
+    fixtures = ['test_users.json', # from profile app
+                'test_games.json']
+
+    def setUp(self):
+        self.game =             Game.objects.get(id = 1)
+        self.master =           self.game.master
+        self.loginUser =        get_user_model().objects.get(username = "test2")
+        self.alternativeUser =  get_user_model().objects.get(username = 'test5')
+
+        self.client.login(username = self.loginUser.username, password = 'test')
+
+    def test_accept_trade_cards_exchange_is_transactional(self):
+        # let's make the responder offer 1 commodity for which he doesn't have any cards
+        #  (because it's the last save() in the process, so we can assert that everything else has been rollbacked)
+        rih = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
+        offer_initiator = mommy.make(Offer, rules = [rih])
+
+        offer_responder = mommy.make(Offer)
+        cih = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 0)
+        tc = mommy.make(TradedCommodities, offer = offer_responder, commodityinhand = cih, nb_traded_cards = 1)
+        offer_responder.tradedcommodities_set.add(tc)
+
+        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                               status = 'REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
+
+        response = self.client.post("/trade/{0}/{1}/accept/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertEqual(200, response.status_code)
+
+        # trade : no change
+        trade = Trade.objects.get(pk = trade.id)
+        self.assertEqual("REPLIED", trade.status)
+        self.assertIsNone(trade.finalizer)
+        self.assertIsNone(trade.closing_date)
+
+        # rule cards : no swapping
+        with self.assertRaises(RuleInHand.DoesNotExist):
+            RuleInHand.objects.get(game = self.game, player = self.alternativeUser, rulecard = rih.rulecard)
+        self.assertIsNone(RuleInHand.objects.get(pk = rih.id).abandon_date)
+
+        # commodity cards : no change
+        self.assertEqual(1, CommodityInHand.objects.filter(game = self.game, player = self.alternativeUser).count())
+        self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.alternativeUser, commodity = cih.commodity).nb_cards)
+        self.assertEqual(0, CommodityInHand.objects.filter(game = self.game, player = self.loginUser).count())
+
+class FormsTest(MystradeTestCase):
+
     def test_prepare_offer_form_sets_up_the_correct_cards_excluding_those_in_pending_trades(self):
         rulecard1, rulecard2, rulecard3 = mommy.make(RuleCard, _quantity = 3)
         commodity1, commodity2 = mommy.make(Commodity, _quantity = 2)
@@ -736,235 +883,65 @@ class ModifyTradeViewsTest(MystradeTestCase):
         self.assertEqual(1, offer_form.initial.get('commodity_{0}'.format(commodity1.id)))
         self.assertEqual(0, offer_form.initial.get('commodity_{0}'.format(commodity2.id)))
 
-    def _prepare_trade(self, status, initiator = None, responder = None, initiator_offer = None,
-                       responder_offer = None, finalizer = None):
-        if initiator is None: initiator = self.loginUser
-        if responder is None: responder = self.alternativeUser
-        if initiator_offer is None: initiator_offer = mommy.make(Offer)
-        return mommy.make(Trade, game = self.game, initiator = initiator, responder = responder, finalizer = finalizer,
-                              status = status, initiator_offer = initiator_offer, responder_offer = responder_offer)
-
-    def _assertOperationNotAllowed(self, trade_id, operation):
-        response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEqual(403, response.status_code)
-
-    def _assertOperationAllowed(self, trade_id, operation, data = {}):
-        response = self.client.post("/trade/{0}/{1}/{2}/".format(self.game.id, trade_id, operation),
-                                    data, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEqual(200, response.status_code)
-        return response
-
-class SensitiveTradeElementsTest(MystradeTestCase):
-    """ The description of the rules and the free information should not be shown to the other player until/unless
-         the trade has reached the status ACCEPTED. The game master can always see them though. """
-
-    def setUp(self):
-        super(SensitiveTradeElementsTest, self).setUp()
-
-        self.clientInitiator = self.client
-        self.clientResponder = Client()
-        self.assertTrue(self.clientResponder.login(username = self.alternativeUser.username, password = 'test'))
-        self.clientMaster = Client()
-        self.assertTrue(self.clientMaster.login(username = self.master.username, password = 'test'))
-
-        rulecard_initiator = mommy.make(RuleCard, public_name = '7', description = 'rule description 7')
-        rih_initiator = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard_initiator)
-        rulecard_responder = mommy.make(RuleCard, public_name = '8', description = 'rule description 8')
-        rih_responder = mommy.make(RuleInHand, game = self.game, player = self.alternativeUser, rulecard = rulecard_responder)
-        self.offer_initiator = mommy.make(Offer, rules = [rih_initiator], free_information = 'this is sensitive')
-        self.offer_responder = mommy.make(Offer, rules = [rih_responder], free_information = 'these are sensitive')
-
-    @skip("until redesign")
-    def test_display_of_sensitive_trade_elements_in_status_INITIATED(self):
-        """ the initiator should see the sensitive elements of his offer, the responder should not """
-        self._prepare_trade('INITIATED')
-
-        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True)
-        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False)
-        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True)
-
-    @skip("until redesign")
-    def test_display_of_sensitive_trade_elements_in_status_REPLIED(self):
-        """same as INITIATED for the initiator offer, plus the responder should see the sensitive elements of
-           her offer, but not the initiator
-        """
-        self._prepare_trade('REPLIED')
-
-        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = False)
-        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
-        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
-
-    @skip("until redesign")
-    def test_display_of_sensitive_trade_elements_in_status_CANCELLED(self):
-        """ CANCELLED : same as REPLIED """
-        self._prepare_trade('CANCELLED')
-
-        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = False)
-        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
-        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
-
-    @skip("until redesign")
-    def test_display_of_sensitive_trade_elements_in_status_DECLINED(self):
-        """ DECLINED : same as REPLIED """
-        self._prepare_trade('DECLINED')
-
-        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = False)
-        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = False, responder_elements = True)
-        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
-
-    @skip("until redesign")
-    def test_display_of_sensitive_trade_elements_in_status_ACCEPTED(self):
-        """ ACCEPTED : both players should at least be able to see all sensitive information """
-        self._prepare_trade('ACCEPTED')
-
-        self._assert_sensitive_elements(client = self.clientInitiator, initiator_elements = True, responder_elements = True)
-        self._assert_sensitive_elements(client = self.clientResponder, initiator_elements = True, responder_elements = True)
-        self._assert_sensitive_elements(client = self.clientMaster, initiator_elements = True, responder_elements = True)
-
-    def _prepare_trade(self, status):
-        self.trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                                status = status, initiator_offer = self.offer_initiator,
-                                responder_offer = self.offer_responder if status <> 'INITIATED' else None,
-                                finalizer = self.loginUser if status == 'CANCELLED' or status == 'DECLINED' else None)
-
-    def _assert_sensitive_elements(self, client, initiator_elements = None, responder_elements = None):
-        response = client.get("/trade/{0}/{1}/".format(self.game.id, self.trade.id))
-        if initiator_elements is not None:
-            if initiator_elements:
-                self.assertContains(response, 'rule description 7')
-                self.assertContains(response, 'this is sensitive')
-            else:
-                self.assertNotContains(response, 'rule description 7')
-                self.assertNotContains(response, 'this is sensitive')
-        if responder_elements is not None:
-            if responder_elements:
-                self.assertContains(response, 'rule description 8')
-                self.assertContains(response, 'these are sensitive')
-            else:
-                self.assertNotContains(response, 'rule description 8')
-                self.assertNotContains(response, 'these are sensitive')
-        if initiator_elements == False or responder_elements == False:
-            self.assertContains(response, '(Hidden until trade accepted)')
-            self.assertContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
-        else:
-            self.assertNotContains(response, '(Hidden until trade accepted)')
-            self.assertNotContains(response, 'Some information(s), hidden until this trade is accepted by both players.')
-
-class TransactionalViewsTest(TransactionTestCase):
-    fixtures = ['test_users.json', # from profile app
-                'test_games.json']
-
-    def setUp(self):
-        self.game =             Game.objects.get(id = 1)
-        self.master =           self.game.master
-        self.loginUser =        get_user_model().objects.get(username = "test2")
-        self.alternativeUser =  get_user_model().objects.get(username = 'test5')
-
-        self.client.login(username = self.loginUser.username, password = 'test')
-
-    @skip("until redesign")
-    def test_accept_trade_cards_exchange_is_transactional(self):
-        # let's make the responder offer 1 commodity for which he doesn't have any cards
-        #  (because it's the last save() in the process, so we can assert that everything else has been rollbacked)
-        rih = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
-        offer_initiator = mommy.make(Offer, rules = [rih])
-
-        offer_responder = mommy.make(Offer)
-        cih = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 0)
-        tc = mommy.make(TradedCommodities, offer = offer_responder, commodityinhand = cih, nb_traded_cards = 1)
-        offer_responder.tradedcommodities_set.add(tc)
-
-        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                               status = 'REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
-
-        response = self.client.post("/trade/{0}/{1}/accept/".format(self.game.id, trade.id), follow = True)
-
-        self.assertEqual(200, response.status_code)
-
-        # trade : no change
-        trade = Trade.objects.get(pk = trade.id)
-        self.assertEqual("REPLIED", trade.status)
-        self.assertIsNone(trade.finalizer)
-        self.assertIsNone(trade.closing_date)
-
-        # rule cards : no swapping
-        with self.assertRaises(RuleInHand.DoesNotExist):
-            RuleInHand.objects.get(game = self.game, player = self.alternativeUser, rulecard = rih.rulecard)
-        self.assertIsNone(RuleInHand.objects.get(pk = rih.id).abandon_date)
-
-        # commodity cards : no change
-        self.assertEqual(1, CommodityInHand.objects.filter(game = self.game, player = self.alternativeUser).count())
-        self.assertEqual(0, CommodityInHand.objects.get(game = self.game, player = self.alternativeUser, commodity = cih.commodity).nb_cards)
-        self.assertEqual(0, CommodityInHand.objects.filter(game = self.game, player = self.loginUser).count())
-
-class FormsTest(TestCase):
-
-    def setUp(self):
-        self.game = mommy.make(Game, end_date = now() + datetime.timedelta(days = 7))
-
-    #noinspection PyUnusedLocal
-    def test_a_rule_offered_by_the_initiator_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        rule_in_hand = mommy.make(RuleInHand, game = self.game)
+    def test_parse_offer_form_detects_rule_selected_but_in_a_pending_trade_in_initiator_offer(self):
+        rule_in_hand = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
         offer = mommy.make(Offer, rules = [rule_in_hand])
         pending_trade = mommy.make(Trade, game = self.game, status = 'INITIATED', initiator_offer = offer)
 
-        RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
-        rulecards_formset = RuleCardsFormSet({'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
-                                              'rulecards-0-card_id': rule_in_hand.id, 'rulecards-0-selected_rule': 'on'
-                                             }, prefix = 'rulecards')
+        request = RequestFactory().post("/trade/{0}/create/".format(self.game.id),
+                                        {'rulecard_{0}'.format(rule_in_hand.id): "True"},
+                                        HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        request.user = self.loginUser
+        with self.assertRaises(FormInvalidException) as context_manager:
+            offer_form = _parse_offer_form(request, self.game)
 
-        self.assertFalse(rulecards_formset.is_valid())
-        self.assertIn("A rule card in a pending trade can not be offered in another trade.", rulecards_formset._non_form_errors)
+        self.assertIn("A rule card in a pending trade can not be offered in another trade.", context_manager.exception.formdata['offer_errors'])
 
-    #noinspection PyUnusedLocal
-    def test_a_rule_offered_by_the_responder_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        rule_in_hand = mommy.make(RuleInHand, game = self.game)
+    def test_parse_offer_form_detects_rule_selected_but_in_a_pending_trade_in_responder_offer(self):
+        rule_in_hand = mommy.make(RuleInHand, game = self.game, player = self.loginUser)
         offer = mommy.make(Offer, rules = [rule_in_hand])
         pending_trade = mommy.make(Trade, game = self.game, status = 'INITIATED', responder_offer = offer,
                                        initiator_offer = mommy.make(Offer))
 
-        RuleCardsFormSet = formset_factory(RuleCardFormParse, formset = BaseRuleCardsFormSet)
-        rulecards_formset = RuleCardsFormSet({'rulecards-TOTAL_FORMS': 1, 'rulecards-INITIAL_FORMS': 1,
-                                              'rulecards-0-card_id': rule_in_hand.id, 'rulecards-0-selected_rule': 'on'
-                                             }, prefix = 'rulecards')
+        request = RequestFactory().post("/trade/{0}/create/".format(self.game.id),
+                                        {'rulecard_{0}'.format(rule_in_hand.id): "True"},
+                                        HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        request.user = self.loginUser
+        with self.assertRaises(FormInvalidException) as context_manager:
+            offer_form = _parse_offer_form(request, self.game)
 
-        self.assertFalse(rulecards_formset.is_valid())
-        self.assertIn("A rule card in a pending trade can not be offered in another trade.", rulecards_formset._non_form_errors)
+        self.assertIn("A rule card in a pending trade can not be offered in another trade.", context_manager.exception.formdata['offer_errors'])
 
-    #noinspection PyUnusedLocal
-    def test_commodities_offered_by_the_initiator_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        commodity_in_hand = mommy.make(CommodityInHand, game = self.game, nb_cards = 1)
+    def test_parse_offer_form_detects_commodity_selected_but_in_a_pending_trade_in_initiator_offer(self):
+        commodity_in_hand = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 1)
         offer = mommy.make(Offer)
         traded_commodities = mommy.make(TradedCommodities, nb_traded_cards = 1, commodityinhand = commodity_in_hand, offer = offer)
         pending_trade = mommy.make(Trade, game = commodity_in_hand.game, status = 'INITIATED', initiator_offer = offer)
 
-        CommodityCardsFormSet = formset_factory(TradeCommodityCardFormParse, formset = BaseCommodityCardFormSet)
-        commodities_formset = CommodityCardsFormSet({'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
-                                                     'commodity-0-commodity_id': commodity_in_hand.commodity.id, 'commodity-0-nb_traded_cards': 1,
-                                                     }, prefix = 'commodity')
-        commodities_formset.set_game(commodity_in_hand.game)
-        commodities_formset.set_player(commodity_in_hand.player)
+        request = RequestFactory().post("/trade/{0}/create/".format(self.game.id),
+                                        {'commodity_{0}'.format(commodity_in_hand.commodity.id): 1},
+                                        HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        request.user = self.loginUser
+        with self.assertRaises(FormInvalidException) as context_manager:
+            offer_form = _parse_offer_form(request, self.game)
 
-        self.assertFalse(commodities_formset.is_valid())
-        self.assertIn("A commodity card in a pending trade can not be offered in another trade.", commodities_formset._non_form_errors)
+        self.assertIn("A commodity card in a pending trade can not be offered in another trade.", context_manager.exception.formdata['offer_errors'])
 
-    #noinspection PyUnusedLocal
-    def test_commodities_offered_by_the_responder_in_a_pending_trade_cannot_be_offered_in_another_trade(self):
-        commodity_in_hand = mommy.make(CommodityInHand, game = self.game, nb_cards = 2)
+    def test_parse_offer_form_detects_commodity_selected_but_in_a_pending_trade_in_responder_offer(self):
+        commodity_in_hand = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 2)
         offer = mommy.make(Offer)
         traded_commodities = mommy.make(TradedCommodities, nb_traded_cards = 1, commodityinhand = commodity_in_hand, offer = offer)
         pending_trade = mommy.make(Trade, game = commodity_in_hand.game, status = 'INITIATED', responder_offer = offer,
                                        initiator_offer = mommy.make(Offer))
 
-        CommodityCardsFormSet = formset_factory(TradeCommodityCardFormParse, formset = BaseCommodityCardFormSet)
-        commodities_formset = CommodityCardsFormSet({'commodity-TOTAL_FORMS': 1, 'commodity-INITIAL_FORMS': 1,
-                                                     'commodity-0-commodity_id': commodity_in_hand.commodity.id, 'commodity-0-nb_traded_cards': 2,
-                                                     }, prefix = 'commodity')
-        commodities_formset.set_game(commodity_in_hand.game)
-        commodities_formset.set_player(commodity_in_hand.player)
+        request = RequestFactory().post("/trade/{0}/create/".format(self.game.id),
+                                        {'commodity_{0}'.format(commodity_in_hand.commodity.id): 2},
+                                        HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        request.user = self.loginUser
+        with self.assertRaises(FormInvalidException) as context_manager:
+            offer_form = _parse_offer_form(request, self.game)
 
-        self.assertFalse(commodities_formset.is_valid())
-        self.assertIn("A commodity card in a pending trade can not be offered in another trade.", commodities_formset._non_form_errors)
+        self.assertIn("A commodity card in a pending trade can not be offered in another trade.", context_manager.exception.formdata['offer_errors'])
 
     def test_a_trade_with_a_responder_who_has_already_submitted_his_hand_is_forbidden(self):
         ihavesubmitted = mommy.make(get_user_model(), username = 'ihavesubmitted')
@@ -977,13 +954,19 @@ class FormsTest(TestCase):
         self.assertIn("This player doesn't participate to this game or has already submitted his hand to the game master",
                       form.errors['responder'])
 
-    @skip("until redesign")
     def test_an_offer_with_only_a_free_information_is_accepted(self):
-        form = OfferForm(data = { 'free_information': 'hello world' })
+        form = OfferForm(data = { 'free_information': 'hello world' }, commodities = {}, rulecards = [])
         self.assertTrue(form.is_valid())
 
-    @skip("until redesign")
     def test_an_offer_with_no_cards_and_no_free_information_is_forbidden(self):
-        form = OfferForm(data = {})
+        form = OfferForm(data = {}, commodities = {}, rulecards = [])
         self.assertFalse(form.is_valid())
         self.assertIn("At least one card or one free information should be offered.", form.errors['__all__'])
+
+    def _prepare_trade(self, status, initiator = None, responder = None, initiator_offer = None,
+                       responder_offer = None, finalizer = None):
+        if initiator is None: initiator = self.loginUser
+        if responder is None: responder = self.alternativeUser
+        if initiator_offer is None: initiator_offer = mommy.make(Offer)
+        return mommy.make(Trade, game = self.game, initiator = initiator, responder = responder, finalizer = finalizer,
+                          status = status, initiator_offer = initiator_offer, responder_offer = responder_offer)

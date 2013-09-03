@@ -1,7 +1,5 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.forms.formsets import BaseFormSet
-from game.models import RuleInHand, CommodityInHand
 
 class TradeForm(forms.Form):
     responder = forms.ModelChoiceField(queryset = get_user_model().objects.none(), empty_label = u'- Choose a player -',
@@ -61,42 +59,3 @@ class RuleCardFormDisplay(RuleCardFormParse):
     description = forms.CharField()
     mandatory = forms.BooleanField()
     reserved = forms.BooleanField()
-
-class BaseRuleCardsFormSet(BaseFormSet):
-    def clean(self):
-        if any(self.errors):
-            return
-        for i in range(0, self.total_form_count()):
-            form = self.forms[i]
-            if form.cleaned_data['selected_rule']:
-                if RuleInHand.objects.get(id=form.cleaned_data['card_id']).is_in_a_pending_trade():
-                    raise forms.ValidationError("A rule card in a pending trade can not be offered in another trade.")
-
-class TradeCommodityCardFormParse(forms.Form):
-    commodity_id = forms.CharField(widget = forms.HiddenInput)
-    nb_traded_cards = forms.IntegerField(widget = forms.HiddenInput)
-
-class TradeCommodityCardFormDisplay(TradeCommodityCardFormParse):
-    name = forms.CharField()
-    nb_cards = forms.IntegerField()
-    nb_tradable_cards = forms.IntegerField()
-    color = forms.CharField()
-
-class BaseCommodityCardFormSet(BaseFormSet):
-    def set_game(self, game):
-        self.game = game
-
-    def set_player(self, player):
-        self.player = player
-
-    def clean(self):
-        if any(self.errors):
-            return
-        for i in range(0, self.total_form_count()):
-            form = self.forms[i]
-            try:
-                commodity_in_hand = CommodityInHand.objects.get(game = self.game, player = self.player, commodity__id = form.cleaned_data['commodity_id'])
-            except CommodityInHand.DoesNotExist: # shouldn't happen in real life, but it simplifies testing greatly
-                continue
-            if form.cleaned_data['nb_traded_cards'] > commodity_in_hand.nb_tradable_cards():
-                raise forms.ValidationError("A commodity card in a pending trade can not be offered in another trade.")

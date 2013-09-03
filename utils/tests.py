@@ -243,7 +243,6 @@ class StatsTest(MystradeTestCase):
         self.assertGreater(stats[1].score, 0)
         self.assertGreater(stats[2].score, 0)
 
-    @skip("until redesign")
     def test_record_scores_when_trades_are_performed(self):
         y = Commodity.objects.get(ruleset = 1, name = 'Yellow')
         b = Commodity.objects.get(ruleset = 1, name = 'Blue')
@@ -270,7 +269,7 @@ class StatsTest(MystradeTestCase):
         trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                    status = 'REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
 
-        response = self.client.post("/trade/{0}/{1}/accept/".format(self.game.id, trade.id), follow = True)
+        response = self.client.post("/trade/{0}/{1}/accept/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(200, response.status_code)
 
         try:
