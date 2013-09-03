@@ -529,6 +529,10 @@ def events(request, game_id):
 
         for trade in Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game):
             events.append(Event('create_trade', trade.creation_date, trade.initiator, trade))
+            if trade.responder_offer:
+                events.append(Event('reply_trade', trade.responder_offer.creation_date, trade.responder, trade))
+            if trade.finalizer:
+                events.append(Event('finalize_trade', trade.closing_date, trade.finalizer, trade))
 
         events.sort(key = lambda evt: evt.date, reverse=True)
 

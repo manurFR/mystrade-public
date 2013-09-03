@@ -60,6 +60,8 @@ class Offer(models.Model):
     comment = models.TextField(blank = True, null = True)
     free_information = models.TextField("Free information that won't be revealed until both players accept the trade", blank = True, null = True)
 
+    creation_date = models.DateTimeField(default = now)
+
     @property
     def summary(self):
         content = []

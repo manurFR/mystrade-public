@@ -586,6 +586,47 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
         self.assertNotContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade4.id))
 
+    def test_tab_recently_events_include_replying_offers_for_own_trades(self):
+        dt_trade = now() + datetime.timedelta(hours = -5)
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'REPLIED', creation_date = dt_trade, initiator_offer = mommy.make(Offer, creation_date = dt_trade),
+                            responder_offer = mommy.make(Offer, creation_date = dt_trade + datetime.timedelta(minutes = 30)))
+        dt_trade = now() + datetime.timedelta(hours = -3)
+        trade2 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'CANCELLED', creation_date = dt_trade, initiator_offer = mommy.make(Offer, creation_date = dt_trade),
+                            responder_offer = mommy.make(Offer, creation_date = dt_trade + datetime.timedelta(minutes = 30)),
+                            finalizer = self.alternativeUser, closing_date = now())
+        dt_trade = now() + datetime.timedelta(hours = -1)
+        trade3 = mommy.make(Trade, game = self.game, initiator = self.admin_player, responder = self.alternativeUser,
+                            status = 'REPLIED', creation_date = dt_trade, initiator_offer = mommy.make(Offer, creation_date = dt_trade),
+                            responder_offer = mommy.make(Offer, creation_date = dt_trade + datetime.timedelta(minutes = 30)))
+
+        response = self._getTabRecently()
+        self.assertContains(response, 'replied to your <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade1.id))
+        self.assertContains(response, 'replied to your <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade2.id))
+        self.assertNotContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
+
+    def test_tab_recently_events_include_final_event_for_own_trades(self):
+        dt_trade = now() + datetime.timedelta(hours = -5)
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'CANCELLED', creation_date = dt_trade, initiator_offer = mommy.make(Offer, creation_date = dt_trade),
+                            finalizer = self.loginUser, closing_date = now())
+        dt_trade = now() + datetime.timedelta(hours = -3)
+        trade2 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'DECLINED', creation_date = dt_trade, initiator_offer = mommy.make(Offer, creation_date = dt_trade),
+                            responder_offer = mommy.make(Offer, creation_date = dt_trade + datetime.timedelta(minutes = 30)),
+                            finalizer = self.loginUser, closing_date = now())
+        dt_trade = now() + datetime.timedelta(hours = -1)
+        trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'ACCEPTED', creation_date = dt_trade, initiator_offer = mommy.make(Offer, creation_date = dt_trade),
+                            responder_offer = mommy.make(Offer, creation_date = dt_trade + datetime.timedelta(minutes = 30)),
+                            finalizer = self.loginUser, closing_date = now())
+
+        response = self._getTabRecently()
+        self.assertContains(response, 'cancelled a <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade1.id))
+        self.assertContains(response, 'declined a <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade2.id))
+        self.assertContains(response, 'accepted a <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
+
     @skip("until redesign")
     def test_game_board_doesnt_show_pending_trades_to_game_master(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,

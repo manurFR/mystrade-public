@@ -22,6 +22,16 @@
                 Game #{{ game.id }} is over. <a href="{% if user in game.players.all %}{% url 'player_score' game.id %}{% else %}{% url 'control' game.id %}{% endif %}">Scores</a> have been calculated.
             {% elif evt.event_type == 'create_trade' %}
                 {% include "common/name_or_you.html" with who=evt.sender %} proposed a <a class="link_trade" data-trade-id="{{ evt.trade.id }}">trade</a> to {% include "common/name_or_you.html" with who=evt.trade.responder %}.
+            {% elif evt.event_type == 'reply_trade' %}
+                {% if evt.sender == user %}
+                    {% include "common/name_or_you.html" with who=evt.sender %} replied to {% include "common/name_or_you.html" with who=evt.trade.initiator %}'s <a class="link_trade" data-trade-id="{{ evt.trade.id }}">trade</a>.
+                {% else %}
+                    {% include "common/name_or_you.html" with who=evt.sender %} replied to your <a class="link_trade" data-trade-id="{{ evt.trade.id }}">trade</a>.
+                {% endif %}
+            {% elif evt.event_type == 'finalize_trade' %}
+                {% include "common/name_or_you.html" with who=evt.sender %}
+                {% if evt.sender == user %} have {% else %} has {% endif %}
+                {{ evt.trade.status|lower }} a <a class="link_trade" data-trade-id="{{ evt.trade.id }}">trade</a>.
             {% endif %}
             </div>
             {% if evt.sender == user and evt.deletable %}
