@@ -1,7 +1,10 @@
 {% if not trade %} {# Trade creation #}
     {% include "trade/edit_offer.html" %}
 {% else %}
-    {# First, display the initiator's offer. #}
+    {% if trade.status == 'CANCELLED' or trade.status == 'DECLINED' or trade.status == 'ACCEPTED' %}
+        <div id="trade_summary">Trade {{ trade.status|lower }} by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago</div>
+    {% endif %}
+
     {% include "trade/show_offer.html" with offer=trade.initiator_offer giver=trade.initiator %}
     <hr>
 
@@ -14,7 +17,7 @@
         {% elif user == trade.responder %}
             <div class="submit" id="zone_choice_buttons">
                 <button type="button" id="reply" class="trade_submit_button">Reply with your offer</button> &nbsp;&nbsp;
-                <button type="button" id="decline" class="trade_submit_button">Decline</button>
+                <button type="button" id="decline" class="trade_submit_button">Decline...</button>
             </div>
             <div id="zone_offer">
                 {% include "trade/edit_offer.html" %}
@@ -27,6 +30,8 @@
         {% include "trade/show_offer.html" with offer=trade.responder_offer giver=trade.responder %}
         {% if trade.status == 'REPLIED' and game.is_active %}
             {% if user == trade.responder %}
+                <hr>
+                Waiting for {% include "common/name_or_you.html" with who=trade.initiator %} to decide...
                 <form id="cancel_trade" data-trade-action="cancel" data-trade-id="{{ trade.id }}">{% csrf_token %}
                     <div class="submit"><input type="submit" class="trade_submit_button" value="Cancel this trade"/></div>
                 </form>
@@ -34,7 +39,7 @@
                 <div class="submit" id="zone_choice_buttons">
                     <form id="accept_trade" data-trade-action="accept" data-trade-id="{{ trade.id }}">{% csrf_token %}
                         <input type="submit" class="trade_submit_button" value="Accept this trade"/> &nbsp;&nbsp;
-                        <button type="button" id="decline" class="trade_submit_button">Decline</button>
+                        <button type="button" id="decline" class="trade_submit_button">Decline...</button>
                     </form>
                 </div>
                 <div id="zone_decline">
@@ -42,6 +47,15 @@
                 </div>
             {% endif %}
         {% endif %}
+    {% else %}
+        No offer from {% include "common/name_or_you.html" with who=trade.responder %}.
+    {% endif %}
+    {% if trade.status == 'DECLINED' and trade.decline_reason %}
+        <hr>
+        <h3>{% include "common/name_or_you.html" with who=trade.finalizer %} gave the following reason to decline:</h3>
+        <div class="message_content">
+            {{ trade.decline_reason }}
+        </div>
     {% endif %}
 {% endif %}
 
@@ -68,7 +82,7 @@
         refreshSelectedRulecards();
         $("#zone_rulecards").find(".rulecard").removeClass("card_selected");
         $(".errors").html("");
-    {% if trade %} {# in reply mode, we also hide the offer and re-show the choice buttons #}
+    {% if trade %} {# when working on an existing trade, we also hide the (possible) offer and re-show the choice buttons #}
         resetCardsInHandWhenSelectionIsDisabled();
         $("#zone_offer").hide("blind");
         $("#zone_decline").hide();

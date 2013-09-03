@@ -204,3 +204,9 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   @include font($size: 9pt);
 }
 
+#trade_summary {
+  text-align: center;
+  margin-bottom: 15px;
+  color: $previouslyOwnedRuleColor;
+  border-bottom: thin dotted;
+}

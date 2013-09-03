@@ -40,7 +40,7 @@
         <div id="zone_hand">
             <div id="zone_links">
                 <img src="{% static 'action.png' %}" width="16" height="16" alt="&gt;"/>
-                <a id="link_new_trade">Propose new trade</a>
+                {% if game.is_active %}<a id="link_new_trade">Propose new trade</a>{% endif %}
             </div>
 
             <div id="zone_commodities">
@@ -367,7 +367,11 @@
 
             activateTooltips();
             refreshEvents();
+        {% if game.is_active %}
             refreshTrade();
+        {% else %}
+            $("#zone_trade").text("This game has ended. Trade creation is not permitted.");
+        {% endif %}
 
             $(".commodity_card").not(".not_tradable").on("click.tradecreate", function(event) {
                 clickOnCommodity(event.target);

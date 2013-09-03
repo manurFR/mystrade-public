@@ -53,6 +53,12 @@ class CreateTradeViewTest(MystradeTestCase):
 
         self._assertIsCreateTradeAllowed(False)
 
+    def test_create_trade_is_forbidden_if_the_game_has_ended(self):
+        self.game.end_date = now() + datetime.timedelta(days = -1)
+        self.game.save()
+
+        self._assertIsCreateTradeAllowed(False)
+
     def test_create_trade_only_allowed_for_the_game_players(self):
         # most notably: the game master, the admins (when not in the players' list) and the users not in this game are denied
         self._assertIsCreateTradeAllowed(True)
@@ -214,7 +220,7 @@ class ShowTradeViewTest(MystradeTestCase):
         self.assertContains(response, '<form id="cancel_trade" data-trade-action="cancel" data-trade-id="{0}">'.format(trade.id))
         self.assertNotContains(response, 'Reply with your offer</button>')
         self.assertNotContains(response, '<form id="new_offer" data-trade-action="reply" data-trade-id="{0}">'.format(trade.id))
-        self.assertNotContains(response, 'Decline</button>')
+        self.assertNotContains(response, 'Decline...</button>')
         self.assertNotContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
     def test_buttons_in_show_trade_for_the_responder_when_INITIATED(self):
@@ -225,7 +231,7 @@ class ShowTradeViewTest(MystradeTestCase):
         self.assertNotContains(response, '<form id="cancel_trade" data-trade-action="cancel" data-trade-id="{0}">'.format(trade.id))
         self.assertContains(response, 'Reply with your offer</button>')
         self.assertContains(response, '<form id="new_offer" data-trade-action="reply" data-trade-id="{0}">'.format(trade.id))
-        self.assertContains(response, 'Decline</button>')
+        self.assertContains(response, 'Decline...</button>')
         self.assertContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
     def test_buttons_in_show_trade_for_the_responder_when_REPLIED(self):
@@ -238,7 +244,7 @@ class ShowTradeViewTest(MystradeTestCase):
         self.assertNotContains(response, '<form id="accept_trade" data-trade-action="accept" data-trade-id="{0}">'.format(trade.id))
         self.assertNotContains(response, 'Reply with your offer</button>')
         self.assertNotContains(response, '<form id="new_offer" data-trade-action="reply" data-trade-id="{0}">'.format(trade.id))
-        self.assertNotContains(response, 'Decline</button>')
+        self.assertNotContains(response, 'Decline...</button>')
         self.assertNotContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
     def test_buttons_in_show_trade_for_the_initiator_when_REPLIED(self):
@@ -250,7 +256,7 @@ class ShowTradeViewTest(MystradeTestCase):
         self.assertContains(response, '<form id="accept_trade" data-trade-action="accept" data-trade-id="{0}">'.format(trade.id))
         self.assertNotContains(response, 'Reply with your offer</button>')
         self.assertNotContains(response, '<form id="new_offer" data-trade-action="reply" data-trade-id="{0}">'.format(trade.id))
-        self.assertContains(response, 'Decline</button>')
+        self.assertContains(response, 'Decline...</button>')
         self.assertContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
     def test_buttons_in_show_trade_with_trade_CANCELLED(self):
@@ -260,7 +266,7 @@ class ShowTradeViewTest(MystradeTestCase):
 
         self.assertNotContains(response, '<form id="cancel_trade" data-trade-action="cancel" data-trade-id="{0}">'.format(trade.id))
         self.assertNotContains(response, '<form id="accept_trade" data-trade-action="accept" data-trade-id="{0}">'.format(trade.id))
-        self.assertNotContains(response, 'Decline</button>')
+        self.assertNotContains(response, 'Decline...</button>')
         self.assertNotContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
     def test_buttons_in_show_trade_when_the_game_has_ended(self):
@@ -283,7 +289,6 @@ class ShowTradeViewTest(MystradeTestCase):
         self.assertNotContains(response, '<form id="accept_trade" data-trade-action="accept" data-trade-id="{0}">'.format(trade.id))
         self.assertNotContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
-    @skip("until redesign")
     def test_decline_reason_displayed_in_show_trade_when_DECLINED(self):
         trade = self._prepare_trade('DECLINED', finalizer = self.alternativeUser)
         response = self._getShowTrade(trade)

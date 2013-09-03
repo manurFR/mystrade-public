@@ -439,3 +439,10 @@ textarea {
 #id_responder {
   margin-left: 8px;
   font-size: 9pt; }
+
+/* line 207, ../../resources/scss/style.game.board.scss */
+#trade_summary {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #644700;
+  border-bottom: thin dotted; }

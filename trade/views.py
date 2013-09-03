@@ -69,7 +69,7 @@ def create_trade(request, game_id):
     except GamePlayer.DoesNotExist:
         raise PermissionDenied
 
-    if request.is_ajax():
+    if request.is_ajax() and game.is_active():
         status_code = 200
         if request.method == 'POST':
             trade_form = TradeForm(request.user, game, request.POST)
