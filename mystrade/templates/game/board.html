@@ -5,13 +5,13 @@
 {% load widget_tweaks %}
 
 {% block styles %}
-    <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.9.1.custom.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.10.3.custom.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/style.game.board.css' %}" />
 {% endblock %}
 
 {% block scripts %}
     <script src="{% static 'jquery/jquery-1.8.2.js' %}"></script>
-    <script src="{% static 'jquery/jquery-ui-1.9.1.custom.js' %}"></script>
+    <script src="{% static 'jquery/jquery-ui-1.10.3.custom.min.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -40,7 +40,8 @@
         <div id="zone_hand">
             <div id="zone_links">
                 <img src="{% static 'action.png' %}" width="16" height="16" alt="&gt;"/>
-                {% if game.is_active %}<a id="link_new_trade">Propose new trade</a>{% endif %}
+                {% if game.is_active %}<a id="link_new_trade">Propose new trade</a> | {% endif %}
+                <a id="link_show_trade_list">Show all trades</a>
             </div>
 
             <div id="zone_commodities">
@@ -123,7 +124,11 @@
                 <div id="zone_trade"></div>
             </div>
         </div>
-   </div>
+    </div>
+
+    <div id="zone_trade_list">
+        La la la
+    </div>
 
     <script>
         function refreshEvents(datenext, dateprevious) {
@@ -354,6 +359,22 @@
                 heightStyle: "content",
                 activate: eventClickOnATab
             });
+            $("input#button_post_message").button();
+            activateTooltips();
+
+            $("#zone_trade_list").dialog({
+                autoOpen: false,
+                modal: true,
+                show: {
+                    effect: "blind",
+                    duration: 200
+                },
+                hide: {
+                    effect: "blind",
+                    duration: 200
+                }
+            });
+
             $("#link_new_trade").on("click", function() {
                 if (currentMode === "editTrade") {
                     $("#zone_trade").text("Loading...");
@@ -364,9 +385,10 @@
                 $("#zone_tabs").tabs("option", "active", 1);
                 currentMode = "createTrade";
             })
-            $("input#button_post_message").button();
+            $("#link_show_trade_list").on("click", function() {
+                $("#zone_trade_list").dialog("open");
+            })
 
-            activateTooltips();
             refreshEvents();
         {% if not game.is_active %}
             $("#zone_trade").text("This game has ended. Trade creation is not permitted.");
