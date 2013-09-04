@@ -534,6 +534,9 @@ def events(request, game_id):
             if trade.finalizer:
                 events.append(Event('finalize_trade', trade.closing_date, trade.finalizer, trade))
 
+        for trade in Trade.objects.filter(game = game, status = 'ACCEPTED').exclude(initiator = request.user).exclude(responder = request.user):
+            events.append(Event('accept_trade', trade.closing_date, trade.initiator, trade))
+
         events.sort(key = lambda evt: evt.date, reverse=True)
 
         # Pagination by the date of the first or last event displayed

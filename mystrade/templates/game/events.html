@@ -28,10 +28,14 @@
                 {% else %}
                     {% include "common/name_or_you.html" with who=evt.sender %} replied to your <a class="link_trade" data-trade-id="{{ evt.trade.id }}">trade</a>.
                 {% endif %}
-            {% elif evt.event_type == 'finalize_trade' %}
+            {% elif evt.event_type == 'finalize_trade' %} {# including ACCEPTED trades of which the user is a participant #}
                 {% include "common/name_or_you.html" with who=evt.sender %}
                 {% if evt.sender == user %} have {% else %} has {% endif %}
                 {{ evt.trade.status|lower }} a <a class="link_trade" data-trade-id="{{ evt.trade.id }}">trade</a>.
+            {% elif evt.event_type == 'accept_trade' %} {# only ACCEPTED trades of which the user in not a participant #}
+                A successful trade has been performed:<br/>
+                {% include "common/name_or_you.html" with who=evt.trade.initiator %} gave {{ evt.trade.initiator_offer.total_traded_cards }} card{{ evt.trade.initiator_offer.total_traded_cards|pluralize }},
+                {% include "common/name_or_you.html" with who=evt.trade.responder %} gave {{ evt.trade.responder_offer.total_traded_cards }} card{{ evt.trade.responder_offer.total_traded_cards|pluralize }} in exchange.
             {% endif %}
             </div>
             {% if evt.sender == user and evt.deletable %}

@@ -81,6 +81,10 @@ class Offer(models.Model):
         else:
             return ", ".join(content[:-1]) + " and " + content[-1]
 
+    @property
+    def total_traded_cards(self):
+        return len(self.rules.all()) + sum([t.nb_traded_cards for t in self.tradedcommodities_set.all()])
+
 class TradedCommodities(models.Model):
     offer = models.ForeignKey(Offer)
     commodityinhand = models.ForeignKey(CommodityInHand)

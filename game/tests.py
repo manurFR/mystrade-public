@@ -22,7 +22,7 @@ from game.models import Game, RuleInHand, CommodityInHand, GamePlayer, Message
 from ruleset.models import Ruleset, RuleCard, Commodity
 from scoring.card_scoring import Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
-from trade.models import Offer, Trade
+from trade.models import Offer, Trade, TradedCommodities
 from utils.tests import MystradeTestCase
 
 class WelcomePageViewTest(MystradeTestCase):
@@ -626,6 +626,39 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, 'cancelled a <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade1.id))
         self.assertContains(response, 'declined a <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade2.id))
         self.assertContains(response, 'accepted a <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
+
+    def test_tab_recently_events_include_accepted_trade_from_other_players(self):
+        # trade1 is ACCEPTED and between two players that are not the loginUser
+        initiator_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 2))
+        initiator_offer_tc = mommy.make(TradedCommodities, nb_traded_cards = 1, commodityinhand = mommy.make(CommodityInHand), offer = initiator_offer)
+        initiator_offer.tradedcommodities_set.add(initiator_offer_tc)
+        responder_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 1))
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.admin_player, responder = self.alternativeUser,
+                            status = 'ACCEPTED', initiator_offer = initiator_offer, responder_offer = responder_offer,
+                            finalizer = self.admin_player, closing_date = now())
+        # trade2 is between two players that are not the loginUser, but it is DECLINED : should not be displayed
+        trade2 = mommy.make(Trade, game = self.game, initiator = self.admin_player, responder = self.alternativeUser,
+                            status = 'DECLINED', finalizer = self.admin_player, closing_date = now(),
+                            initiator_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 2)),
+                            responder_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 2)))
+        # trade3 is ACCEPTED, but the loginUser is the trade's initiator : should not be displayed as an 'accept_trade' event
+        trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'ACCEPTED', finalizer = self.loginUser, closing_date = now(),
+                            initiator_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 4)),
+                            responder_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 4)))
+        # trade4 is ACCEPTED and between other players, but belongs to another game
+        trade3 = mommy.make(Trade, game = mommy.make(Game), initiator = self.admin_player, responder = self.alternativeUser,
+                            status = 'ACCEPTED', finalizer = self.admin_player, closing_date = now(),
+                            initiator_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 5)),
+                            responder_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 5)))
+
+        response = self._getTabRecently()
+        self.assertContains(response, 'A successful trade has been performed:', count = 1)
+        self.assertContains(response, 'gave 3 cards')
+        self.assertContains(response, 'gave 1 card')
+        self.assertNotContains(response, 'gave 2 cards')
+        self.assertNotContains(response, 'gave 4 cards')
+        self.assertNotContains(response, 'gave 5 cards')
 
     @skip("until redesign")
     def test_game_board_doesnt_show_pending_trades_to_game_master(self):

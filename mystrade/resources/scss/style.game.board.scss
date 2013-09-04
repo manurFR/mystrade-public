@@ -131,27 +131,32 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   height: 1em;
 }
 
+.event {
+  margin-bottom: 5px;
+
+  .event_time {
+    display: inline-block;
+    color: $infoTextColor;
+    @include font($size: 0.9em);
+    margin-left: -10px;
+    margin-right: 5px;
+  }
+
+  .event_text {
+    display: inline;
+
+    a {
+      color: $linkColor;
+    }
+  }
+}
+
 .event_date {
   @include font($size: 0.9em);
   color: $infoTextColor;
   border-bottom: thin dotted $infoTextColor;
   margin: 8px 0 4px -10px;
   padding-bottom: 2px;
-}
-
-.event_time {
-  display: inline-block;
-  color: $infoTextColor;
-  @include font($size: 0.9em);
-  margin-left: -10px;
-  margin-right: 5px;
-}
-.event_text {
-  display: inline;
-
-  a {
-    color: $linkColor;
-  }
 }
 
 .delete_message {
