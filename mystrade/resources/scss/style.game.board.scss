@@ -123,19 +123,20 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 #table_trade_list {
   display: table;
   border-spacing: 2px;
+  width: 100%;
 
-  div, span {
+  div, span, img {
       vertical-align: middle;
   }
 
   .mini_commodity_card {
       height: 40px;
       width: 20px;
-      margin: 0 1px;
+      margin: 1px;
   }
 
   .rulecard_thumbnail {
-      margin: 0 1px;
+      margin: 1px;
   }
 }
 
@@ -147,6 +148,15 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   display: table-cell;
   padding: 1px 4px;
   vertical-align: middle;
+
+  &.column_trade_status {
+    text-align: center;
+    width: 300px;
+  }
+
+  &.column_trade_link {
+    text-align: center;
+  }
 }
 
 .commodity_card.not_submitted {

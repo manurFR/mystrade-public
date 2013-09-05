@@ -3,27 +3,28 @@
     {% for trade in trade_list %}
         {% cycle 'even_color' 'odd_color' as color silent %}
         <div class="row_trade_list{% if trade.finalizer %} done{% endif %}{% if trade.status == 'CANCELLED' %} cancelled{% endif %}">
-            <div class="cell_trade_list {{ color }}">
-                {% include "common/name_or_you.html" with who=trade.initiator %}
+            <div class="cell_trade_list column_trade_detail {{ color }}">
+                {% include "common/name_or_you.html" with who=trade.initiator %} :
                 {% include "trade/trade_list_detail_offer.html" with offer=trade.initiator_offer %}
                 ==&gt;
                 {% include "common/name_or_you.html" with who=trade.responder %}
-                {% if trade.responder_offer %}{% include "trade/trade_list_detail_offer.html" with offer=trade.responder_offer %}{% endif %}
+                {% if trade.responder_offer %}: {% include "trade/trade_list_detail_offer.html" with offer=trade.responder_offer %}
+                {% else %}<span class="helptext">(no offer submitted)</span>{% endif %}
             </div>
-            <div class="cell_trade_list {{ color }}">
+            <div class="cell_trade_list column_trade_status {{ color }}">
                 {% if trade.status == 'INITIATED' %}
-                    {% if trade.initiator == user %}submitted{% else %}offered{% endif %} {{ trade.creation_date|timesince }} ago
+                    proposed {{ trade.creation_date|timesince }} ago
                 {% elif trade.status == 'CANCELLED' %}
                     cancelled by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
                 {% elif trade.status == 'REPLIED' %}
-                    response submitted by {% include "common/name_or_you.html" with who=trade.responder %}
+                    waiting for agreement
                 {% elif trade.status == 'ACCEPTED' %}
-                    done {{ trade.closing_date|timesince }} ago
+                    accepted and done
                 {% elif trade.status == 'DECLINED' %}
                     declined by {% include "common/name_or_you.html" with who=trade.finalizer %} {{ trade.closing_date|timesince }} ago
                 {% endif %}
             </div>
-            <div class="cell_trade_list {{ color }}">
+            <div class="cell_trade_list column_trade_link {{ color }}">
                 <a>Show</a>
             </div>
         </div>

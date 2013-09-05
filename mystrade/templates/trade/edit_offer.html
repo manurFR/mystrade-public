@@ -21,7 +21,7 @@
     <h3>Free Information(s) <span class="helptext">(optional)</span></h3>
     {{ offer_form.free_information|attr:"rows:3" }}<br/>
     <span class="helptext">That piece of information will NOT be revealed until both players have accepted the trade.</span>
-    <img class="note" src="{% static 'info.png' %}" height="16" width="16" alt="" title="For now, the other player will only be informed that there IS a free information with the trade, not its content. You should give an hint of what it is in the comment below."/>
+    <img class="note" src="{% static 'explanation.png' %}" height="16" width="16" alt="" title="For now, the other player will only be informed that there IS a free information with the trade, not its content. You should give an hint of what it is in the comment below."/>
     <span class="errors">{{ offer_form.free_information.errors.as_text }}</span>
     <h3>Comment <span class="helptext">(optional)</span></h3>
     {{ offer_form.comment|attr:"rows:3" }}<br/>
