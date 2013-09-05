@@ -147,36 +147,43 @@ class CreateTradeViewTest(MystradeTestCase):
 
 class ShowTradeViewTest(MystradeTestCase):
 
-    # TODO
     def test_trade_list(self):
         right_now = now()
-        trade_initiated = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
-                                         initiator_offer = mommy.make(Offer),
-                                         creation_date = right_now - datetime.timedelta(days = 1))
-        trade_cancelled = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
-                                         initiator_offer = mommy.make(Offer),
-                                         closing_date = right_now - datetime.timedelta(days = 2), finalizer = self.loginUser)
         trade_accepted = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
                                         initiator_offer = mommy.make(Offer),
-                                        closing_date = right_now - datetime.timedelta(days = 3))
+                                        creation_date = right_now - datetime.timedelta(days = 1))
+        trade_initiated = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'INITIATED',
+                                     initiator_offer = mommy.make(Offer),
+                                     creation_date = right_now - datetime.timedelta(days = 2))
         trade_declined = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'DECLINED',
                                         initiator_offer = mommy.make(Offer),
-                                        closing_date = right_now - datetime.timedelta(days = 4), finalizer = self.loginUser)
-        trade_offered = mommy.make(Trade, game = self.game, responder = self.loginUser, status = 'INITIATED',
-                                       initiator_offer = mommy.make(Offer),
-                                       creation_date = right_now - datetime.timedelta(days = 5))
-        trade_replied = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                                       status = 'REPLIED', initiator_offer = mommy.make(Offer),
-                                       creation_date = right_now - datetime.timedelta(days = 6))
+                                        creation_date = right_now - datetime.timedelta(days = 3), finalizer = self.loginUser)
+        trade_replied = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'REPLIED',
+                                       responder = self.alternativeUser, initiator_offer = mommy.make(Offer),
+                                       creation_date = right_now - datetime.timedelta(days = 4))
+        trade_cancelled = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'CANCELLED',
+                                     initiator_offer = mommy.make(Offer),
+                                     creation_date = right_now - datetime.timedelta(days = 5), finalizer = self.loginUser)
 
-        response = self.client.get("/trade/{0}/".format(self.game.id))
+        response = self.client.get("/trade/{0}/list/".format(self.game.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
-        self.assertContains(response, "submitted 1 day ago")
-        self.assertContains(response, "cancelled by <div class=\"game-player\"><strong>you</strong></div> 2 days ago")
-        self.assertContains(response, "done 3 days ago")
-        self.assertContains(response, "declined by <div class=\"game-player\"><strong>you</strong></div> 4 days ago")
-        self.assertContains(response, "offered 5 days ago")
-        self.assertRegexpMatches(response.content, "response submitted by <div class=\"game-player\"><a href=\".*\">test5</a></div>")
+        trade_list = response.context["trade_list"]
+        # ordered by status : pending first, finalized second, and inside both groups, by decreasing creation date
+        self._assert_in_trade_list(trade_initiated, trade_list[0])
+        self._assert_in_trade_list(trade_replied, trade_list[1])
+        self._assert_in_trade_list(trade_accepted, trade_list[2])
+        self._assert_in_trade_list(trade_declined, trade_list[3])
+        self._assert_in_trade_list(trade_cancelled, trade_list[4])
+
+        # self.assertContains(response, "submitted 1 day ago")
+        # self.assertContains(response, "cancelled by <div class=\"game-player\"><strong>you</strong></div> 2 days ago")
+        # self.assertContains(response, "done 3 days ago")
+        # self.assertContains(response, "declined by <div class=\"game-player\"><strong>you</strong></div> 4 days ago")
+        # self.assertContains(response, "offered 5 days ago")
+        # self.assertRegexpMatches(response.content, "response submitted by <div class=\"game-player\"><a href=\".*\">test5</a></div>")
+
+    def _assert_in_trade_list(self, expected_trade, actual_trade):
+        self.assertEqual(expected_trade, actual_trade, msg = "Expected: {0}, found: {1}".format(expected_trade.status, actual_trade.status))
 
     def test_show_trade_only_allowed_for_authorized_players(self):
         """ Authorized players are : - the initiator
@@ -970,3 +977,31 @@ class FormsTest(MystradeTestCase):
         if initiator_offer is None: initiator_offer = mommy.make(Offer)
         return mommy.make(Trade, game = self.game, initiator = initiator, responder = responder, finalizer = finalizer,
                           status = status, initiator_offer = initiator_offer, responder_offer = responder_offer)
+
+class TradeModelsTest(MystradeTestCase):
+
+    def test_trade_sort_pending_first(self):
+        self.assertEqual(0, Trade(status = 'INITIATED').sort_pending_first())
+        self.assertEqual(0, Trade(status = 'REPLIED').sort_pending_first())
+        self.assertEqual(1, Trade(status = 'ACCEPTED').sort_pending_first())
+        self.assertEqual(1, Trade(status = 'DECLINED').sort_pending_first())
+        self.assertEqual(1, Trade(status = 'CANCELLED').sort_pending_first())
+
+    def test_trade_abort(self):
+        self._test_trade_abort_for_status_and_finalizer("INITIATED", "CANCELLED", self.loginUser)
+        self._test_trade_abort_for_status_and_finalizer("REPLIED", "DECLINED", self.loginUser)
+        self._test_trade_abort_for_status_and_finalizer("INITIATED", "DECLINED", self.alternativeUser)
+        self._test_trade_abort_for_status_and_finalizer("REPLIED", "CANCELLED", self.alternativeUser)
+
+    def _test_trade_abort_for_status_and_finalizer(self, current_status, expected_status, finalizer):
+        closing_date = now()
+        trade = mommy.prepare(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                              status = current_status, finalizer = None, closing_date = None)
+        trade.abort(finalizer, closing_date)
+        try:
+            trade_db = Trade.objects.get(pk = trade.id)
+            self.assertEqual(expected_status, trade_db.status)
+            self.assertEqual(finalizer, trade_db.finalizer)
+            self.assertEqual(closing_date, trade_db.closing_date)
+        except Trade.DoesNotExist:
+            self.fail("Trade should have been saved")

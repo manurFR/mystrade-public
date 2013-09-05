@@ -211,4 +211,20 @@ $heightOfThumbnailRuleCards: 22px;
   cursor: pointer;
 }
 
+.even_color {
+  background-color: lighten($backgroundColor, 5%);
+
+  &:hover {
+    background-color: $backgroundColor;
+  }
+}
+
+.odd_color {
+  background-color: darken($backgroundColor, 2%);
+
+  &:hover {
+    background-color: $backgroundColor;
+  }
+}
+
 @import "responsive";

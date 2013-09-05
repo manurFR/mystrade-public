@@ -165,6 +165,20 @@
             $("#zone_trade").text("Loading...");
         }
 
+        function refreshTradeList() {
+            $.get("{% url 'trade_list' game.id %}")
+                .fail(function() {
+                    $("body").css("cursor", "");
+                    $("#zone_trade_list").text("Error loading trade list. Please try again.");
+                })
+                .done(function(data) {
+                    $("body").css("cursor", "");
+                    $("#zone_trade_list").html(data);
+                });
+            $("#zone_trade_list").text("Loading...");
+            $("body").css("cursor", "wait");
+        }
+
         function correspondingCommodityInHand(commodityInTabTrade, filterOnlySelected) {
             var cihId = $(commodityInTabTrade).data("cihId");
             var indexInThisCommodity = $("#zone_selected_commodities").find(".commodity_card[data-cih-id=" + cihId + "]").index(commodityInTabTrade);
@@ -376,6 +390,9 @@
                 hide: {
                     effect: "blind",
                     duration: 200
+                },
+                open: function() {
+                    refreshTradeList();
                 }
             });
 

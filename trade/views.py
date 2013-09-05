@@ -17,20 +17,22 @@ from utils import utils, stats
 logger = logging.getLogger(__name__)
 
 @login_required
-def trades(request, game_id):
+def trade_list(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
     if request.user not in game.players.all() and not game.has_super_access(request.user):
         raise PermissionDenied
 
-    trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game).order_by('-creation_date')
+    if request.is_ajax():
+        trade_list = list(Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game).order_by('-creation_date'))
 
-    try:
-        can_create_trade = game.gameplayer_set.get(player = request.user).submit_date is None
-    except GamePlayer.DoesNotExist:
-        can_create_trade = False
+        # since sort() is guaranteed to be stable, this second sort will only push pending trades at the start,
+        #   keeping the sorting by (reverse) chronological creation_date otherwise
+        trade_list.sort(key = Trade.sort_pending_first)
 
-    return render(request, 'trade/trades.html', {'game': game, 'trades': trades, 'can_create_trade': can_create_trade})
+        return render(request, 'trade/trade_list.html', {'game': game, 'trade_list': trade_list})
+
+    raise PermissionDenied
 
 @login_required
 def show_trade(request, game_id, trade_id):

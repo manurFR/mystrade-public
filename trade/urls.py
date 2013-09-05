@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, url
 
 urlpatterns = patterns('trade.views',
-    url(r'^(\d+)/$',               'trades',        name = 'trades'),
+    url(r'^(\d+)/list/$',          'trade_list',    name = 'trade_list'),
     url(r'^(\d+)/create/$',        'create_trade',  name = 'create_trade'),
     url(r'^(\d+)/(\d+)/$',         'show_trade',    name = 'show_trade'),
     url(r'^(\d+)/(\d+)/cancel/$',  'cancel_trade',  name = 'cancel_trade'),

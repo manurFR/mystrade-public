@@ -880,6 +880,7 @@ class HandViewTest(MystradeTestCase): # TODO detele
         response = self.client.post("/game/{0}/hand/submit/".format(self.game.id))
         self.assertEqual(403, response.status_code)
 
+    @skip("until redesign")
     def test_submit_hand_save_submitted_commodities_and_submit_date(self):
         self.assertIsNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
 
@@ -909,6 +910,7 @@ class HandViewTest(MystradeTestCase): # TODO detele
 
         self.assertIsNotNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
 
+    @skip("until redesign")
     def test_submit_hand_cancels_or_declines_pending_trades(self):
         trade_initiated_by_me = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                                                initiator_offer = mommy.make(Offer), status = 'INITIATED')
@@ -1250,6 +1252,7 @@ class TransactionalViewsTest(TransactionTestCase):
 
         self.client.login(username = self.loginUser.username, password = 'test')
 
+    @skip("until redesign")
     def test_submit_hand_is_transactional(self):
         commodity1 = mommy.make(Commodity, name = 'c1', color = 'colA')
         commodity2 = mommy.make(Commodity, name = 'c2', color = 'colB')

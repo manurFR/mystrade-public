@@ -17,7 +17,7 @@ class Trade(models.Model):
 
      (I) status reached by action of the Initiator   (R) status reached by action of the Responder
     """
-    STATUS_CHOICES = [(status, status) for status in ['INITIATED', 'CANCELLED', 'REPLIED', 'ACCEPTED', 'DECLINED']]
+    TRADE_STATUS = ['INITIATED', 'REPLIED', 'ACCEPTED', 'CANCELLED', 'DECLINED']
 
     game = models.ForeignKey(Game)
 
@@ -27,7 +27,7 @@ class Trade(models.Model):
     initiator_offer = models.OneToOneField('Offer', related_name = 'trade_initiated')
     responder_offer = models.OneToOneField('Offer', related_name = 'trade_responded', null = True)
 
-    status = models.CharField(max_length = 15, choices = STATUS_CHOICES, default = "INITIATED") # see above
+    status = models.CharField(max_length = 15, choices =[(status, status) for status in TRADE_STATUS], default = "INITIATED") # see above
 
     decline_reason = models.TextField(blank = True, null = True)
     finalizer = models.ForeignKey(settings.AUTH_USER_MODEL, null = True,
@@ -53,33 +53,17 @@ class Trade(models.Model):
         self.closing_date = closing_date
         self.save()
 
+    def sort_pending_first(self):
+        return 1 if Trade.TRADE_STATUS.index(self.status) >= 2 else 0
+
 class Offer(models.Model):
     rules = models.ManyToManyField(RuleInHand)
-    commodities = models.ManyToManyField(CommodityInHand, through='TradedCommodities')
+    commodities = models.ManyToManyField(CommodityInHand, through = 'TradedCommodities')
 
     comment = models.TextField(blank = True, null = True)
     free_information = models.TextField("Free information that won't be revealed until both players accept the trade", blank = True, null = True)
 
     creation_date = models.DateTimeField(default = now)
-
-    @property
-    def summary(self):
-        content = []
-        nb_rules = len(self.rules.all())
-        nb_traded_commodities = sum([t.nb_traded_cards for t in self.tradedcommodities_set.all()])
-        if nb_rules > 0:
-            content.append("{0} rule{1}".format(nb_rules, "s" if nb_rules > 1 else ""))
-        if nb_traded_commodities > 0:
-            content.append("{0} commodit{1}".format(nb_traded_commodities, "ies" if nb_traded_commodities > 1 else "y"))
-        if self.free_information:
-            content.append("some information")
-
-        if not content:
-            return
-        elif len(content) == 1:
-            return content[0]
-        else:
-            return ", ".join(content[:-1]) + " and " + content[-1]
 
     @property
     def total_traded_cards(self):
