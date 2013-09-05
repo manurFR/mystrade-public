@@ -107,6 +107,17 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   min-height: $heightOfThumbnailRuleCards + 16px;
 }
 
+#zone_trade_list {
+  background: lighten($backgroundColor, 10%);
+}
+
+.dialog_trade_list .ui-widget-header { // merge the title bar to the rest of the dialog
+  background: lighten($backgroundColor, 10%) none;
+  border: none;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
 .commodity_card.not_submitted {
   background: url(../stripe.png);
 }
