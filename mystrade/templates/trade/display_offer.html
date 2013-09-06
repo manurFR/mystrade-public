@@ -1,10 +1,10 @@
 {% load filters %}
 
 <div>
-    {% if offer.rules.all %}
+    {% if offer.rulecards %}
         <h4>Rules</h4>
         <div class="css_table">
-            {% for card in offer.rules.all %}
+            {% for card in offer.rulecards %}
                 {% if forloop.first or forloop.counter0|divisibleby:"4" %}
                     <div class="css_table-row">
                 {% endif %}
@@ -26,11 +26,11 @@
             {% endfor %}
         </div>
     {% endif %}
-    {% if offer.tradedcommodities_set.all %}
+    {% if offer.tradedcommodities %}
         <h4>Commodities</h4>
         <div class="css_table">
             <div class="css_table-row">
-                {% for card in offer.tradedcommodities_set.all %}
+                {% for card in offer.tradedcommodities %}
                     <div class="css_table-cell card">
                         <div class="card_name">{{ card.commodityinhand.commodity.name }}</div>
                         <div class="card_copies">

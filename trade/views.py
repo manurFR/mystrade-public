@@ -28,7 +28,7 @@ def trade_list(request, game_id):
 
         # since sort() is guaranteed to be stable, this second sort will only push pending trades at the start,
         #   keeping the sorting by (reverse) chronological creation_date otherwise
-        trade_list.sort(key = Trade.sort_pending_first)
+        trade_list.sort(key = Trade.is_pending, reverse = True)
 
         return render(request, 'trade/trade_list.html', {'game': game, 'trade_list': trade_list})
 
@@ -176,19 +176,19 @@ def accept_trade(request, game_id, trade_id):
                     trade.save()
 
                     # Exchange rule cards
-                    for rule_from_initiator in trade.initiator_offer.rules.all():
+                    for rule_from_initiator in trade.initiator_offer.rulecards:
                         RuleInHand.objects.create(game = trade.game, player = trade.responder, rulecard = rule_from_initiator.rulecard,
                             ownership_date = trade.closing_date)
                         rule_from_initiator.abandon_date = trade.closing_date
                         rule_from_initiator.save()
-                    for rule_from_responder in trade.responder_offer.rules.all():
+                    for rule_from_responder in trade.responder_offer.rulecards:
                         RuleInHand.objects.create(game = trade.game, player = trade.initiator, rulecard = rule_from_responder.rulecard,
                             ownership_date = trade.closing_date)
                         rule_from_responder.abandon_date = trade.closing_date
                         rule_from_responder.save()
 
                     # Exchange commodity cards
-                    for tradedcommodity_from_initiator in trade.initiator_offer.tradedcommodities_set.all():
+                    for tradedcommodity_from_initiator in trade.initiator_offer.tradedcommodities:
                         cih_from_initiator = tradedcommodity_from_initiator.commodityinhand
                         try:
                             cih_for_responder = CommodityInHand.objects.get(game = trade.game, player = trade.responder,
@@ -201,7 +201,7 @@ def accept_trade(request, game_id, trade_id):
                         cih_from_initiator.nb_cards -= tradedcommodity_from_initiator.nb_traded_cards
                         cih_from_initiator.save()
 
-                    for tradedcommodity_from_responder in trade.responder_offer.tradedcommodities_set.all():
+                    for tradedcommodity_from_responder in trade.responder_offer.tradedcommodities:
                         cih_from_responder = tradedcommodity_from_responder.commodityinhand
                         try:
                             cih_for_initiator = CommodityInHand.objects.get(game = trade.game, player = trade.initiator,

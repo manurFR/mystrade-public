@@ -53,8 +53,8 @@ class Trade(models.Model):
         self.closing_date = closing_date
         self.save()
 
-    def sort_pending_first(self):
-        return 1 if Trade.TRADE_STATUS.index(self.status) >= 2 else 0
+    def is_pending(self):
+        return self.status == 'INITIATED' or self.status == 'REPLIED'
 
 class Offer(models.Model):
     rules = models.ManyToManyField(RuleInHand)
@@ -68,6 +68,16 @@ class Offer(models.Model):
     @property
     def total_traded_cards(self):
         return len(self.rules.all()) + sum([t.nb_traded_cards for t in self.tradedcommodities_set.all()])
+
+    @property
+    def tradedcommodities(self):
+        """ return the traded commodities in the canonical order ; essential in templates, avoids duplication anywhere else """
+        return self.tradedcommodities_set.all().order_by('commodityinhand__commodity__name')
+
+    @property
+    def rulecards(self):
+        """ return the traded rulecards in the canonical order ; essential in templates, avoids duplication anywhere else """
+        return self.rules.all().order_by('rulecard__ref_name')
 
 class TradedCommodities(models.Model):
     offer = models.ForeignKey(Offer)

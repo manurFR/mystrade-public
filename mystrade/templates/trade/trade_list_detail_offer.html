@@ -1,12 +1,12 @@
 {% load filters %}
 {% load staticfiles %}
 
-{% for tc in offer.tradedcommodities_set.all %}
+{% for tc in offer.tradedcommodities %}
     {% for copy in tc.nb_traded_cards|as_range %}
         {% include "common/commodity_card.html" with name=tc.commodityinhand.commodity.name cih_id=tc.commodityinhand.commodity_id color=tc.commodityinhand.commodity.color extra_classes="mini_commodity_card" %}
     {% endfor %}
 {% endfor %}
-{% for rih in offer.rules.all %}
+{% for rih in offer.rulecards %}
     <div class="rulecard_thumbnail" data-rih-id="{{ rih.id }}" title="Rulecard {{ rih.rulecard.public_name }}">{{ rih.rulecard.public_name }}</div>
 {% endfor %}
 {% if offer.free_information %}

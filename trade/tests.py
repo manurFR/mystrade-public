@@ -91,7 +91,7 @@ class CreateTradeViewTest(MystradeTestCase):
 
     def test_create_trade_complete_save(self):
         ruleset = mommy.make(Ruleset)
-        rulecard = mommy.make(RuleCard, ruleset = ruleset, ref_name = 'rulecard_1')
+        rulecard = mommy.make(RuleCard, ruleset = ruleset, ref_name = 'rulecard_1', public_name = 'rulecard_1')
         rule_in_hand = RuleInHand.objects.create(game = self.game, player = self.loginUser,
                                                  rulecard = rulecard, ownership_date = now())
         commodity = mommy.make(Commodity, ruleset = ruleset, name = 'commodity_1')
@@ -111,9 +111,9 @@ class CreateTradeViewTest(MystradeTestCase):
         self.assertEqual('a comment', trade.initiator_offer.comment)
         self.assertEqual('some "secret" info', trade.initiator_offer.free_information)
         self.assertIsNone(trade.closing_date)
-        self.assertEqual([rule_in_hand], list(trade.initiator_offer.rules.all()))
+        self.assertEqual([rule_in_hand], list(trade.initiator_offer.rulecards))
         self.assertEqual([commodity_in_hand], list(trade.initiator_offer.commodities.all()))
-        self.assertEqual(1, trade.initiator_offer.tradedcommodities_set.all()[0].nb_traded_cards)
+        self.assertEqual(1, trade.initiator_offer.tradedcommodities[0].nb_traded_cards)
 
         # notification email sent
         self.assertEqual(1, len(mail.outbox))
@@ -121,6 +121,8 @@ class CreateTradeViewTest(MystradeTestCase):
         self.assertEqual('[MysTrade] Game #{0}: You have been offered a trade by test2'.format(self.game.id), email.subject)
         self.assertIn('In game #{0}, test2 has offered you a new trade'.format(self.game.id), email.body)
         self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('- 1 commodity_1 card', email.body)
+        self.assertIn('Rule: rulecard_1', email.body)
         self.assertEqual(['test4@test.com'], email.to)
 
     def test_create_trade_with_reserved_elements_fails(self):
@@ -495,7 +497,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
         self.assertIsNone(trade.closing_date)
         self.assertEqual([rule_in_hand], list(trade.responder_offer.rules.all()))
         self.assertEqual([commodity_in_hand], list(trade.responder_offer.commodities.all()))
-        self.assertEqual(2, trade.responder_offer.tradedcommodities_set.all()[0].nb_traded_cards)
+        self.assertEqual(2, trade.responder_offer.tradedcommodities[0].nb_traded_cards)
 
         # notification email sent
         self.assertEqual(1, len(mail.outbox))
@@ -980,12 +982,12 @@ class FormsTest(MystradeTestCase):
 
 class TradeModelsTest(MystradeTestCase):
 
-    def test_trade_sort_pending_first(self):
-        self.assertEqual(0, Trade(status = 'INITIATED').sort_pending_first())
-        self.assertEqual(0, Trade(status = 'REPLIED').sort_pending_first())
-        self.assertEqual(1, Trade(status = 'ACCEPTED').sort_pending_first())
-        self.assertEqual(1, Trade(status = 'DECLINED').sort_pending_first())
-        self.assertEqual(1, Trade(status = 'CANCELLED').sort_pending_first())
+    def test_trade_is_pending(self):
+        self.assertTrue(Trade(status = 'INITIATED').is_pending())
+        self.assertTrue(Trade(status = 'REPLIED').is_pending())
+        self.assertFalse(Trade(status = 'ACCEPTED').is_pending())
+        self.assertFalse(Trade(status = 'DECLINED').is_pending())
+        self.assertFalse(Trade(status = 'CANCELLED').is_pending())
 
     def test_trade_abort(self):
         self._test_trade_abort_for_status_and_finalizer("INITIATED", "CANCELLED", self.loginUser)

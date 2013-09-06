@@ -142,6 +142,10 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
 .row_trade_list {
   display: table-row;
+
+  &.finalized {
+    color: $mediumLightText;
+  }
 }
 
 .cell_trade_list {
@@ -168,7 +172,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   @include roundedBorder(5px);
   padding-top: 10px;
   padding-left: 30px;
-  color: $previouslyOwnedRuleColor;
+  color: $mediumLightText;
 
   legend {
     color: #333333;
@@ -188,7 +192,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
   .event_time {
     display: inline-block;
-    color: $infoTextColor;
+    color: $lightText;
     @include font($size: 0.9em);
     margin-left: -10px;
     margin-right: 5px;
@@ -205,8 +209,8 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
 .event_date {
   @include font($size: 0.9em);
-  color: $infoTextColor;
-  border-bottom: thin dotted $infoTextColor;
+  color: $lightText;
+  border-bottom: thin dotted $lightText;
   margin: 8px 0 4px -10px;
   padding-bottom: 2px;
 }
@@ -243,7 +247,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 }
 
 .lighter_text {
-  color: $previouslyOwnedRuleColor;
+  color: $mediumLightText;
 }
 
 .submit {
@@ -264,6 +268,6 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 #trade_summary {
   text-align: center;
   margin-bottom: 15px;
-  color: $previouslyOwnedRuleColor;
+  color: $mediumLightText;
   border-bottom: thin dotted;
 }

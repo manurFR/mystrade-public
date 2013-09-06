@@ -3,6 +3,7 @@
 /* Base tags styling */
 body {
   background-color: $backgroundColor;
+  color: $normalText;
   width: 980px;
   margin: 5px auto 0 auto;
   @include font(('Lucida Grande', Verdana, Arial, sans-serif), 9pt);
@@ -91,7 +92,7 @@ textarea {
 /* Miscellaneous common styles */
 .helptext {
   @include font($size: 8pt, $style: italic, $weight: normal);
-  color: $infoTextColor;
+  color: $lightText;
 }
 
 .upperhelptext {
@@ -157,7 +158,7 @@ $horizontalPaddingOfRuleCards: 8px;
 
   &.former {
     border: $lightDashedBorder;
-    color: $previouslyOwnedRuleColor;
+    color: $mediumLightText;
   }
 
   .rulecard_name {
@@ -199,7 +200,7 @@ $heightOfThumbnailRuleCards: 22px;
 
 .errors {
   @include font($size: 0.8em);
-  color: $infoTextColor;
+  color: $lightText;
 }
 
 .warning {
