@@ -2,6 +2,7 @@ import logging
 import bleach
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, NON_FIELD_ERRORS
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q
@@ -15,6 +16,8 @@ from trade.models import Trade, TradedCommodities, Offer
 from utils import utils, stats
 
 logger = logging.getLogger(__name__)
+
+TRADE_PAGINATION = 8
 
 @login_required
 def trade_list(request, game_id):
@@ -30,7 +33,17 @@ def trade_list(request, game_id):
         #   keeping the sorting by (reverse) chronological creation_date otherwise
         trade_list.sort(key = Trade.is_pending, reverse = True)
 
-        return render(request, 'trade/trade_list.html', {'game': game, 'trade_list': trade_list})
+        paginator = Paginator(trade_list, TRADE_PAGINATION, orphans = 2)
+
+        page = request.GET.get('page')
+        try:
+            trades = paginator.page(page)
+        except PageNotAnInteger:
+            trades = paginator.page(1)
+        except EmptyPage:
+            trades = paginator.page(paginator.num_pages) # If page is out of range (e.g. 9999), deliver last page of results.
+
+        return render(request, 'trade/trade_list.html', {'game': game, 'trade_list': trades})
 
     raise PermissionDenied
 
@@ -47,6 +60,7 @@ def show_trade(request, game_id, trade_id):
     if request.is_ajax():
         if trade.status == 'INITIATED' and request.user == trade.responder:
             offer_form = _prepare_offer_form(request, trade.game)
+            # TODO after redesign, check if 'super_access' is still necessary in the template
             return render(request, 'trade/trade.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access,
                                                         'decline_reason_form': DeclineReasonForm(), 'offer_form': offer_form})
         elif trade.status == 'REPLIED' and request.user == trade.initiator:

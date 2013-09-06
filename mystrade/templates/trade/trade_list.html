@@ -44,6 +44,17 @@
     {% endfor %}
     </div>
 
+    {% if trade_list.has_other_pages %}
+        <div class="pagination">
+        {% if trade_list.has_previous %}
+            <a data-page="{{ trade_list.previous_page_number }}" class="link_change_page">&lt; previous</a>
+        {% endif %}
+        {% if trade_list.has_next %}
+            <a data-page="{{ trade_list.next_page_number }}" class="link_change_page">next &gt;</a>
+        {% endif %}
+        </div>
+    {% endif %}
+
     <script>
         $(function() {
             $("#table_trade_list").tooltip({ position: { my: "left+5 top", at: "right bottom" } });
@@ -54,6 +65,10 @@
             $("#zone_tabs").tabs("option", "active", 1)
                     .find("li[aria-controls=tab-trade]").find("a").text("View Trade");
             $("#zone_trade_list").dialog("close");
+        });
+
+        $(".link_change_page").on("click", function(event) {
+            refreshTradeList($(event.target).data("page"));
         });
     </script>
 {% else %}

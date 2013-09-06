@@ -109,6 +109,12 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
 #zone_trade_list {
   background: lighten($backgroundColor, 10%);
+
+  .pagination {
+    margin-top: 10px;
+    text-align: center;
+    font-style: italic;
+  }
 }
 
 .dialog_trade_list {
@@ -238,10 +244,6 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   }
 }
 
-.show_more {
-  text-align: right;
-}
-
 .chars_left {
   @include floatright();
 }
@@ -250,7 +252,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   color: $mediumLightText;
 }
 
-.submit {
+.submit, .show_more {
   text-align: right;
 }
 

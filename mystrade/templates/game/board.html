@@ -165,8 +165,13 @@
             $("#zone_trade").text("Loading...");
         }
 
-        function refreshTradeList() {
-            $.get("{% url 'trade_list' game.id %}")
+        function refreshTradeList(page) {
+            var url = "{% url 'trade_list' game.id %}";
+            if (page) {
+                url += "?page=" + page;
+            }
+
+            $.get(url)
                 .fail(function() {
                     $("body").css("cursor", "");
                     $("#zone_trade_list").text("Error loading trade list. Please try again.");
@@ -379,7 +384,7 @@
             $("#zone_trade_list").dialog({
                 autoOpen: false,
                 modal: true,
-                height: 500,
+                height: 450,
                 width: 900,
                 title: "Your trades",
                 dialogClass: "dialog_trade_list",
