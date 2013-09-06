@@ -3,7 +3,7 @@
 
 {% for tc in offer.tradedcommodities %}
     {% for copy in tc.nb_traded_cards|as_range %}
-        {% include "common/commodity_card.html" with name=tc.commodityinhand.commodity.name cih_id=tc.commodityinhand.commodity_id color=tc.commodityinhand.commodity.color extra_classes="mini_commodity_card" %}
+        {% include "common/commodity_card.html" with name=tc.commodityinhand.commodity.name commodity_id=tc.commodityinhand.commodity_id color=tc.commodityinhand.commodity.color extra_classes="mini_commodity_card" %}
     {% endfor %}
 {% endfor %}
 {% for rih in offer.rulecards %}

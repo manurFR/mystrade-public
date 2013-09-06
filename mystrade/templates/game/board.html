@@ -51,15 +51,15 @@
                 {% for cih in commodities %}
                     {% for copy in cih.nb_cards|as_range %}
                         {% if copy >= cih.nb_tradable_cards %}
-                            {% include "common/commodity_card.html" with name=cih.commodity.name cih_id=cih.commodity_id color=cih.commodity.color extra_classes="not_tradable" %}
+                            {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="not_tradable" %}
                         {% else %}
-                            {% include "common/commodity_card.html" with name=cih.commodity.name cih_id=cih.commodity_id color=cih.commodity.color extra_classes="selectable"%}
+                            {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="selectable"%}
                         {% endif %}
                     {% endfor %}
                 {% endfor %}
                 {% for cih in commodities_not_submitted %}
                     {% for copy in cih.nb_cards|as_range %}
-                        {% include "common/commodity_card.html" with name=cih.commodity.name cih_id=cih.commodity_id color=cih.commodity.color extra_classes="not_submitted" title_note="not submitted" %}
+                        {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="not_submitted" title_note="not submitted" %}
                     {% endfor %}
                 {% endfor %}
             </div>
@@ -180,9 +180,9 @@
         }
 
         function correspondingCommodityInHand(commodityInTabTrade, filterOnlySelected) {
-            var cihId = $(commodityInTabTrade).data("cihId");
-            var indexInThisCommodity = $("#zone_selected_commodities").find(".commodity_card[data-cih-id=" + cihId + "]").index(commodityInTabTrade);
-            var candidates = $("#zone_commodities").find(".commodity_card[data-cih-id=" + cihId + "]");
+            var commodityId = $(commodityInTabTrade).data("commodityId");
+            var indexInThisCommodity = $("#zone_selected_commodities").find(".commodity_card[data-commodity-id=" + commodityId + "]").index(commodityInTabTrade);
+            var candidates = $("#zone_commodities").find(".commodity_card[data-commodity-id=" + commodityId + "]");
             if (filterOnlySelected) {
                 candidates = candidates.filter(".card_selected");
             }
@@ -200,15 +200,15 @@
 
         function refreshSelectedCommodities() {
             var selectedCommodities = "";
-            var currentCihId = 0;
+            var currentCommodityId = 0;
             $("#zone_commodities").find(".commodity_card").not(".not_tradable, .not_submitted").each(function () {
-                if ($(this).data("cihId") != currentCihId) {
-                    currentCihId = $(this).data("cihId");
-                    var numberOfThisCommodity = parseInt($("input#id_commodity_" + currentCihId).val(), 10);
+                if ($(this).data("commodityId") != currentCommodityId) {
+                    currentCommodityId = $(this).data("commodityId");
+                    var numberOfThisCommodity = parseInt($("input#id_commodity_" + currentCommodityId).val(), 10);
                     for (var i = 0; i < numberOfThisCommodity; i++) {
                         selectedCommodities +=
-                                '{% include "common/commodity_card.html" with name="#name#" cih_id="#cihId#" color="#color#" extra_classes="selectable"%}'
-                                        .replace("#name#", $(this).data("name")).replace("#cihId#", ""+currentCihId)
+                                '{% include "common/commodity_card.html" with name="#name#" commodity_id="#commodityId#" color="#color#" extra_classes="selectable"%}'
+                                        .replace("#name#", $(this).data("name")).replace("#commodityId#", ""+currentCommodityId)
                                         .replace("#color#", $(this).css("background-color"));
                     }
                 }
@@ -236,8 +236,8 @@
         // in trade mode, clicking on a card will add/remove it from the trade
         // in initial mode, it will initiate a new trade and add the card
         function clickOnCommodity(cardElement) {
-            var cihId = $(cardElement).data("cihId");
-            var hiddenInput = $("input#id_commodity_" + cihId);
+            var commodityId = $(cardElement).data("commodityId");
+            var hiddenInput = $("input#id_commodity_" + commodityId);
             var currentNumber = parseInt(hiddenInput.val(), 10) || 0;
             if ($(cardElement).hasClass("card_selected")) {
                 hiddenInput.val(currentNumber - 1);

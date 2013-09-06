@@ -149,7 +149,7 @@ class CreateTradeViewTest(MystradeTestCase):
 
 class ShowTradeViewTest(MystradeTestCase):
 
-    def test_trade_list(self):
+    def test_trade_list_order(self):
         right_now = now()
         trade_accepted = mommy.make(Trade, game = self.game, initiator = self.loginUser, status = 'ACCEPTED',
                                         initiator_offer = mommy.make(Offer),
@@ -177,12 +177,72 @@ class ShowTradeViewTest(MystradeTestCase):
         self._assert_in_trade_list(trade_declined, trade_list[3])
         self._assert_in_trade_list(trade_cancelled, trade_list[4])
 
-        # self.assertContains(response, "submitted 1 day ago")
-        # self.assertContains(response, "cancelled by <div class=\"game-player\"><strong>you</strong></div> 2 days ago")
-        # self.assertContains(response, "done 3 days ago")
-        # self.assertContains(response, "declined by <div class=\"game-player\"><strong>you</strong></div> 4 days ago")
-        # self.assertContains(response, "offered 5 days ago")
-        # self.assertRegexpMatches(response.content, "response submitted by <div class=\"game-player\"><a href=\".*\">test5</a></div>")
+    def test_trade_list_content_of_a_line(self):
+        rulecard1, rulecard2, rulecard3 = mommy.make(RuleCard, _quantity = 3)
+        commodity1, commodity2 = mommy.make(Commodity, _quantity = 2)
+
+        rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1)
+        rih2 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2)
+        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 3)
+
+        offer_initiator = mommy.make(Offer, rules = [rih1, rih2], free_information = "secret")
+        tc1i = mommy.make(TradedCommodities, offer = offer_initiator, commodityinhand = cih1, nb_traded_cards = 2)
+        offer_initiator.tradedcommodities_set.add(tc1i)
+
+        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                           status = 'INITIATED', initiator_offer = offer_initiator)
+
+        response = self.client.get("/trade/{0}/list/".format(self.game.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertContains(response, "waiting offer from")
+        self.assertContains(response, "mini_commodity_card", count = 2)
+        self.assertContains(response, 'data-commodity-id="{0}"'.format(cih1.commodity.id), count = 2)
+        self.assertContains(response, "rulecard_thumbnail", count = 2)
+        self.assertContains(response, 'data-rih-id="{0}"'.format(rih1.id), count = 1)
+        self.assertContains(response, 'data-rih-id="{0}"'.format(rih2.id), count = 1)
+        self.assertContains(response, "info.png", count = 1)
+        self.assertContains(response, "arrow_simple.png", count = 1)
+        self.assertContains(response, "(no offer submitted)", count = 1)
+        self.assertContains(response, '<a class="list_link_trade" data-trade-id="{0}">Show</a>'.format(trade.id), count = 1)
+
+        trade.status = "REPLIED"
+        rih3 = mommy.make(RuleInHand, game = self.game, player = self.alternativeUser, rulecard = rulecard3)
+        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, commodity = commodity2, nb_cards = 1)
+
+        offer_responder = mommy.make(Offer, rules = [rih3])
+        tc1r = mommy.make(TradedCommodities, offer = offer_responder, commodityinhand = cih2, nb_traded_cards = 1)
+        offer_responder.tradedcommodities_set.add(tc1r)
+        trade.responder_offer = offer_responder
+        trade.save()
+
+        response = self.client.get("/trade/{0}/list/".format(self.game.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertContains(response, "waiting decision from")
+        self.assertContains(response, "mini_commodity_card", count = 3)
+        self.assertContains(response, 'data-commodity-id="{0}"'.format(cih2.commodity.id), count = 1)
+        self.assertContains(response, "rulecard_thumbnail", count = 3)
+        self.assertContains(response, 'data-rih-id="{0}"'.format(rih3.id), count = 1)
+        self.assertContains(response, "info.png", count = 1)
+        self.assertContains(response, "arrow_simple.png", count = 0)
+        self.assertContains(response, "arrow_double.png", count = 1)
+        self.assertContains(response, "(no offer submitted)", count = 0)
+        self.assertContains(response, '<a class="list_link_trade" data-trade-id="{0}">Show</a>'.format(trade.id), count = 1)
+
+        trade.status = "CANCELLED"
+        trade.finalizer = self.loginUser
+        trade.save()
+        response = self.client.get("/trade/{0}/list/".format(self.game.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertContains(response, "cancelled by")
+
+        trade.status = "DECLINED"
+        trade.save()
+        response = self.client.get("/trade/{0}/list/".format(self.game.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertContains(response, "declined by")
+
+        trade.status = "ACCEPTED"
+        trade.save()
+        response = self.client.get("/trade/{0}/list/".format(self.game.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertContains(response, "accepted and done")
 
     def _assert_in_trade_list(self, expected_trade, actual_trade):
         self.assertEqual(expected_trade, actual_trade, msg = "Expected: {0}, found: {1}".format(expected_trade.status, actual_trade.status))
