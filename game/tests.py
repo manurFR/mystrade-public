@@ -581,10 +581,10 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
                             initiator_offer = mommy.make(Offer)) # not displayed
 
         response = self._getTabRecently()
-        self.assertContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade1.id))
-        self.assertContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade2.id))
-        self.assertContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
-        self.assertNotContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade4.id))
+        self.assertContains(response, '<a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade1.id))
+        self.assertContains(response, '<a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade2.id))
+        self.assertContains(response, '<a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
+        self.assertNotContains(response, '<a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade4.id))
 
     def test_tab_recently_events_include_replying_offers_for_own_trades(self):
         dt_trade = now() + datetime.timedelta(hours = -5)
@@ -602,9 +602,9 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
                             responder_offer = mommy.make(Offer, creation_date = dt_trade + datetime.timedelta(minutes = 30)))
 
         response = self._getTabRecently()
-        self.assertContains(response, 'replied to your <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade1.id))
-        self.assertContains(response, 'replied to your <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade2.id))
-        self.assertNotContains(response, '<a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
+        self.assertContains(response, 'replied to your <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade1.id))
+        self.assertContains(response, 'replied to your <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade2.id))
+        self.assertNotContains(response, '<a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
 
     def test_tab_recently_events_include_final_event_for_own_trades(self):
         dt_trade = now() + datetime.timedelta(hours = -5)
@@ -623,9 +623,9 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
                             finalizer = self.loginUser, closing_date = now())
 
         response = self._getTabRecently()
-        self.assertContains(response, 'cancelled a <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade1.id))
-        self.assertContains(response, 'declined a <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade2.id))
-        self.assertContains(response, 'accepted a <a class="link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
+        self.assertContains(response, 'cancelled a <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade1.id))
+        self.assertContains(response, 'declined a <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade2.id))
+        self.assertContains(response, 'accepted a <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
 
     def test_tab_recently_events_include_accepted_trade_from_other_players(self):
         # trade1 is ACCEPTED and between two players that are not the loginUser
