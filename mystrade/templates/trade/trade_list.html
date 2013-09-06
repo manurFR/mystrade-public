@@ -1,3 +1,5 @@
+{% load staticfiles %}
+
 {% if trade_list %}
     <div id="table_trade_list">
     {% for trade in trade_list %}
@@ -6,7 +8,11 @@
             <div class="cell_trade_list column_trade_detail {{ color }}">
                 {% include "common/name_or_you.html" with who=trade.initiator %} :
                 {% include "trade/trade_list_detail_offer.html" with offer=trade.initiator_offer %}
-                ==&gt;
+                {% if trade.responder_offer %}
+                    <img src="{% static 'arrow_double.png' %}" width="30" alt="&lt;=&gt;"/>
+                {% else %}
+                    <img src="{% static 'arrow_simple.png' %}" width="30" alt="=&gt;"/>
+                {% endif %}
                 {% include "common/name_or_you.html" with who=trade.responder %}
                 {% if trade.responder_offer %}: {% include "trade/trade_list_detail_offer.html" with offer=trade.responder_offer %}
                 {% else %}<span class="helptext">(no offer submitted)</span>{% endif %}
@@ -30,6 +36,12 @@
         </div>
     {% endfor %}
     </div>
+
+    <script>
+        $(function() {
+            $("#table_trade_list").tooltip({ position: { my: "left+5 top", at: "right bottom" } });
+        })
+    </script>
 {% else %}
     <span class="helptext">No trades yet.</span>
 {% endif %}

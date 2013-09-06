@@ -7,8 +7,8 @@
     {% endfor %}
 {% endfor %}
 {% for rih in offer.rules.all %}
-    <div class="rulecard_thumbnail" data-rih-id="{{ rih.id }}">{{ rih.rulecard.public_name }}</div>
+    <div class="rulecard_thumbnail" data-rih-id="{{ rih.id }}" title="Rulecard {{ rih.rulecard.public_name }}">{{ rih.rulecard.public_name }}</div>
 {% endfor %}
 {% if offer.free_information %}
-    <img src="{% static 'info.png' %}" width="24" height="24" alt="(i)" title="some free information(s)"/>
+    <img src="{% static 'info.png' %}" width="24" height="24" alt="(i)" title="Some free information(s)"/>
 {% endif %}
