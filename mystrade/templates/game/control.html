@@ -1,157 +1,67 @@
-{% extends "base.html" %}
 {% load staticfiles %}
 
-{% block styles %}
-    <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.10.3.custom.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/style.scoring.css' %}" type="text/css"/>
-    <link rel="stylesheet" href="{% static 'css/style.css-tooltips.css' %}" />
-{% endblock %}
+{% if super_access and game.is_active %}
+    <h3>Game Master's Control Board</h3>
 
-{% block scripts %}
-    <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
-    <script src="{% static 'jquery/jquery-ui-1.10.3.custom.min.js' %}"></script>
-{% endblock %}
+    <p>All scores below are <strong>temporary</strong> and may evolve as the game progresses.</p>
+{% else %}
+    <h3>Game Summary</h3>
 
-{% block content %}
-    <div class="header">Summary for game #{{ game }}{% if game.is_active %} (ending in {{ game.end_date|timeuntil }}){% endif %}
-        <span class="floatright">{% if super_access %}&lt; <a href="{% url 'game' game.id %}">Back</a>{% else %}
-                                                      &lt; <a href="{% url 'welcome' %}">Back</a>{% endif %}</span></div>
-
-    <div class="reminder">
     {% if game.is_closed %}
         This game was closed on {{ game.end_date }} ({{ game.end_date|timesince }} ago).
         {% if player_access %}
-            <p>Thank you for participating!<br/>
-               Discover <a href="#rules">all the rules in this game</a> below, or go see the messages, the trades, etc. on the <a href="{% url 'game' game.id %}">game page</a>.</p>
+            <p>Thank you for participating!</p>
         {% endif %}
     {% elif game.has_ended %}
         This game has ended on {{ game.end_date }} ({{ game.end_date|timesince }} ago).
         {% if super_access %}
             <p>All trades have been blocked since that time.<br/>
-
-            Please click on this button to cancel all unfinished trades, calculate scores and definitely close the game:</p>
-            <div class="floatright">
+                Please click on this button to cancel all unfinished trades, calculate scores and definitely close the game:</p>
+            <div class="submit">
                 <form action="{% url 'close_game' game.id %}" method="post">{% csrf_token %}
                     <input type="submit" value="Close this game"/>
                 </form>
             </div>
-            <br/><br/>
         {% endif %}
-    {% else %}
-        All scores below are <strong>temporary</strong> and may evolve as the game progresses.
     {% endif %}
+{% endif %}
+
+<h4>Table of Contents</h4>
+<ul>
+    <li><a href="#scores">Scores</a></li>
+    <li><a href="#scoreDetails">Score Details</a></li>
+    <li><a href="#rules">Rules</a></li>
+</ul>
+
+{% if game.is_closed %}
+    {% if player_access %}
+        {% if rank == 1 %}
+            <div class="congrats">Congratulations {{ user.name }}, you won this game !</div>
+        {% elif rank == 2 %}
+            <div class="congrats">Congratulations {{ user.name }}, you reached the second place.</div>
+        {% elif rank == 3 %}
+            <div class="congrats">Congratulations {{ user.name }}, you reached the third place.</div>
+        {% endif %}
+    {% endif %}
+    {% include "scoring/score.html"  with specification="Final" %}
+{% else %}
+    {% include "scoring/score.html" with specification="Current" %}
+{% endif %}
+
+<a name="rules"></a>
+<h3>Rules in this game</h3>
+
+<div id="zone_rules">
+    {% for rulecard in game.rules.all %}
+    <div class="rulecard">
+        <div class="rulecard_name">{{ rulecard.public_name }}</div>
+        <div class="rulecard_desc">{{ rulecard.description }}</div>
     </div>
+    {% endfor %}
+</div>
 
-    <h4>Table of Contents</h4>
-    <ul>
-        {% if game.is_closed %}
-            <li><a href="#scores">Scores</a></li>
-            <li><a href="#scoreDetails">Score Details</a></li>
-            {% if super_access %}
-                <li><a href="#trades">Trades</a></li>
-            {% endif %}
-            <li><a href="#rules">Rules</a></li>
-        {% else %}
-            <li><a href="#trades">Trades</a></li>
-            <li><a href="#scores">Scores</a></li>
-            <li><a href="#scoreDetails">Score Details</a></li>
-            <li><a href="#rules">Rules</a></li>
-        {% endif %}
-    </ul>
-
-    {% if game.is_closed %}
-        {% if player_access %}
-            {% if rank == 1 %}
-                <div class="congrats">Congratulations {{ user.name }}, you won this game !</div>
-            {% elif rank == 2 %}
-                <div class="congrats">Congratulations {{ user.name }}, you reached the second place.</div>
-            {% elif rank == 3 %}
-                <div class="congrats">Congratulations {{ user.name }}, you reached the third place.</div>
-            {% endif %}
-        {% endif %}
-        {% include "scoring/score.html"  with specification="Final" %}
-    {% endif %}
-
-    {% if super_access %}
-        <a name="trades"></a>
-        <h3>Trades</h3>
-        {% if trades %}
-        <table>
-            <thead>
-                <tr class="header-row">
-                    <th>from</th>
-                    <th>to</th>
-                    <th>status</th>
-                    <th>initiated</th>
-                    <th>closed</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for trade in trades %}
-                {% cycle 'even_color' 'odd_color' as color silent %}
-                <tr class="{% if trade.finalizer %} done{% endif %}{% if trade.status == 'CANCELLED' %} cancelled{% endif %}">
-                    <td class="css_table-cell {{ color }}">{% include "common/name_or_you.html" with who=trade.initiator %}</td>
-                    <td class="css_table-cell {{ color }}">{% include "common/name_or_you.html" with who=trade.responder %}</td>
-                    <td class="css_table-cell {{ color }}">
-                        {{ trade.status }}
-                        {% if trade.status == 'CANCELLED' or trade.status == 'DECLINED' %}by {% include "common/name_or_you.html" with who=trade.finalizer %}{% endif %}
-                    </td>
-                    <td class="css_table-cell {{ color }}">{{ trade.creation_date|date:"SHORT_DATETIME_FORMAT" }}</td>
-                    <td class="css_table-cell {{ color }}">{% if trade.closing_date %}{{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }}{% endif %}</td>
-                    <td class="css_table-cell {{ color }}"><a href="{% url 'show_trade' game.id trade.id %}">Show trade</a></td>
-                </tr>
-            {% endfor %}
-            </tbody>
-
-            <tfoot>
-                <tr class="pagination">
-                    <td colspan="5">
-                        {% if trades.has_previous %}
-                            <a href="?page={{ trades.previous_page_number }}">&lt;</a>
-                        {% endif %}
-
-                        <span class="current">
-                            Page {{ trades.number }} of {{ trades.paginator.num_pages }}
-                        </span>
-
-                        {% if trades.has_next %}
-                            <a href="?page={{ trades.next_page_number }}">&gt;</a>
-                        {% endif %}
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
-        {% else %}
-            <div class="helptext">No trades yet.</div>
-        {% endif %}
-    {% endif %}
-
-    {% if not game.is_closed %}
-        {% include "scoring/score.html" with specification="Current" %}
-    {% endif %}
-
-    <a name="rules"></a>
-    <h3>Rules in this game</h3>
-    <div class="css_table">
-        {% for card in game.rules.all %}
-            {% if forloop.first or forloop.counter0|divisibleby:"4" %}
-                <div class="css_table-row">
-            {% endif %}
-        <div class="css_table-cell card">
-            <div class="card_name">{{ card.public_name }}</div>
-            <div class="card_desc">{{ card.description }}</div>
-        </div>
-        {% if forloop.counter|divisibleby:"4" or forloop.last %}
-            </div>
-        {% endif %}
-        {% endfor %}
-    </div>
-
-    <br/>
-
-    <script>
-        $(function() {
-            $('input[type=submit]').button();
-        });
-    </script>
-{% endblock %}
+<script>
+    $(function() {
+        $('input[type=submit]').button();
+    });
+</script>

@@ -40,63 +40,66 @@
         <div id="zone_hand">
             <div id="zone_links">
                 <img src="{% static 'action.png' %}" width="16" height="16" alt="&gt;"/>
-                {% if game.is_active %}<a id="link_new_trade">Propose new trade</a> | {% endif %}
+                {% if user in game.players.all and game.is_active %}<a id="link_new_trade">Propose new trade</a> | {% endif %}
                 <a id="link_show_trade_list">Show all trades</a>
             </div>
 
-            <div id="zone_commodities">
-                <h3>{% if hand_submitted %}Submitted Commodities
-                    {% elif game.is_active %}Commodities <span class="helptext">Click to create a new trade proposal</span>
-                    {% else %}Commodities{% endif %}</h3>
-                {% for cih in commodities %}
-                    {% for copy in cih.nb_cards|as_range %}
-                        {% if copy >= cih.nb_tradable_cards %}
-                            {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="not_tradable" %}
-                        {% else %}
-                            {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="selectable"%}
-                        {% endif %}
+            {% if super_access %}
+                {% include "game/control.html" %}
+            {% else %}
+                <div id="zone_commodities">
+                    <h3>{% if hand_submitted %}Submitted Commodities
+                        {% elif game.is_active %}Commodities <span class="helptext">Click to create a new trade proposal</span>
+                        {% else %}Commodities{% endif %}</h3>
+                    {% for cih in commodities %}
+                        {% for copy in cih.nb_cards|as_range %}
+                            {% if copy >= cih.nb_tradable_cards %}
+                                {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="not_tradable" %}
+                            {% else %}
+                                {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="selectable"%}
+                            {% endif %}
+                        {% endfor %}
                     {% endfor %}
-                {% endfor %}
-                {% for cih in commodities_not_submitted %}
-                    {% for copy in cih.nb_cards|as_range %}
-                        {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="not_submitted" title_note="not submitted" %}
-                    {% endfor %}
-                {% endfor %}
-            </div>
-
-            <div id="zone_rules">
-                <h3>Rules{% if game.is_active and not hand_submitted %} <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
-
-                <div id="zone_rulecards">
-                    {% for rih in rulecards %}
-                    <div class="rulecard{% if rih.is_in_a_pending_trade %} not_tradable{% else %} selectable{% endif %}" data-rih-id="{{ rih.id }}" data-public-name="{{ rih.rulecard.public_name }}">
-                        <div class="note helptext"></div>
-                        <div class="rulecard_name">{{ rih.rulecard.public_name }}</div>
-                        <div class="rulecard_desc">{{ rih.rulecard.description }}</div>
-                    </div>
-                    {% endfor %}
-                    {% for rih in former_rulecards %}
-                    <div class="rulecard former">
-                        <div class="note helptext">(previously owned)</div>
-                        <div class="rulecard_name">{{ rih.rulecard.public_name }}</div>
-                        <div class="rulecard_desc">{{ rih.rulecard.description }}</div>
-                    </div>
+                    {% for cih in commodities_not_submitted %}
+                        {% for copy in cih.nb_cards|as_range %}
+                            {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="not_submitted" title_note="not submitted" %}
+                        {% endfor %}
                     {% endfor %}
                 </div>
-            </div>
 
-            {% if free_informations %}
-            <div id="zone_free_informations">
-                <h3>Free informations obtained during this game</h3>
-                {% for offer in free_informations %}
-                    <fieldset class="free_information">
-                        <legend>from <strong>{{ offer.offerer }}</strong>, {{ offer.date|timesince }} ago</legend>
-                        {{ offer.free_information }}<br/>
-                    </fieldset>
-                {% endfor %}
-            </div>
+                <div id="zone_rules">
+                    <h3>Rules{% if game.is_active and not hand_submitted %} <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
+
+                    <div id="zone_rulecards">
+                        {% for rih in rulecards %}
+                        <div class="rulecard{% if rih.is_in_a_pending_trade %} not_tradable{% else %} selectable{% endif %}" data-rih-id="{{ rih.id }}" data-public-name="{{ rih.rulecard.public_name }}">
+                            <div class="note helptext"></div>
+                            <div class="rulecard_name">{{ rih.rulecard.public_name }}</div>
+                            <div class="rulecard_desc">{{ rih.rulecard.description }}</div>
+                        </div>
+                        {% endfor %}
+                        {% for rih in former_rulecards %}
+                        <div class="rulecard former">
+                            <div class="note helptext">(previously owned)</div>
+                            <div class="rulecard_name">{{ rih.rulecard.public_name }}</div>
+                            <div class="rulecard_desc">{{ rih.rulecard.description }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if free_informations %}
+                <div id="zone_free_informations">
+                    <h3>Free informations obtained during this game</h3>
+                    {% for offer in free_informations %}
+                        <fieldset class="free_information">
+                            <legend>from <strong>{{ offer.offerer }}</strong>, {{ offer.date|timesince }} ago</legend>
+                            {{ offer.free_information }}<br/>
+                        </fieldset>
+                    {% endfor %}
+                </div>
+                {% endif %}
             {% endif %}
-
         </div>
 
         <div id="zone_tabs">
