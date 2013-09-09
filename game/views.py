@@ -497,12 +497,13 @@ def game_board(request, game_id):
                         'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
                         'free_informations': free_informations})
     elif game.has_super_access(request.user): # Control board access allowed only to the game master and to the admins that are NOT players in this game
+        scoresheets = None
+        random_scoring = False # True if at least one line of score for one player can earn a different amount of points each time we calculate the score
         if game.is_closed():
             scoresheets = _fetch_scoresheets(game)
         elif game.is_active():
             scoresheets = tally_scores(game) # but don't persist them
             scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
-            random_scoring = False # True if at least one line of score for one player can earn a different amount of points each time we calculate the score
             for scoresheet in scoresheets:
                 if len([sfr for sfr in scoresheet.scores_from_rule if getattr(sfr, 'is_random', False)]) > 0:
                     scoresheet.is_random = True

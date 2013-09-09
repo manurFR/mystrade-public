@@ -23,17 +23,21 @@ TRADE_PAGINATION = 8
 def trade_list(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
-    if request.user not in game.players.all() and not game.has_super_access(request.user):
+    super_access =  game.has_super_access(request.user)
+    if request.user not in game.players.all() and not super_access:
         raise PermissionDenied
 
     if request.is_ajax():
-        trade_list = list(Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game).order_by('-creation_date'))
+        # the players can only see their own trades, whereas the game master can see all trades
+        trade_list = Trade.objects.filter(game = game).order_by('-creation_date')
+        if not super_access:
+            trade_list = list(trade_list.filter(Q(initiator = request.user) | Q(responder = request.user)))
 
-        # since sort() is guaranteed to be stable, this second sort will only push pending trades at the start,
-        #   keeping the sorting by (reverse) chronological creation_date otherwise
-        trade_list.sort(key = Trade.is_pending, reverse = True)
+            # since sort() is guaranteed to be stable, this second sort will only push pending trades at the start,
+            #   keeping the sorting by (reverse) chronological creation_date otherwise
+            trade_list.sort(key = Trade.is_pending, reverse = True)
 
-        paginator = Paginator(trade_list, TRADE_PAGINATION, orphans = 2)
+        paginator = Paginator(trade_list, TRADE_PAGINATION, orphans = 1)
 
         page = request.GET.get('page')
         try:
