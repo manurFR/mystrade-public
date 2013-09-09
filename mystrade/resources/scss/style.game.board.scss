@@ -3,6 +3,7 @@
 $fullWidthOfARuleCard: 2 * $marginOfRuleCards + 2 * $horizontalPaddingOfRuleCards + 2 * 1px /* border */ + $widthOfRuleCards;
 $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
+/* Page structure */
 #zone_content {}
 
 #zone_game_header {
@@ -107,6 +108,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   min-height: $heightOfThumbnailRuleCards + 16px;
 }
 
+/* Trade list modal dialog */
 #zone_trade_list {
   background: lighten($backgroundColor, 10%);
 
@@ -169,6 +171,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   }
 }
 
+/* Misc. styling */
 .commodity_card.not_submitted {
   background: url(../stripe.png);
 }
@@ -188,6 +191,15 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   }
 }
 
+.lighter_text {
+  color: $mediumLightText;
+}
+
+.submit, .show_more {
+  text-align: right;
+}
+
+/* Styling for tab Recently */
 .show_previous {
   margin: -5px 0 5px -10px;
   height: 1em;
@@ -248,20 +260,13 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   @include floatright();
 }
 
-.lighter_text {
-  color: $mediumLightText;
-}
-
-.submit, .show_more {
-  text-align: right;
-}
-
 #button_post_message {
   // hack to have the button closer to the textarea
   position: relative;
   top: -10px;
 }
 
+/* Styling for tab New/View Trade */
 #id_responder {
   margin-left: 8px;
   @include font($size: 9pt);
@@ -272,4 +277,75 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   margin-bottom: 15px;
   color: $mediumLightText;
   border-bottom: thin dotted;
+}
+
+/* Styling for scores */
+.scores {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  border-collapse: collapse;
+
+  $cellWidth: $widthOfZoneHand / 4;
+
+  td {
+    width: $cellWidth;
+    height: 30px;
+  }
+
+  tr#second-row td {
+    width: 1.5 * $cellWidth;
+  }
+
+  .podium-box {
+    @include blackBorder;
+    height: 50px;
+  }
+}
+
+.me {
+  background-color: #FFE640;
+}
+
+.first-player-header {
+  @include font($size: 1.6em, $weight: bold);
+}
+
+.first-player {
+  @include font($size: 1.2em);
+}
+
+.second-player-header {
+  @include font($size: 1.3em, $weight: bold);
+}
+
+.second-player {
+  @include font($size: 1.1em);
+}
+
+.third-player-header {
+  @include font($size: 1.1em, $weight: bold);
+  height: 1.3em;
+}
+
+.third-player {
+  @include font($size: 1em);
+}
+
+.scoresheet {
+  width: 90%;
+  margin-left: 15px;
+  padding: 10px;
+  background-color: $infoPanelColor;
+  @include roundedBorder(5px);
+}
+
+.commodity_card {
+  @include blackBorder;
+}
+
+.congrats {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 1.3em;
 }

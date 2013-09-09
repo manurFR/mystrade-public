@@ -4,8 +4,8 @@
 <a name="scores"></a>
 <h3>{{ specification }} Scores</h3>
 {% if random_scoring %}
-    <div class="reminder">These scores include at least one random element, that may or may not change the player's total and rank.
-        The definitive scores will be calculated at the end of the game. Try refreshing this page to observe the score changes.</div>
+    <span class="helptext">These scores include at least one random element, that may or may not change the player's total and rank.
+        The definitive scores will be calculated at the end of the game. Try refreshing this page to observe the score changes.</span>
 {% endif %}
 <table class="scores">
     {% for scoresheet in scoresheets %}
@@ -15,11 +15,10 @@
                 <td colspan="2" class="podium-box{% if rank == 1 %} me{% endif %}">
                     <div class="first-player-header">Winner</div>
                     <div class="first-player"><a href="#player-{{ forloop.counter }}"><strong>{{ scoresheet.player_name }}</strong> &mdash;
-                        {% if scoresheet.is_random %}<span data-tip="this score includes random elements" class="underline">{% endif %}
+                        {% if scoresheet.is_random %}<p title="this score includes random elements" class="underline">{% endif %}
                         {{ scoresheet.total_score }} points</a>
-                        {% if scoresheet.is_random %}</span>
-                            <span data-tip="this score includes random elements">
-                                <img src="{% static "warning.png" %}" height="16" width="16" alt=""/></span>{% endif %}
+                        {% if scoresheet.is_random %}</p>
+                            <img src="{% static "warning.png" %}" height="16" width="16" alt="" title="this score includes random elements"/></span>{% endif %}
 
                     </div>
                 </td>
@@ -30,37 +29,32 @@
                 <td colspan="2" class="podium-box{% if rank == 2 %} me{% endif %}">
                     <div class="second-player-header">Second place</div>
                     <div class="second-player"><a href="#player-{{ forloop.counter }}"><strong>{{ scoresheet.player_name }}</strong> &mdash;
-                        {% if scoresheet.is_random %}<span data-tip="this score includes random elements" class="underline">{% endif %}
+                        {% if scoresheet.is_random %}<p title="this score includes random elements" class="underline">{% endif %}
                         {{ scoresheet.total_score }} points</a>
-                        {% if scoresheet.is_random %}</span>
-                            <span data-tip="this score includes random elements">
-                                <img src="{% static "warning.png" %}" height="16" width="16" alt=""/></span>{% endif %}
+                        {% if scoresheet.is_random %}</p>
+                            <img src="{% static "warning.png" %}" height="16" width="16" alt="" title="this score includes random elements"/></span>{% endif %}
                     </div>
                 </td>
                 {% elif forloop.counter == 3 %}
                 <td colspan="2" class="podium-box{% if rank == 3 %} me{% endif %}">
                     <div class="third-player-header">Third place</div>
                     <div class="third-player"><a href="#player-{{ forloop.counter }}"><strong>{{ scoresheet.player_name }}</strong> &mdash;
-                        {% if scoresheet.is_random %}<span data-tip="this score includes random elements" class="underline">{% endif %}
+                        {% if scoresheet.is_random %}<p title="this score includes random elements" class="underline">{% endif %}
                         {{ scoresheet.total_score }} points</a>
-                        {% if scoresheet.is_random %}</span>
-                            <span data-tip="this score includes random elements">
-                                <img src="{% static "warning.png" %}" height="16" width="16" alt=""/></span>{% endif %}
+                        {% if scoresheet.is_random %}</p>
+                            <img src="{% static "warning.png" %}" height="16" width="16" alt="" title="this score includes random elements"/></span>{% endif %}
                     </div>
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td>&nbsp;</td>
-                <td colspan="2" {% if rank == forloop.counter %}class="me"{% endif %}>
+                <td colspan="4" {% if rank == forloop.counter %}class="me"{% endif %}>
                     #{{ forloop.counter }}. <a href="#player-{{ forloop.counter }}"><strong>{{ scoresheet.player_name }}</strong> &mdash;
-                    {% if scoresheet.is_random %}<span data-tip="this score includes random elements" class="underline">{% endif %}
+                    {% if scoresheet.is_random %}<p title="this score includes random elements" class="underline">{% endif %}
                     {{ scoresheet.total_score }} points</a>
-                    {% if scoresheet.is_random %}</span>
-                        <span data-tip="this score includes random elements">
-                                <img src="{% static "warning.png" %}" height="16" width="16" alt=""/></span>{% endif %}
+                    {% if scoresheet.is_random %}</p>
+                        <img src="{% static "warning.png" %}" height="16" width="16" alt="" title="this score includes random elements"/></span>{% endif %}
                 </td>
-                <td>&nbsp;</td>
             </tr>
         {% endif %}
     {% endfor %}
