@@ -1,135 +1,104 @@
 {% load filters %}
 {% load staticfiles %}
 
-<a name="scores"></a>
-<h3>{{ specification }} Scores</h3>
 {% if random_scoring %}
     <span class="helptext">These scores include at least one random element, that may or may not change the player's total and rank.
         The definitive scores will be calculated at the end of the game. Try refreshing this page to observe the score changes.</span>
 {% endif %}
-<table class="scores">
-    {% for scoresheet in scoresheets %}
-        {% if forloop.counter == 1 %}
-            <tr>
-                <td>&nbsp;</td>
-                <td colspan="2" class="podium-box{% if rank == 1 %} me{% endif %}">
-                    <div class="first-player-header">Winner</div>
-                    <div class="first-player"><a href="#player-{{ forloop.counter }}"><strong>{{ scoresheet.player_name }}</strong> &mdash;
-                        {% if scoresheet.is_random %}<p title="this score includes random elements" class="underline">{% endif %}
-                        {{ scoresheet.total_score }} points</a>
-                        {% if scoresheet.is_random %}</p>
-                            <img src="{% static "warning.png" %}" height="16" width="16" alt="" title="this score includes random elements"/></span>{% endif %}
 
-                    </div>
-                </td>
-                <td>&nbsp;</td>
-            </tr>
-        {% elif forloop.counter == 2 %}
-            <tr id="second-row">
-                <td colspan="2" class="podium-box{% if rank == 2 %} me{% endif %}">
-                    <div class="second-player-header">Second place</div>
-                    <div class="second-player"><a href="#player-{{ forloop.counter }}"><strong>{{ scoresheet.player_name }}</strong> &mdash;
-                        {% if scoresheet.is_random %}<p title="this score includes random elements" class="underline">{% endif %}
-                        {{ scoresheet.total_score }} points</a>
-                        {% if scoresheet.is_random %}</p>
-                            <img src="{% static "warning.png" %}" height="16" width="16" alt="" title="this score includes random elements"/></span>{% endif %}
-                    </div>
-                </td>
-                {% elif forloop.counter == 3 %}
-                <td colspan="2" class="podium-box{% if rank == 3 %} me{% endif %}">
-                    <div class="third-player-header">Third place</div>
-                    <div class="third-player"><a href="#player-{{ forloop.counter }}"><strong>{{ scoresheet.player_name }}</strong> &mdash;
-                        {% if scoresheet.is_random %}<p title="this score includes random elements" class="underline">{% endif %}
-                        {{ scoresheet.total_score }} points</a>
-                        {% if scoresheet.is_random %}</p>
-                            <img src="{% static "warning.png" %}" height="16" width="16" alt="" title="this score includes random elements"/></span>{% endif %}
-                    </div>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4" {% if rank == forloop.counter %}class="me"{% endif %}>
-                    #{{ forloop.counter }}. <a href="#player-{{ forloop.counter }}"><strong>{{ scoresheet.player_name }}</strong> &mdash;
-                    {% if scoresheet.is_random %}<p title="this score includes random elements" class="underline">{% endif %}
-                    {{ scoresheet.total_score }} points</a>
-                    {% if scoresheet.is_random %}</p>
-                        <img src="{% static "warning.png" %}" height="16" width="16" alt="" title="this score includes random elements"/></span>{% endif %}
-                </td>
-            </tr>
-        {% endif %}
-    {% endfor %}
-</table>
-
-<a name="scoreDetails"></a>
-<h3>{{ specification }} Score Details</h3>
+<h3>{{ specification }} Scores
+    <span id="link_open_all_scoresheets" class="ui-icon ui-icon-circle-plus" style="display:inline-block; vertical-align: text-bottom;" title="open all"></span>
+    <span id="link_close_all_scoresheets" class="ui-icon ui-icon-circle-minus" style="display:inline-block; vertical-align: text-bottom;" title="close all"></span>
+</h3>
+<div id="zone_scoresheets">
 {% for scoresheet in scoresheets %}
-<div {% if rank == forloop.counter %}class="me"{% endif %}>
-    <a name="player-{{ forloop.counter }}"></a>
-    <div>
-        {% if forloop.counter == 1 %}
-            <span class="first-player-header">Winner: </span><span class="first-player">
-        {% elif forloop.counter == 2 %}
-            <span class="second-player-header">Second place: </span><span class="second-player">
-        {% elif forloop.counter == 3 %}
-            <span class="third-player-header">Third place: </span><span class="third-player">
-        {% else %}
-            #{{ forloop.counter }}. <span>
-        {% endif %}
-        <strong>{% include "common/name_or_you.html" with who=scoresheet.gameplayer.player %}</strong></span>
-    </div>
-    <br/>
-    <div class="scoresheet">
-        Commodity cards:
-        <div class="css_table">
-                <div class="css_table-row">
-                    <div class="css_table-cell {% cycle 'even_color' 'odd_color' as color %}"><em>submitted cards</em></div>
-                    <div class="css_table-cell {{ color }}"><em>unit value</em></div>
-                    <div class="css_table-cell {{ color }}"><em>total points</em></div>
-                </div>
-            {% for sfc in scoresheet.scores_from_commodity %}
-                <div class="css_table-row">
-                    <div class="css_table-cell {% cycle color %}">
-                        {% for copy in sfc.nb_submitted_cards|as_range %}
-                            <span class="commodity_card
-                            {% if copy >= sfc.nb_scored_cards %} excluded" data-tip="{{ sfc.commodity.name }} &mdash; not scored"
-                            {% else %}" data-tip="{{ sfc.commodity.name }} &mdash; scored"{% endif %}
-                            style="background-color: {{ sfc.commodity.color }}">&nbsp;</span>
-                        {% endfor %}
-                    </div>
-                    <div class="css_table-cell {{ color }} points">x {{ sfc.actual_value|default_if_none:'' }}</div>
-                    <div class="css_table-cell {{ color }} points">{{ sfc.score|default_if_none:'' }}</div>
-                </div>
-            {% endfor %}
-        </div>
+    <div class="accordion{% if rank == forloop.counter %} me{% endif %}">
+        <a name="player-{{ forloop.counter }}"></a>
+        <h3>
+            {% if forloop.counter == 1 %}
+                <span class="first-player-header">Winner:
+            {% elif forloop.counter == 2 %}
+                <span class="second-player-header">Second place:
+            {% elif forloop.counter == 3 %}
+                <span class="third-player-header">Third place:
+            {% else %}
+                #{{ forloop.counter }}. <span>
+            {% endif %}
+            <strong>{% include "common/name_or_you.html" with who=scoresheet.gameplayer.player %}</strong></span>
+            <span class="helptext">({{ scoresheet.total_score }} points)</span>
+        </h3>
+        <div class="player_scoresheet">
+            <div class="grand_total">
+                Grand Total: {{ scoresheet.total_score }} points
+                {% if scoresheet.is_random %}
+                    <span class="helptext">(this score includes random elements)</span>
+                {% endif %}
+            </div>
 
-        <br/>
-        {% if scoresheet.scores_from_rule %}
-            Applicable rules:
+            Commodity cards:
             <div class="css_table">
-                <div class="css_table-row">
-                    <div class="css_table-cell {% cycle 'even_color' 'odd_color' as color %}"><em>rule</em></div>
-                    <div class="css_table-cell {{ color }}"><em>points</em></div>
-                </div>
-                {% for sfr in scoresheet.scores_from_rule %}
                     <div class="css_table-row">
-                        <div class="css_table-cell {% cycle color %}">{{ sfr.detail }}</div>
-                        <div class="css_table-cell {{ color }} points">{{ sfr.score|default_if_none:'' }}</div>
-                        {% if sfr.is_random %}
-                            <div class="css_table-cell" data-tip="this rule introdudes a random element">
-                                <img src="{% static "warning.png" %}" height="16" width="16" alt=""/>
-                            </div>
-                        {% endif %}
+                        <div class="css_table-cell {% cycle 'even_color' 'odd_color' as color %}"><em>submitted cards</em></div>
+                        <div class="css_table-cell {{ color }}"><em>unit value</em></div>
+                        <div class="css_table-cell {{ color }}"><em>total points</em></div>
+                    </div>
+                {% for sfc in scoresheet.scores_from_commodity %}
+                    <div class="css_table-row">
+                        <div class="css_table-cell {% cycle color %}">
+                            {% for copy in sfc.nb_submitted_cards|as_range %}
+                                <span class="commodity_card
+                                {% if copy >= sfc.nb_scored_cards %} excluded" data-tip="{{ sfc.commodity.name }} &mdash; not scored"
+                                {% else %}" data-tip="{{ sfc.commodity.name }} &mdash; scored"{% endif %}
+                                style="background-color: {{ sfc.commodity.color }}">&nbsp;</span>
+                            {% endfor %}
+                        </div>
+                        <div class="css_table-cell {{ color }} points">x {{ sfc.actual_value|default_if_none:'' }}</div>
+                        <div class="css_table-cell {{ color }} points">{{ sfc.score|default_if_none:'' }}</div>
                     </div>
                 {% endfor %}
             </div>
-        {% else %}
-            <em>No applicable rules</em><br/>
-        {% endif %}
 
+            <br/>
+            {% if scoresheet.scores_from_rule %}
+                Applicable rules:
+                <div class="css_table">
+                    <div class="css_table-row">
+                        <div class="css_table-cell {% cycle 'even_color' 'odd_color' as color %}"><em>rule</em></div>
+                        <div class="css_table-cell {{ color }}"><em>points</em></div>
+                    </div>
+                    {% for sfr in scoresheet.scores_from_rule %}
+                        <div class="css_table-row">
+                            <div class="css_table-cell {% cycle color %}">{{ sfr.detail }}</div>
+                            <div class="css_table-cell {{ color }} points">{{ sfr.score|default_if_none:'' }}</div>
+                            {% if sfr.is_random %}
+                                <div class="css_table-cell" data-tip="this rule introdudes a random element">
+                                    <img src="{% static "warning.png" %}" height="16" width="16" alt=""/>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <em>No applicable rules</em><br/>
+            {% endif %}
+
+            <br/>
+
+        </div>
         <br/>
-        Grand Total: <strong>{{ scoresheet.total_score }} points</strong>
     </div>
-    <br/>
-</div>
 {% endfor %}
+</div>
+
+<script>
+    $(function() {
+        $("#zone_scoresheets > .accordion").accordion({ header: "h3", collapsible: true, active: false });
+        $("#link_open_all_scoresheets").tooltip().on("click", function() {
+            $("#zone_scoresheets > .accordion").accordion({active: 0});
+        });
+        $("#link_close_all_scoresheets").tooltip().on("click", function() {
+            $("#zone_scoresheets > .accordion").accordion({active: false});
+        });
+    });
+</script>
 

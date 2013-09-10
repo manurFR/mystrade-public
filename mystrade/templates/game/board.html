@@ -44,7 +44,7 @@
                 <a id="link_show_trade_list">Show all trades</a>
             </div>
 
-            {% if super_access %}
+            {% if super_access or game.is_closed %}
                 {% include "game/control.html" %}
             {% else %}
                 <div id="zone_commodities">

@@ -26,13 +26,6 @@
     {% endif %}
 {% endif %}
 
-<h4>Table of Contents</h4>
-<ul>
-    <li><a href="#scores">Scores</a></li>
-    <li><a href="#scoreDetails">Score Details</a></li>
-    <li><a href="#rules">Rules</a></li>
-</ul>
-
 {% if game.is_closed %}
     {% if player_access %}
         {% if rank == 1 %}
@@ -43,12 +36,11 @@
             <div class="congrats">Congratulations {{ user.name }}, you reached the third place.</div>
         {% endif %}
     {% endif %}
-    {% include "scoring/score.html"  with specification="Final" %}
+    {% if scoresheets %}{% include "scoring/score.html"  with specification="Final" %}{% endif %}
 {% else %}
-    {% include "scoring/score.html" with specification="Current" %}
+    {% if scoresheets %}{% include "scoring/score.html" with specification="Current" %}{% endif %}
 {% endif %}
 
-<a name="rules"></a>
 <h3>Rules in this game</h3>
 
 <div id="zone_rules">

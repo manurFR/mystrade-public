@@ -463,7 +463,7 @@ def game_board(request, game_id):
 
     context = {'game': game, 'players': players, 'message_form': MessageForm(), 'maxMessageLength': Message.MAX_LENGTH}
 
-    if request.user in players:
+    if request.user in players and not game.is_closed():
         hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None
         if hand_submitted:
             commodities = CommodityInHand.objects.filter(game = game, player = request.user, nb_submitted_cards__gt = 0).order_by('commodity__name')
@@ -496,12 +496,18 @@ def game_board(request, game_id):
         context.update({'commodities': commodities, 'rulecards': rulecards, 'former_rulecards': former_rulecards,
                         'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
                         'free_informations': free_informations})
-    elif game.has_super_access(request.user): # Control board access allowed only to the game master and to the admins that are NOT players in this game
+    else:
+        # Scores for the game master and the admins that are NOT players in this game, and for the players after the game is closed
         scoresheets = None
         random_scoring = False # True if at least one line of score for one player can earn a different amount of points each time we calculate the score
+        rank = -1
         if game.is_closed():
             scoresheets = _fetch_scoresheets(game)
-        elif game.is_active():
+            if request.user in players:
+                for index, scoresheet in enumerate(scoresheets, start = 1):
+                    if scoresheet.gameplayer.player == request.user:
+                        rank = index
+        elif game.is_active() or game.has_ended():
             scoresheets = tally_scores(game) # but don't persist them
             scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
             for scoresheet in scoresheets:
@@ -509,7 +515,7 @@ def game_board(request, game_id):
                     scoresheet.is_random = True
                     random_scoring = True
 
-        context.update({'super_access': True, 'scoresheets': scoresheets, 'random_scoring': random_scoring})
+        context.update({'super_access': True, 'scoresheets': scoresheets, 'random_scoring': random_scoring, 'rank': rank})
 
     return render(request, 'game/board.html', context)
 
