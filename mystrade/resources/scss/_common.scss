@@ -11,6 +11,8 @@ $linkColor: darkgreen;
 $lightSolidBorder: 1px solid $lightBackgroundColor;
 $lightDashedBorder: 1px dashed $lightBackgroundColor;
 
+$defaultFontSize: 9pt;
+
 @mixin roundedBorder($radius) {
   border-radius: $radius;
   -moz-border-radius: $radius;

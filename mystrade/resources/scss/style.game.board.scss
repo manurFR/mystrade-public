@@ -299,6 +299,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
 .player_scoresheet {
   background-color: $infoPanelColor;
+  @include font($size: $defaultFontSize);
 }
 
 .grand_total {
@@ -317,4 +318,8 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   display: table-cell;
   padding: 0 5px;
   vertical-align: middle;
+
+  &.points {
+    min-width: 70px;
+  }
 }

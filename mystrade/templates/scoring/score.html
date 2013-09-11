@@ -48,37 +48,35 @@
                             {% endif %}
                         {% endfor %}
                     </div>
-                    <div class="cell_scoresheet {{ color }} points"><em>x {{ sfc.actual_value|default_if_none:'' }} pt{{ sfc.actual_value|pluralize }} each</em></div>
-                    <div class="cell_scoresheet {{ color }} points">= <strong>{{ sfc.score|default_if_none:'' }} pt{{ sfc.score|pluralize }}</strong></div>
+                    <div class="cell_scoresheet {{ color }}"><em>x {{ sfc.actual_value|default_if_none:'' }} pt{{ sfc.actual_value|pluralize }} each</em></div>
+                    <div class="cell_scoresheet {{ color }} points">{% if sfc.score != None %}= <strong>{{ sfc.score }} pt{{ sfc.score|pluralize }}</strong>{% endif %}</div>
                 </div>
                 {% endfor %}
             </div>
 
-            <br/>
+            <h3>Bonus &amp; Penalties</h3>
             {% if scoresheet.scores_from_rule %}
-                Applicable rules:
                 <div class="table_scoresheet">
+                {% for sfr in scoresheet.scores_from_rule %}
                     <div class="row_scoresheet">
-                        <div class="cell_scoresheet {% cycle 'even_color' 'odd_color' as color %}"><em>rule</em></div>
-                        <div class="cell_scoresheet {{ color }}"><em>points</em></div>
-                    </div>
-                    {% for sfr in scoresheet.scores_from_rule %}
-                        <div class="row_scoresheet">
-                            <div class="cell_scoresheet {% cycle color %}">{{ sfr.detail }}</div>
-                            <div class="cell_scoresheet {{ color }} points">{{ sfr.score|default_if_none:'' }}</div>
-                            {% if sfr.is_random %}
-                                <div class="cell_scoresheet" data-tip="this rule introdudes a random element">
-                                    <img src="{% static "warning.png" %}" height="16" width="16" alt=""/>
-                                </div>
-                            {% endif %}
+                        <div class="cell_scoresheet {% cycle 'even_color' 'odd_color' as color %}">
+                            <div class="rulecard_thumbnail" title="Rulecard {{ sfr.rulecard.public_name }}">{{ sfr.rulecard.public_name }}</div>
                         </div>
-                    {% endfor %}
+                        <div class="cell_scoresheet {{ color }}">{{ sfr.detail }}</div>
+                        <div class="cell_scoresheet {{ color }} points">{% if sfr.score != None %}<strong>{{ sfr.score|stringformat:'+ d' }} pt{{ sfr.score|pluralize }}{% endif %}</strong></div>
+                        {% if sfr.is_random %}
+                            <div class="cell_scoresheet" data-tip="this rule introdudes a random element">
+                                <img src="{% static "warning.png" %}" height="16" width="16" alt=""/>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
                 </div>
             {% else %}
                 <em>No applicable rules</em><br/>
             {% endif %}
 
-            <br/>
+            {# TODO: player's known rulecards #}
 
         </div>
         <br/>
