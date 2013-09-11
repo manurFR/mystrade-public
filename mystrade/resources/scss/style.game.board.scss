@@ -137,12 +137,6 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
       vertical-align: middle;
   }
 
-  .mini_commodity_card {
-      height: 40px;
-      width: 20px;
-      margin: 1px;
-  }
-
   .rulecard_thumbnail {
       margin: 1px;
   }
@@ -280,7 +274,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 }
 
 /* Styling for scores */
-.me h3 {
+.me h2 {
   background: #FFE640;
 }
 
@@ -309,4 +303,18 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
 .grand_total {
   @include font($size: 1.3em, $weight: bold);
+}
+
+.table_scoresheet {
+  display: table;
+}
+
+.row_scoresheet {
+  display: table-row;
+}
+
+.cell_scoresheet {
+  display: table-cell;
+  padding: 0 5px;
+  vertical-align: middle;
 }

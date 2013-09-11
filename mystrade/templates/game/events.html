@@ -19,7 +19,7 @@
                 Game #{{ game.id }} has ended.
                 {% include "common/name_or_you.html" with who=evt.sender %} will soon calculate scores.
             {% elif evt.event_type == 'game_close' %}
-                Game #{{ game.id }} is over. <a href="{% if user in game.players.all %}{% url 'player_score' game.id %}{% else %}{% url 'control' game.id %}{% endif %}">Scores</a> have been calculated.
+                Game #{{ game.id }} is over. Scores have been calculated.
             {% elif evt.event_type == 'create_trade' %}
                 {% include "common/name_or_you.html" with who=evt.sender %} proposed a <a class="event_link_trade" data-trade-id="{{ evt.trade.id }}">trade</a> to {% include "common/name_or_you.html" with who=evt.trade.responder %}.
             {% elif evt.event_type == 'reply_trade' %}
