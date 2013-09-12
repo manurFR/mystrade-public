@@ -308,26 +308,25 @@ class GameBoardMainTest(MystradeTestCase):
         response = self.client.get("/game/{0}/".format(game4.id))
         self.assertContains(response, "closed 1 day ago")
 
-    @skip("until redesign")
-    def test_game_show_shows_a_link_to_control_board_to_game_master_and_admins_that_are_not_players(self):
+    def test_game_board_shows_control_board_to_game_master_and_admins_that_are_not_players(self):
         # logged as a simple player
         response = self._assertGetGamePage()
-        self.assertNotContains(response, "<a href=\"/game/{0}/control/\">&gt; Access to control board</a>".format(self.game.id))
+        self.assertNotContains(response, "Control Board")
 
         # game master
         self.login_as(self.master)
         response = self._assertGetGamePage()
-        self.assertContains(response, "<a href=\"/game/{0}/control/\">&gt; Access to control board</a>".format(self.game.id))
+        self.assertContains(response, "Control Board")
 
         # admin not player
         self.login_as(self.admin)
         response = self._assertGetGamePage()
-        self.assertContains(response, "<a href=\"/game/{0}/control/\">&gt; Access to control board</a>".format(self.game.id))
+        self.assertContains(response, "Control Board")
 
         # admin but player in this game
         self.login_as(self.admin_player)
         response = self._assertGetGamePage()
-        self.assertNotContains(response, "<a href=\"/game/{0}/control/\">&gt; Access to control board</a>".format(self.game.id))
+        self.assertNotContains(response, "Control Board")
 
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
@@ -438,7 +437,7 @@ class GameBoardZoneHandTest(MystradeTestCase):
         self.assertNotContains(response, "I don't need to see that 1")
         self.assertNotContains(response, "I don't need to see that 3")
 
-    def test_show_hand_doesnt_display_free_informations_from_ACCEPTED_trades_of_other_games(self):
+    def test_game_board_doesnt_display_free_informations_from_ACCEPTED_trades_of_other_games(self):
         other_game = mommy.make(Game, master = self.master, end_date = now() + datetime.timedelta(days = 7))
         for player in get_user_model().objects.exclude(username = 'test1'): mommy.make(GamePlayer, game = other_game, player = player)
 
@@ -660,17 +659,22 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertNotContains(response, 'gave 4 cards')
         self.assertNotContains(response, 'gave 5 cards')
 
-    @skip("until redesign")
-    def test_game_board_doesnt_show_pending_trades_to_game_master(self):
+    def test_tab_recently_events_include_accepted_trades_but_no_pending_trades_for_game_master(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
-                            status = 'INITIATED', creation_date = now() + datetime.timedelta(days = -1),
-                            initiator_offer = mommy.make(Offer))
+                            status = 'INITIATED',
+                            initiator_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 2)))
+        trade2 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'ACCEPTED', finalizer = self.loginUser, closing_date = now(),
+                            initiator_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 3)),
+                            responder_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 4)))
 
         self.login_as(self.master)
 
-        response = self._assertGetGamePage()
-        self.assertNotContains(response, "Pending trades")
-        self.assertNotContains(response, "trade/{0}/{1}/\">Show".format(self.game.id, trade1.id))
+        response = self._getTabRecently()
+        self.assertNotContains(response, 'gave 2 cards')
+        self.assertContains(response, 'A successful trade has been performed:', count = 1)
+        self.assertContains(response, 'gave 3 cards')
+        self.assertContains(response, 'gave 4 card')
 
     def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())
@@ -756,84 +760,7 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
                                 {'event_id': message.id},
                                 follow = True, HTTP_X_REQUESTED_WITH='XMLHttpRequest') # simulate AJAX
 
-class HandViewTest(MystradeTestCase): # TODO detele
-
-    def test_show_hand_doesnt_show_commodities_with_no_cards(self): # TODO delete
-        commodity1 = mommy.make(Commodity, name = 'Commodity#1')
-        commodity2 = mommy.make(Commodity, name = 'Commodity#2')
-        cih1 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 1)
-        cih2 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity2, nb_cards = 0)
-
-        response = self.client.get("/game/{0}/hand/".format(self.game.id))
-
-        self.assertContains(response, '<div class="card_name">Commodity#1</div>')
-        self.assertNotContains(response, '<div class="card_name">Commodity#2</div>')
-
-    def test_show_hand_displays_free_informations_from_ACCEPTED_trades(self): # TODO delete
-        offer1_from_me_as_initiator = mommy.make(Offer, free_information = "I don't need to see that 1")
-        offer1_from_other_as_responder = mommy.make(Offer, free_information = "Show me this 1")
-        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser, status = 'ACCEPTED',
-                                initiator_offer = offer1_from_me_as_initiator, responder_offer = offer1_from_other_as_responder)
-
-        offer2_from_other_as_initiator = mommy.make(Offer, free_information = "Show me this 2")
-        trade2 = mommy.make(Trade, game = self.game, initiator = self.alternativeUser, responder = self.loginUser, status = 'ACCEPTED',
-                                initiator_offer = offer2_from_other_as_initiator, responder_offer = mommy.make(Offer))
-
-        offer3_from_other_as_responder = mommy.make(Offer, free_information = "I don't need to see that 3")
-        trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser, status = 'DECLINED',
-                                initiator_offer = mommy.make(Offer), responder_offer = offer3_from_other_as_responder)
-
-        response = self.client.get("/game/{0}/hand/".format(self.game.id))
-
-        self.assertContains(response, "Show me this 1")
-        self.assertContains(response, "Show me this 2")
-        self.assertNotContains(response, "I don't need to see that 1")
-        self.assertNotContains(response, "I don't need to see that 3")
-
-    def test_show_hand_doesnt_display_free_informations_from_ACCEPTED_trades_of_other_games(self): # TODO delete
-        other_game = mommy.make(Game, master = self.master, end_date = now() + datetime.timedelta(days = 7))
-        for player in get_user_model().objects.exclude(username = 'test1'): mommy.make(GamePlayer, game = other_game, player = player)
-
-        initiator_offer1 = mommy.make(Offer)
-        responder_offer1 = mommy.make(Offer, free_information = "There is no point showing this")
-        trade = mommy.make(Trade, game = other_game, initiator = self.loginUser, responder = self.alternativeUser,
-                               status = 'ACCEPTED', initiator_offer = initiator_offer1, responder_offer = responder_offer1)
-
-        initiator_offer2 = mommy.make(Offer, free_information = "There is no point showing that")
-        responder_offer2 = mommy.make(Offer)
-        trade = mommy.make(Trade, game = other_game, initiator = self.alternativeUser, responder = self.loginUser,
-                               status = 'ACCEPTED', initiator_offer = initiator_offer2, responder_offer = responder_offer2)
-
-        response = self.client.get("/game/{0}/hand/".format(self.game.id))
-
-        self.assertNotContains(response, "There is no point showing this")
-        self.assertNotContains(response, "There is no point showing that")
-
-    def test_show_hand_displays_former_rulecards_given_in_trades(self): # TODO delete
-        rulecard1 = mommy.make(RuleCard, public_name = 'C1', description = 'Desc1')
-        rulecard2 = mommy.make(RuleCard, public_name = 'C2', description = 'Desc2')
-        rih1_former = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
-                                     ownership_date = utc.localize(datetime.datetime(2013, 01, 10, 18, 30)),
-                                     abandon_date = utc.localize(datetime.datetime(2012, 01, 11, 10, 45)))
-        rih1_former_duplicate = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard1,
-                                               ownership_date = utc.localize(datetime.datetime(2013, 01, 12, 16, 00)),
-                                               abandon_date = utc.localize(datetime.datetime(2012, 01, 13, 18, 00)))
-        rih2_current = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
-                                      ownership_date = utc.localize(datetime.datetime(2013, 01, 15, 15, 25)),
-                                      abandon_date = None)
-        rih2_former_but_copy_of_current = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
-                                                         ownership_date = utc.localize(datetime.datetime(2013, 01, 12, 12, 00)),
-                                                         abandon_date = utc.localize(datetime.datetime(2013, 01, 13, 8, 5)))
-
-        # one should see one rulecard 2 in rules currently owned and only one rulecard 1 in former rules
-        #  (no duplicates and no copies of cards currently in hand)
-        response = self.client.get("/game/{0}/hand/".format(self.game.id))
-
-        self.assertContains(response, '<div class="card_name">C2</div>', count = 1)
-        self.assertEqual([rulecard2], [rih.rulecard for rih in response.context['rule_hand']])
-
-        self.assertContains(response, '<div class="card_name">C1</div>', count = 1)
-        self.assertEqual([{'public_name': 'C1', 'description': 'Desc1'}], response.context['former_rules'])
+class SubmitHandTest(MystradeTestCase):
 
     def test_submit_hand_displays_the_commodities(self):
         commodity1 = mommy.make(Commodity, name = 'c1', color = 'colA')
@@ -948,6 +875,7 @@ class HandViewTest(MystradeTestCase): # TODO detele
         self.assertEqual(self.loginUser, trade_replied_by_other_player.finalizer)
         self.assertIsNotNone(trade_replied_by_other_player.closing_date)
 
+@skip("until redesign")
 class ControlBoardViewTest(MystradeTestCase):
 
     def setUp(self):
@@ -957,33 +885,36 @@ class ControlBoardViewTest(MystradeTestCase):
                                           closing_date = now() + datetime.timedelta(days = -1))
         mommy.make(GamePlayer, game = self.game_closed, player = self.loginUser)
 
-    def test_access_to_score_page_allowed_only_to_game_players(self):
-        self._assertOperation_get(self.game_closed, "score")
+    def test_access_to_score_for_a_closed_game_allowed_only_to_game_players(self):
+        response = self._assertGetGamePage(self.game_closed)
+        self.assertContains("Final Scores", response)
 
         self.login_as(self.admin)
-        self._assertOperation_get(self.game_closed, "score", 403)
+        response = self._assertGetGamePage(self.game_closed)
+        self.assertContains("Final Scores", response)
 
         self.login_as(self.master)
-        self._assertOperation_get(self.game_closed, "score", 403)
+        response = self._assertGetGamePage(self.game_closed)
+        self.assertContains("Final Scores", response)
 
     def test_access_to_score_page_allowed_only_to_closed_games(self):
-        self._assertOperation_get(self.game_ended, "score", 403)
+        self._assertGetGamePage(self.game_ended, "score", 403)
 
     def test_access_to_control_board_allowed_only_to_game_master_and_admins_that_are_not_players(self):
         # simple player
-        self._assertOperation_get(self.game, "control", 403)
+        self._assertGetGamePage(self.game, "control", 403)
 
         # game master
         self.login_as(self.master)
-        self._assertOperation_get(self.game, "control")
+        self._assertGetGamePage(self.game, "control")
 
         # admin not player
         self.login_as(self.admin)
-        self._assertOperation_get(self.game, "control")
+        self._assertGetGamePage(self.game, "control")
 
         # admin that is player
         self.login_as(self.admin_player)
-        self._assertOperation_get(self.game, "control", 403)
+        self._assertGetGamePage(self.game, "control", 403)
 
     def test_close_game_allowed_only_to_game_master_and_admins_that_are_not_players(self):
         # game master
@@ -1018,7 +949,7 @@ class ControlBoardViewTest(MystradeTestCase):
         self.assertIsNone(self.game_ended.closing_date)
 
     def test_close_game_not_allowed_in_GET(self):
-        self._assertOperation_get(self.game_ended, "close", 403)
+        self._assertGetGamePage(self.game_ended, "close", 403)
 
     def test_close_game_allowed_only_on_games_ended_but_not_already_closed(self):
         game_not_ended = mommy.make(Game, master = self.loginUser, end_date = now() + datetime.timedelta(days = 2))
@@ -1232,9 +1163,10 @@ class ControlBoardViewTest(MystradeTestCase):
         cih2white  = mommy.make(CommodityInHand, game = game, player = test6,
                                     nb_cards = 4, commodity = Commodity.objects.get(ruleset = 1, name = 'White'))
 
-    def _assertOperation_get(self, game, operation, status_code = 200):
-        response = self.client.get("/game/{0}/{1}/".format(game.id, operation), follow = True)
+    def _assertGetGamePage (self, game, status_code=200):
+        response = self.client.get("/game/{0}/".format(game.id), follow = True)
         self.assertEqual(status_code, response.status_code)
+        return response
 
     def _assertOperation_post(self, game, operation, status_code = 200):
         response = self.client.post("/game/{0}/{1}/".format(game.id, operation), follow = True)

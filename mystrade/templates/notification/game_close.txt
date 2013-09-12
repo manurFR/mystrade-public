@@ -9,7 +9,7 @@ You scored {{ scoresheet.total_score }} points, divided as:
 {% for sfc in scoresheet.scores_from_commodity %}- {{ sfc.nb_scored_cards }} scored {{ sfc.commodity.name }} card{{ sfc.nb_scored_cards|pluralize }} x {{ sfc.actual_value|default_if_none:'0' }} = {{ sfc.score|default_if_none:'' }} points
 {% endfor %}
 * Applicable rules:
-{% for sfr in scoresheet.scores_from_rule %}- Rule : {{ sfr.detail|safe }}{% if sfr.score %} = {{ sfr.score }} point{{ sfr.score|pluralize }}{% endif %}
+{% for sfr in scoresheet.scores_from_rule %}- Rule : ({{ sfr.rulecard.public_name }}) {{ sfr.detail|safe }}{% if sfr.score %} = {{ sfr.score }} point{{ sfr.score|pluralize }}{% endif %}
 {% endfor %}
 
 Check the full scores of all players here:

@@ -7,8 +7,11 @@
 {% endif %}
 
 <h3>{{ specification }} Scores
-    <span id="link_open_all_scoresheets" class="selectable ui-icon ui-icon-circle-plus" style="display:inline-block; vertical-align: text-bottom;" title="open all"></span>
-    <span id="link_close_all_scoresheets" class="selectable ui-icon ui-icon-circle-minus" style="display:inline-block; vertical-align: text-bottom;" title="close all"></span>
+    <span class="helptext">Click to see score details</span>
+    <div class="note">
+        <span id="link_close_all_scoresheets" class="selectable ui-icon ui-icon-circle-minus" style="display:inline-block; vertical-align: text-bottom;" title="close all"></span>
+        <span id="link_open_all_scoresheets" class="selectable ui-icon ui-icon-circle-plus" style="display:inline-block; vertical-align: text-bottom;" title="open all"></span>
+    </div>
 </h3>
 <div id="zone_scoresheets">
 {% for scoresheet in scoresheets %}
@@ -80,7 +83,7 @@
             {% if scoresheet.known_rules %}
                 <div class="known_rules">
                     {% for rih in scoresheet.known_rules %}
-                    <div class="rulecard_thumbnail" title="Rulecard {{ rih.rulecard.public_name }}">{{ rih.rulecard.public_name }}</div>
+                    <div class="rulecard_thumbnail" title="{{ rih.rulecard.description }}">{{ rih.rulecard.public_name }}</div>
                     {% endfor %}
                 </div>
             {% else %}
@@ -113,6 +116,8 @@
 
     $(function() { // document ready
         zoneScoresheets.find(".player_scoresheet").hide();
+
+        zoneScoresheets.find(".known_rules").find(".rulecard_thumbnail").tooltip();
     });
 </script>
 

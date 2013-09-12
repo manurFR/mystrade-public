@@ -73,4 +73,8 @@
 .known_rules {
   @extend .odd_color;
   padding: 0 5px 2px 5px;
+
+  .rulecard_thumbnail {
+    cursor: help;
+  }
 }
