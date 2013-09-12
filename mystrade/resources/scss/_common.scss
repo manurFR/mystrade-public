@@ -32,6 +32,12 @@ $defaultFontSize: 9pt;
   };
 }
 
+@mixin shadowBox($offset: 2px, $blur: 10px, $color: darken(#FFB600, 20%), $inset: "") {
+  box-shadow: $offset $offset $blur $color unquote($inset);
+  -moz-box-shadow: $offset $offset $blur $color unquote($inset);
+  -webkit-box-shadow: $offset $offset $blur $color unquote($inset);
+}
+
 @mixin floatright() {
   float: right;
   margin-right: 1em;

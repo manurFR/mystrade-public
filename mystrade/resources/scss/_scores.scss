@@ -1,9 +1,5 @@
 @import "common";
 
-.me h2 {
-  background: #FFE640;
-}
-
 .score_header {
   cursor: pointer;
 
@@ -28,6 +24,15 @@
   }
 }
 
+.me {
+  .score_header {
+    padding: 5px;
+    background-color: $infoPanelColor;
+    @include roundedBorder(5px);
+    @include shadowBox();
+  }
+}
+
 .congrats {
   margin-top: 20px;
   text-align: center;
@@ -35,9 +40,12 @@
 }
 
 .player_scoresheet {
-  //background-color: $infoPanelColor;
   margin: 0.83em 0;
   @include font($size: $defaultFontSize);
+  @include roundedBorder(8px);
+  padding: 8px;
+  background-color: lighten($backgroundColor, 13%);
+  @include shadowBox($inset: inset);
 }
 
 .grand_total {

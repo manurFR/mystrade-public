@@ -132,6 +132,7 @@ $marginOfCommodityCards: 3px;
   width: 25px;
   height: $heightOfCommodityCards;
   margin: $marginOfCommodityCards;
+  @include shadowBox($blur: 5px);
 
   &.excluded {
     background: url(../stripe.png);
@@ -161,6 +162,7 @@ $horizontalPaddingOfRuleCards: 8px;
   height: 140px;
   margin: $marginOfRuleCards;
   padding: 4px $horizontalPaddingOfRuleCards;
+  @include shadowBox($blur: 5px);
 
   &.former {
     border: $lightDashedBorder;
@@ -198,6 +200,7 @@ $heightOfThumbnailRuleCards: 22px;
   margin: 1px;
   padding: 4px;
   @include font($size: 1.4em, $weight: bold);
+  @include shadowBox($blur: 5px);
 }
 
 .note {
@@ -219,7 +222,7 @@ $heightOfThumbnailRuleCards: 22px;
 }
 
 .even_color {
-  background-color: lighten($backgroundColor, 5%);
+  background-color: darken($backgroundColor, 2%);
 
   &:hover {
     background-color: $backgroundColor;
@@ -227,7 +230,7 @@ $heightOfThumbnailRuleCards: 22px;
 }
 
 .odd_color {
-  background-color: darken($backgroundColor, 2%);
+  background-color: lighten($backgroundColor, 5%);
 
   &:hover {
     background-color: $backgroundColor;
