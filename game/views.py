@@ -499,26 +499,28 @@ def game_board(request, game_id):
     else:
         # Scores for the game master and the admins that are NOT players in this game, and for the players after the game is closed
         scoresheets = None
-        if game.is_closed():
-            scoresheets = _fetch_scoresheets(game)
-        elif game.is_active() or game.has_ended():
-            scoresheets = tally_scores(game) # but don't persist them
-            scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
-
-        # enrich scoresheets
         random_scoring = False # True if at least one line of score for one player can earn a different amount of points each time we calculate the score
         rank = -1
-        for index, scoresheet in enumerate(scoresheets, start = 1):
-            player = scoresheet.gameplayer.player
-            if game.is_closed() and request.user == player:
-                rank = index
-            elif game.is_active() or game.has_ended():
-                if len([sfr for sfr in scoresheet.scores_from_rule if getattr(sfr, 'is_random', False)]) > 0:
-                    scoresheet.is_random = True
-                    random_scoring = True
 
-            if request.user not in players or game.is_closed():
-                scoresheet.known_rules = known_rules(game, player)
+        if game.has_started():
+            if game.is_closed():
+                scoresheets = _fetch_scoresheets(game)
+            else:
+                scoresheets = tally_scores(game) # but don't persist them
+                scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
+
+            # enrich scoresheets
+            for index, scoresheet in enumerate(scoresheets, start = 1):
+                player = scoresheet.gameplayer.player
+                if game.is_closed() and request.user == player:
+                    rank = index
+                else:
+                    if len([sfr for sfr in scoresheet.scores_from_rule if getattr(sfr, 'is_random', False)]) > 0:
+                        scoresheet.is_random = True
+                        random_scoring = True
+
+                if request.user not in players or game.is_closed():
+                    scoresheet.known_rules = known_rules(game, player)
 
         context.update({'super_access': True, 'scoresheets': scoresheets, 'random_scoring': random_scoring, 'rank': rank})
 

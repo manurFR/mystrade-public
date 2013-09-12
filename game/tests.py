@@ -559,12 +559,12 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         response = self._getTabRecently()
         self.assertContains(response, 'Game #{0} has started.'.format(self.game.id))
         self.assertContains(response, 'Game #{0} has ended.'.format(self.game.id))
-        self.assertContains(response, 'Game #{0} is over. <a href="/game/{0}/score/">Scores</a> have been calculated.'.format(self.game.id))
+        self.assertContains(response, 'Game #{0} is over. Scores have been calculated.'.format(self.game.id))
 
         self.client.logout()
         self.assertTrue(self.client.login(username = self.master.username, password = 'test'))
         response = self._getTabRecently()
-        self.assertContains(response, 'Game #{0} is over. <a href="/game/{0}/control/">Scores</a> have been calculated.'.format(self.game.id))
+        self.assertContains(response, 'Game #{0} is over. Scores have been calculated.'.format(self.game.id))
 
     def test_tab_recently_events_include_own_trades(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,

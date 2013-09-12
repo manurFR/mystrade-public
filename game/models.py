@@ -22,11 +22,14 @@ class Game(models.Model):
     def __unicode__(self):
         return "{0}".format(self.id)
 
-    def is_active(self):
-        return self.start_date <= now() <= self.end_date
-
     def has_ended(self):
         return now() >= self.end_date
+
+    def has_started(self):
+        return now() >= self.start_date
+
+    def is_active(self):
+        return self.has_started() and not self.has_ended()
 
     def is_closed(self):
         return self.closing_date and now() >= self.closing_date

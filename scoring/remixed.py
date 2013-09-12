@@ -11,7 +11,7 @@ def RMX04(self, scoresheet):
     if combined_number > 5:
         scoresheet.set_actual_value('Green', actual_value = 0)
         scoresheet.register_score_from_rule(self,
-            '(4) Since the combined number of yellow cards ({0}) and green cards ({1}) is {2} (higher than five), the value of green cards is set to zero.'.format(
+            'Since the combined number of yellow cards ({0}) and green cards ({1}) is {2} (higher than five), the value of green cards is set to zero.'.format(
                 scoresheet.nb_scored_cards('Yellow'), scoresheet.nb_scored_cards('Green'), combined_number))
 
 def RMX05(self, scoresheet):
@@ -19,7 +19,7 @@ def RMX05(self, scoresheet):
     if scoresheet.nb_scored_cards('Yellow') > scoresheet.nb_scored_cards('Pink'):
         scoresheet.set_nb_scored_cards('Yellow', nb_scored_cards = scoresheet.nb_scored_cards('Pink'))
         scoresheet.register_score_from_rule(self,
-                                            '(5) Since there are {0} pink card(s), only {0} yellow card(s) score.'.format(scoresheet.nb_scored_cards('Pink')))
+                                            'Since there are {0} pink card(s), only {0} yellow card(s) score.'.format(scoresheet.nb_scored_cards('Pink')))
 
 def RMX06(self, scoresheets):
     """If a player has five or more blue cards, 10 points are deducted from every other player's score.
@@ -34,7 +34,7 @@ def RMX06(self, scoresheets):
         for victim in scoresheets:
             if victim != culprit:
                 victim.register_score_from_rule(self,
-                                                '(6) Since {0} has {1} blue cards, 10 points are deducted.'.format(culprit.player_name, culprit.nb_scored_cards('Blue')),
+                                                'Since {0} has {1} blue cards, 10 points are deducted.'.format(culprit.player_name, culprit.nb_scored_cards('Blue')),
                                                 score = -10)
 
 def RMX07(self, scoresheet):
@@ -45,7 +45,7 @@ def RMX07(self, scoresheet):
             if sfr.rulecard.ref_name == 'RMX06' and sfr.score:
                 sfr.score = None
                 sfr.detail = sfr.detail.replace('are deducted.', 'should have been deducted...')
-                scoresheet.register_score_from_rule(self, '(7) ...but a set of three yellow cards cancels that penalty.')
+                scoresheet.register_score_from_rule(self, '...but a set of three yellow cards cancels that penalty.')
     return scoresheet
 
 def RMX08(self, scoresheet):
@@ -58,7 +58,7 @@ def RMX08(self, scoresheet):
             min_color_number = sfc.nb_scored_cards
     if min_color_number and nb_colors >= 5:
         for _i in range(min_color_number):
-            scoresheet.register_score_from_rule(self, '(8) A set of five different colors gives a bonus of 8 points.', score = 8)
+            scoresheet.register_score_from_rule(self, 'A set of five different colors gives a bonus of 8 points.', score = 8)
 
 def RMX09(self, scoresheets):
     """The player with the most white cards triples their value.
@@ -71,7 +71,7 @@ def RMX09(self, scoresheets):
     if whites.count(max(whites)) == 1 and max(whites) > 0:
         winner = scoresheets[whites.index(max(whites))]
         winner.register_score_from_rule(self,
-                                        '(9) Having the most white cards ({0} cards) triples their value.'.format(winner.nb_scored_cards('White')),
+                                        'Having the most white cards ({0} cards) triples their value.'.format(winner.nb_scored_cards('White')),
                                         score = 2 * winner.nb_scored_cards('White') * winner.actual_value('White'))
 
 def RMX10(self, scoresheet):
@@ -95,7 +95,7 @@ def RMX10(self, scoresheet):
                 discarded[selected_color] += 1
             if scoresheet.nb_scored_cards(selected_color) == 0:
                 present_colors.remove(selected_color)
-        detail = '(10) Since the total of the basic values of your cards was {0} points (more than 39), '.format(initial_score)
+        detail = 'Since the total of the basic values of your cards was {0} points (more than 39), '.format(initial_score)
         detail += 'the following cards have been discarded to bring the new basic total (before applying all other rules) to {0} points: '.format(scoresheet.total_score)
         for index, color in enumerate(discarded.iterkeys()):
             detail += '{0} {1} card'.format(discarded[color], color) + ('s' if discarded[color] > 1 else '')
@@ -111,7 +111,7 @@ def RMX11(self, scoresheet):
     for sfc in scoresheet.scores_from_commodity:
         if sfc.nb_submitted_cards >= 7:
             scoresheet.register_score_from_rule(self,
-                                                '(11) Since {0} {1} cards where submitted (seven or more), 10 points are deducted.'.format(sfc.nb_submitted_cards, sfc.name),
+                                                'Since {0} {1} cards where submitted (seven or more), 10 points are deducted.'.format(sfc.nb_submitted_cards, sfc.name),
                                                 score = -10)
 
 def RMX12(self, scoresheets):
@@ -125,7 +125,7 @@ def RMX12(self, scoresheets):
     if blues.count(max(blues)) == 1 and max(blues) > 0:
         winner = scoresheets[blues.index(max(blues))]
         winner.register_score_from_rule(self,
-                                        '(12) Having the most blue cards ({0} cards) doubles the value of pink cards.'.format(winner.nb_scored_cards('Blue')),
+                                        'Having the most blue cards ({0} cards) doubles the value of pink cards.'.format(winner.nb_scored_cards('Blue')),
                                         score = winner.nb_scored_cards('Pink') * winner.actual_value('Pink'))
 
 def RMX13(self, scoresheet):
@@ -140,7 +140,7 @@ def RMX13(self, scoresheet):
             nb_colors.append({ 'color': sfc.name, 'nb_cards': sfc.nb_submitted_cards })
     if len(nb_colors) == 4 and all(item['nb_cards'] == nb_colors[0]['nb_cards'] for item in nb_colors):
         scoresheet.register_score_from_rule(self,
-                                            '(13) A set of the same number of cards for 4 colors ({0}, {1}, {2}, {3}) and no other cards doubles the score.'.format(
+                                            'A set of the same number of cards for 4 colors ({0}, {1}, {2}, {3}) and no other cards doubles the score.'.format(
                                                 nb_colors[0]['color'], nb_colors[1]['color'], nb_colors[2]['color'], nb_colors[3]['color']),
                                             score = scoresheet.total_score)
 
@@ -150,7 +150,7 @@ def RMX14(self, scoresheet):
     nb_bonus = min(nb_sets, scoresheet.nb_scored_cards('Yellow'))
     for _i in range(nb_bonus):
         scoresheet.register_score_from_rule(self,
-                                            '(14) A pair of pink cards doubles the value of one yellow card.',
+                                            'A pair of pink cards doubles the value of one yellow card.',
                                             score = scoresheet.actual_value('Yellow'))
 
 def RMX15(self, scoresheet):
@@ -159,5 +159,5 @@ def RMX15(self, scoresheet):
     nb_bonus = min(nb_sets, scoresheet.nb_scored_cards('Green'))
     for _i in range(nb_bonus):
         scoresheet.register_score_from_rule(self,
-                                            '(15) A set of three white cards triples the value of one green card.',
+                                            'A set of three white cards triples the value of one green card.',
                                             score = 2 * scoresheet.actual_value('Green'))

@@ -8,14 +8,14 @@ def HAG04(self, scoresheet):
     if scoresheet.nb_scored_cards('White') > 3:
         scoresheet.set_actual_value('White', actual_value = 0)
         scoresheet.register_score_from_rule(self,
-            '(4) Since there are {0} white cards (more than three), their value is set to zero.'.format(scoresheet.nb_scored_cards('White')))
+            'Since there are {0} white cards (more than three), their value is set to zero.'.format(scoresheet.nb_scored_cards('White')))
 
 def HAG05(self, scoresheet):
     """"A player can score only as many as orange cards as he/she has blue cards."""
     if scoresheet.nb_scored_cards('Orange') > scoresheet.nb_scored_cards('Blue'):
         scoresheet.set_nb_scored_cards('Orange', nb_scored_cards = scoresheet.nb_scored_cards('Blue'))
         scoresheet.register_score_from_rule(self,
-            '(5) Since there are {0} blue card(s), only {0} orange card(s) score.'.format(scoresheet.nb_scored_cards('Blue')))
+            'Since there are {0} blue card(s), only {0} orange card(s) score.'.format(scoresheet.nb_scored_cards('Blue')))
 
 def HAG06(self, scoresheets):
     """If a player has five or more blue cards, 10 points are deducted from every other player's score.
@@ -30,7 +30,7 @@ def HAG06(self, scoresheets):
         for victim in scoresheets:
             if victim != culprit:
                 victim.register_score_from_rule(self,
-                              '(6) Since {0} has {1} blue cards, 10 points are deducted.'.format(culprit.player_name, culprit.nb_scored_cards('Blue')),
+                              'Since {0} has {1} blue cards, 10 points are deducted.'.format(culprit.player_name, culprit.nb_scored_cards('Blue')),
                               score = -10)
 
 def HAG07(self, scoresheet):
@@ -41,7 +41,7 @@ def HAG07(self, scoresheet):
             if sfr.rulecard.ref_name == 'HAG06' and sfr.score:
                 sfr.score = None
                 sfr.detail = sfr.detail.replace('are deducted.', 'should have been deducted...')
-                scoresheet.register_score_from_rule(self, '(7) ...but a set of three red cards cancels that penalty.')
+                scoresheet.register_score_from_rule(self, '...but a set of three red cards cancels that penalty.')
     return scoresheet
 
 def HAG08(self, scoresheets):
@@ -56,7 +56,7 @@ def HAG08(self, scoresheets):
         if yellows.count(winning_number) == 1:
             winner = scoresheets[yellows.index(winning_number)]
             winner.register_score_from_rule(self,
-                          '(8) Having the most yellow cards ({0} cards) gives a bonus of {0}x{0} points.'.format(winner.nb_scored_cards('Yellow')),
+                          'Having the most yellow cards ({0} cards) gives a bonus of {0}x{0} points.'.format(winner.nb_scored_cards('Yellow')),
                           score = winner.nb_scored_cards('Yellow') ** 2)
             break
 
@@ -69,7 +69,7 @@ def HAG09(self, scoresheet):
     for sfc in scoresheet.scores_from_commodity:
         if sfc.nb_submitted_cards >= 7:
             scoresheet.register_score_from_rule(self,
-                              '(9) Since {0} {1} cards where submitted (seven or more), 10 points are deducted.'.format(sfc.nb_submitted_cards, sfc.name),
+                              'Since {0} {1} cards where submitted (seven or more), 10 points are deducted.'.format(sfc.nb_submitted_cards, sfc.name),
                               score = -10)
 
 def HAG10(self, scoresheet):
@@ -82,7 +82,7 @@ def HAG10(self, scoresheet):
             min_color_number = sfc.nb_scored_cards
     if min_color_number and nb_colors >= 5:
         for _i in range(min_color_number):
-            scoresheet.register_score_from_rule(self, '(10) A set of five different colors gives a bonus of 10 points.', score = 10)
+            scoresheet.register_score_from_rule(self, 'A set of five different colors gives a bonus of 10 points.', score = 10)
 
 def HAG11(self, scoresheet):
     """If a \"pyramid\" is submitted with no other cards, the value of the hand is doubled.
@@ -98,7 +98,7 @@ def HAG11(self, scoresheet):
     nb_colors.sort(key = lambda item: item['nb_cards'])
     if [item['nb_cards'] for item in nb_colors] == [1, 2, 3, 4]:
         scoresheet.register_score_from_rule(self,
-                      '(11) A pyramid of 4 {0} cards, 3 {1} cards, 2 {2} cards, 1 {3} card and no other card doubles the score.'.format(nb_colors[3]['color'], nb_colors[2]['color'], nb_colors[1]['color'], nb_colors[0]['color']),
+                      'A pyramid of 4 {0} cards, 3 {1} cards, 2 {2} cards, 1 {3} card and no other card doubles the score.'.format(nb_colors[3]['color'], nb_colors[2]['color'], nb_colors[1]['color'], nb_colors[0]['color']),
                       score = scoresheet.total_score)
 
 def HAG12(self, scoresheets):
@@ -112,7 +112,7 @@ def HAG12(self, scoresheets):
     if reds.count(max(reds)) == 1 and max(reds) > 0:
         winner = scoresheets[reds.index(max(reds))]
         winner.register_score_from_rule(self,
-                      '(12) Having the most red cards ({0} cards) doubles their value.'.format(winner.nb_scored_cards('Red')),
+                      'Having the most red cards ({0} cards) doubles their value.'.format(winner.nb_scored_cards('Red')),
                       score = winner.nb_scored_cards('Red') * winner.actual_value('Red'))
 
 def HAG13(self, scoresheet):
@@ -121,7 +121,7 @@ def HAG13(self, scoresheet):
     nb_bonus = min(nb_sets, scoresheet.nb_scored_cards('White'))
     for _i in range(nb_bonus):
         scoresheet.register_score_from_rule(self,
-                      '(13) A pair of yellow cards doubles the value of one white card.',
+                      'A pair of yellow cards doubles the value of one white card.',
                       score = scoresheet.actual_value('White'))
 
 def HAG14(self, scoresheet):
@@ -130,7 +130,7 @@ def HAG14(self, scoresheet):
     nb_bonus = min(nb_sets, scoresheet.nb_scored_cards('Orange'))
     for _i in range(nb_bonus):
         scoresheet.register_score_from_rule(self,
-                      '(14) A set of three blue cards quadruples the value of one orange card.',
+                      'A set of three blue cards quadruples the value of one orange card.',
                       score = 3 * scoresheet.actual_value('Orange'))
 
 def HAG15(self, scoresheet):
@@ -144,7 +144,7 @@ def HAG15(self, scoresheet):
             present_colors.append(sfc.name)
             total_scored_cards += sfc.nb_scored_cards
     if total_scored_cards > 13:
-        detail = '(15) Since {0} cards had to be scored, {1} have been discarded (to keep only 13 cards) : '.format(total_scored_cards, total_scored_cards - 13)
+        detail = 'Since {0} cards had to be scored, {1} have been discarded (to keep only 13 cards) : '.format(total_scored_cards, total_scored_cards - 13)
         discarded = {}
         while total_scored_cards > 13:
             selected_color = random.choice(present_colors)
