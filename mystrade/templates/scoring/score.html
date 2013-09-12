@@ -73,10 +73,19 @@
                 {% endfor %}
                 </div>
             {% else %}
-                <em>No applicable rules</em><br/>
+                <em>No applicable rules</em>
             {% endif %}
 
-            {# TODO: player's known rulecards #}
+            <h3>Rules Known By This Player</h3>
+            {% if scoresheet.known_rules %}
+                <div class="known_rules">
+                    {% for rih in scoresheet.known_rules %}
+                    <div class="rulecard_thumbnail" title="Rulecard {{ rih.rulecard.public_name }}">{{ rih.rulecard.public_name }}</div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <em>No known rules</em>
+            {% endif %}
 
         </div>
         <br/>

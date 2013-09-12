@@ -17,12 +17,12 @@ from django.utils.timezone import now, utc, make_naive
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse, MessageForm
-from game.helpers import rules_currently_in_hand, rules_formerly_in_hand, commodities_in_hand
+from game.helpers import rules_currently_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules
 from game.models import Game, CommodityInHand, GamePlayer, Message
 from ruleset.models import RuleCard, Ruleset
 from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
-from trade.forms import RuleCardFormParse, RuleCardFormDisplay, TradeForm, OfferForm
+from trade.forms import RuleCardFormParse, RuleCardFormDisplay
 from trade.models import Offer, Trade
 from profile.helpers import UserNameCache
 from utils import utils, stats
@@ -499,21 +499,26 @@ def game_board(request, game_id):
     else:
         # Scores for the game master and the admins that are NOT players in this game, and for the players after the game is closed
         scoresheets = None
-        random_scoring = False # True if at least one line of score for one player can earn a different amount of points each time we calculate the score
-        rank = -1
         if game.is_closed():
             scoresheets = _fetch_scoresheets(game)
-            if request.user in players:
-                for index, scoresheet in enumerate(scoresheets, start = 1):
-                    if scoresheet.gameplayer.player == request.user:
-                        rank = index
         elif game.is_active() or game.has_ended():
             scoresheets = tally_scores(game) # but don't persist them
             scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
-            for scoresheet in scoresheets:
+
+        # enrich scoresheets
+        random_scoring = False # True if at least one line of score for one player can earn a different amount of points each time we calculate the score
+        rank = -1
+        for index, scoresheet in enumerate(scoresheets, start = 1):
+            player = scoresheet.gameplayer.player
+            if game.is_closed() and request.user == player:
+                rank = index
+            elif game.is_active() or game.has_ended():
                 if len([sfr for sfr in scoresheet.scores_from_rule if getattr(sfr, 'is_random', False)]) > 0:
                     scoresheet.is_random = True
                     random_scoring = True
+
+            if request.user not in players or game.is_closed():
+                scoresheet.known_rules = known_rules(game, player)
 
         context.update({'super_access': True, 'scoresheets': scoresheets, 'random_scoring': random_scoring, 'rank': rank})
 

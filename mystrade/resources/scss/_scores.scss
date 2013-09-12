@@ -62,10 +62,15 @@
 
 .cell_scoresheet {
   display: table-cell;
-  padding: 0 5px;
+  padding: 0 5px 2px 5px;
   vertical-align: middle;
 
   &.points {
     min-width: 70px;
   }
+}
+
+.known_rules {
+  @extend .odd_color;
+  padding: 0 5px 2px 5px;
 }
