@@ -1,0 +1,63 @@
+@import "common";
+
+.me h2 {
+  background: #FFE640;
+}
+
+.score_header {
+  cursor: pointer;
+
+  .ui-icon {
+    display: inline-block;
+  }
+
+  .first-player {
+    @include font($size: 2.4em, $weight: bold);
+  }
+
+  .second-player {
+    @include font($size: 1.9em, $weight: bold);
+  }
+
+  .third-player {
+    @include font($size: 1.7em, $weight: bold);
+  }
+
+  .other-players {
+    @include font($size: 1.4em);
+  }
+}
+
+.congrats {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 1.3em;
+}
+
+.player_scoresheet {
+  //background-color: $infoPanelColor;
+  margin: 0.83em 0;
+  @include font($size: $defaultFontSize);
+}
+
+.grand_total {
+  @include font($size: 1.3em, $weight: bold);
+}
+
+.table_scoresheet {
+  display: table;
+}
+
+.row_scoresheet {
+  display: table-row;
+}
+
+.cell_scoresheet {
+  display: table-cell;
+  padding: 0 5px;
+  vertical-align: middle;
+
+  &.points {
+    min-width: 70px;
+  }
+}

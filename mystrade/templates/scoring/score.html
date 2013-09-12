@@ -12,21 +12,21 @@
 </h3>
 <div id="zone_scoresheets">
 {% for scoresheet in scoresheets %}
-    <div class="accordion{% if rank == forloop.counter %} me{% endif %}">
-        <a name="player-{{ forloop.counter }}"></a>
-        <h2>
+    <div class="player {% if rank == forloop.counter %} me{% endif %}">
+        <div class="score_header">
+            <span class="ui-icon ui-icon-triangle-1-e"></span>
             {% if forloop.counter == 1 %}
-                <span class="first-player-header">Winner:
+                <span class="first-player">Winner:
             {% elif forloop.counter == 2 %}
-                <span class="second-player-header">Second place:
+                <span class="second-player">Second place:
             {% elif forloop.counter == 3 %}
-                <span class="third-player-header">Third place:
+                <span class="third-player">Third place:
             {% else %}
-                #{{ forloop.counter }}. <span>
+                <span class="other-players">#{{ forloop.counter }}.
             {% endif %}
             <strong>{% include "common/name_or_you.html" with who=scoresheet.gameplayer.player %}</strong></span>
             <span class="helptext">({{ scoresheet.total_score }} points)</span>
-        </h2>
+        </div>
         <div class="player_scoresheet">
             <div class="grand_total">
                 Grand Total: {{ scoresheet.total_score }} points
@@ -65,9 +65,9 @@
                         <div class="cell_scoresheet {{ color }}">{{ sfr.detail }}</div>
                         <div class="cell_scoresheet {{ color }} points">{% if sfr.score != None %}<strong>{{ sfr.score|stringformat:'+ d' }} pt{{ sfr.score|pluralize }}{% endif %}</strong></div>
                         {% if sfr.is_random %}
-                            <div class="cell_scoresheet" data-tip="this rule introdudes a random element">
-                                <img src="{% static "warning.png" %}" height="16" width="16" alt=""/>
-                            </div>
+                        <div class="cell_scoresheet">
+                            <img src="{% static "warning.png" %}" height="16" width="16" alt="" title="this rule introduces a random element"/>
+                        </div>
                         {% endif %}
                     </div>
                 {% endfor %}
@@ -85,14 +85,25 @@
 </div>
 
 <script>
-    $(function() {
-        $("#zone_scoresheets > .accordion").accordion({ header: "h2", collapsible: true, active: false });
-        $("#link_open_all_scoresheets").tooltip().on("click", function() {
-            $("#zone_scoresheets > .accordion").accordion({active: 0});
-        });
-        $("#link_close_all_scoresheets").tooltip().on("click", function() {
-            $("#zone_scoresheets > .accordion").accordion({active: false});
-        });
+    var zoneScoresheets = $("#zone_scoresheets");
+
+    zoneScoresheets.find(".score_header").on("click", function(event) {
+        var zonePlayer = $(event.target).parents(".player");
+        zonePlayer.find(".player_scoresheet").slideToggle();
+        zonePlayer.find(".ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s");
+    });
+
+    $("#link_open_all_scoresheets").tooltip().on("click", function() {
+        zoneScoresheets.find(".player_scoresheet").slideDown();
+        zoneScoresheets.find(".ui-icon").toggleClass("ui-icon-triangle-1-s", true).toggleClass("ui-icon-triangle-1-e", false);
+    });
+    $("#link_close_all_scoresheets").tooltip().on("click", function() {
+        zoneScoresheets.find(".player_scoresheet").slideUp();
+        zoneScoresheets.find(".ui-icon").toggleClass("ui-icon-triangle-1-s", false).toggleClass("ui-icon-triangle-1-e", true);
+    });
+
+    $(function() { // document ready
+        zoneScoresheets.find(".player_scoresheet").hide();
     });
 </script>
 
