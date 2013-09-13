@@ -338,59 +338,6 @@ def select_rules(request):
 #############################################################################
 ##                          Control Board                                  ##
 #############################################################################
-TRADES_PAGINATION = 10
-
-@login_required
-def control_board(request, game_id):
-    game = get_object_or_404(Game, id = game_id)
-    data = {'game': game}
-
-    # Control board access allowed only to the game master and to the admins that are NOT players in this game
-    if game.has_super_access(request.user):
-        data['super_access'] = True
-        if game.is_closed():
-            data['scoresheets'] = _fetch_scoresheets(game)
-        elif game.is_active():
-            scoresheets = tally_scores(game) # but don't persist them
-            scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
-            random_scoring = False
-            for scoresheet in scoresheets:
-                if len([sfr for sfr in scoresheet.scores_from_rule if getattr(sfr, 'is_random', False)]) > 0:
-                    scoresheet.is_random = True
-                    random_scoring = True
-            data['scoresheets'] = scoresheets
-            # means at least one line of score for one player can earn a different amount of points each time we calculate the score
-            data['random_scoring'] = random_scoring
-
-        paginator = Paginator(Trade.objects.filter(game = game).order_by('-closing_date', '-creation_date'),
-                              per_page = TRADES_PAGINATION, orphans = 1)
-        page = request.GET.get('page')
-        try:
-            trades = paginator.page(page)
-        except PageNotAnInteger:
-            trades = paginator.page(1) # If page is not an integer, deliver first page.
-        except EmptyPage:
-            trades = paginator.page(paginator.num_pages) # If page is out of range, deliver last page of results.
-        data['trades'] = trades
-
-        return render(request, 'game/control.html', data)
-
-    raise PermissionDenied
-
-@login_required
-def player_score(request, game_id):
-    game = get_object_or_404(Game, id = game_id)
-
-    if request.user not in game.players.all() or not game.is_closed():
-        raise PermissionDenied
-
-    scoresheets = _fetch_scoresheets(game)
-    for index, scoresheet in enumerate(scoresheets, start = 1):
-        if scoresheet.gameplayer.player == request.user:
-            rank = index
-
-    return render(request, 'game/control.html', {'game': game, 'scoresheets': scoresheets, 'player_access': True, 'rank': rank})
-
 def _fetch_scoresheets(game):
     scoresheets = []
     for gameplayer in GamePlayer.objects.filter(game=game):
@@ -436,12 +383,12 @@ def close_game(request, game_id):
                     for rank, scoresheet in enumerate(scoresheets, 1):
                         utils.send_notification_email('game_close', scoresheet.gameplayer.player,
                                                       {'game': game, 'rank': rank, 'nb_players': len(scoresheets), 'scoresheet': scoresheet,
-                                                       'url': request.build_absolute_uri(reverse('player_score', args = [game.id]))})
+                                                       'url': request.build_absolute_uri(reverse('game', args = [game.id]))})
 
                     # email notification for the admins
                     utils.send_notification_email('game_close_admin', [admin[1] for admin in settings.ADMINS],
                                                   {'game': game, 'scoresheets': scoresheets,
-                                                   'url': request.build_absolute_uri(reverse('control', args = [game.id]))})
+                                                   'url': request.build_absolute_uri(reverse('game', args = [game.id]))})
             except BaseException as ex:
                 logger.error("Error in close_game({0})".format(game_id), exc_info = ex)
                 return HttpResponse(status = 422)

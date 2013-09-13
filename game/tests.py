@@ -1123,7 +1123,6 @@ class ControlBoardViewTest(MystradeTestCase):
         self.assertIn('- 3 scored Blue cards x 2 = 6 points', emailTest6.body)
         self.assertIn('- 4 scored White cards x 0 = 0 points', emailTest6.body)
         self.assertIn('- Rule : (4) Since there are 4 white cards (more than three), their value is set to zero.', emailTest6.body)
-        self.assertIn('/game/{0}/score/'.format(self.game_ended.id), emailTest6.body)
 
         self.assertEqual(1, list_recipients.count('test5@test.com'))
         emailTest5 = mail.outbox[list_recipients.index('test5@test.com')]
@@ -1135,7 +1134,6 @@ class ControlBoardViewTest(MystradeTestCase):
         self.assertIn('- 2 scored Blue cards x 2 = 4 points', emailTest5.body)
         self.assertIn('- 1 scored White card x 5 = 5 points', emailTest5.body)
         self.assertIn('- Rule : (5) Since there are 2 blue card(s), only 2 orange card(s) score.', emailTest5.body)
-        self.assertIn('/game/{0}/score/'.format(self.game_ended.id), emailTest5.body)
 
         self.assertEqual(1, list_recipients.count('test7@test.com'))
         emailTest7 = mail.outbox[list_recipients.index('test7@test.com')]
@@ -1161,7 +1159,6 @@ class ControlBoardViewTest(MystradeTestCase):
         self.assertIn('2nd. test5 : 17 points', emailAdmin.body)
         self.assertIn('3rd. test7 : 6 points', emailAdmin.body)
         self.assertIn('4th. test8 : 4 points', emailAdmin.body)
-        self.assertIn('/game/{0}/control/'.format(self.game_ended.id), emailAdmin.body)
 
     def _prepare_game_for_scoring(self, game):
         game.rules.add(RuleCard.objects.get(ref_name = 'HAG04'))
