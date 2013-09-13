@@ -18,10 +18,12 @@
             <p>All trades have been blocked since that time.<br/>
                 Please click on this button to cancel all unfinished trades, calculate scores and definitely close the game:</p>
             <div class="submit">
-                <form action="{% url 'close_game' game.id %}" method="post">{% csrf_token %}
+                <span id="error_close_game" class="helptext"></span>
+                <form id="close_game">{% csrf_token %}
                     <input type="submit" value="Close this game"/>
                 </form>
             </div>
+            <hr>
         {% endif %}
     {% endif %}
 {% endif %}
@@ -53,6 +55,22 @@
 </div>
 
 <script>
+    $("#close_game").on("click", function() {
+        $.post("{% url 'close_game' game.id %}", $(this).serialize())
+                .fail(function(jqXHR) {
+                    $("body").css("cursor", "");
+                    $("#error_close_game").text("Error trying to close the game. Please try again.");
+                    $("#close_game").find(":input").prop("disabled", false);
+                })
+                .done(function() {
+                    window.location.reload(true);
+                });
+        $("body").css("cursor", "wait");
+        $("#close_game").find(":input").prop("disabled", true);
+        $("#error_close_game").text("");
+        return false;
+    });
+
     $(function() {
         $('input[type=submit]').button();
     });

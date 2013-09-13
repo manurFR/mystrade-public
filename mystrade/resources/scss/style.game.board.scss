@@ -85,15 +85,6 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
      background: none;
      border: $lightSolidBorder;
   }
-
-  hr {
-    display: block;
-    height: 1px;
-    border: 0;
-    border-top: 1px solid $lightBackgroundColor;
-    margin: 1em 10%;
-    padding: 0;
-  }
 }
 
 #zone_post_message {

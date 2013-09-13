@@ -307,7 +307,7 @@ class StatsTest(MystradeTestCase):
         mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 1, commodity = b)
         mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, nb_cards = 2, commodity = r)
 
-        response = self.client.post("/game/{0}/close/".format(self.game.id), follow = True)
+        response = self.client.post("/game/{0}/close/".format(self.game.id), HTTP_X_REQUESTED_WITH = 'XMLHttpRequest')
         self.assertEqual(200, response.status_code)
 
         try:

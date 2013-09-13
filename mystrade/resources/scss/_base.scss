@@ -59,6 +59,15 @@ textarea {
   width: 100%;
 }
 
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid $lightBackgroundColor;
+  margin: 1em 10%;
+  padding: 0;
+}
+
 /* Page structure */
 #zone_toplinks {
   top: 2px;
@@ -222,7 +231,7 @@ $heightOfThumbnailRuleCards: 22px;
 }
 
 .even_color {
-  background-color: darken($backgroundColor, 2%);
+  background-color: lighten($backgroundColor, 5%);
 
   &:hover {
     background-color: $backgroundColor;
@@ -230,7 +239,7 @@ $heightOfThumbnailRuleCards: 22px;
 }
 
 .odd_color {
-  background-color: lighten($backgroundColor, 5%);
+  background-color: darken($backgroundColor, 2%);
 
   &:hover {
     background-color: $backgroundColor;

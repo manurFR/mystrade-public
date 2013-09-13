@@ -404,7 +404,7 @@ def _fetch_scoresheets(game):
 def close_game(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
-    if request.method == 'POST' and game.has_super_access(request.user):
+    if request.is_ajax() and request.method == 'POST' and game.has_super_access(request.user):
         if game.end_date <= now() and game.closing_date is None :
             try:
                 with transaction.commit_on_success():
@@ -444,8 +444,9 @@ def close_game(request, game_id):
                                                    'url': request.build_absolute_uri(reverse('control', args = [game.id]))})
             except BaseException as ex:
                 logger.error("Error in close_game({0})".format(game_id), exc_info = ex)
+                return HttpResponse(status = 422)
 
-            return redirect('control', game_id)
+            return HttpResponse()
 
     raise PermissionDenied
 

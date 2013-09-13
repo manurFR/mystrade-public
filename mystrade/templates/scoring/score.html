@@ -41,7 +41,7 @@
             <h3>Commodities</h3>
             <div class="table_scoresheet">
                 {% for sfc in scoresheet.scores_from_commodity %}
-                <div class="row_scoresheet {{forloop.counter|divisibleby:2|yesno:"even_color,odd_color"}}">
+                <div class="row_scoresheet {{forloop.counter0|divisibleby:2|yesno:"even_color,odd_color"}}">
                     <div class="cell_scoresheet">
                         {% for copy in sfc.nb_submitted_cards|as_range %}
                             {% if copy >= sfc.nb_scored_cards %}
@@ -61,7 +61,7 @@
             {% if scoresheet.scores_from_rule %}
                 <div class="table_scoresheet">
                 {% for sfr in scoresheet.scores_from_rule %}
-                    <div class="row_scoresheet {{forloop.counter|divisibleby:2|yesno:"even_color,odd_color"}}">
+                    <div class="row_scoresheet {{forloop.counter0|divisibleby:2|yesno:"even_color,odd_color"}}">
                         <div class="cell_scoresheet">
                             <div class="rulecard_thumbnail" title="Rulecard {{ sfr.rulecard.public_name }}">{{ sfr.rulecard.public_name }}</div>
                         </div>
