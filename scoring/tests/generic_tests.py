@@ -62,8 +62,10 @@ class ScoringTest(TestCase):
 
     def test_calculate_commodity_scores(self):
         player = mommy.make(get_user_model(), username = 'test')
-        mommy.make(CommodityInHand, game = self.game, player = player, commodity__name = 'Blue', commodity__value = 2, nb_submitted_cards = 2)
-        mommy.make(CommodityInHand, game = self.game, player = player, commodity__name = 'Red', commodity__value = 1, nb_submitted_cards = 3)
+        mommy.make(CommodityInHand, game = self.game, player = player, commodity__name = 'Blue', commodity__value = 2,
+                   nb_cards = 4, nb_submitted_cards = 2)
+        mommy.make(CommodityInHand, game = self.game, player = player, commodity__name = 'Red', commodity__value = 1,
+                   nb_cards = 3, nb_submitted_cards = 3)
 
         gameplayer = mommy.make(GamePlayer, game = self.game, player = player, submit_date = self.game.end_date)
 

@@ -21,15 +21,8 @@ class Scoresheet(object):
 
         if scores_from_commodity:
             self._scores_from_commodity = scores_from_commodity
-        elif gameplayer.submit_date:
-            self._prepare_scores_from_commodities(gameplayer)
         else:
-            self._scores_from_commodity = []
-            for cih in commodities_in_hand(gameplayer.game, gameplayer.player):
-                sfc = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = cih.commodity,
-                                         nb_submitted_cards = cih.nb_cards, nb_scored_cards = cih.nb_cards,
-                                         actual_value = cih.commodity.value, score = 0)
-                self._scores_from_commodity.append(sfc)
+            self._prepare_scores_from_commodities(gameplayer)
 
         if scores_from_rule:
             self._scores_from_rule = scores_from_rule
@@ -82,10 +75,15 @@ class Scoresheet(object):
         return sum(sfc.score for sfc in self.scores_from_commodity)
 
     def _prepare_scores_from_commodities(self, gameplayer):
+        commodities = CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player, nb_cards__gt = 0).order_by('commodity__name')
+        if gameplayer.submit_date:
+            commodities = commodities.filter(nb_submitted_cards__gt = 0)
+
         self._scores_from_commodity = []
-        for cih in CommodityInHand.objects.filter(game = gameplayer.game, player = gameplayer.player, nb_submitted_cards__gt = 0).order_by('commodity__value', 'commodity__id'):
+        for cih in commodities:
+            nb_scored_cards = cih.nb_submitted_cards if gameplayer.submit_date else cih.nb_cards
             sfc = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = cih.commodity,
-                                     nb_submitted_cards = cih.nb_submitted_cards, nb_scored_cards = cih.nb_submitted_cards,
+                                     nb_submitted_cards = nb_scored_cards, nb_scored_cards = nb_scored_cards,
                                      actual_value = cih.commodity.value, score = 0)
             self._scores_from_commodity.append(sfc)
 

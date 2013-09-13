@@ -875,47 +875,73 @@ class SubmitHandTest(MystradeTestCase):
         self.assertEqual(self.loginUser, trade_replied_by_other_player.finalizer)
         self.assertIsNotNone(trade_replied_by_other_player.closing_date)
 
-@skip("until redesign")
 class ControlBoardViewTest(MystradeTestCase):
 
     def setUp(self):
         super(ControlBoardViewTest, self).setUp()
-        self.game_ended = mommy.make(Game, master = self.loginUser, end_date = now() + datetime.timedelta(days = -2))
-        self.game_closed = mommy.make(Game, master = self.loginUser, end_date = now() + datetime.timedelta(days = -2),
+        self.game_ended = mommy.make(Game, master = self.master, end_date = now() + datetime.timedelta(days = -2))
+        self.game_closed = mommy.make(Game, master = self.master, end_date = now() + datetime.timedelta(days = -2),
                                           closing_date = now() + datetime.timedelta(days = -1))
         mommy.make(GamePlayer, game = self.game_closed, player = self.loginUser)
 
-    def test_access_to_score_for_a_closed_game_allowed_only_to_game_players(self):
+    def test_game_board_for_closed_game_shows_scores_to_players_and_game_master_and_admins(self):
+        # logged as a player
         response = self._assertGetGamePage(self.game_closed)
-        self.assertContains("Final Scores", response)
-
-        self.login_as(self.admin)
-        response = self._assertGetGamePage(self.game_closed)
-        self.assertContains("Final Scores", response)
-
-        self.login_as(self.master)
-        response = self._assertGetGamePage(self.game_closed)
-        self.assertContains("Final Scores", response)
-
-    def test_access_to_score_page_allowed_only_to_closed_games(self):
-        self._assertGetGamePage(self.game_ended, "score", 403)
-
-    def test_access_to_control_board_allowed_only_to_game_master_and_admins_that_are_not_players(self):
-        # simple player
-        self._assertGetGamePage(self.game, "control", 403)
-
-        # game master
-        self.login_as(self.master)
-        self._assertGetGamePage(self.game, "control")
+        self.assertContains(response, "Final Scores")
 
         # admin not player
         self.login_as(self.admin)
-        self._assertGetGamePage(self.game, "control")
+        response = self._assertGetGamePage(self.game_closed)
+        self.assertContains(response, "Final Scores")
 
-        # admin that is player
-        self.login_as(self.admin_player)
-        self._assertGetGamePage(self.game, "control", 403)
+        # game master
+        self.login_as(self.master)
+        response = self._assertGetGamePage(self.game_closed)
+        self.assertContains(response, "Final Scores")
 
+    def test_control_board_shows_current_scoring_during_game_for_game_master(self):
+        self._prepare_game_for_scoring(self.game)
+
+        test6 = get_user_model().objects.get(username='test6')
+
+        # a trap we shouldn't fall in, because the game is not closed
+        mommy.make(ScoreFromCommodity, game = self.game, player = self.alternativeUser, commodity = Commodity.objects.get(ruleset = 1, name = 'Orange'),
+                       nb_submitted_cards = 3, nb_scored_cards = 3, actual_value = 4, score = 12)
+        mommy.make(ScoreFromCommodity, game = self.game, player = test6, commodity = Commodity.objects.get(ruleset = 1, name = 'Orange'),
+                       nb_submitted_cards = 1, nb_scored_cards = 1, actual_value = 4, score = 4)
+
+        self.login_as(self.master)
+        response = self._assertGetGamePage()
+
+        scoresheets = response.context['scoresheets']
+        self.assertEqual(9, len(scoresheets))
+        self.assertEqual(test6, scoresheets[0].gameplayer.player)
+        self.assertEqual(18, scoresheets[0].total_score)
+        self.assertEqual(self.alternativeUser, scoresheets[1].gameplayer.player)
+        self.assertEqual(17, scoresheets[1].total_score) # only two orange cards scored because of HAG05
+
+    def test_control_board_warns_when_the_current_scoring_contains_random_scores(self):
+        self._prepare_game_for_scoring(self.game)
+
+        self.game.rules.add(RuleCard.objects.get(ref_name = 'HAG15')) # rule that leads to random scores when a hand has > 13 commodity cards
+        cih1red = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser,
+                                 nb_cards = 10, commodity = Commodity.objects.get(ruleset = 1, name = 'Red'))
+
+        self.login_as(self.master)
+        response = self.client.get("/game/{0}/{1}/".format(self.game.id, "control"), follow = True)
+        self.assertEqual(200, response.status_code)
+
+        self.assertTrue(response.context['random_scoring']) # the whole game scoring is tagged
+        for scoresheet in response.context['scoresheets']:
+            if scoresheet.player_name == 'test5':
+                self.assertTrue(getattr(scoresheet, 'is_random', False)) # the player's scoresheet is tagged
+                random_rule = False
+                for sfr in scoresheet.scores_from_rule:
+                    if getattr(sfr, 'is_random', False) and sfr.rulecard.ref_name == 'HAG15':
+                        random_rule = True
+                self.assertTrue(random_rule) # the score_from_rule line than introduces the randomization is tagged
+
+    @skip("until redesign")
     def test_close_game_allowed_only_to_game_master_and_admins_that_are_not_players(self):
         # game master
         self._assertOperation_post(self.game_ended, "close")
@@ -948,19 +974,22 @@ class ControlBoardViewTest(MystradeTestCase):
         self.game_ended = Game.objects.get(id = self.game_ended.id)
         self.assertIsNone(self.game_ended.closing_date)
 
+    @skip("until redesign")
     def test_close_game_not_allowed_in_GET(self):
         self._assertGetGamePage(self.game_ended, "close", 403)
 
+    @skip("until redesign")
     def test_close_game_allowed_only_on_games_ended_but_not_already_closed(self):
         game_not_ended = mommy.make(Game, master = self.loginUser, end_date = now() + datetime.timedelta(days = 2))
         self._assertOperation_post(game_not_ended, "close", 403)
 
         game_closed = mommy.make(Game, master = self.loginUser, end_date = now() + datetime.timedelta(days = -3),
-                                     closing_date = now() + datetime.timedelta(days = -2))
+                                 closing_date = now() + datetime.timedelta(days = -2))
         self._assertOperation_post(game_closed, "close", 403)
 
         self._assertOperation_post(self.game_ended, "close")
 
+    @skip("until redesign")
     def test_close_game_sets_the_game_closing_date(self):
         self.assertIsNone(self.game_ended.closing_date)
 
@@ -969,14 +998,15 @@ class ControlBoardViewTest(MystradeTestCase):
         game = Game.objects.get(pk = self.game_ended.id)
         self.assertIsNotNone(game.closing_date)
 
+    @skip("until redesign")
     def test_close_game_aborts_all_pending_trades(self):
         trade1 = mommy.make(Trade, game = self.game_ended, initiator = self.alternativeUser, status = 'INITIATED',
-                                initiator_offer = mommy.make(Offer))
+                            initiator_offer = mommy.make(Offer))
         trade2 = mommy.make(Trade, game = self.game_ended, initiator = self.alternativeUser, status = 'REPLIED',
-                                initiator_offer = mommy.make(Offer))
+                            initiator_offer = mommy.make(Offer))
         trade3 = mommy.make(Trade, game = self.game_ended, initiator = self.alternativeUser, finalizer = self.alternativeUser,
-                                status = 'CANCELLED', initiator_offer = mommy.make(Offer),
-                                closing_date = utc.localize(datetime.datetime(2012, 11, 10, 18, 30)))
+                            status = 'CANCELLED', initiator_offer = mommy.make(Offer),
+                            closing_date = utc.localize(datetime.datetime(2012, 11, 10, 18, 30)))
 
         self._assertOperation_post(self.game_ended, "close")
 
@@ -996,6 +1026,7 @@ class ControlBoardViewTest(MystradeTestCase):
         self.assertEqual(self.alternativeUser, trade3.finalizer)
         self.assertEqual(utc.localize(datetime.datetime(2012, 11, 10, 18, 30)), trade3.closing_date)
 
+    @skip("until redesign")
     def test_close_game_submits_the_commodity_cards_of_players_who_havent_manually_submitted(self):
         gp1 = mommy.make(GamePlayer, game = self.game_ended, player = self.alternativeUser)
         test6 = get_user_model().objects.get(username='test6')
@@ -1017,6 +1048,7 @@ class ControlBoardViewTest(MystradeTestCase):
         self.assertEqual(6, cih1.nb_submitted_cards)
         self.assertEqual(3, cih2.nb_submitted_cards)
 
+    @skip("until redesign")
     @override_settings(ADMINS = (('admin', 'admin@mystrade.com'),))
     def test_close_game_calculates_and_persists_the_final_score(self):
         self._prepare_game_for_scoring(self.game_ended)
@@ -1030,9 +1062,9 @@ class ControlBoardViewTest(MystradeTestCase):
         mommy.make(GamePlayer, game = self.game_ended, player = test8)
 
         cih7blue   = mommy.make(CommodityInHand, game = self.game_ended, player = test7,
-                                    nb_cards = 3, commodity = Commodity.objects.get(ruleset = 1, name = 'Blue'))
+                                nb_cards = 3, commodity = Commodity.objects.get(ruleset = 1, name = 'Blue'))
         cih8yellow = mommy.make(CommodityInHand, game = self.game_ended, player = test8,
-                                    nb_cards = 4, commodity = Commodity.objects.get(ruleset = 1, name = 'Yellow'))
+                                nb_cards = 4, commodity = Commodity.objects.get(ruleset = 1, name = 'Yellow'))
 
         self._assertOperation_post(self.game_ended, "close")
 
@@ -1101,49 +1133,6 @@ class ControlBoardViewTest(MystradeTestCase):
         self.assertIn('4th. test8 : 4 points', emailAdmin.body)
         self.assertIn('/game/{0}/control/'.format(self.game_ended.id), emailAdmin.body)
 
-    def test_control_board_shows_current_scoring_during_game(self):
-        self._prepare_game_for_scoring(self.game)
-
-        test6 = get_user_model().objects.get(username='test6')
-
-        # a trap we shouldn't fall in
-        mommy.make(ScoreFromCommodity, game = self.game, player = self.alternativeUser, commodity = Commodity.objects.get(ruleset = 1, name = 'Orange'),
-                       nb_submitted_cards = 3, nb_scored_cards = 3, actual_value = 4, score = 12)
-        mommy.make(ScoreFromCommodity, game = self.game, player = test6, commodity = Commodity.objects.get(ruleset = 1, name = 'Orange'),
-                       nb_submitted_cards = 1, nb_scored_cards = 1, actual_value = 4, score = 4)
-
-        self.login_as(self.master)
-        response = self.client.get("/game/{0}/{1}/".format(self.game.id, "control"), follow = True)
-        self.assertEqual(200, response.status_code)
-
-        scoresheets = response.context['scoresheets']
-        self.assertEqual(9, len(scoresheets))
-        self.assertEqual('test6', scoresheets[0].player_name)
-        self.assertEqual(18, scoresheets[0].total_score)
-        self.assertEqual('test5', scoresheets[1].player_name)
-        self.assertEqual(17, scoresheets[1].total_score) # only two orange cards scored because of HAG05
-
-    def test_control_board_warns_when_the_current_scoring_contains_random_scores(self):
-        self._prepare_game_for_scoring(self.game)
-
-        self.game.rules.add(RuleCard.objects.get(ref_name = 'HAG15')) # rule that leads to random scores when a hand has > 13 commodity cards
-        cih1red = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser,
-                                 nb_cards = 10, commodity = Commodity.objects.get(ruleset = 1, name = 'Red'))
-
-        self.login_as(self.master)
-        response = self.client.get("/game/{0}/{1}/".format(self.game.id, "control"), follow = True)
-        self.assertEqual(200, response.status_code)
-
-        self.assertTrue(response.context['random_scoring']) # the whole game scoring is tagged
-        for scoresheet in response.context['scoresheets']:
-            if scoresheet.player_name == 'test5':
-                self.assertTrue(getattr(scoresheet, 'is_random', False)) # the player's scoresheet is tagged
-                random_rule = False
-                for sfr in scoresheet.scores_from_rule:
-                    if getattr(sfr, 'is_random', False) and sfr.rulecard.ref_name == 'HAG15':
-                        random_rule = True
-                self.assertTrue(random_rule) # the score_from_rule line than introduces the randomization is tagged
-
     def _prepare_game_for_scoring(self, game):
         game.rules.add(RuleCard.objects.get(ref_name = 'HAG04'))
         game.rules.add(RuleCard.objects.get(ref_name = 'HAG05'))
@@ -1163,7 +1152,9 @@ class ControlBoardViewTest(MystradeTestCase):
         cih2white  = mommy.make(CommodityInHand, game = game, player = test6,
                                     nb_cards = 4, commodity = Commodity.objects.get(ruleset = 1, name = 'White'))
 
-    def _assertGetGamePage (self, game, status_code=200):
+    def _assertGetGamePage (self, game = None, status_code = 200):
+        if game is None:
+            game = self.game
         response = self.client.get("/game/{0}/".format(game.id), follow = True)
         self.assertEqual(status_code, response.status_code)
         return response
