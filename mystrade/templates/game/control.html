@@ -1,6 +1,6 @@
 {% load staticfiles %}
 
-{% if super_access and game.is_active %}
+{% if game.is_active and super_access %}
     <h3>Game Master's Control Board</h3>
 
     <p>All scores below are <strong>temporary</strong> and may evolve as the game progresses.</p>

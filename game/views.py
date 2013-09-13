@@ -406,7 +406,8 @@ def game_board(request, game_id):
 
     players = sorted(game.players.all(), key = lambda player: player.name.lower())
 
-    if request.user not in players and not game.has_super_access(request.user):
+    super_access = game.has_super_access(request.user)
+    if request.user not in players and not super_access:
         raise PermissionDenied
 
     context = {'game': game, 'players': players, 'message_form': MessageForm(), 'maxMessageLength': Message.MAX_LENGTH}
@@ -443,7 +444,7 @@ def game_board(request, game_id):
 
         context.update({'commodities': commodities, 'rulecards': rulecards, 'former_rulecards': former_rulecards,
                         'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
-                        'free_informations': free_informations})
+                        'free_informations': free_informations, 'show_control_board': False})
     else:
         # Scores for the game master and the admins that are NOT players in this game, and for the players after the game is closed
         scoresheets = None
@@ -470,7 +471,8 @@ def game_board(request, game_id):
                 if request.user not in players or game.is_closed():
                     scoresheet.known_rules = known_rules(game, player)
 
-        context.update({'super_access': True, 'scoresheets': scoresheets, 'random_scoring': random_scoring, 'rank': rank})
+        context.update({'show_control_board': True, 'super_access': super_access,
+                        'scoresheets': scoresheets, 'random_scoring': random_scoring, 'rank': rank})
 
     return render(request, 'game/board.html', context)
 

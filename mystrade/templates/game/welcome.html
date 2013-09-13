@@ -37,7 +37,7 @@
                 <div class="css_table-cell {{ backcolor }}"> > </div>
                 <div class="css_table-cell {{ backcolor }} centered{% if not game.is_active %} inactive{% endif %}">
                     {% if user in game.players.all %}
-                        {% if game.is_closed %}<a href="{% url 'player_score' game.id %}">Show Score</a>
+                        {% if game.is_closed %}<a href="{% url 'game' game.id %}">Show Score</a>
                         {% else %}<a href="{% url 'game' game.id %}">
                             {% if game.is_active and not game.hand_submitted %}Play !{% else %}Show Game{% endif %}
                         </a>{% endif %}
