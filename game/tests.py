@@ -742,49 +742,72 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
 
 class SubmitHandTest(MystradeTestCase):
 
-    def test_submit_hand_displays_the_commodities(self):
+    def test_submit_hand_displays_the_commodities_the_known_rules_and_the_received_free_informations(self):
         commodity1 = mommy.make(Commodity, name = 'c1', color = 'colA')
         commodity2 = mommy.make(Commodity, name = 'c2', color = 'colB')
         commodity3 = mommy.make(Commodity, name = 'c3', color = 'colC')
 
-        cih1 = mommy.make(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
+        mommy.make(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
                               nb_cards = 1, nb_submitted_cards = None)
-        cih2 = mommy.make(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
+        mommy.make(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
                               nb_cards = 2, nb_submitted_cards = None)
-        cih3 = mommy.make(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
+        mommy.make(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
                               nb_cards = 3, nb_submitted_cards = None)
 
-        response = self.client.get("/game/{0}/hand/submit/".format(self.game.id))
-        self.assertEqual(200, response.status_code)
+        hag08 = RuleCard.objects.get(ref_name = 'HAG08')
+        hag09 = RuleCard.objects.get(ref_name = 'HAG09')
+        hag10 = RuleCard.objects.get(ref_name = 'HAG10')
 
-        self.assertEqual(3, len(response.context['commodities_formset'].initial))
-        self.assertIn({'commodity_id': commodity1.id, 'name': 'c1', 'color': 'colA', 'nb_cards': 1, 'nb_submitted_cards': 1},
-                      response.context['commodities_formset'].initial)
-        self.assertIn({'commodity_id': commodity2.id, 'name': 'c2', 'color': 'colB', 'nb_cards': 2, 'nb_submitted_cards': 2},
-                      response.context['commodities_formset'].initial)
-        self.assertIn({'commodity_id': commodity3.id, 'name': 'c3', 'color': 'colC', 'nb_cards': 3, 'nb_submitted_cards': 3},
-                      response.context['commodities_formset'].initial)
+        rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag08, abandon_date = None)
+        rih2 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag09, abandon_date = None)
+        rih3 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag09, abandon_date = now())
+        rih4 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag10, abandon_date = now())
+
+        mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                   initiator_offer = mommy.make(Offer), responder_offer = mommy.make(Offer, free_information = 'this is secret'),
+                   finalizer = self.loginUser, status = 'ACCEPTED', closing_date = now())
+
+        response = self._assertGetSubmitHandPage()
+
+        self.assertContains(response, '<span class="commodity_card selectable card_selected"', count = 6)
+        self.assertContains(response, 'data-commodity-id="{0}"'.format(commodity1.id), count = 1)
+        self.assertContains(response, 'data-commodity-id="{0}"'.format(commodity2.id), count = 2)
+        self.assertContains(response, 'data-commodity-id="{0}"'.format(commodity3.id), count = 3)
+
+        self.assertContains(response, '<div class="rulecard"', count = 3)
+        self.assertContains(response, 'data-rih-id="{0}"'.format(rih1.id), count = 1)
+        self.assertContains(response, 'data-rih-id="{0}"'.format(rih2.id), count = 1)
+        self.assertNotContains(response, 'data-rih-id="{0}"'.format(rih3.id))
+        self.assertContains(response, 'data-rih-id="{0}"'.format(rih4.id), count = 1)
+
+        self.assertContains(response, 'Free informations')
+        self.assertContains(response, 'this is secret')
 
     def test_submit_hand_is_not_allowed_when_you_re_not_a_player_in_this_game(self):
         self.game.gameplayer_set.get(player = self.loginUser).delete() # make me not a player in this game
-
-        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id))
-        self.assertEqual(403, response.status_code)
+        self._assertGetSubmitHandPage(status_code = 403)
 
         self.login_as(self.admin)
-        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id))
-        self.assertEqual(403, response.status_code)
+        self._assertGetSubmitHandPage(status_code = 403)
 
         self.login_as(self.master)
-        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id))
-        self.assertEqual(403, response.status_code)
+        self._assertGetSubmitHandPage(status_code = 403)
 
     def test_submit_hand_is_not_allowed_if_it_has_already_been_submitted(self):
         gameplayer = self.game.gameplayer_set.get(player = self.loginUser)
         gameplayer.submit_date = now()
         gameplayer.save()
 
-        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id))
+        self._assertGetSubmitHandPage(status_code = 403)
+
+    def test_submit_hand_is_not_allowed_once_the_game_has_ended(self):
+        self.game.end_date = now() + datetime.timedelta(hours = -2)
+        self.game.save()
+
+        self._assertGetSubmitHandPage(status_code = 403)
+
+    def test_submit_hand_should_be_called_in_AJAX(self):
+        response = self.client.get("/game/{0}/submithand/".format(self.game.id), follow = True)
         self.assertEqual(403, response.status_code)
 
     @skip("until redesign")
@@ -854,6 +877,11 @@ class SubmitHandTest(MystradeTestCase):
         self.assertEqual('DECLINED', trade_replied_by_other_player.status)
         self.assertEqual(self.loginUser, trade_replied_by_other_player.finalizer)
         self.assertIsNotNone(trade_replied_by_other_player.closing_date)
+
+    def _assertGetSubmitHandPage(self, status_code = 200):
+        response = self.client.get("/game/{0}/submithand/".format(self.game.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(status_code, response.status_code)
+        return response
 
 class ControlBoardViewTest(MystradeTestCase):
 

@@ -1,66 +1,130 @@
-{% extends "base.html" %}
-{% load staticfiles %}
 {% load filters %}
 
-{% block styles %}
-    <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.10.3.custom.min.css' %}" />
-{% endblock %}
+This game will end on {{ game.end_date }} ({{ game.end_date|timeuntil }} from now on).<br/>
+At this moment, <strong>all</strong> your commodity cards will automatically be submitted back to the game master for scoring.<br/>
+You can <a class="link_cancel_submit_hand">cancel</a> now if you are fine with this procedure.<br/>
+<br/>
+Alternatively, you may submit only <em>some</em> of your commodity cards <strong>and</strong> finish your game now. Select those cards below.<br/>
+Please note that, if you do, you will not be able to propose or respond to any trade until the actual end of the game, and all your pending trades
+will be aborted.
 
-{% block scripts %}
-    <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
-    <script src="{% static 'jquery/jquery-ui-1.10.3.custom.min.js' %}"></script>
-{% endblock %}
+<form id="submit_hand">{% csrf_token %}
+    <div id="zone_choose_commodities">
+        <h3>Deselect the commodities you want to exclude (click on the cards)</h3>
+        {% for cih in commodities %}
+            {% for copy in cih.nb_cards|as_range %}
+                {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="selectable card_selected"%}
+            {% endfor %}
+        {% endfor %}
 
-{% block content %}
-    <div class="header">Submit your hand in game #{{ game }}
-        <span class="floatright">&lt; <a href="{% url 'game' game.id %}">Back</a></span></div>
-    <div class="reminder">
-        This game will end on {{ game.end_date }} ({{ game.end_date|timeuntil }} from now on).<br/>
-        At this moment, <strong>all</strong> your commodity cards will automatically be submitted back to the game master for scoring.<br/>
-        You can leave this page now if you are fine with this procedure.<br/>
-        <br/>
-        Alternatively, you may submit only <em>some</em> of your commodity cards <strong>and</strong> finish your game now. Select those cards below.<br/>
-        Please note that, if you do, you will not be able to propose or respond to any trade until the actual end of the game, and all your pending trades
-        will be aborted.
-    </div>
 
-    <form action="{% url 'submit_hand' game.id %}" method="post">
-{% csrf_token %}
-        <h4>Deselect the commodities you want to exclude (click on the cards)</h4>
-        <div class="css_table">
-            {{ commodities_formset.management_form }}
-            <div class="css_table-row">
-                {% for form in commodities_formset %}
-                    <div class="css_table-cell card" id="{{ form.prefix }}">
-                        {{ form.commodity_id }}
-                        <div class="card_name">{{ form.name.value }}</div>
-                        <div class="card_copies">
-                            {% for copy in form.nb_cards.value|as_range %}
-                                <span class="commodity_card clickable{% if form.nb_submitted_cards.value > copy %} clicked"{% else %}"{% endif %}
-                                style="background-color: {{ form.color.value }}">&nbsp;</span>
-                            {% endfor %}
-                        </div>
-                        {{ form.nb_submitted_cards }}
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-        <br/>
-        <div class="floatright">
-            <input type="submit" value="Submit this choice and finish the game"/><br/>
+        <div id="zone_buttons">
+            <input type="submit" class="submit_hand_button" value="Submit this choice and finish the game"/>&nbsp;
+            <a class="cancel_link link_cancel_submit_hand">cancel</a>
+            <br/>
             <span class="helptext">You won't be able to modify your choice or come back trading !</span>
         </div>
-    </form>
+    </div>
 
-    <script>
-        $(function() {
-            $('input[type=submit], button').button();
-            $('.commodity_card.clickable').on('click', function() {
-                $(this).toggleClass("clicked")
-                $(this).toggleClass("reserved")
-                // set the corresponding hidden form field to hold the number of commodities from this type that are now "clicked"
-                $("input[type=hidden][name=" + $(this).parents(".card").attr("id") + "-nb_submitted_cards]").val($(this).parent().children(".clicked").length)
-            })
-        });
-    </script>
-{% endblock %}
+    <div id="zone_rules">
+        <h3>Rules You Know</h3>
+
+        <div id="zone_rulecards">
+            {% for rih in rulecards %}
+                <div class="rulecard" data-rih-id="{{ rih.id }}" data-public-name="{{ rih.rulecard.public_name }}">
+                    <div class="note helptext"></div>
+                    <div class="rulecard_name">{{ rih.rulecard.public_name }}</div>
+                    <div class="rulecard_desc">{{ rih.rulecard.description }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if free_informations %}
+        <div id="zone_free_informations">
+            <h3>Free informations obtained during this game</h3>
+            {% for offer in free_informations %}
+                <fieldset class="free_information">
+                    <legend>from <strong>{{ offer.offerer }}</strong>, {{ offer.date|timesince }} ago</legend>
+                    {{ offer.free_information }}<br/>
+                </fieldset>
+            {% endfor %}
+        </div>
+    {% endif %}
+</form>
+
+<script>
+    $(function() {
+        $('input[type=submit]').button();
+{#        $('.commodity_card.clickable').on('click', function() {#}
+{#            $(this).toggleClass("clicked")#}
+{#            $(this).toggleClass("reserved")#}
+{#            // set the corresponding hidden form field to hold the number of commodities from this type that are now "clicked"#}
+{#            $("input[type=hidden][name=" + $(this).parents(".card").attr("id") + "-nb_submitted_cards]").val($(this).parent().children(".clicked").length)#}
+{#        })#}
+    });
+
+    $("#link_submit_hand").on("click", function() {
+        $("#zone_submit_hand_notice").slideToggle();
+        $("#zone_commodities").find(".commodity_card").addClass("selectable").removeClass("not_tradable card_selected");
+    });
+
+    $(".link_cancel_submit_hand").on("click", function() {
+        $("#zone_submit_hand").dialog("close");
+    });
+</script>
+
+
+{#{% block content %}#}
+{#    <div class="header">Submit your hand in game #{{ game }}#}
+{#        <span class="floatright">&lt; <a href="{% url 'game' game.id %}">Back</a></span></div>#}
+{#    <div class="reminder">#}
+{#        This game will end on {{ game.end_date }} ({{ game.end_date|timeuntil }} from now on).<br/>#}
+{#        At this moment, <strong>all</strong> your commodity cards will automatically be submitted back to the game master for scoring.<br/>#}
+{#        You can leave this page now if you are fine with this procedure.<br/>#}
+{#        <br/>#}
+{#        Alternatively, you may submit only <em>some</em> of your commodity cards <strong>and</strong> finish your game now. Select those cards below.<br/>#}
+{#        Please note that, if you do, you will not be able to propose or respond to any trade until the actual end of the game, and all your pending trades#}
+{#        will be aborted.#}
+{#    </div>#}
+{##}
+{#    <form action="{% url 'submit_hand' game.id %}" method="post">#}
+{#{% csrf_token %}#}
+{#        <h4>Deselect the commodities you want to exclude (click on the cards)</h4>#}
+{#        <div class="css_table">#}
+{#            {{ commodities_formset.management_form }}#}
+{#            <div class="css_table-row">#}
+{#                {% for form in commodities_formset %}#}
+{#                    <div class="css_table-cell card" id="{{ form.prefix }}">#}
+{#                        {{ form.commodity_id }}#}
+{#                        <div class="card_name">{{ form.name.value }}</div>#}
+{#                        <div class="card_copies">#}
+{#                            {% for copy in form.nb_cards.value|as_range %}#}
+{#                                <span class="commodity_card clickable{% if form.nb_submitted_cards.value > copy %} clicked"{% else %}"{% endif %}#}
+{#                                style="background-color: {{ form.color.value }}">&nbsp;</span>#}
+{#                            {% endfor %}#}
+{#                        </div>#}
+{#                        {{ form.nb_submitted_cards }}#}
+{#                    </div>#}
+{#                {% endfor %}#}
+{#            </div>#}
+{#        </div>#}
+{#        <br/>#}
+{#        <div class="floatright">#}
+{#            <input type="submit" value="Submit this choice and finish the game"/><br/>#}
+{#            <span class="helptext">You won't be able to modify your choice or come back trading !</span>#}
+{#        </div>#}
+{#    </form>#}
+{##}
+{#    <script>#}
+{#        $(function() {#}
+{#            $('input[type=submit], button').button();#}
+{#            $('.commodity_card.clickable').on('click', function() {#}
+{#                $(this).toggleClass("clicked")#}
+{#                $(this).toggleClass("reserved")#}
+{#                // set the corresponding hidden form field to hold the number of commodities from this type that are now "clicked"#}
+{#                $("input[type=hidden][name=" + $(this).parents(".card").attr("id") + "-nb_submitted_cards]").val($(this).parent().children(".clicked").length)#}
+{#            })#}
+{#        });#}
+{#    </script>#}
+{#{% endblock %}#}

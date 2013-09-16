@@ -44,15 +44,15 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
       vertical-align: -4px;
     }
   }
+}
 
-  #zone_commodities {
-    margin-bottom: 16px;
-  }
+#zone_commodities {
+  margin-bottom: 16px;
+}
 
-  #zone_rules {
-    display: inline-block;
-    margin-bottom: 16px;
-  }
+#zone_rules {
+  display: inline-block;
+  margin-bottom: 16px;
 }
 
 #zone_tabs {
@@ -99,26 +99,23 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   min-height: $heightOfThumbnailRuleCards + 16px;
 }
 
-/* Trade list modal dialog */
-#zone_trade_list {
-  background: lighten($backgroundColor, 10%);
+#zone_submit_hand {
+  @include font($size: $defaultFontSize);
 
-  .pagination {
-    margin-top: 10px;
+  #zone_choose_commodities {
     text-align: center;
-    font-style: italic;
+  }
+
+  #zone_buttons {
+    margin: 15px 0;
+  }
+
+  input[type=submit] {
+    @include font($size: 1.1em);
   }
 }
 
-.dialog_trade_list {
-  .ui-widget-header { // merge the title bar to the rest of the dialog
-      background: lighten($backgroundColor, 10%) none;
-      border: none;
-      border-bottom-right-radius: 0;
-      border-bottom-left-radius: 0;
-  }
-}
-
+/* Trade list modal dialog */
 #table_trade_list {
   display: table;
   border-spacing: 2px;
@@ -262,6 +259,11 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   margin-bottom: 15px;
   color: $mediumLightText;
   border-bottom: thin dotted;
+}
+
+/* Styling for Submit Hand mode */
+#submit_hand {
+  margin-top: 10px;
 }
 
 @import "scores";

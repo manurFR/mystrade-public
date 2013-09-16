@@ -42,6 +42,7 @@
                 <img src="{% static 'action.png' %}" width="16" height="16" alt="&gt;"/>
                 {% if game.is_active and not super_access %}<a id="link_new_trade">Propose new trade</a> | {% endif %}
                 <a id="link_show_trade_list">Show all trades</a>
+                {% if game.is_active and not super_access %} | <a id="link_submit_hand">Choose final cards</a>{% endif %}
             </div>
 
             {% if show_control_board %}
@@ -129,7 +130,8 @@
         </div>
     </div>
 
-    <div id="zone_trade_list"></div>
+    <div id="zone_trade_list" class="modal_dialog"></div>
+    <div id="zone_submit_hand" class="modal_dialog"></div>
 
     <script>
         function refreshEvents(datenext, dateprevious) {
@@ -214,7 +216,7 @@
                 height: 450,
                 width: 900,
                 title: "Your trades",
-                dialogClass: "dialog_trade_list",
+                dialogClass: "modal_dialog_class",
                 show: {
                     effect: "blind",
                     duration: 200
@@ -237,8 +239,42 @@
             $("#zone_trade").text("This game has ended. Trade creation is not permitted.");
         {% elif super_access %}
             $("#zone_trade").text("No trade displayed.");
-        {% else %}
+        {% else %} {# regular players when the game is active #}
             refreshTrade();
+
+            $("#zone_submit_hand").dialog({
+                autoOpen: false,
+                modal: true,
+                height: 650,
+                width: 1080,
+                title: "Choose final cards",
+                dialogClass: "modal_dialog_class",
+                show: {
+                    effect: "blind",
+                    duration: 200
+                },
+                hide: {
+                    effect: "blind",
+                    duration: 200
+                },
+                open: function() {
+                    $.get("{% url 'submit_hand' game.id %}")
+                            .fail(function() {
+                                $("body").css("cursor", "");
+                                $("#zone_submit_hand").text("Error loading page. Please try again.");
+                            })
+                            .done(function(data) {
+                                $("body").css("cursor", "");
+                                $("#zone_submit_hand").html(data);
+                            });
+                    $("#zone_submit_hand").text("Loading...");
+                    $("body").css("cursor", "wait");
+                }
+            });
+
+            $("#link_submit_hand").on("click", function() {
+                $("#zone_submit_hand").dialog("open");
+            });
         {% endif %}
         });
 

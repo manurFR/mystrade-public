@@ -112,70 +112,21 @@ def game(request, game_id):
     return render(request, 'game/game.html', context)
 
 #############################################################################
-##                            Hand Views                                   ##
+##                            Submit Hand                                  ##
 #############################################################################
-
-@login_required
-def hand(request, game_id):
-    game = get_object_or_404(Game, id = game_id)
-
-    if request.user not in game.players.all():
-        raise PermissionDenied
-
-    # if the hand has been submitted, we will split the commodities between submitted and not submitted
-    hand_submitted = game.gameplayer_set.filter(submit_date__isnull = False, player = request.user).count() > 0
-
-    rule_hand = rules_currently_in_hand(game, request.user)
-
-    # commodities are ordered only alphabetically (by their name) in order to obfuscate their actual order in value
-    if hand_submitted:
-        commodity_hand = CommodityInHand.objects.filter(game = game, player = request.user, nb_submitted_cards__gt = 0).order_by('commodity__name')
-    else:
-        commodity_hand = commodities_in_hand(game, request.user)
-
-    commodity_hand_not_submitted = CommodityInHand.objects.filter(game = game, player = request.user,
-                                                                  nb_cards__gt = F('nb_submitted_cards')).order_by('commodity__name')
-    for not_submitted in commodity_hand_not_submitted:
-        not_submitted.nb_cards -= not_submitted.nb_submitted_cards
-
-    free_informations = []
-    for offer in Offer.objects.filter(free_information__isnull=False, trade_responded__game=game,
-                                      trade_responded__initiator=request.user, trade_responded__status='ACCEPTED'):
-        free_informations.append({'offerer': offer.trade_responded.responder,
-                                  'date': offer.trade_responded.closing_date,
-                                  'free_information': offer.free_information})
-
-    for offer in Offer.objects.filter(free_information__isnull=False, trade_initiated__game=game,
-                                      trade_initiated__responder=request.user, trade_initiated__status='ACCEPTED'):
-        free_informations.append({'offerer': offer.trade_initiated.responder,
-                                  'date': offer.trade_initiated.closing_date,
-                                  'free_information': offer.free_information})
-
-    featured_rulecards = [rh.rulecard_id for rh in rule_hand]
-    former_rules = []
-    for rule in rules_formerly_in_hand(game, request.user):
-        if rule.rulecard_id not in featured_rulecards: # add only rulecards that are not currently in the hand and no duplicates
-            former_rules.append({'public_name': rule.rulecard.public_name,
-                                 'description': rule.rulecard.description})
-            featured_rulecards.append(rule.rulecard_id)
-
-    return render(request, 'game/hand.html',
-        {'game': game, 'hand_submitted': hand_submitted, 'rule_hand': rule_hand, 'former_rules': former_rules,
-         'commodity_hand': commodity_hand, 'commodity_hand_not_submitted': commodity_hand_not_submitted,
-         'free_informations': sorted(free_informations, key=lambda offer: offer['date'], reverse=True)})
 
 @login_required
 def submit_hand(request, game_id):
     game = get_object_or_404(Game, id=game_id)
 
-    if request.user not in game.players.all():
+    if request.user not in game.players.all() or game.has_ended() or not request.is_ajax():
         raise PermissionDenied
 
     # one can submit one own's hand only once
     if game.gameplayer_set.get(player = request.user).submit_date:
         raise PermissionDenied
 
-    commodity_hand = commodities_in_hand(game, request.user)
+    commodities = commodities_in_hand(game, request.user)
 
     if request.method == 'POST':
         CommodityCardsFormSet = formset_factory(GameCommodityCardFormParse)
@@ -188,7 +139,7 @@ def submit_hand(request, game_id):
                     gameplayer.submit_date = now()
                     gameplayer.save()
 
-                    for commodity in commodity_hand:
+                    for commodity in commodities:
                         for form in commodities_formset:
                             if int(form.cleaned_data['commodity_id']) == commodity.commodity_id:
                                 commodity.nb_submitted_cards = form.cleaned_data['nb_submitted_cards']
@@ -208,16 +159,25 @@ def submit_hand(request, game_id):
         else:
             pass # no reason to come here
     else:
-        CommodityCardsFormSet = formset_factory(GameCommodityCardFormDisplay, extra=0)
-        commodities_formset = CommodityCardsFormSet(initial=[{'commodity_id': card.commodity_id,
-                                                              'name': card.commodity.name,
-                                                              'color': card.commodity.color,
-                                                              'nb_cards': card.nb_cards,
-                                                              'nb_submitted_cards': card.nb_cards}
-                                                             for card in commodity_hand],
-            prefix='commodity')
+        # TODO factorize with game_board()
+        rulecards = known_rules(game, request.user)
 
-    return render(request, 'game/submit_hand.html', {'game': game, 'commodities_formset': commodities_formset})
+        free_informations = []
+        for offer in Offer.objects.filter(free_information__isnull = False, trade_responded__game = game,
+                                          trade_responded__initiator = request.user, trade_responded__status = 'ACCEPTED'):
+            free_informations.append({'offerer': offer.trade_responded.responder,
+                                      'date': offer.trade_responded.closing_date,
+                                      'free_information': offer.free_information})
+
+        for offer in Offer.objects.filter(free_information__isnull = False, trade_initiated__game = game,
+                                          trade_initiated__responder = request.user, trade_initiated__status = 'ACCEPTED'):
+            free_informations.append({'offerer': offer.trade_initiated.responder,
+                                      'date': offer.trade_initiated.closing_date,
+                                      'free_information': offer.free_information})
+
+        context = {'game': game, 'commodities': commodities, 'rulecards': rulecards, 'free_informations': free_informations}
+
+    return render(request, 'game/submit_hand.html', context)
 
 #############################################################################
 ##                           Create Game                                   ##

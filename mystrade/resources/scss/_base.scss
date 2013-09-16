@@ -98,6 +98,26 @@ hr {
   padding: 10px;
 }
 
+/* JQuery UI Modal dialogs */
+.modal_dialog, .modal_dialog.ui-dialog-content {
+  background: lighten($backgroundColor, 10%);
+
+  .pagination {
+    margin-top: 10px;
+    text-align: center;
+    font-style: italic;
+  }
+}
+
+.modal_dialog_class {
+  .ui-widget-header { // merge the title bar to the rest of the dialog
+    background: lighten($backgroundColor, 10%) none;
+    border: none;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
 /* Miscellaneous common styles */
 .helptext {
   @include font($size: 8pt, $style: italic, $weight: normal);
@@ -226,8 +246,14 @@ $heightOfThumbnailRuleCards: 22px;
   vertical-align: bottom;
 }
 
-.selectable:hover {
+.selectable {
   cursor: pointer;
+}
+
+.cancel_link {
+  color: $normalText;
+  @include font($size: 10pt);
+  vertical-align: middle;
 }
 
 .even_color {
