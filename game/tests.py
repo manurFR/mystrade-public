@@ -810,7 +810,6 @@ class SubmitHandTest(MystradeTestCase):
         response = self.client.get("/game/{0}/submithand/".format(self.game.id), follow = True)
         self.assertEqual(403, response.status_code)
 
-    @skip("until redesign")
     def test_submit_hand_save_submitted_commodities_and_submit_date(self):
         self.assertIsNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
 
@@ -825,16 +824,17 @@ class SubmitHandTest(MystradeTestCase):
         cih3 = mommy.make(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
                               nb_cards = 3, nb_submitted_cards = None)
 
-        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id),
-                                    {'commodity-TOTAL_FORMS': 2, 'commodity-INITIAL_FORMS': 2,
-                                     'commodity-0-commodity_id': commodity1.id, 'commodity-0-nb_submitted_cards': 0,
-                                     'commodity-1-commodity_id': commodity3.id, 'commodity-1-nb_submitted_cards': 2 }, follow = True)
+        response = self.client.post("/game/{0}/submithand/".format(self.game.id),
+                                    {'commodity_{0}'.format(commodity1.id): 1,
+                                     'commodity_{0}'.format(commodity2.id): 0,
+                                     'commodity_{0}'.format(commodity3.id): 2},
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(200, response.status_code)
 
         cih1 = CommodityInHand.objects.get(game = self.game, player = self.loginUser, commodity = commodity1)
-        self.assertEqual(0, cih1.nb_submitted_cards)
+        self.assertEqual(1, cih1.nb_submitted_cards)
         cih2 = CommodityInHand.objects.get(game = self.game, player = self.loginUser, commodity = commodity2)
-        self.assertEqual(2, cih2.nb_submitted_cards)
+        self.assertEqual(0, cih2.nb_submitted_cards)
         cih3 = CommodityInHand.objects.get(game = self.game, player = self.loginUser, commodity = commodity3)
         self.assertEqual(2, cih3.nb_submitted_cards)
 

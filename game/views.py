@@ -6,7 +6,7 @@ from django.http import HttpResponse
 import markdown
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required, login_required
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import ValidationError, PermissionDenied, NON_FIELD_ERRORS
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.urlresolvers import reverse
 from django.db import transaction
@@ -16,15 +16,16 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now, utc, make_naive
 
 from game.deal import deal_cards
-from game.forms import CreateGameForm, validate_number_of_players, validate_dates, GameCommodityCardFormDisplay, GameCommodityCardFormParse, MessageForm
-from game.helpers import rules_currently_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules
+from game.forms import CreateGameForm, validate_number_of_players, validate_dates, MessageForm
+from game.helpers import rules_currently_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules, free_informations_until_now
 from game.models import Game, CommodityInHand, GamePlayer, Message
 from ruleset.models import RuleCard, Ruleset
 from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.forms import RuleCardFormParse, RuleCardFormDisplay
-from trade.models import Offer, Trade
+from trade.models import Trade
 from profile.helpers import UserNameCache
+from trade.views import _prepare_offer_form, _parse_offer_form, FormInvalidException
 from utils import utils, stats
 
 
@@ -126,58 +127,49 @@ def submit_hand(request, game_id):
     if game.gameplayer_set.get(player = request.user).submit_date:
         raise PermissionDenied
 
-    commodities = commodities_in_hand(game, request.user)
-
     if request.method == 'POST':
-        CommodityCardsFormSet = formset_factory(GameCommodityCardFormParse)
-        commodities_formset = CommodityCardsFormSet(request.POST, prefix='commodity')
+        try:
+            offer, selected_commodities, selected_rulecards = _parse_offer_form(request, game)
+            with transaction.commit_on_success():
+                gameplayer = GamePlayer.objects.get(game = game, player = request.user)
+                gameplayer.submit_date = now()
+                gameplayer.save()
 
-        if commodities_formset.is_valid():
-            try:
-                with transaction.commit_on_success():
-                    gameplayer = GamePlayer.objects.get(game = game, player = request.user)
-                    gameplayer.submit_date = now()
-                    gameplayer.save()
+                for commodity, nb_selected_cards in selected_commodities.iteritems():
+                    commodity.nb_submitted_cards = nb_selected_cards
+                    commodity.save()
 
-                    for commodity in commodities:
-                        for form in commodities_formset:
-                            if int(form.cleaned_data['commodity_id']) == commodity.commodity_id:
-                                commodity.nb_submitted_cards = form.cleaned_data['nb_submitted_cards']
-                                break
-                        else: # if the for loop ends without a break, ie we didn't find the commodity in the form -- shouldn't happen but here for security
-                            commodity.nb_submitted_cards = commodity.nb_cards
-                        commodity.save()
+                # abort pending trades
+                for trade in Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game, finalizer__isnull = True):
+                    trade.abort(request.user, gameplayer.submit_date)
 
-                    # abort pending trades
-                    for trade in Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game, finalizer__isnull = True):
-                        trade.abort(request.user, gameplayer.submit_date)
+                return HttpResponse()
+        except FormInvalidException as ex:
+            commodities = commodities_in_hand(game, request.user)
+            rulecards = known_rules(game, request.user)
 
-            except BaseException as ex:
-                logger.error("Error in submit_hand({0})".format(game_id), exc_info = ex)
+            free_informations = free_informations_until_now(game, request.user)
 
-            return redirect('game', game.id)
-        else:
-            pass # no reason to come here
+            status_code = 422
+            offer_form = _prepare_offer_form(request, game, selected_commodities = ex.formdata['selected_commodities'])
+            offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
+
+            return render(request, 'game/submit_hand.html',
+                          {'game': game, 'commodities': commodities, 'rulecards': rulecards,
+                           'free_informations': free_informations, 'offer_form': offer_form}, status = status_code)
     else:
-        # TODO factorize with game_board()
+        commodities = commodities_in_hand(game, request.user)
         rulecards = known_rules(game, request.user)
 
-        free_informations = []
-        for offer in Offer.objects.filter(free_information__isnull = False, trade_responded__game = game,
-                                          trade_responded__initiator = request.user, trade_responded__status = 'ACCEPTED'):
-            free_informations.append({'offerer': offer.trade_responded.responder,
-                                      'date': offer.trade_responded.closing_date,
-                                      'free_information': offer.free_information})
+        free_informations = free_informations_until_now(game, request.user)
 
-        for offer in Offer.objects.filter(free_information__isnull = False, trade_initiated__game = game,
-                                          trade_initiated__responder = request.user, trade_initiated__status = 'ACCEPTED'):
-            free_informations.append({'offerer': offer.trade_initiated.responder,
-                                      'date': offer.trade_initiated.closing_date,
-                                      'free_information': offer.free_information})
+        offer_form = _prepare_offer_form(request, game,
+                                         # all commodities in hand are selected initially
+                                         selected_commodities = dict([(cih, cih.nb_cards) for cih in commodities]))
 
-        context = {'game': game, 'commodities': commodities, 'rulecards': rulecards, 'free_informations': free_informations}
-
-    return render(request, 'game/submit_hand.html', context)
+        return render(request, 'game/submit_hand.html',
+                      {'game': game, 'commodities': commodities, 'rulecards': rulecards,
+                       'free_informations': free_informations, 'offer_form': offer_form})
 
 #############################################################################
 ##                           Create Game                                   ##
@@ -389,18 +381,7 @@ def game_board(request, game_id):
         rulecards = rules_currently_in_hand(game, request.user)
         former_rulecards = rules_formerly_in_hand(game, request.user, current_rulecards = [r.rulecard for r in rulecards])
 
-        free_informations = []
-        for offer in Offer.objects.filter(free_information__isnull = False, trade_responded__game = game,
-                                          trade_responded__initiator = request.user, trade_responded__status = 'ACCEPTED'):
-            free_informations.append({'offerer': offer.trade_responded.responder,
-                                      'date': offer.trade_responded.closing_date,
-                                      'free_information': offer.free_information})
-
-        for offer in Offer.objects.filter(free_information__isnull = False, trade_initiated__game = game,
-                                          trade_initiated__responder = request.user, trade_initiated__status = 'ACCEPTED'):
-            free_informations.append({'offerer': offer.trade_initiated.responder,
-                                      'date': offer.trade_initiated.closing_date,
-                                      'free_information': offer.free_information})
+        free_informations = free_informations_until_now(game, request.user)
 
         context.update({'commodities': commodities, 'rulecards': rulecards, 'former_rulecards': former_rulecards,
                         'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
