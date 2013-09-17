@@ -50,6 +50,8 @@ def welcome(request):
 ##                            Game Board                                   ##
 #############################################################################
 EVENTS_PAGINATION = 8
+EVENTS_REFRESH_DELAY = 5 * 1000 # ms
+# EVENTS_REFRESH_DELAY = 3 * 60 * 1000 # ms
 
 @login_required
 def game_board(request, game_id, trade_id = None):
@@ -72,7 +74,7 @@ def game_board(request, game_id, trade_id = None):
             pass
 
     context = {'game': game, 'players': players, 'message_form': MessageForm(), 'maxMessageLength': Message.MAX_LENGTH,
-               'trade_id': verified_trade_id}
+               'trade_id': verified_trade_id, 'events_refresh_delay': EVENTS_REFRESH_DELAY}
 
     if request.user in players and not game.is_closed():
         hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None
@@ -181,6 +183,8 @@ def events(request, game_id):
         for gameplayer in game.gameplayer_set.filter(submit_date__isnull = False):
             events.append(Event('submit_hand', gameplayer.submit_date, gameplayer.player))
 
+        events.append(Event('game_start', now(), game.master)) # TODO temp for test
+
         events.sort(key = lambda evt: evt.date, reverse=True)
 
         # Pagination by the date of the first or last event displayed
@@ -208,8 +212,15 @@ def events(request, game_id):
         else:
             datenext = None
 
+        if 'dateprevious' not in request.GET and 'datenext' not in request.GET and 'lastEventsRefresh' in request.GET:
+            lastEventsRefresh = datetime.datetime.strptime(request.GET.get('lastEventsRefresh'), FORMAT_EVENT_PERMALINK)
+            for event in displayed_events:
+                if make_naive(event.date, utc) > lastEventsRefresh:
+                    event.highlight = True
+
         return render(request, 'game/events.html',
-                      {'game': game, 'events': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious})
+                      {'game': game, 'events': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious,
+                       'lastEventsRefresh': datetime.datetime.strftime(now(), FORMAT_EVENT_PERMALINK)})
 
     raise PermissionDenied
 

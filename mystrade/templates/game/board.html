@@ -140,16 +140,21 @@
     <div id="zone_submit_hand" class="modal_dialog"></div>
 
     <script>
+        var lastEventsRefresh;
         function refreshEvents(datenext, dateprevious) {
             var url = "{% url 'events' game.id %}";
-            if (datenext) url += "?datenext=" + datenext;
-            if (dateprevious) url += "?dateprevious=" + dateprevious;
+            if (lastEventsRefresh) {
+                url += "?lastEventsRefresh=" + lastEventsRefresh;
+                if (datenext) url += "&datenext=" + datenext;
+                if (dateprevious) url += "&dateprevious=" + dateprevious;
+            }
             $.get(url)
                 .fail(function() {
                     $("#zone_events").text("Error loading recent events. Please try again.");
                 })
                 .done(function(data) {
                     $("#zone_events").html(data);
+                    $("#zone_events").find(".event.highlight").effect("highlight").removeClass("highlight");
                 });
         }
 
@@ -241,6 +246,7 @@
             });
 
             refreshEvents();
+            window.setInterval(refreshEvents, {{ events_refresh_delay }});
         {% if trade_id %} {# if the url asks for showing a specific trade #}
             refreshTrade({{ trade_id }});
             $("#zone_tabs").tabs("option", "active", 1);

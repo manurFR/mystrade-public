@@ -5,7 +5,7 @@
 {% for group in grouped_events %}
     {% if dateprevious or group.grouper != 'today' %}<div class="event_date">{{ group.grouper|capfirst }}</div>{% endif %}
     {% for evt in group.list %}
-        <div class="event">
+        <div class="event{% if event.highlight %}highlight{% endif %}">
             <div class="event_time">{{ evt.date|time }}</div>
             <div class="event_text">
             {% if evt.event_type == 'message' %}
@@ -56,12 +56,13 @@
 <div class="show_more">{% if datenext %}<a>show more events &gt;</a>{% endif %}</div>
 
 <script> {# deleteMessage(), refreshEvents() and refreshTrade() functions are found in board.html, which encloses this file #}
+    lastEventsRefresh = "{{ lastEventsRefresh }}";
     $(".delete_icon").tooltip({ show: false }).on("click", function(event) { deleteMessage(event.target); });
     $(".show_previous a").on("click", function() { refreshEvents({% if dateprevious %}null, "{{ dateprevious }}"{% endif %}); });
     $(".show_more a").on("click", function() { refreshEvents({% if datenext %}"{{ datenext }}"{% endif %}); });
     $(".event_link_trade").on("click", function(event) {
         refreshTrade($(event.target).data("tradeId"));
         $("#zone_tabs").tabs("option", "active", 1)
-                .find("li[aria-controls=tab-trade]").find("a").text("View Trade");
+            .find("li[aria-controls=tab-trade]").find("a").text("View Trade");
     });
 </script>
