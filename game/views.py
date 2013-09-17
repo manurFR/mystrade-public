@@ -453,6 +453,9 @@ def events(request, game_id):
         for trade in Trade.objects.filter(game = game, status = 'ACCEPTED').exclude(initiator = request.user).exclude(responder = request.user):
             events.append(Event('accept_trade', trade.closing_date, trade.initiator, trade))
 
+        for gameplayer in game.gameplayer_set.filter(submit_date__isnull = False):
+            events.append(Event('submit_hand', gameplayer.submit_date, gameplayer.player))
+
         events.sort(key = lambda evt: evt.date, reverse=True)
 
         # Pagination by the date of the first or last event displayed

@@ -656,6 +656,12 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, 'gave 3 cards')
         self.assertContains(response, 'gave 4 card')
 
+    def test_tab_recently_events_include_hand_submit(self):
+        mommy.make(GamePlayer, game = self.game, player = self.alternativeUser, submit_date = now())
+
+        response = self._getTabRecently()
+        self.assertContains(response, 'The game master has received the cards submitted by')
+
     def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())
 
@@ -775,10 +781,9 @@ class SubmitHandTest(MystradeTestCase):
         self.assertContains(response, 'data-commodity-id="{0}"'.format(commodity3.id), count = 3)
 
         self.assertContains(response, '<div class="rulecard"', count = 3)
-        self.assertContains(response, 'data-rih-id="{0}"'.format(rih1.id), count = 1)
-        self.assertContains(response, 'data-rih-id="{0}"'.format(rih2.id), count = 1)
-        self.assertNotContains(response, 'data-rih-id="{0}"'.format(rih3.id))
-        self.assertContains(response, 'data-rih-id="{0}"'.format(rih4.id), count = 1)
+        self.assertContains(response, 'data-public-name="8"', count = 1)
+        self.assertContains(response, 'data-public-name="9"', count = 1)
+        self.assertContains(response, 'data-public-name="10"', count = 1)
 
         self.assertContains(response, 'Free informations')
         self.assertContains(response, 'this is secret')

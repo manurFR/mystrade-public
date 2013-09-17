@@ -34,8 +34,11 @@
                 {{ evt.trade.status|lower }} a <a class="event_link_trade" data-trade-id="{{ evt.trade.id }}">trade</a>.
             {% elif evt.event_type == 'accept_trade' %} {# only ACCEPTED trades of which the user in not a participant #}
                 A successful trade has been performed:<br/>
-                {% include "common/name_or_you.html" with who=evt.trade.initiator %} gave {{ evt.trade.initiator_offer.total_traded_cards }} card{{ evt.trade.initiator_offer.total_traded_cards|pluralize }},
-                {% include "common/name_or_you.html" with who=evt.trade.responder %} gave {{ evt.trade.responder_offer.total_traded_cards }} card{{ evt.trade.responder_offer.total_traded_cards|pluralize }} in exchange.
+                {% include "common/name_or_you.html" with who=evt.trade.initiator %} gave {{ evt.trade.initiator_offer.total_traded_cards }} card{{ evt.trade.initiator_offer.total_traded_cards|pluralize }} to
+                {% include "common/name_or_you.html" with who=evt.trade.responder %}, who gave {{ evt.trade.responder_offer.total_traded_cards }} card{{ evt.trade.responder_offer.total_traded_cards|pluralize }} in exchange.
+            {% elif evt.event_type == 'submit_hand' %}
+                The game master has received the cards submitted by {% include "common/name_or_you.html" with who=evt.sender %} ;
+                the game is finished for {% if evt.sender == user %}you{% else %}this player{% endif %}.
             {% endif %}
             </div>
             {% if evt.sender == user and evt.deletable %}
