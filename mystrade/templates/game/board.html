@@ -40,24 +40,30 @@
         <div id="zone_hand">
             <div id="zone_links">
                 <img src="{% static 'action.png' %}" width="16" height="16" alt="&gt;"/>
-                {% if game.is_active and not super_access %}<a id="link_new_trade">Propose new trade</a> | {% endif %}
+                {% if game.is_active and not super_access and not hand_submitted %}<a id="link_new_trade">Propose new trade</a> | {% endif %}
                 <a id="link_show_trade_list">Show all trades</a>
-                {% if game.is_active and not super_access %} | <a id="link_submit_hand">Choose final cards</a>{% endif %}
+                {% if game.is_active and not super_access and not hand_submitted %} | <a id="link_submit_hand">Choose final cards</a>{% endif %}
             </div>
 
             {% if show_control_board %}
                 {% include "game/control.html" %}
             {% else %}
                 <div id="zone_commodities">
-                    <h3>{% if hand_submitted %}Submitted Commodities
-                        {% elif game.is_active %}Commodities <span class="helptext">Click to create a new trade proposal</span>
-                        {% else %}Commodities{% endif %}</h3>
+                    {% if hand_submitted %}
+                        <p><img class="warning" src="{% static 'warning.png' %}" height="16" width="16" alt=""/>
+                            You have submitted your hand to the game master. You can follow the game, but all trades are forbidden.</p>
+                        <h3>Submitted Commodities</h3>
+                    {% else %}
+                        <h3>Commodities{% if game.is_active %} <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
+                    {% endif %}
                     {% for cih in commodities %}
                         {% for copy in cih.nb_cards|as_range %}
                             {% if copy >= cih.nb_tradable_cards %}
                                 {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="not_tradable" %}
+                            {% elif game.is_active and not hand_submitted %}
+                                {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="selectable" %}
                             {% else %}
-                                {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="selectable"%}
+                                {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color %}
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
@@ -73,7 +79,7 @@
 
                     <div id="zone_rulecards">
                         {% for rih in rulecards %}
-                        <div class="rulecard{% if rih.is_in_a_pending_trade %} not_tradable{% else %} selectable{% endif %}" data-rih-id="{{ rih.id }}" data-public-name="{{ rih.rulecard.public_name }}">
+                        <div class="rulecard{% if rih.is_in_a_pending_trade %} not_tradable{% elif not hand_submitted %} selectable{% endif %}" data-rih-id="{{ rih.id }}" data-public-name="{{ rih.rulecard.public_name }}">
                             <div class="note helptext"></div>
                             <div class="rulecard_name">{{ rih.rulecard.public_name }}</div>
                             <div class="rulecard_desc">{{ rih.rulecard.description }}</div>
@@ -106,7 +112,7 @@
         <div id="zone_tabs">
             <ul>
                 <li><a href="#tab-event">Recently</a></li>
-                <li><a href="#tab-trade">{% if user in players %}New Trade{% else %}View Trade{% endif %}</a></li>
+                <li><a href="#tab-trade">{% if user in players and not hand_submitted %}New Trade{% else %}View Trade{% endif %}</a></li>
             </ul>
             <div id="tab-event">
                 <div id="zone_events"></div>
@@ -125,7 +131,7 @@
                 </div>
             </div>
             <div id="tab-trade">
-                <div id="zone_trade"></div>
+                <div id="zone_trade">No trade yet.</div>
             </div>
         </div>
     </div>
@@ -187,7 +193,7 @@
             $("body").css("cursor", "wait");
         }
 
-    {% if not show_control_board %}
+    {% if not show_control_board and not hand_submitted %}
         {% include "game/player.board.js" %}
     {% else %}
         function eventClickOnATab() {}
@@ -239,7 +245,7 @@
             $("#zone_trade").text("This game has ended. Trade creation is not permitted.");
         {% elif super_access %}
             $("#zone_trade").text("No trade displayed.");
-        {% else %} {# regular players when the game is active #}
+        {% elif not hand_submitted %} {# regular players when the game is active #}
             refreshTrade();
 
             $("#zone_submit_hand").dialog({

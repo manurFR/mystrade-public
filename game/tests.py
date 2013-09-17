@@ -356,10 +356,10 @@ class GameBoardZoneHandTest(MystradeTestCase):
 
         response = self._assertGetGamePage()
 
-        self.assertContains(response, '<span class="commodity_card selectable" title="Blue"', count = 1)
+        self.assertContains(response, '<span class="commodity_card" title="Blue"', count = 1)
         self.assertContains(response, '<span class="commodity_card not_submitted" title="Blue -- not submitted"', count = 2)
-        self.assertContains(response, '<span class="commodity_card selectable" title="Red"', count = 2)
-        self.assertNotContains(response, '<span class="commodity_card selectable" title="Orange"')
+        self.assertContains(response, '<span class="commodity_card" title="Red"', count = 2)
+        self.assertNotContains(response, '<span class="commodity_card" title="Orange"')
         self.assertContains(response, '<span class="commodity_card not_submitted" title="Orange -- not submitted"', count = 1)
 
     def test_game_board_displays_rulecards(self):
@@ -748,11 +748,11 @@ class SubmitHandTest(MystradeTestCase):
         commodity3 = mommy.make(Commodity, name = 'c3', color = 'colC')
 
         mommy.make(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
-                              nb_cards = 1, nb_submitted_cards = None)
+                   nb_cards = 1, nb_submitted_cards = None)
         mommy.make(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
-                              nb_cards = 2, nb_submitted_cards = None)
+                   nb_cards = 2, nb_submitted_cards = None)
         mommy.make(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
-                              nb_cards = 3, nb_submitted_cards = None)
+                   nb_cards = 3, nb_submitted_cards = None)
 
         hag08 = RuleCard.objects.get(ref_name = 'HAG08')
         hag09 = RuleCard.objects.get(ref_name = 'HAG09')
