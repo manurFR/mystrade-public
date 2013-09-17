@@ -280,6 +280,14 @@ class ShowTradeViewTest(MystradeTestCase):
         response = self._getShowTrade(trade)
         self.assertEqual(403, response.status_code)
 
+    def test_show_trade_only_allowed_for_correct_game_id(self):
+        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                           status = 'INITIATED', initiator_offer = mommy.make(Offer))
+
+        response = self.client.get("/trade/{0}/{1}/".format(self.game.id + 1, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertEqual(403, response.status_code)
+
     def test_buttons_in_show_trade_with_own_initiated_trade(self):
         trade = self._prepare_trade('INITIATED')
 

@@ -112,7 +112,7 @@
         <div id="zone_tabs">
             <ul>
                 <li><a href="#tab-event">Recently</a></li>
-                <li><a href="#tab-trade">{% if user in players and not hand_submitted %}New Trade{% else %}View Trade{% endif %}</a></li>
+                <li><a href="#tab-trade">{% if user in players and not hand_submitted and not trade_id %}New Trade{% else %}View Trade{% endif %}</a></li>
             </ul>
             <div id="tab-event">
                 <div id="zone_events"></div>
@@ -241,7 +241,10 @@
             });
 
             refreshEvents();
-        {% if not game.is_active %}
+        {% if trade_id %} {# if the url asks for showing a specific trade #}
+            refreshTrade({{ trade_id }});
+            $("#zone_tabs").tabs("option", "active", 1);
+        {% elif not game.is_active %}
             $("#zone_trade").text("This game has ended. Trade creation is not permitted.");
         {% elif super_access %}
             $("#zone_trade").text("No trade displayed.");

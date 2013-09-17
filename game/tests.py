@@ -308,6 +308,34 @@ class GameBoardMainTest(MystradeTestCase):
         response = self.client.get("/game/{0}/".format(game4.id))
         self.assertContains(response, "closed 1 day ago")
 
+    def test_game_board_with_trade_id_displays_the_corresponding_trade(self):
+        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                           status = 'INITIATED', initiator_offer = mommy.make(Offer))
+
+        response = self.client.get("/game/{0}/trade/{1}/".format(self.game.id, trade.id))
+
+        self.assertEqual(trade.id, response.context['trade_id'])
+        self.assertContains(response, "refreshTrade({0});".format(trade.id))
+
+    def test_game_board_with_trade_id_of_another_game_doesnt_displays_the_corresponding_trade(self):
+        other_game = mommy.make(Game)
+        trade = mommy.make(Trade, game = other_game, initiator = self.loginUser, responder = self.alternativeUser,
+                           status = 'INITIATED', initiator_offer = mommy.make(Offer))
+
+        response = self.client.get("/game/{0}/trade/{1}/".format(self.game.id, trade.id))
+
+        self.assertIsNone(response.context['trade_id'])
+        self.assertNotContains(response, "refreshTrade({0});".format(trade.id))
+
+    def test_game_board_with_trade_id_of_other_players_doesnt_displays_the_corresponding_trade(self):
+        trade = mommy.make(Trade, game = self.game, initiator = self.admin_player, responder = self.alternativeUser,
+                           status = 'INITIATED', initiator_offer = mommy.make(Offer))
+
+        response = self.client.get("/game/{0}/trade/{1}/".format(self.game.id, trade.id))
+
+        self.assertIsNone(response.context['trade_id'])
+        self.assertNotContains(response, "refreshTrade({0});".format(trade.id))
+
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
             game = self.game
@@ -657,7 +685,9 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, 'gave 4 card')
 
     def test_tab_recently_events_include_hand_submit(self):
-        mommy.make(GamePlayer, game = self.game, player = self.alternativeUser, submit_date = now())
+        gp = GamePlayer.objects.get(game = self.game, player = self.alternativeUser)
+        gp.submit_date = now()
+        gp.save()
 
         response = self._getTabRecently()
         self.assertContains(response, 'The game master has received the cards submitted by')

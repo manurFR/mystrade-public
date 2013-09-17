@@ -52,7 +52,7 @@ def welcome(request):
 EVENTS_PAGINATION = 8
 
 @login_required
-def game_board(request, game_id):
+def game_board(request, game_id, trade_id = None):
     game = get_object_or_404(Game, id = game_id)
 
     players = sorted(game.players.all(), key = lambda player: player.name.lower())
@@ -61,7 +61,18 @@ def game_board(request, game_id):
     if request.user not in players and not super_access:
         raise PermissionDenied
 
-    context = {'game': game, 'players': players, 'message_form': MessageForm(), 'maxMessageLength': Message.MAX_LENGTH}
+    verified_trade_id = None
+    if trade_id:
+        try:
+            if super_access:
+                verified_trade_id = Trade.objects.get(id = trade_id, game = game).id
+            else:
+                verified_trade_id = Trade.objects.get((Q(initiator = request.user) | Q(responder = request.user)), id = trade_id, game = game).id
+        except Trade.DoesNotExist:
+            pass
+
+    context = {'game': game, 'players': players, 'message_form': MessageForm(), 'maxMessageLength': Message.MAX_LENGTH,
+               'trade_id': verified_trade_id}
 
     if request.user in players and not game.is_closed():
         hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None

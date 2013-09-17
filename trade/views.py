@@ -61,6 +61,9 @@ def trade_list(request, game_id):
 @login_required
 def show_trade(request, game_id, trade_id):
     trade = get_object_or_404(Trade, id = trade_id)
+
+    if trade.game_id != int(game_id):
+        raise PermissionDenied
     game = trade.game
 
     super_access = game.has_super_access(request.user)
