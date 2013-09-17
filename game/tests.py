@@ -817,12 +817,12 @@ class SubmitHandTest(MystradeTestCase):
         commodity2 = mommy.make(Commodity, name = 'c2', color = 'colB')
         commodity3 = mommy.make(Commodity, name = 'c3', color = 'colC')
 
-        cih1 = mommy.make(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
-                              nb_cards = 1, nb_submitted_cards = None)
-        cih2 = mommy.make(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
-                              nb_cards = 2, nb_submitted_cards = None)
-        cih3 = mommy.make(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
-                              nb_cards = 3, nb_submitted_cards = None)
+        mommy.make(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
+                   nb_cards = 1, nb_submitted_cards = None)
+        mommy.make(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
+                   nb_cards = 2, nb_submitted_cards = None)
+        mommy.make(CommodityInHand, commodity = commodity3, game = self.game, player = self.loginUser,
+                   nb_cards = 3, nb_submitted_cards = None)
 
         response = self.client.post("/game/{0}/submithand/".format(self.game.id),
                                     {'commodity_{0}'.format(commodity1.id): 1,
@@ -840,8 +840,11 @@ class SubmitHandTest(MystradeTestCase):
 
         self.assertIsNotNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
 
-    @skip("until redesign")
     def test_submit_hand_cancels_or_declines_pending_trades(self):
+        commodity1 = mommy.make(Commodity, name = 'c1', color = 'colA')
+        mommy.make(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
+                   nb_cards = 2, nb_submitted_cards = None)
+
         trade_initiated_by_me = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                                                initiator_offer = mommy.make(Offer), status = 'INITIATED')
         trade_initiated_by_other_player = mommy.make(Trade, game = self.game, initiator = self.alternativeUser, responder = self.loginUser,
@@ -854,8 +857,9 @@ class SubmitHandTest(MystradeTestCase):
                                                        initiator_offer = mommy.make(Offer),
                                                        status = 'REPLIED')
 
-        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id),
-                                    {'commodity-TOTAL_FORMS': 0, 'commodity-INITIAL_FORMS': 0}, follow = True)
+        response = self.client.post("/game/{0}/submithand/".format(self.game.id),
+                                    {'commodity_{0}'.format(commodity1.id): 1},
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(200, response.status_code)
 
         trade_initiated_by_me = Trade.objects.get(pk = trade_initiated_by_me.id)
@@ -1230,28 +1234,47 @@ class TransactionalViewsTest(TransactionTestCase):
 
         self.client.login(username = self.loginUser.username, password = 'test')
 
-    @skip("until redesign")
     def test_submit_hand_is_transactional(self):
         commodity1 = mommy.make(Commodity, name = 'c1', color = 'colA')
         commodity2 = mommy.make(Commodity, name = 'c2', color = 'colB')
 
-        cih1 = mommy.make(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
-                              nb_cards = 1, nb_submitted_cards = None)
-        cih2 = mommy.make(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
-                              nb_cards = 2, nb_submitted_cards = None)
+        mommy.make(CommodityInHand, commodity = commodity1, game = self.game, player = self.loginUser,
+                   nb_cards = 1, nb_submitted_cards = None)
+        mommy.make(CommodityInHand, commodity = commodity2, game = self.game, player = self.loginUser,
+                   nb_cards = 2, nb_submitted_cards = None)
 
-        # set a nb_submitted_cards < 0 on the last form to make the view fail on the last iteration
-        response = self.client.post("/game/{0}/hand/submit/".format(self.game.id),
-            {'commodity-TOTAL_FORMS': 2, 'commodity-INITIAL_FORMS': 2,
-             'commodity-0-commodity_id': commodity1.id, 'commodity-0-nb_submitted_cards': 1,
-             'commodity-1-commodity_id': commodity2.id, 'commodity-1-nb_submitted_cards': -3 }, follow = True)
+        # prepare a pending trade to abort, and make that abort() fail -- it will be the last step of the transaction
+        mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                   status = 'INITIATED', initiator_offer = mommy.make(Offer), finalizer = None)
 
-        self.assertEqual(200, response.status_code)
+        def mock_abort(self, whodunit, closing_date):
+            self.status = 'CANCELLED'
+            self.finalizer = whodunit
+            self.closing_date = closing_date
+            self.save()
+            raise RuntimeError
+        old_abort = Trade.abort
+        Trade.abort = mock_abort
 
-        self.assertIsNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
+        try:
+            response = self.client.post("/game/{0}/submithand/".format(self.game.id),
+                {'commodity_{0}'.format(commodity1.id): 1,
+                 'commodity_{0}'.format(commodity2.id): 1 },
+                HTTP_X_REQUESTED_WITH = 'XMLHttpRequest')
 
-        for commodity in CommodityInHand.objects.filter(game = self.game, player = self.loginUser):
-            self.assertIsNone(commodity.nb_submitted_cards)
+            self.assertEqual(422, response.status_code)
+
+            self.assertIsNone(GamePlayer.objects.get(game = self.game, player = self.loginUser).submit_date)
+
+            for commodity in CommodityInHand.objects.filter(game = self.game, player = self.loginUser):
+                self.assertIsNone(commodity.nb_submitted_cards)
+
+            trade = Trade.objects.get(game = self.game, initiator = self.loginUser)
+            self.assertEqual('INITIATED', trade.status)
+            self.assertIsNone(trade.finalizer)
+            self.assertIsNone(trade.closing_date)
+        finally:
+            Trade.abort = old_abort
 
     def test_close_game_is_transactional(self):
         def mock_persist(self):
@@ -1261,38 +1284,39 @@ class TransactionalViewsTest(TransactionTestCase):
         old_persist = Scoresheet.persist
         Scoresheet.persist = mock_persist
 
-        self.client.logout()
-        self.assertTrue(self.client.login(username = self.master.username, password = 'test'))
+        try:
+            self.client.logout()
+            self.assertTrue(self.client.login(username = self.master.username, password = 'test'))
 
-        self.game.end_date = now() + datetime.timedelta(days = -1)
-        self.game.save()
+            self.game.end_date = now() + datetime.timedelta(days = -1)
+            self.game.save()
 
-        cih = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, commodity__value = 1, nb_cards = 1)
+            cih = mommy.make(CommodityInHand, game = self.game, player = self.alternativeUser, commodity__value = 1, nb_cards = 1)
 
-        trade = mommy.make(Trade, game = self.game, status = 'INITIATED', initiator = self.alternativeUser,
-                               responder = get_user_model().objects.get(username = 'test6'),
-                               initiator_offer = mommy.make(Offer), finalizer = None)
+            trade = mommy.make(Trade, game = self.game, status = 'INITIATED', initiator = self.alternativeUser,
+                                   responder = get_user_model().objects.get(username = 'test6'),
+                                   initiator_offer = mommy.make(Offer), finalizer = None)
 
-        response = self.client.post("/game/{0}/close/".format(self.game.id), HTTP_X_REQUESTED_WITH = 'XMLHttpRequest')
+            response = self.client.post("/game/{0}/close/".format(self.game.id), HTTP_X_REQUESTED_WITH = 'XMLHttpRequest')
 
-        self.assertEqual(422, response.status_code)
+            self.assertEqual(422, response.status_code)
 
-        game = Game.objects.get(pk = self.game.id)
-        self.assertIsNone(game.closing_date)
+            game = Game.objects.get(pk = self.game.id)
+            self.assertIsNone(game.closing_date)
 
-        trade = Trade.objects.get(pk = trade.id)
-        self.assertIsNone(trade.closing_date)
+            trade = Trade.objects.get(pk = trade.id)
+            self.assertIsNone(trade.closing_date)
 
-        cih = CommodityInHand.objects.get(pk = cih.id)
-        self.assertIsNone(cih.nb_submitted_cards)
+            cih = CommodityInHand.objects.get(pk = cih.id)
+            self.assertIsNone(cih.nb_submitted_cards)
 
-        gameplayer = GamePlayer.objects.get(game = self.game, player = self.alternativeUser)
-        self.assertIsNone(gameplayer.submit_date)
+            gameplayer = GamePlayer.objects.get(game = self.game, player = self.alternativeUser)
+            self.assertIsNone(gameplayer.submit_date)
 
-        self.assertEqual(0, ScoreFromCommodity.objects.filter(game = self.game).count())
-        self.assertEqual(0, ScoreFromRule.objects.filter(game = self.game).count())
-
-        Scoresheet.persist = old_persist
+            self.assertEqual(0, ScoreFromCommodity.objects.filter(game = self.game).count())
+            self.assertEqual(0, ScoreFromRule.objects.filter(game = self.game).count())
+        finally:
+            Scoresheet.persist = old_persist
 
 class FormsTest(TestCase):
     def test_validate_number_of_players(self):

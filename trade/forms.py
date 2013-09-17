@@ -13,6 +13,7 @@ class TradeForm(forms.Form):
 class DeclineReasonForm(forms.Form):
     decline_reason = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
 
+ERROR_EMPTY_OFFER = "At least one card or one free information should be offered."
 class OfferForm(forms.Form):
     free_information = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
     comment = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
@@ -47,7 +48,7 @@ class OfferForm(forms.Form):
             elif name.startswith('rulecard_') and self.cleaned_data[name]:
                 nb_selected_rulecards += 1
         if nb_selected_commodities == 0 and nb_selected_rulecards == 0 and not cleaned_data['free_information']:
-            raise forms.ValidationError("At least one card or one free information should be offered.")
+            raise forms.ValidationError(ERROR_EMPTY_OFFER)
         return cleaned_data
 
 class RuleCardFormParse(forms.Form):

@@ -6,7 +6,7 @@ from django.http import HttpResponse
 import markdown
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required, login_required
-from django.core.exceptions import ValidationError, PermissionDenied, NON_FIELD_ERRORS
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.urlresolvers import reverse
 from django.db import transaction
@@ -22,7 +22,7 @@ from game.models import Game, CommodityInHand, GamePlayer, Message
 from ruleset.models import RuleCard, Ruleset
 from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
-from trade.forms import RuleCardFormParse, RuleCardFormDisplay
+from trade.forms import RuleCardFormParse, RuleCardFormDisplay, ERROR_EMPTY_OFFER
 from trade.models import Trade
 from profile.helpers import UserNameCache
 from trade.views import _prepare_offer_form, _parse_offer_form, FormInvalidException
@@ -145,18 +145,16 @@ def submit_hand(request, game_id):
 
                 return HttpResponse()
         except FormInvalidException as ex:
-            commodities = commodities_in_hand(game, request.user)
-            rulecards = known_rules(game, request.user)
+            if ERROR_EMPTY_OFFER in ex.formdata['offer_errors']:
+                message = "At least one commodity card should be offered."
+            else:
+                message = "Internal error. Please try again."
+                logger.error("Error in submit_hand({0})".format(game_id), exc_info = ex)
 
-            free_informations = free_informations_until_now(game, request.user)
-
-            status_code = 422
-            offer_form = _prepare_offer_form(request, game, selected_commodities = ex.formdata['selected_commodities'])
-            offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
-
-            return render(request, 'game/submit_hand.html',
-                          {'game': game, 'commodities': commodities, 'rulecards': rulecards,
-                           'free_informations': free_informations, 'offer_form': offer_form}, status = status_code)
+            return HttpResponse(message, status = 422)
+        except BaseException as ex:
+            logger.error("Error in submit_hand({0})".format(game_id), exc_info = ex)
+            return HttpResponse("Internal error. Please try again.", status = 422)
     else:
         commodities = commodities_in_hand(game, request.user)
         rulecards = known_rules(game, request.user)

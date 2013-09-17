@@ -294,9 +294,9 @@ def _parse_offer_form(request, game):
 
     selected_commodities = {}
     for cih in commodity_hand:
-        nb_traded_cards = offer_form.cleaned_data['commodity_{0}'.format(cih.commodity_id)]
-        selected_commodities[cih] = nb_traded_cards
-        if nb_traded_cards > cih.nb_tradable_cards():
+        nb_selected_cards = offer_form.cleaned_data['commodity_{0}'.format(cih.commodity_id)]
+        selected_commodities[cih] = nb_selected_cards
+        if nb_selected_cards > cih.nb_tradable_cards():
             errors.append(u"A commodity card in a pending trade can not be offered in another trade.")
 
     selected_rules = []

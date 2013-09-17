@@ -12,11 +12,8 @@ will be aborted.
 <form id="submit_hand">{% csrf_token %}
     <div id="zone_choose_commodities">
         <h3>Deselect the commodities you want to exclude (click on the cards)</h3>
-        {% if offer_form.non_field_errors %}
-            {% for err in offer_form.non_field_errors %}
-                <div class="errors"><img class="warning" src="{% static 'warning.png' %}" height="16" width="16" alt=""/>{{ err }}</div>
-            {% endfor %}
-        {% endif %}
+        <div id="submit_hand_validation_error" class="errors"></div>
+
         {% for cih in commodities %}
             {% for copy in cih.nb_cards|as_range %}
                 {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="selectable card_selected"%}
@@ -26,7 +23,7 @@ will be aborted.
         {% for commodity in offer_form.commodities %}{{ commodity }}{% endfor %}
 
         <div id="zone_buttons">
-            <div id="submit_hand_error" class="helptext"></div>
+            <div id="submit_hand_global_error" class="errors"></div>
             <input type="submit" class="submit_hand_button" value="Submit this choice and finish the game"/>&nbsp;
             <a class="cancel_link link_cancel_submit_hand">cancel</a>
             <br/>
@@ -85,14 +82,14 @@ will be aborted.
     $("#submit_hand").on("submit", function() {
         $.post("{% url 'submit_hand' game.id %}", $(this).serialize())
             .fail(function(jqXHR) {
-                debugger;
                 $("body").css("cursor", "");
+                zoneChooseCommodities.find(".selectable").on("click", clickOnCommodityInSubmitHand);
+                var warningIcon = '<img class="warning" src="{% static 'warning.png' %}" height="16" width="16" alt=""/>';
                 if (jqXHR.status == 422) {
-                    $("#zone_submit_hand").html(jqXHR.responseText);
+                    zoneChooseCommodities.find("#submit_hand_validation_error").html(warningIcon + jqXHR.responseText)
                 }
                 else {
-                    zoneChooseCommodities.find("#submit_hand_error").text("Error sending data. Please try again.");
-                    zoneChooseCommodities.find(".selectable").on("click", clickOnCommodityInSubmitHand);
+                    zoneChooseCommodities.find("#submit_hand_global_error").html(warningIcon + "Error sending data. Please try again.");
                 }
             })
             .done(function() {
@@ -101,7 +98,8 @@ will be aborted.
             });
         $("body").css("cursor", "wait");
         $(this).find(".selectable").off("click");
-        zoneChooseCommodities.find("#submit_hand_error").text("");
+        zoneChooseCommodities.find("#submit_hand_global_error").text("");
+        zoneChooseCommodities.find("#submit_hand_validation_error").text("");
         return false;
     });
 
