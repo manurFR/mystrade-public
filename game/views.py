@@ -7,7 +7,6 @@ import markdown
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required, login_required
 from django.core.exceptions import ValidationError, PermissionDenied
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q, F
@@ -27,7 +26,6 @@ from trade.models import Trade
 from profile.helpers import UserNameCache
 from trade.views import _prepare_offer_form, _parse_offer_form, FormInvalidException
 from utils import utils, stats
-
 
 logger = logging.getLogger(__name__)
 
@@ -49,68 +47,213 @@ def welcome(request):
     return render(request, 'game/welcome.html', {'games': games})
 
 #############################################################################
-##                            Game Views                                   ##
+##                            Game Board                                   ##
 #############################################################################
 EVENTS_PAGINATION = 8
 
 @login_required
-def game(request, game_id):
+def game_board(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
     players = sorted(game.players.all(), key = lambda player: player.name.lower())
 
-    if request.user not in players and not game.has_super_access(request.user):
+    super_access = game.has_super_access(request.user)
+    if request.user not in players and not super_access:
         raise PermissionDenied
 
-    # parse message post
-    if request.method == 'POST':
-        message_form = MessageForm(data = request.POST)
-        if message_form.is_valid() and len(message_form.cleaned_data['message']) > 0:
-        # bleach allowed tags : 'a','abbr','acronym','b','blockquote','code','em','i','li','ol','strong', 'ul'
-            secure_message = bleach.clean(markdown.markdown(message_form.cleaned_data['message']), strip = True)
-            Message.objects.create(game = game, sender = request.user, content = secure_message)
-            return redirect('game', game_id) # call again the same view method but in GET, so that a refresh doesn't re-post the message
-            # else keep the bound message_form to display the erroneous message
-    else:
-        message_form = MessageForm()
+    context = {'game': game, 'players': players, 'message_form': MessageForm(), 'maxMessageLength': Message.MAX_LENGTH}
 
-    # game elements
-    context =  {'game': game, 'players': players, 'message_form': message_form,  'maxMessageLength': Message.MAX_LENGTH}
-
-    if request.user in players:
-        rules = rules_currently_in_hand(game, request.user)
-
-        commodities = list(commodities_in_hand(game, request.user))
+    if request.user in players and not game.is_closed():
         hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None
         if hand_submitted:
+            commodities = CommodityInHand.objects.filter(game = game, player = request.user, nb_submitted_cards__gt = 0).order_by('commodity__name')
+            commodities_not_submitted = CommodityInHand.objects.filter(game = game, player = request.user,
+                                                                       nb_cards__gt = F('nb_submitted_cards')).order_by('commodity__name')
             for cih in commodities:
-                if cih.nb_submitted_cards == 0:
-                    commodities.remove(cih)
+                cih.nb_cards = cih.nb_submitted_cards # in 'commodities', feature only the submitted cards
+            for cih in commodities_not_submitted:
+                cih.nb_cards -= cih.nb_submitted_cards
+        else:
+            commodities = commodities_in_hand(game, request.user)
+            commodities_not_submitted = CommodityInHand.objects.none()
+
+        rulecards = rules_currently_in_hand(game, request.user)
+        former_rulecards = rules_formerly_in_hand(game, request.user, current_rulecards = [r.rulecard for r in rulecards])
+
+        free_informations = free_informations_until_now(game, request.user)
+
+        context.update({'commodities': commodities, 'rulecards': rulecards, 'former_rulecards': former_rulecards,
+                        'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
+                        'free_informations': free_informations, 'show_control_board': False})
+    else:
+        # Scores for the game master and the admins that are NOT players in this game, and for the players after the game is closed
+        scoresheets = None
+        random_scoring = False # True if at least one line of score for one player can earn a different amount of points each time we calculate the score
+        rank = -1
+
+        if game.has_started():
+            if game.is_closed():
+                scoresheets = _fetch_scoresheets(game)
+            else:
+                scoresheets = tally_scores(game) # but don't persist them
+                scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
+
+            # enrich scoresheets
+            for index, scoresheet in enumerate(scoresheets, start = 1):
+                player = scoresheet.gameplayer.player
+                if game.is_closed() and request.user == player:
+                    rank = index
                 else:
-                    cih.nb_cards = cih.nb_submitted_cards
+                    if len([sfr for sfr in scoresheet.scores_from_rule if getattr(sfr, 'is_random', False)]) > 0:
+                        scoresheet.is_random = True
+                        random_scoring = True
 
-        nb_commodities = sum([cih.nb_cards for cih in commodities])
+                if request.user not in players or game.is_closed():
+                    scoresheet.known_rules = known_rules(game, player)
 
-        pending_trades = Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game,
-                                              status__in = ['INITIATED', 'REPLIED']).order_by('-creation_date')
+        context.update({'show_control_board': True, 'super_access': super_access,
+                        'scoresheets': scoresheets, 'random_scoring': random_scoring, 'rank': rank})
 
-        context.update({'rules': rules, 'commodities': commodities, 'nb_commodities': nb_commodities,
-                        'pending_trades': pending_trades, 'hand_submitted': hand_submitted})
+    return render(request, 'game/board.html', context)
 
-    # display messages
-    messages = Message.objects.filter(game = game).order_by('-posting_date')
-    paginator = Paginator(messages, per_page = EVENTS_PAGINATION, orphans = 3)
-    page = request.GET.get('page')
-    try:
-        displayed_messages = paginator.page(page)
-    except PageNotAnInteger:
-        displayed_messages = paginator.page(1) # If page is not an integer, deliver first page.
-    except EmptyPage:
-        displayed_messages = paginator.page(paginator.num_pages) # If page is out of range, deliver last page of results.
+def _fetch_scoresheets(game):
+    scoresheets = []
+    for gameplayer in GamePlayer.objects.filter(game=game):
+        scoresheets.append(Scoresheet(gameplayer,
+                                      ScoreFromCommodity.objects.filter(game=game, player=gameplayer.player).order_by('commodity'),
+                                      ScoreFromRule.objects.filter(game=game, player=gameplayer.player).order_by('rulecard__step', 'rulecard__public_name')))
+    scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
+    return scoresheets
 
-    context.update({'messages': displayed_messages})
+#############################################################################
+##                      Events (Tab "Recently")                            ##
+#############################################################################
 
-    return render(request, 'game/game.html', context)
+class Event(object):
+    def __init__(self, event_type, date, sender, trade = None):
+        self.event_type = event_type
+        self.date = date
+        self.sender = sender
+        self.deletable = False
+        self.trade = trade # only for trade-related events
+
+FORMAT_EVENT_PERMALINK = "%Y-%m-%dT%H:%M:%S.%f"
+
+# noinspection PyTypeChecker
+@login_required
+def events(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+
+    if request.user not in game.players.all() and not game.has_super_access(request.user):
+        raise PermissionDenied
+
+    if request.is_ajax():
+        # Make a list of all events to display
+        events = list(Message.objects.filter(game = game))
+
+        events.append(Event('game_start', game.start_date, game.master))
+        if game.has_ended():
+            events.append(Event('game_end', game.end_date, game.master))
+            if game.is_closed():
+                events.append(Event('game_close', game.closing_date, game.master))
+
+        for trade in Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game):
+            events.append(Event('create_trade', trade.creation_date, trade.initiator, trade))
+            if trade.responder_offer:
+                events.append(Event('reply_trade', trade.responder_offer.creation_date, trade.responder, trade))
+            if trade.finalizer:
+                events.append(Event('finalize_trade', trade.closing_date, trade.finalizer, trade))
+
+        for trade in Trade.objects.filter(game = game, status = 'ACCEPTED').exclude(initiator = request.user).exclude(responder = request.user):
+            events.append(Event('accept_trade', trade.closing_date, trade.initiator, trade))
+
+        for gameplayer in game.gameplayer_set.filter(submit_date__isnull = False):
+            events.append(Event('submit_hand', gameplayer.submit_date, gameplayer.player))
+
+        events.sort(key = lambda evt: evt.date, reverse=True)
+
+        # Pagination by the date of the first or last event displayed
+        if request.GET.get('dateprevious'):
+            start_date = datetime.datetime.strptime(request.GET.get('dateprevious'), FORMAT_EVENT_PERMALINK)
+            events_in_the_range = _events_in_the_range(events, start_date=start_date)
+            if len(events_in_the_range) >= EVENTS_PAGINATION:
+                displayed_events = events_in_the_range[-EVENTS_PAGINATION:] # take the *last* EVENTS_PAGINATION events
+            else: # if there are less than EVENTS_PAGINATION events after start_date, it's the beginning of the list and we take as much events as we can
+                displayed_events = events[:EVENTS_PAGINATION]
+        else:
+            if request.GET.get('datenext'):
+                end_date = datetime.datetime.strptime(request.GET.get('datenext'), FORMAT_EVENT_PERMALINK)
+            else:
+                end_date = None
+            displayed_events = _events_in_the_range(events, end_date = end_date)[:EVENTS_PAGINATION] # take the *first* EVENTS_PAGINATION events
+
+        if len(displayed_events) > 0 and events.index(displayed_events[0]) > 0: # events later
+            dateprevious = datetime.datetime.strftime(displayed_events[0].date, FORMAT_EVENT_PERMALINK)
+        else:
+            dateprevious = None
+
+        if len(displayed_events) > 0 and displayed_events[-1].date > events[-1].date: # events earlier
+            datenext = datetime.datetime.strftime(displayed_events[-1].date, FORMAT_EVENT_PERMALINK)
+        else:
+            datenext = None
+
+        return render(request, 'game/events.html',
+                      {'game': game, 'events': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious})
+
+    raise PermissionDenied
+
+def _events_in_the_range(events, start_date = None, end_date = None):
+    if start_date is None:
+        start_date = datetime.datetime.min
+    if end_date is None:
+        end_date = datetime.datetime.max
+
+    start_index = None
+    range_of_events = []
+    for index, evt in enumerate(events):
+        if start_date < make_naive(evt.date, utc) < end_date:
+            if start_index is not None:
+                range_of_events.append(evt)
+            else:
+                start_index = index
+                range_of_events = [evt]
+    return range_of_events
+
+#############################################################################
+##                          Public Messages                                ##
+#############################################################################
+
+@login_required
+def post_message(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+
+    if request.user not in game.players.all() and not game.has_super_access(request.user):
+        raise PermissionDenied
+
+    if request.is_ajax() and request.method == 'POST':
+        message_form = MessageForm(data = request.POST)
+        if message_form.is_valid() and len(message_form.cleaned_data['message']) > 0:
+            # bleach allowed tags : 'a','abbr','acronym','b','blockquote','code','em','i','li','ol','strong', 'ul'
+            secure_message = bleach.clean(markdown.markdown(message_form.cleaned_data['message']), strip = True)
+            Message.objects.create(game = game, sender = request.user, content = secure_message)
+            return HttpResponse()
+        else:
+            return HttpResponse(message_form.errors['message'], status = 422)
+
+    raise PermissionDenied
+
+@login_required
+def delete_message(request, game_id):
+    game = get_object_or_404(Game, id = game_id)
+
+    if request.is_ajax() and request.method == 'POST':
+        message = get_object_or_404(Message, game = game, id = request.POST['event_id'])
+
+        if message.sender == request.user and message.deletable:
+            message.delete()
+            return HttpResponse()
+
+    raise PermissionDenied
 
 #############################################################################
 ##                            Submit Hand                                  ##
@@ -206,7 +349,6 @@ def select_rules(request):
 
     rulecards_queryset = RuleCard.objects.filter(ruleset=ruleset).order_by('ref_name')
 
-    error = None
     if request.method == 'POST':
         RuleCardsFormSet = formset_factory(RuleCardFormParse)
         formset = RuleCardsFormSet(request.POST)
@@ -286,17 +428,8 @@ def select_rules(request):
         return render(request, 'game/select_rules.html', {'formset': formset, 'session': request.session})
 
 #############################################################################
-##                          Control Board                                  ##
+##                            Close Game                                   ##
 #############################################################################
-def _fetch_scoresheets(game):
-    scoresheets = []
-    for gameplayer in GamePlayer.objects.filter(game=game):
-        scoresheets.append(Scoresheet(gameplayer,
-                                      ScoreFromCommodity.objects.filter(game=game, player=gameplayer.player).order_by('commodity'),
-                                      ScoreFromRule.objects.filter(game=game, player=gameplayer.player).order_by('rulecard__step', 'rulecard__public_name')))
-    scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
-    return scoresheets
-
 @login_required
 def close_game(request, game_id):
     game = get_object_or_404(Game, id = game_id)
@@ -347,192 +480,3 @@ def close_game(request, game_id):
 
     raise PermissionDenied
 
-#############################################################################
-##                              Redesign                                   ##
-#############################################################################
-@login_required
-def game_board(request, game_id):
-    game = get_object_or_404(Game, id = game_id)
-
-    players = sorted(game.players.all(), key = lambda player: player.name.lower())
-
-    super_access = game.has_super_access(request.user)
-    if request.user not in players and not super_access:
-        raise PermissionDenied
-
-    context = {'game': game, 'players': players, 'message_form': MessageForm(), 'maxMessageLength': Message.MAX_LENGTH}
-
-    if request.user in players and not game.is_closed():
-        hand_submitted = request.user.gameplayer_set.get(game = game).submit_date is not None
-        if hand_submitted:
-            commodities = CommodityInHand.objects.filter(game = game, player = request.user, nb_submitted_cards__gt = 0).order_by('commodity__name')
-            commodities_not_submitted = CommodityInHand.objects.filter(game = game, player = request.user,
-                                                                       nb_cards__gt = F('nb_submitted_cards')).order_by('commodity__name')
-            for cih in commodities:
-                cih.nb_cards = cih.nb_submitted_cards # in 'commodities', feature only the submitted cards
-            for cih in commodities_not_submitted:
-                cih.nb_cards -= cih.nb_submitted_cards
-        else:
-            commodities = commodities_in_hand(game, request.user)
-            commodities_not_submitted = CommodityInHand.objects.none()
-
-        rulecards = rules_currently_in_hand(game, request.user)
-        former_rulecards = rules_formerly_in_hand(game, request.user, current_rulecards = [r.rulecard for r in rulecards])
-
-        free_informations = free_informations_until_now(game, request.user)
-
-        context.update({'commodities': commodities, 'rulecards': rulecards, 'former_rulecards': former_rulecards,
-                        'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
-                        'free_informations': free_informations, 'show_control_board': False})
-    else:
-        # Scores for the game master and the admins that are NOT players in this game, and for the players after the game is closed
-        scoresheets = None
-        random_scoring = False # True if at least one line of score for one player can earn a different amount of points each time we calculate the score
-        rank = -1
-
-        if game.has_started():
-            if game.is_closed():
-                scoresheets = _fetch_scoresheets(game)
-            else:
-                scoresheets = tally_scores(game) # but don't persist them
-                scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
-
-            # enrich scoresheets
-            for index, scoresheet in enumerate(scoresheets, start = 1):
-                player = scoresheet.gameplayer.player
-                if game.is_closed() and request.user == player:
-                    rank = index
-                else:
-                    if len([sfr for sfr in scoresheet.scores_from_rule if getattr(sfr, 'is_random', False)]) > 0:
-                        scoresheet.is_random = True
-                        random_scoring = True
-
-                if request.user not in players or game.is_closed():
-                    scoresheet.known_rules = known_rules(game, player)
-
-        context.update({'show_control_board': True, 'super_access': super_access,
-                        'scoresheets': scoresheets, 'random_scoring': random_scoring, 'rank': rank})
-
-    return render(request, 'game/board.html', context)
-
-class Event(object):
-    def __init__(self, event_type, date, sender, trade = None):
-        self.event_type = event_type
-        self.date = date
-        self.sender = sender
-        self.deletable = False
-        self.trade = trade # only for trade-related events
-
-FORMAT_EVENT_PERMALINK = "%Y-%m-%dT%H:%M:%S.%f"
-
-# noinspection PyTypeChecker
-@login_required
-def events(request, game_id):
-    game = get_object_or_404(Game, id = game_id)
-
-    if request.user not in game.players.all() and not game.has_super_access(request.user):
-        raise PermissionDenied
-
-    if request.is_ajax():
-        # Make a list of all events to display
-        events = list(Message.objects.filter(game = game))
-
-        events.append(Event('game_start', game.start_date, game.master))
-        if game.has_ended():
-            events.append(Event('game_end', game.end_date, game.master))
-            if game.is_closed():
-                events.append(Event('game_close', game.closing_date, game.master))
-
-        for trade in Trade.objects.filter(Q(initiator = request.user) | Q(responder = request.user), game = game):
-            events.append(Event('create_trade', trade.creation_date, trade.initiator, trade))
-            if trade.responder_offer:
-                events.append(Event('reply_trade', trade.responder_offer.creation_date, trade.responder, trade))
-            if trade.finalizer:
-                events.append(Event('finalize_trade', trade.closing_date, trade.finalizer, trade))
-
-        for trade in Trade.objects.filter(game = game, status = 'ACCEPTED').exclude(initiator = request.user).exclude(responder = request.user):
-            events.append(Event('accept_trade', trade.closing_date, trade.initiator, trade))
-
-        for gameplayer in game.gameplayer_set.filter(submit_date__isnull = False):
-            events.append(Event('submit_hand', gameplayer.submit_date, gameplayer.player))
-
-        events.sort(key = lambda evt: evt.date, reverse=True)
-
-        # Pagination by the date of the first or last event displayed
-        if request.GET.get('dateprevious'):
-            start_date = datetime.datetime.strptime(request.GET.get('dateprevious'), FORMAT_EVENT_PERMALINK)
-            events_in_the_range = _events_in_the_range(events, start_date=start_date)
-            if len(events_in_the_range) >= EVENTS_PAGINATION:
-                displayed_events = events_in_the_range[-EVENTS_PAGINATION:] # take the *last* EVENTS_PAGINATION events
-            else: # if there are less than EVENTS_PAGINATION events after start_date, it's the beginning of the list and we take as much events as we can
-                displayed_events = events[:EVENTS_PAGINATION]
-        else:
-            if request.GET.get('datenext'):
-                end_date = datetime.datetime.strptime(request.GET.get('datenext'), FORMAT_EVENT_PERMALINK)
-            else:
-                end_date = None
-            displayed_events = _events_in_the_range(events, end_date = end_date)[:EVENTS_PAGINATION] # take the *first* EVENTS_PAGINATION events
-
-        if len(displayed_events) > 0 and events.index(displayed_events[0]) > 0: # events later
-            dateprevious = datetime.datetime.strftime(displayed_events[0].date, FORMAT_EVENT_PERMALINK)
-        else:
-            dateprevious = None
-
-        if len(displayed_events) > 0 and displayed_events[-1].date > events[-1].date: # events earlier
-            datenext = datetime.datetime.strftime(displayed_events[-1].date, FORMAT_EVENT_PERMALINK)
-        else:
-            datenext = None
-
-        return render(request, 'game/events.html',
-                      {'game': game, 'events': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious})
-
-    raise PermissionDenied
-
-def _events_in_the_range(events, start_date = None, end_date = None):
-    if start_date is None:
-        start_date = datetime.datetime.min
-    if end_date is None:
-        end_date = datetime.datetime.max
-
-    start_index = None
-    range = []
-    for index, evt in enumerate(events):
-        if start_date < make_naive(evt.date, utc) < end_date:
-            if start_index is not None:
-                range.append(evt)
-            else:
-                start_index = index
-                range = [evt]
-    return range
-
-@login_required
-def post_message(request, game_id):
-    game = get_object_or_404(Game, id = game_id)
-
-    if request.user not in game.players.all() and not game.has_super_access(request.user):
-        raise PermissionDenied
-
-    if request.is_ajax() and request.method == 'POST':
-        message_form = MessageForm(data = request.POST)
-        if message_form.is_valid() and len(message_form.cleaned_data['message']) > 0:
-            # bleach allowed tags : 'a','abbr','acronym','b','blockquote','code','em','i','li','ol','strong', 'ul'
-            secure_message = bleach.clean(markdown.markdown(message_form.cleaned_data['message']), strip = True)
-            Message.objects.create(game = game, sender = request.user, content = secure_message)
-            return HttpResponse()
-        else:
-            return HttpResponse(message_form.errors['message'], status = 422)
-
-    raise PermissionDenied
-
-@login_required
-def delete_message(request, game_id):
-    game = get_object_or_404(Game, id = game_id)
-
-    if request.is_ajax() and request.method == 'POST':
-        message = get_object_or_404(Message, game = game, id = request.POST['event_id'])
-
-        if message.sender == request.user and message.deletable:
-            message.delete()
-            return HttpResponse()
-
-    raise PermissionDenied

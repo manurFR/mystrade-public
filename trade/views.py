@@ -17,6 +17,9 @@ from utils import utils, stats
 
 logger = logging.getLogger(__name__)
 
+#############################################################################
+##                       "Show all trades" list                            ##
+#############################################################################
 TRADE_PAGINATION = 8
 
 @login_required
@@ -51,6 +54,10 @@ def trade_list(request, game_id):
 
     raise PermissionDenied
 
+#############################################################################
+##                            Show Trade                                   ##
+#############################################################################
+
 @login_required
 def show_trade(request, game_id, trade_id):
     trade = get_object_or_404(Trade, id = trade_id)
@@ -64,7 +71,6 @@ def show_trade(request, game_id, trade_id):
     if request.is_ajax():
         if trade.status == 'INITIATED' and request.user == trade.responder:
             offer_form = _prepare_offer_form(request, trade.game)
-            # TODO after redesign, check if 'super_access' is still necessary in the template
             return render(request, 'trade/trade.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access,
                                                         'decline_reason_form': DeclineReasonForm(), 'offer_form': offer_form})
         elif trade.status == 'REPLIED' and request.user == trade.initiator:
@@ -74,6 +80,10 @@ def show_trade(request, game_id, trade_id):
             return render(request, 'trade/trade.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access})
 
     raise PermissionDenied
+
+#############################################################################
+##                           Create Trade                                  ##
+#############################################################################
 
 @login_required
 def create_trade(request, game_id):
@@ -125,6 +135,10 @@ def create_trade(request, game_id):
         return render(request, 'trade/trade.html', {'game': game, 'trade_form': trade_form, 'offer_form': offer_form}, status = status_code)
 
     raise PermissionDenied
+
+#############################################################################
+##                           Trade Actions                                 ##
+#############################################################################
 
 @login_required
 def cancel_trade(request, game_id, trade_id):
