@@ -159,9 +159,6 @@ def events(request, game_id):
         raise PermissionDenied
 
     if request.is_ajax():
-        # is it the first fetch of the events since the game board has loaded -- otherwise it's a later periodic refresh
-        first_load = 'lastEventsRefreshDate' not in request.GET
-
         # Make a list of all events to display
         events = list(Message.objects.filter(game = game))
 
@@ -187,16 +184,19 @@ def events(request, game_id):
         events.sort(key = lambda evt: evt.date, reverse = True)
 
         # Pagination by the date of the first or last event displayed
+        history_request = False # is it a fetch of something else than the first page of displayable events ?
         if request.GET.get('dateprevious'):
             start_date = datetime.datetime.strptime(request.GET.get('dateprevious'), FORMAT_EVENT_PERMALINK)
             events_in_the_range = _events_in_the_range(events, start_date=start_date)
             if len(events_in_the_range) >= EVENTS_PAGINATION:
                 displayed_events = events_in_the_range[-EVENTS_PAGINATION:] # take the *last* EVENTS_PAGINATION events
+                history_request = True
             else: # if there are less than EVENTS_PAGINATION events after start_date, it's the beginning of the list and we take as much events as we can
                 displayed_events = events[:EVENTS_PAGINATION]
         else:
             if request.GET.get('datenext'):
                 end_date = datetime.datetime.strptime(request.GET.get('datenext'), FORMAT_EVENT_PERMALINK)
+                history_request = True
             else:
                 end_date = None
             displayed_events = _events_in_the_range(events, end_date = end_date)[:EVENTS_PAGINATION] # take the *first* EVENTS_PAGINATION events
@@ -211,15 +211,18 @@ def events(request, game_id):
         else:
             datenext = None
 
+        # is it the first fetch of the events since the game board has loaded -- otherwise it's a later periodic refresh
+        first_load = 'lastEventsRefreshDate' not in request.GET
+
         new_events = False
-        if not first_load and 'dateprevious' not in request.GET and 'datenext' not in request.GET:
+        if not first_load:
             lastEventsRefreshDate = datetime.datetime.strptime(request.GET.get('lastEventsRefreshDate'), FORMAT_EVENT_PERMALINK)
             for event in displayed_events:
                 if make_naive(event.date, utc) > lastEventsRefreshDate:
                     event.highlight = True
                     new_events = True
 
-        if first_load or new_events:
+        if first_load or history_request or new_events:
             return render(request, 'game/events.html',
                           {'game': game, 'events': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious,
                            'lastEventsRefreshDate': datetime.datetime.strftime(now(), FORMAT_EVENT_PERMALINK)})
