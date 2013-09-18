@@ -189,12 +189,13 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
 .event {
   margin-bottom: 5px;
+  margin-left: 10px;
+  text-indent: -10px;
 
   .event_time {
     display: inline-block;
     color: $lightText;
     @include font($size: 0.9em);
-    margin-left: -10px;
     margin-right: 5px;
   }
 
@@ -232,6 +233,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   padding: 4px 10px;
   margin: 3px 0 10px 3px;
   font-size: 0.9em;
+  text-indent: 0;
 
   &.admin {
     background: darken($backgroundColor, 8%);

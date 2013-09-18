@@ -142,6 +142,7 @@ function eventClickOnATab(event, ui) {
     } else {
         resetCardsInHandWhenSelectionIsDisabled();
     }
+    setUpEventsRefreshIfTheEventsTabIsOpen();
 }
 
 function postTrade(tradeForm) {

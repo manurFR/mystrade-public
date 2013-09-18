@@ -49,9 +49,6 @@ def welcome(request):
 #############################################################################
 ##                            Game Board                                   ##
 #############################################################################
-EVENTS_PAGINATION = 8
-EVENTS_REFRESH_DELAY = 5 * 1000 # ms
-# EVENTS_REFRESH_DELAY = 3 * 60 * 1000 # ms
 
 @login_required
 def game_board(request, game_id, trade_id = None):
@@ -141,6 +138,9 @@ def _fetch_scoresheets(game):
 #############################################################################
 ##                      Events (Tab "Recently")                            ##
 #############################################################################
+EVENTS_PAGINATION = 8
+EVENTS_REFRESH_DELAY = 3 * 60 * 1000 # ms
+FORMAT_EVENT_PERMALINK = "%Y-%m-%dT%H:%M:%S.%f"
 
 class Event(object):
     def __init__(self, event_type, date, sender, trade = None):
@@ -149,8 +149,6 @@ class Event(object):
         self.sender = sender
         self.deletable = False
         self.trade = trade # only for trade-related events
-
-FORMAT_EVENT_PERMALINK = "%Y-%m-%dT%H:%M:%S.%f"
 
 # noinspection PyTypeChecker
 @login_required
@@ -161,6 +159,9 @@ def events(request, game_id):
         raise PermissionDenied
 
     if request.is_ajax():
+        # is it the first fetch of the events since the game board has loaded -- otherwise it's a later periodic refresh
+        first_load = 'lastEventsRefreshDate' not in request.GET
+
         # Make a list of all events to display
         events = list(Message.objects.filter(game = game))
 
@@ -183,9 +184,7 @@ def events(request, game_id):
         for gameplayer in game.gameplayer_set.filter(submit_date__isnull = False):
             events.append(Event('submit_hand', gameplayer.submit_date, gameplayer.player))
 
-        events.append(Event('game_start', now(), game.master)) # TODO temp for test
-
-        events.sort(key = lambda evt: evt.date, reverse=True)
+        events.sort(key = lambda evt: evt.date, reverse = True)
 
         # Pagination by the date of the first or last event displayed
         if request.GET.get('dateprevious'):
@@ -212,15 +211,20 @@ def events(request, game_id):
         else:
             datenext = None
 
-        if 'dateprevious' not in request.GET and 'datenext' not in request.GET and 'lastEventsRefresh' in request.GET:
-            lastEventsRefresh = datetime.datetime.strptime(request.GET.get('lastEventsRefresh'), FORMAT_EVENT_PERMALINK)
+        new_events = False
+        if not first_load and 'dateprevious' not in request.GET and 'datenext' not in request.GET:
+            lastEventsRefreshDate = datetime.datetime.strptime(request.GET.get('lastEventsRefreshDate'), FORMAT_EVENT_PERMALINK)
             for event in displayed_events:
-                if make_naive(event.date, utc) > lastEventsRefresh:
+                if make_naive(event.date, utc) > lastEventsRefreshDate:
                     event.highlight = True
+                    new_events = True
 
-        return render(request, 'game/events.html',
-                      {'game': game, 'events': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious,
-                       'lastEventsRefresh': datetime.datetime.strftime(now(), FORMAT_EVENT_PERMALINK)})
+        if first_load or new_events:
+            return render(request, 'game/events.html',
+                          {'game': game, 'events': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious,
+                           'lastEventsRefreshDate': datetime.datetime.strftime(now(), FORMAT_EVENT_PERMALINK)})
+        else:
+            return HttpResponse(status = 204) # 204 = No Content
 
     raise PermissionDenied
 

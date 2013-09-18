@@ -115,7 +115,7 @@
                 <li><a href="#tab-trade">{% if user in players and not hand_submitted and not trade_id %}New Trade{% else %}View Trade{% endif %}</a></li>
             </ul>
             <div id="tab-event">
-                <div id="zone_events"></div>
+                <div id="zone_events">Loading...</div>
 
                 <div id="zone_post_message">
                     <h3>Post a public message</h3>
@@ -140,24 +140,51 @@
     <div id="zone_submit_hand" class="modal_dialog"></div>
 
     <script>
-        var lastEventsRefresh;
+        /********************************************************************************************
+         **                                Events (Tab Recently)                                   **
+         ********************************************************************************************/
+        var lastEventsRefreshDate;
         function refreshEvents(datenext, dateprevious) {
             var url = "{% url 'events' game.id %}";
-            if (lastEventsRefresh) {
-                url += "?lastEventsRefresh=" + lastEventsRefresh;
+            if (lastEventsRefreshDate) {
+                $("#zone_events").css("cursor", "wait");
+                url += "?lastEventsRefreshDate=" + lastEventsRefreshDate;
                 if (datenext) url += "&datenext=" + datenext;
                 if (dateprevious) url += "&dateprevious=" + dateprevious;
             }
             $.get(url)
                 .fail(function() {
+                    $("#zone_events").css("cursor", "");
                     $("#zone_events").text("Error loading recent events. Please try again.");
                 })
-                .done(function(data) {
-                    $("#zone_events").html(data);
-                    $("#zone_events").find(".event.highlight").effect("highlight").removeClass("highlight");
+                .done(function(data, textStatus, jqXHR) {
+                    $("#zone_events").css("cursor", "");
+                    if (jqXHR.status != 204) { // 204 = No Content, which means no new events where found ; don't refresh
+                        $("#zone_events").html(data);
+                        $("#zone_events").find(".event.highlight").effect("highlight", {}, 3000).removeClass("highlight");
+                    }
                 });
         }
 
+        var eventsRefreshIntervalId = null;
+        function setUpEventsRefreshIfTheEventsTabIsOpen() {
+            var zoneSubmitHand = $("#zone_submit_hand");
+            if (!eventsRefreshIntervalId &&
+                    $("#zone_tabs").tabs("option", "active") === 0 && // events ("Recently") tab opened
+                    !$("#zone_trade_list").dialog("isOpen") && // "Show all trade" modal dialog not opened
+                    (!zoneSubmitHand.is(".ui-dialog") || !zoneSubmitHand.dialog("isOpen")) ) { // "Choose final cards" modal dialog not opened
+                eventsRefreshIntervalId = window.setInterval(refreshEvents, {{ events_refresh_delay }});
+                refreshEvents(); // run it the first time
+            }
+            else if (eventsRefreshIntervalId) {
+                window.clearInterval(eventsRefreshIntervalId);
+                eventsRefreshIntervalId = null;
+            }
+        }
+
+        /********************************************************************************************
+         **                                Trade (Tab View/New Trade)                              **
+         ********************************************************************************************/
         function refreshTrade(tradeId) {
             var url;
             if (tradeId) {
@@ -179,6 +206,9 @@
             $("#zone_trade").text("Loading...");
         }
 
+        /********************************************************************************************
+         **                              Trade List modal dialog)                                  **
+         ********************************************************************************************/
         function refreshTradeList(page) {
             var url = "{% url 'trade_list' game.id %}";
             if (page) {
@@ -198,13 +228,18 @@
             $("body").css("cursor", "wait");
         }
 
+        /********************************************************************************************
+         **                           Script for card selections                                   **
+         ********************************************************************************************/
     {% if not show_control_board and not hand_submitted %}
         {% include "game/player.board.js" %}
     {% else %}
-        function eventClickOnATab() {}
+        function eventClickOnATab() { setUpEventsRefreshIfTheEventsTabIsOpen(); }
     {% endif %}
 
-        // on load
+        /********************************************************************************************
+         **                                      On Load                                           **
+         ********************************************************************************************/
         var currentMode = "initial"; // when loading the page, there is no trade created or edited
 
         function activateTooltips() {
@@ -238,15 +273,15 @@
                 },
                 open: function() {
                     refreshTradeList();
-                }
+                    setUpEventsRefreshIfTheEventsTabIsOpen();
+                },
+                close: setUpEventsRefreshIfTheEventsTabIsOpen
             });
 
             $("#link_show_trade_list").on("click", function() {
                 $("#zone_trade_list").dialog("open");
             });
 
-            refreshEvents();
-            window.setInterval(refreshEvents, {{ events_refresh_delay }});
         {% if trade_id %} {# if the url asks for showing a specific trade #}
             refreshTrade({{ trade_id }});
             $("#zone_tabs").tabs("option", "active", 1);
@@ -284,16 +319,22 @@
                             });
                     $("#zone_submit_hand").text("Loading...");
                     $("body").css("cursor", "wait");
-                }
+                    setUpEventsRefreshIfTheEventsTabIsOpen();
+                },
+                close: setUpEventsRefreshIfTheEventsTabIsOpen
             });
 
             $("#link_submit_hand").on("click", function() {
                 $("#zone_submit_hand").dialog("open");
             });
         {% endif %}
+
+            setUpEventsRefreshIfTheEventsTabIsOpen();
         });
 
-        // messages
+        /********************************************************************************************
+         **                                Public Messages                                         **
+         ********************************************************************************************/
         var maxlength = {{ maxMessageLength }};
         $('#id_message').attr('maxlength', maxlength) // direct support for HTML5-enabled browsers
             .on('keyup', function() {
