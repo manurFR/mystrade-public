@@ -167,18 +167,25 @@
         }
 
         var eventsRefreshIntervalId = null;
+        function launchEventsRefresh() {
+            eventsRefreshIntervalId = window.setInterval(refreshEvents, {{ events_refresh_delay }});
+        }
+        function stopEventsRefresh() {
+            window.clearInterval(eventsRefreshIntervalId);
+            eventsRefreshIntervalId = null;
+        }
         function setUpEventsRefreshIfTheEventsTabIsOpen() {
             var zoneSubmitHand = $("#zone_submit_hand");
             if (!eventsRefreshIntervalId &&
                     $("#zone_tabs").tabs("option", "active") === 0 && // events ("Recently") tab opened
                     !$("#zone_trade_list").dialog("isOpen") && // "Show all trade" modal dialog not opened
-                    (!zoneSubmitHand.is(".ui-dialog") || !zoneSubmitHand.dialog("isOpen")) ) { // "Choose final cards" modal dialog not opened
-                eventsRefreshIntervalId = window.setInterval(refreshEvents, {{ events_refresh_delay }});
+                    (!zoneSubmitHand.is(".ui-dialog") || !zoneSubmitHand.dialog("isOpen")) && // "Choose final cards" modal dialog not opened
+                    $("#link_show_previous_events").length == 0) { // the Recently tab shows the most recent events
+                launchEventsRefresh();
                 refreshEvents(); // run it the first time
             }
             else if (eventsRefreshIntervalId) {
-                window.clearInterval(eventsRefreshIntervalId);
-                eventsRefreshIntervalId = null;
+                stopEventsRefresh();
             }
         }
 
@@ -249,7 +256,8 @@
         var color_list = ["blue", "red", "green", "magenta", "gray", "brown"];
         $(function() {
             $('#zone_game_label *').css('color', color_list[({{ game.id }}) % color_list.length]);
-            $("#zone_tabs").tabs({
+            var zoneTabs = $("#zone_tabs");
+            zoneTabs.tabs({
                 heightStyle: "content",
                 activate: eventClickOnATab
             });
@@ -284,7 +292,7 @@
 
         {% if trade_id %} {# if the url asks for showing a specific trade #}
             refreshTrade({{ trade_id }});
-            $("#zone_tabs").tabs("option", "active", 1);
+            zoneTabs.tabs("option", "active", 1);
         {% elif not game.is_active %}
             $("#zone_trade").text("This game has ended. Trade creation is not permitted.");
         {% elif super_access %}

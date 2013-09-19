@@ -498,29 +498,29 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
 
         response = self._getTabRecently()
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination) # 'pagination' messages per page
-        self.assertContains(response, '$(".show_previous a").on("click", function() { refreshEvents(); });')
-        self.assertContains(response, '$(".show_more a").on("click", function() {{ refreshEvents("{0}"); }});'
+        self.assertContains(response, '$("#link_show_previous_events").on("click", function() { refreshEvents(); });')
+        self.assertContains(response, '$("#link_show_more_events").on("click", function() {{ refreshEvents("{0}"); }});'
                                         .format(strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK)))
 
         response = self._getTabRecently("datenext=" + strftime(last_in_page_2, views.FORMAT_EVENT_PERMALINK))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = int(pagination / 2))
-        self.assertContains(response, '$(".show_previous a").on("click", function() {{ refreshEvents(null, "{0}"); }});'
+        self.assertContains(response, '$("#link_show_previous_events").on("click", function() {{ refreshEvents(null, "{0}"); }});'
                                         .format(strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK)))
-        self.assertContains(response, '$(".show_more a").on("click", function() { refreshEvents(); });')
+        self.assertContains(response, '$("#link_show_more_events").on("click", function() { refreshEvents(); });')
 
         response = self._getTabRecently("dateprevious=" + strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
-        self.assertContains(response, '$(".show_previous a").on("click", function() {{ refreshEvents(null, "{0}"); }});'.
+        self.assertContains(response, '$("#link_show_previous_events").on("click", function() {{ refreshEvents(null, "{0}"); }});'.
                                         format(strftime(first_in_page_2, views.FORMAT_EVENT_PERMALINK)))
-        self.assertContains(response, '$(".show_more a").on("click", function() {{ refreshEvents("{0}"); }});'.
+        self.assertContains(response, '$("#link_show_more_events").on("click", function() {{ refreshEvents("{0}"); }});'.
                                         format(strftime(last_in_page_2, views.FORMAT_EVENT_PERMALINK)))
 
         # case when new events have appeared: there are less than 'pagination' events after dateprevious, but we should
         #  display the first 'pagination' events anyway and not take into account the dateprevious
         response = self._getTabRecently("dateprevious=" + strftime(somewhere_in_page_1, views.FORMAT_EVENT_PERMALINK))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
-        self.assertContains(response, '$(".show_previous a").on("click", function() { refreshEvents(); });') # like the default
-        self.assertContains(response, '$(".show_more a").on("click", function() {{ refreshEvents("{0}"); }});'
+        self.assertContains(response, '$("#link_show_previous_events").on("click", function() { refreshEvents(); });') # like the default
+        self.assertContains(response, '$("#link_show_more_events").on("click", function() {{ refreshEvents("{0}"); }});'
                                         .format(strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK))) # like the default
 
     def test_tab_recently_messages_from_the_game_master_stand_out(self):

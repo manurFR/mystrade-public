@@ -1,6 +1,6 @@
 {% load staticfiles %}
 {% load humanize %}
-<div class="show_previous">{% if dateprevious %}<a>&lt; show previous events</a>{% endif %}</div>
+<div class="show_previous">{% if dateprevious %}<a id="link_show_previous_events">&lt; show previous events</a>{% endif %}</div>
 {% regroup events by date|naturalday as grouped_events %}
 {% for group in grouped_events %}
     {% if dateprevious or group.grouper != 'today' %}<div class="event_date">{{ group.grouper|capfirst }}</div>{% endif %}
@@ -53,16 +53,22 @@
         </div>
     {% endfor %}
 {% endfor %}
-<div class="show_more">{% if datenext %}<a>show more events &gt;</a>{% endif %}</div>
+<div class="show_more">{% if datenext %}<a id="link_show_more_events">show more events &gt;</a>{% endif %}</div>
 
 <script> {# deleteMessage(), refreshEvents() and refreshTrade() functions are found in board.html, which encloses this file #}
     lastEventsRefreshDate = "{{ lastEventsRefreshDate }}";
     $(".delete_icon").tooltip({ show: false }).on("click", function(event) { deleteMessage(event.target); });
-    $(".show_previous a").on("click", function() { refreshEvents({% if dateprevious %}null, "{{ dateprevious }}"{% endif %}); });
-    $(".show_more a").on("click", function() { refreshEvents({% if datenext %}"{{ datenext }}"{% endif %}); });
+    $("#link_show_previous_events").on("click", function() { refreshEvents({% if dateprevious %}null, "{{ dateprevious }}"{% endif %}); });
+    $("#link_show_more_events").on("click", function() { refreshEvents({% if datenext %}"{{ datenext }}"{% endif %}); });
     $(".event_link_trade").on("click", function(event) {
         refreshTrade($(event.target).data("tradeId"));
         $("#zone_tabs").tabs("option", "active", 1)
             .find("li[aria-controls=tab-trade]").find("a").text("View Trade");
     });
+
+{% if dateprevious %}
+    stopEventsRefresh();
+{% else %}
+    launchEventsRefresh(); {# in case it should be re-launched #}
+{% endif %}
 </script>
