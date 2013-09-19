@@ -684,6 +684,24 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, 'gave 3 cards')
         self.assertContains(response, 'gave 4 card')
 
+    def test_tab_recently_the_last_event_for_a_pending_trade_stands_out(self):
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'INITIATED', initiator_offer = mommy.make(Offer))
+        trade2 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                           status = 'REPLIED', initiator_offer = mommy.make(Offer), responder_offer = mommy.make(Offer))
+        trade3 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'ACCEPTED', finalizer = self.loginUser, closing_date = now(),
+                            initiator_offer = mommy.make(Offer), responder_offer = mommy.make(Offer))
+
+        response = self._getTabRecently()
+        self.assertNotContains(response, 'title="Please reply to this offer..."')
+        self.assertContains(response, 'title="Please accept or decline..."', count = 1)
+
+        self.login_as(self.alternativeUser)
+        response = self._getTabRecently()
+        self.assertContains(response, 'title="Please reply to this offer..."', count = 1)
+        self.assertNotContains(response, 'title="Please accept or decline..."')
+
     def test_tab_recently_events_include_hand_submit(self):
         gp = GamePlayer.objects.get(game = self.game, player = self.alternativeUser)
         gp.submit_date = now()

@@ -21,11 +21,17 @@
             {% elif evt.event_type == 'game_close' %}
                 Game #{{ game.id }} is over. Scores have been calculated.
             {% elif evt.event_type == 'create_trade' %}
+                {% if not evt.trade.finalizer and not evt.trade.responder_offer and user == evt.trade.responder %}
+                    <img alt="! " title="Please reply to this offer..." src="{% static 'warning.png' %}" height="16" width="16" class="warning_icon"/> {# the last event of a pending trade is marked for the player who has to act on it #}
+                {% endif %}
                 {% include "common/name_or_you.html" with who=evt.sender %} proposed a <a class="event_link_trade" data-trade-id="{{ evt.trade.id }}">trade</a> to {% include "common/name_or_you.html" with who=evt.trade.responder %}.
             {% elif evt.event_type == 'reply_trade' %}
-                {% if evt.sender == user %}
+                {% if evt.sender == user %} {# for the responder #}
                     {% include "common/name_or_you.html" with who=evt.sender %} replied to {% include "common/name_or_you.html" with who=evt.trade.initiator %}'s <a class="event_link_trade" data-trade-id="{{ evt.trade.id }}">trade</a>.
-                {% else %}
+                {% else %} {# for the initiator #}
+                    {% if not evt.trade.finalizer %}
+                        <img alt="! " title="Please accept or decline..." src="{% static 'warning.png' %}" height="16" width="16" class="warning_icon"/> {# the last event of a pending trade is marked for the player who has to act on it #}
+                    {% endif %}
                     {% include "common/name_or_you.html" with who=evt.sender %} replied to your <a class="event_link_trade" data-trade-id="{{ evt.trade.id }}">trade</a>.
                 {% endif %}
             {% elif evt.event_type == 'finalize_trade' %} {# including ACCEPTED trades of which the user is a participant #}
@@ -58,6 +64,7 @@
 <script> {# deleteMessage(), refreshEvents() and refreshTrade() functions are found in board.html, which encloses this file #}
     lastEventsRefreshDate = "{{ lastEventsRefreshDate }}";
     $(".delete_icon").tooltip({ show: false }).on("click", function(event) { deleteMessage(event.target); });
+    $(".event_text .warning_icon").tooltip();
     $("#link_show_previous_events").on("click", function() { refreshEvents({% if dateprevious %}null, "{{ dateprevious }}"{% endif %}); });
     $("#link_show_more_events").on("click", function() { refreshEvents({% if datenext %}"{{ datenext }}"{% endif %}); });
     $(".event_link_trade").on("click", function(event) {

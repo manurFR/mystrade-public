@@ -209,6 +209,11 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
     a {
       color: $linkColor;
     }
+
+    .warning_icon {
+      vertical-align: text-bottom;
+      cursor: help;
+    }
   }
 }
 
