@@ -193,18 +193,18 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
 .event {
   margin-bottom: 5px;
+  text-indent: -10px;
+  padding-left: 20px;
 
   .event_time {
-    float: left;
+    display: inline-block;
     color: $lightText;
     @include font($size: 0.9em);
     margin-right: 5px;
-    margin-top: 2px; /* crappy fix to align the time and text despite the float, in firefox and I hope anywhere else */
-    -webkit-margin-before: 1px; /* extra-crappy fix for making it work in chrome */
   }
 
   .event_text {
-    margin-left: 10px;
+    display: inline;
 
     a {
       color: $linkColor;
