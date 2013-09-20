@@ -76,6 +76,8 @@
 {% if dateprevious %}
     stopEventsRefresh();
 {% else %}
-    launchEventsRefresh(); {# in case it should be re-launched #}
+    if (!eventsRefreshIntervalId) {
+        launchEventsRefresh();
+    }
 {% endif %}
 </script>

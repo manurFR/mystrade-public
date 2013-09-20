@@ -140,6 +140,9 @@
     <div id="zone_submit_hand" class="modal_dialog"></div>
 
     <script>
+        {% include "common/visibility.js" %}
+        setUpVisibility(setUpEventsRefreshIfTheEventsTabIsOpen);
+
         /********************************************************************************************
          **                                Events (Tab Recently)                                   **
          ********************************************************************************************/
@@ -180,7 +183,8 @@
                     $("#zone_tabs").tabs("option", "active") === 0 && // events ("Recently") tab opened
                     !$("#zone_trade_list").dialog("isOpen") && // "Show all trade" modal dialog not opened
                     (!zoneSubmitHand.is(".ui-dialog") || !zoneSubmitHand.dialog("isOpen")) && // "Choose final cards" modal dialog not opened
-                    $("#link_show_previous_events").length == 0) { // the Recently tab shows the most recent events
+                    $("#link_show_previous_events").length == 0 && // the Recently tab shows the most recent events
+                    $("body").attr("visibilityState") === "visible") { // the tab is currently active in the browser
                 launchEventsRefresh();
                 refreshEvents(); // run it the first time
             }
