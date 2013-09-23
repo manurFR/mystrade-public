@@ -54,7 +54,7 @@
                             You have submitted your hand to the game master. You can follow the game, but all trades are forbidden.</p>
                         <h3>Submitted Commodities</h3>
                     {% else %}
-                        <h3>Commodities{% if game.is_active %} <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
+                        <h3>Commodities{% if game.is_active %} <span class="helptext click2createtrade">Click to create a new trade proposal</span>{% endif %}</h3>
                     {% endif %}
                     {% for cih in commodities %}
                         {% for copy in cih.nb_cards|as_range %}
@@ -75,7 +75,7 @@
                 </div>
 
                 <div id="zone_rules">
-                    <h3>Rules{% if game.is_active and not hand_submitted %} <span class="helptext">Click to create a new trade proposal</span>{% endif %}</h3>
+                    <h3>Rules{% if game.is_active and not hand_submitted %} <span class="helptext click2createtrade">Click to create a new trade proposal</span>{% endif %}</h3>
 
                     <div id="zone_rulecards">
                         {% for rih in rulecards %}

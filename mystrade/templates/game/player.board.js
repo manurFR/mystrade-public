@@ -103,36 +103,44 @@ function prepareCardsInHandForSelection() {
         $(correspondingRulecardInHand(this, false)).addClass("card_selected");
     });
 
+    var allCommodities = $("#zone_commodities").find(".commodity_card");
+    var allRulecards = $("#zone_rulecards").find(".rulecard");
+
     // mark as excluded the non tradable cards
-    $("#zone_commodities").find(".commodity_card").filter(".not_tradable").addClass("excluded").each(function() {
+    allCommodities.filter(".not_tradable").addClass("excluded").each(function() {
         $(this).attr("title", $(this).data("name") + " - Reserved for a pending trade");
     });
-    $("#zone_rulecards").find(".rulecard").filter(".not_tradable").addClass("excluded").children(".note")
+    allRulecards.filter(".not_tradable").addClass("excluded").children(".note")
         .text("(reserved for a pending trade)");
 
     // mark as selectable the tradable cards
-    $("#zone_commodities").find(".commodity_card").not(".not_tradable").addClass("selectable").off("click.tradecreate")
+    allCommodities.not(".not_tradable").addClass("selectable").off("click.tradecreate")
         .on("click.tradeselect", function(event) {
             clickOnCommodity(event.target)
         });
-    $("#zone_rulecards").find(".rulecard").not(".not_tradable, .former").addClass("selectable").off("click.tradecreate")
+    allRulecards.not(".not_tradable, .former").addClass("selectable").off("click.tradecreate")
         .on("click.tradeselect", function(event) {
             clickOnRulecard($(event.target).closest(".rulecard")); // step up to the main div.rulecard if the click was on a sub-div
         });
 }
 
 function resetCardsInHandWhenSelectionIsDisabled() {
+    var allCommodityCards = $("#zone_commodities").find(".commodity_card");
+    var allRulecards = $("#zone_rulecards").find(".rulecard");
+
     // unmark the selectable cards
-    $("#zone_commodities").find(".commodity_card").not(".not_tradable").removeClass("card_selected selectable")
+    allCommodityCards.not(".not_tradable").removeClass("card_selected selectable")
         .off("click.tradecreate").off("click.tradeselect");
-    $("#zone_rulecards").find(".rulecard").not(".not_tradable, .former").removeClass("card_selected selectable")
+    allRulecards.not(".not_tradable, .former").removeClass("card_selected selectable")
         .off("click.tradecreate").off("click.tradeselect");
 
     // unmark the non-tradable cards
-    $("#zone_commodities").find(".commodity_card").filter(".not_tradable").removeClass("excluded").each(function() {
+    allCommodityCards.filter(".not_tradable").removeClass("excluded").each(function() {
         $(this).attr("title", $(this).data("name"));
     });
-    $("#zone_rulecards").find(".rulecard").filter(".not_tradable").removeClass("excluded").children(".note").text("");
+    allRulecards.filter(".not_tradable").removeClass("excluded").children(".note").text("");
+
+    $(".click2createtrade").hide();
 }
 
 function eventClickOnATab(event, ui) {
