@@ -9,11 +9,22 @@ class Migration(DataMigration):
     def forwards(self, orm):
         "Write your forwards methods here."
         # Note: Remember to use orm['appname.ModelName'] rather than "from appname.models..."
-        from django.core.management import call_command
-        call_command("loaddata", "initial_data.json")
+        try:
+            pink = orm['ruleset.Commodity'].objects.get(ruleset__module = 'remixed', name = 'Pink')
+            pink.color = 'hotpink'
+            pink.save()
+        except orm['ruleset.Commodity'].DoesNotExist:
+            pass
 
     def backwards(self, orm):
         "Write your backwards methods here."
+        try:
+            pink = orm['ruleset.Commodity'].objects.get(ruleset__module = 'remixed', name = 'Pink')
+            pink.color = 'pink'
+            pink.save()
+        except orm['ruleset.Commodity'].DoesNotExist:
+            pass
+
 
     models = {
         u'ruleset.commodity': {
