@@ -120,7 +120,7 @@ class CreateTradeViewTest(MystradeTestCase):
         email = mail.outbox[0]
         self.assertEqual('[MysTrade] Game #{0}: You have been offered a trade by test2'.format(self.game.id), email.subject)
         self.assertIn('In game #{0}, test2 has offered you a new trade'.format(self.game.id), email.body)
-        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/game/{0}/trade/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertIn('- 1 commodity_1 card', email.body)
         self.assertIn('Rule: rulecard_1', email.body)
         self.assertEqual(['test4@test.com'], email.to)
@@ -461,7 +461,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
         email = mail.outbox[0]
         self.assertEqual('[MysTrade] Game #{0}: test2 has cancelled the trade'.format(self.game.id), email.subject)
         self.assertIn('test2 has cancelled the trade including the following elements', email.body)
-        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/game/{0}/trade/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_cancel_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_REPLIED(self):
@@ -478,7 +478,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
         email = mail.outbox[0]
         self.assertEqual('[MysTrade] Game #{0}: test2 has cancelled the trade'.format(self.game.id), email.subject)
         self.assertIn('test2 has cancelled the trade including the following elements', email.body)
-        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/game/{0}/trade/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_reply_trade_not_allowed_in_GET(self):
@@ -572,7 +572,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
         email = mail.outbox[0]
         self.assertEqual('[MysTrade] Game #{0}: test2 has replied to your trade proposal'.format(self.game.id), email.subject)
         self.assertIn('In game #{0}, test2 has replied to your proposal, with the following offer:'.format(self.game.id), email.body)
-        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/game/{0}/trade/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_accept_trade_not_allowed_in_GET(self):
@@ -678,7 +678,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
         email = mail.outbox[0]
         self.assertEqual('[MysTrade] Game #{0}: test2 has accepted the trade'.format(self.game.id), email.subject)
         self.assertIn('test2 has accepted your offer.'.format(self.game.id), email.body)
-        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/game/{0}/trade/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_decline_trade_not_allowed_in_GET(self):
@@ -751,7 +751,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
         email = mail.outbox[0]
         self.assertEqual('[MysTrade] Game #{0}: test2 has declined the trade'.format(self.game.id), email.subject)
         self.assertIn('test2 has declined your offer.'.format(self.game.id), email.body)
-        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/game/{0}/trade/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertIn("this is my reason", email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
@@ -770,7 +770,7 @@ class ModifyTradeViewsTest(MystradeTestCase):
         email = mail.outbox[0]
         self.assertEqual('[MysTrade] Game #{0}: test2 has declined the trade'.format(self.game.id), email.subject)
         self.assertIn('test2 has declined your offer.'.format(self.game.id), email.body)
-        self.assertIn('/trade/{0}/{1}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('/game/{0}/trade/{1}/'.format(self.game.id, trade.id), email.body)
         self.assertIn("this is my reason", email.body)
         self.assertEqual(['test5@test.com'], email.to)
 

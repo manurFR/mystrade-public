@@ -1,7 +1,7 @@
-{% if offer.rulecards %}* Rule{{ offer.rulecards|pluralize }}: {% for rih in offer.rulecards %}{{ rih.rulecard.public_name }} {% endfor %}{% endif %}
 {% if offer.tradedcommodities %}* Commodit{{ offer.tradedcommodities|pluralize:"y,ies" }}:
 {% for tc in offer.tradedcommodities %}- {{ tc.nb_traded_cards }} {{ tc.commodityinhand.commodity.name }} card{{ tc.nb_traded_cards|pluralize }}
 {% endfor %}{% endif %}
+{% if offer.rulecards %}* Rule{{ offer.rulecards|pluralize }}: {% for rih in offer.rulecards %}{{ rih.rulecard.public_name }} {% endfor %}{% endif %}
 {% if offer.free_information %}* A free information.{% endif %}
 
 {% if offer.comment %}The following comment was added to the offer:

@@ -427,11 +427,6 @@ def select_rules(request):
                      all_players[player] = {'name': player.name,
                                             'url': request.build_absolute_uri(reverse('otherprofile', args=[player.id]))}
 
-                if game.is_active():
-                     url = request.build_absolute_uri(reverse('trades', args = [game.id]))
-                else: # game not yet started
-                     url = request.build_absolute_uri(reverse('hand', args = [game.id]))
-
                 for player in all_players.iterkeys():
                      opponents = dict(all_players) # make a copy
                      del opponents[player]
@@ -439,7 +434,8 @@ def select_rules(request):
                      rules = rules_currently_in_hand(game, player)
                      commodities = commodities_in_hand(game, player)
                      utils.send_notification_email('game_create', player,
-                                                   {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities, 'url': url})
+                                                   {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities,
+                                                    'url': request.build_absolute_uri(reverse('game', args=[game.id]))})
 
                 # email notification for the admins
                 utils.send_notification_email('game_create_admin', [admin[1] for admin in settings.ADMINS],

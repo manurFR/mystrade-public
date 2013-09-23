@@ -6,11 +6,11 @@ The other players are:
 {% endfor %}
 
 Here's the hand dealt to you:
-* Rules:
-{% for rih in rules %}- Rule {{ rih.rulecard.public_name }}: {{ rih.rulecard.description|safe }}
-{% endfor %}
 * Commodities:
 {% for cih in commodities %}- {{ cih.nb_cards }} {{ cih.commodity.name }} card{{ cih.nb_cards|pluralize }}
+{% endfor %}
+* Rules:
+{% for rih in rules %}- Rule {{ rih.rulecard.public_name }}: {{ rih.rulecard.description|safe }}
 {% endfor %}
 
 {% if game.is_active %}The game has already started ! Start trading here:{% else %}The game will start on {{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}. Be ready and visit the site:{% endif %}
