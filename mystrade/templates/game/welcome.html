@@ -3,7 +3,7 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.10.3.custom.min.css' %}" />
-<link rel="stylesheet" href="{% static 'css/style.css-tooltips.css' %}" />
+<link rel="stylesheet" href="{% static 'css/style.welcome.css' %}" />
 {% endblock %}
 
 {% block scripts %}
@@ -12,40 +12,41 @@
 {% endblock %}
 
 {% block content %}
-	{{  user.name|capfirst }}, welcome to MysTrade !
+	<strong>{{  user.name|capfirst }}</strong>, welcome to MysTrade !
 	<br/><br/>
 	<div>Your games :<br/>
-		<div class="css_table">
-			<div class="css_table-row header-row">
-				<div class="css_table-cell">Game</div>
-				<div class="css_table-cell">Players</div>
-				<div class="css_table-cell">Start date</div>
-				<div class="css_table-cell">End date</div>
+		<div id="table_game_list">
+			<div class="row_game_list header-row">
+				<div class="cell_game_list">Game</div>
+				<div class="cell_game_list">Players</div>
+				<div class="cell_game_list">Start date</div>
+				<div class="cell_game_list">End date</div>
 			</div>
 			{% for game in games %}
             {% cycle 'even_color' 'odd_color' as backcolor silent %}
-			<div class="css_table-row">
-				<div class="css_table-cell {{ backcolor }}">
+			<div class="row_game_list">
+				<div class="cell_game_list {{ backcolor }}">
 				    #{{ game.id }}, by
 					{% if game.master == user %}<strong>{% endif %}{% include "common/name_or_you.html" with who=game.master %}{% if game.master == user %}</strong>{% endif %}
 				</div>
-				<div class="css_table-cell {{ backcolor }}"><span class="underline" data-tip="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></div>
-				<div class="css_table-cell {{ backcolor }}">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</div>
-				<div class="css_table-cell {{ backcolor }}{% if game.less_than_24_hours_remaining and not game.hand_submitted %} end_warning{% endif %}">
+				<div class="cell_game_list {{ backcolor }}"><span title="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></div>
+				<div class="cell_game_list {{ backcolor }}">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</div>
+				<div class="cell_game_list {{ backcolor }}{% if game.less_than_24_hours_remaining and not game.hand_submitted %} end_warning{% endif %}">
                     {{ game.end_date|date:"SHORT_DATETIME_FORMAT" }}
                 </div>
-                <div class="css_table-cell {{ backcolor }}"> > </div>
-                <div class="css_table-cell {{ backcolor }} centered{% if not game.is_active %} inactive{% endif %}">
+                <div class="cell_game_list {{ backcolor }}"> > </div>
+                <div class="cell_game_list {{ backcolor }}">
+                    <a href="{% url 'game' game.id %}">
                     {% if user in game.players.all %}
-                        {% if game.is_closed %}<a href="{% url 'game' game.id %}">Show Score</a>
-                        {% else %}<a href="{% url 'game' game.id %}">
-                            {% if game.is_active and not game.hand_submitted %}Play !{% else %}Show Game{% endif %}
-                        </a>{% endif %}
+                        {% if game.is_closed %}Show Score
+                        {% elif game.is_active and not game.hand_submitted %}Play !
+                        {% else %}Show Game{% endif %}
                     {% elif user == game.master or user.is_staff %}
-                        <a href="{% url 'game' game.id %}">Game Page</a>
+                        Game Page
                     {% endif %}
+                    </a>
                 </div>
-                <div class="css_table-cell">
+                <div class="cell_game_list">
                     {% if game.is_active %}
                         {% if user in game.players.all and game.hand_submitted %}
                             <span class="helptext">hand submitted</span>
@@ -75,6 +76,7 @@
 	<script>
     $(function() {
         $( "input[type=submit]" ).button();
+        $("span").tooltip({position: {  my: "left top", at: "right bottom" } });
     });
     </script>
 {% endblock content %}

@@ -1,0 +1,36 @@
+@import "base";
+
+#table_game_list {
+  display: table;
+  border-spacing: 2px;
+  width: 100%;
+
+  div, span, img {
+    text-align: center;
+  }
+
+  .row_game_list {
+    display: table-row;
+
+    &:first-of-type {
+      text-align: center;
+      @include font($weight: bold);
+      background-color: darken($backgroundColor, 5%);;
+    }
+  }
+
+  .cell_game_list {
+    display: table-cell;
+    padding: 1px 4px;
+
+    &.end_warning {
+      color: red;
+      @include font($weight: bold);
+    }
+
+    span[title] {
+      border-bottom: dotted 1px black;
+      cursor: help;
+    }
+  }
+}
