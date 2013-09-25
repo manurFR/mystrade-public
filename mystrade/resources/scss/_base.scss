@@ -231,7 +231,7 @@ $heightOfThumbnailRuleCards: 22px;
   @include shadowBox($blur: 5px);
 }
 
-.note {
+.note, .edit {
   float: right;
 }
 

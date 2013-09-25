@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from django.test import TestCase
+from model_mommy import mommy
 from profile.models import MystradeUser
 
 class MystradeUserNameTest(TestCase):
@@ -22,7 +23,7 @@ class MystradeUserNameTest(TestCase):
 
 class ViewsTest(TestCase):
     def setUp(self):
-        self.testUser = get_user_model()(username = 'test', email = 'test@aaa.com', bio = 'line\r\njump', send_notifications = True)
+        self.testUser = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com', bio = 'line\r\njump', send_notifications = True)
         self.testUser.set_password('test');
         self.testUser.save()
 

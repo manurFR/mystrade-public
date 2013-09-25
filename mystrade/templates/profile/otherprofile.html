@@ -1,23 +1,33 @@
 {% extends "base.html" %}
+{% load staticfiles %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/style.profile.css' %}" />
+{% endblock %}
+
 
 {% block content %}
-	<table class="fullwidth formtable">
+	<table id="table_profile">
 		<tr>
 			<td colspan="2" class="header">
 				{{ user_displayed.name|title }}
 			</td>
 		</tr>
-		<tr>
-			<th class="label">Bio :</th>
-			<td><div class="frame">
+		<tr class="longtext">
+			<th>Bio :</th>
+			<td>
+                <div>
 					{{ user_displayed.bio|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
-				</div></td>
+				</div>
+            </td>
 		</tr>
-		<tr>
-			<th class="label">Contact informations :</th>
-			<td><div class="frame">
+		<tr class="longtext">
+			<th>Contact informations :</th>
+			<td>
+                <div>
 					{{ user_displayed.contact|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
-				</div></td>
+				</div>
+            </td>
 		</tr>													
 	</table>
 {% endblock content %}

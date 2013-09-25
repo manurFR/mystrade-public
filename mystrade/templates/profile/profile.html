@@ -1,50 +1,54 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/style.profile.css' %}" />
+{% endblock %}
+
 {% block content %}
-	<table class="fullwidth formtable">
+	<table id="table_profile">
 		<tr>
 			<td colspan="2" class="header">
-				Your details : {{ user.name|title }}
-				<span class="floatright">
-					<a href="{% url 'editprofile' %}"><img src="{% static "pencil.png" %}" height="16" width="16" alt=""/>Edit</a>
+				Your details :
+				<span class="edit">
+					<a href="{% url 'editprofile' %}"><img src="{% static "pencil.png" %}" height="16" width="16" alt=""/> Edit</a>
 				</span>
 			</td>
 		</tr>
 		<tr>
-			<th class="label">Username :</th>
+			<th>Username :</th>
 			<td>{{ user.username }}</td>
 		</tr>
 		<tr>
-			<th class="label">First name :</th>
+			<th>First name :</th>
 			<td>{{ user.first_name|default:'<span class="helptext">Nothing yet.</span>' }}</td>
 		</tr>
 		<tr>
-			<th class="label">Last name :</th>
+			<th>Last name :</th>
 			<td>{{ user.last_name|default:'<span class="helptext">Nothing yet.</span>' }}</td>
 		</tr>
 		<tr>
-			<th class="label">E-mail address :</th>
+			<th>E-mail address :</th>
 			<td>{{ user.email }}
-				<span class="upperhelptext">for sending notifications - will never be publicly displayed</span></td>
+				<div class="helptext">for sending notifications - will never be publicly displayed</div></td>
 		</tr>
         <tr>
-            <th class="label">Sending game notifications :</th>
+            <th>Sending game notifications :</th>
             <td>{{user.send_notifications|yesno|capfirst }}
         </tr>
-		<tr>
-			<th class="label">Your bio :</th>
-			<td><div class="frame">
+		<tr class="longtext">
+			<th>Your bio :</th>
+			<td><div>
 					{{ user.bio|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
 				</div>
-				<span class="helptext">for others to know you</span></td>
+				<div class="helptext">for others to know you</div></td>
 		</tr>
-		<tr>
-			<th class="label">Your contact informations :</th>
-			<td><div class="frame">
+		<tr class="longtext">
+			<th>Your contact informations :</th>
+			<td><div>
 					{{ user.contact|linebreaksbr|default:'<span class="helptext">Nothing yet.</span>' }}
 				</div>
-				<span class="helptext">for others to reach you</span></td>
+				<div class="helptext">for others to reach you</div></td>
 		</tr>													
 	</table>
 {% endblock content %}

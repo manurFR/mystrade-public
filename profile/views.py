@@ -11,7 +11,7 @@ def profile(request, user_id = None):
         if int(user_id) == request.user.id:
             return redirect('profile') # without our own's user_id
         else:
-            return render(request, 'profile/otherprofile.html', {'user_displayed': get_object_or_404(get_user_model(), pk=user_id)})
+            return render(request, 'profile/otherprofile.html', {'user_displayed': get_object_or_404(get_user_model(), pk = user_id)})
     else:
         return render(request, 'profile/profile.html')
 
