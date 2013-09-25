@@ -1,6 +1,6 @@
 @import "base";
 
-#table_profile {
+#table_profile, #table_password {
   width: 100%;
 
   tr {
@@ -32,6 +32,6 @@
   }
 }
 
-.edit {
+.note, .edit {
   margin-right: 3px;
 }

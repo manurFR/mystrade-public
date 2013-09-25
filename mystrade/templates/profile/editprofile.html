@@ -4,6 +4,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.10.3.custom.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style.profile.css' %}" />
 {% endblock styles %}
 
 {% block scripts %}
@@ -13,10 +14,10 @@
 
 {% block content %}
 	<form action="{% url 'editprofile' %}" method="POST">{% csrf_token %}
-		<table class="fullwidth formtable">
+		<table id="table_profile">
 			<tr>
 				<td colspan="2" class="header">Edit profile
-                    <span class="floatright">&lt; <a href="{% url 'profile' %}">Back</a></span>
+                    <span class="note">&lt; <a href="{% url 'profile' %}">Back</a></span>
                 </td>
 			</tr>
 			<tr>
@@ -33,7 +34,7 @@
 				<th>{{ user_form.last_name.label_tag }} :</th>
 				<td>{{ user_form.last_name }}&nbsp;<span class="errors">{{ user_form.last_name.errors.as_text }}</span>
 				    <span class="helptext">{{ user_form.last_name.help_text }}</span>
-				    <span class="upperhelptext">People will see you as : <span id="displayed_name"></span></td>
+				    <div class="helptext">People will see you as : <div class="game-player"><span id="displayed_name"></span></div></div></td>
 			</tr>
 			<tr>
 				<th>{{ user_form.email.label_tag }} :</th>
@@ -55,6 +56,9 @@
 				<td>{{ user_form.contact|attr:"cols:75"|attr:"rows:6" }}&nbsp;<span class="errors">{{ user_form.contact.errors.as_text }}</span>
 				    <span class="helptext">{{ user_form.contact.help_text }}</span></td>
 			</tr>
+        </table>
+
+        <table id="table_password">
 			<tr>
 				<td colspan="2" class="header">Change password
 					<span class="helptext">Let blank to keep the same password</span></td>
@@ -75,7 +79,8 @@
 				    <span class="helptext">{{ password_form.new_password2.help_text }}</span></td>
 			</tr>
 		</table>
-		<div class="submit-button floatright">
+
+		<div class="submit-button note">
 			<input type="submit" value="Submit" />
 		</div>
 	</form>
@@ -85,21 +90,17 @@
             $("input[type=submit]").button();
         });
 
-        function toTitleCase(txt) {
-            return txt.charAt(0).toUpperCase() + txt.substr(1);
-        }
-
         function getDisplayedName() {
             var firstName = $('#id_first_name').val();
             var lastName = $('#id_last_name').val();
             if (firstName != "" && lastName != "") {
-                return toTitleCase(firstName) + " " + toTitleCase(lastName);
+                return firstName + " " + lastName;
             } else if (lastName != "") {
-                return toTitleCase(lastName);
+                return lastName;
             } else if (firstName != "") {
-                return toTitleCase(firstName);
+                return firstName;
             } else {
-                return toTitleCase($('#id_username').val());
+                return $('#id_username').val();
             }
         }
 
