@@ -1,0 +1,57 @@
+@import "base";
+
+#table_create_game {
+  margin-right: 250px;
+
+  th {
+    width: 100px;
+    padding-top: 6px;
+    padding-right: 1em;
+    text-align: right;
+    vertical-align: text-top;
+  }
+
+  #ruleset_description {
+    min-height: 60px;
+  }
+}
+
+.ui-datepicker-trigger {
+  position: relative;
+  top: 4px;
+  left: 2px;
+}
+
+.submit-button {
+  margin-right: 250px;
+
+  input[type=submit] {
+    float: right;
+  }
+}
+
+#header {
+  @include font($size: 11pt);
+  line-height: 1.6em;
+  background-color: #FFE640;
+  padding-left: 2em;
+}
+
+.action {
+  margin-right: 3px;
+
+  img {
+    vertical-align: text-bottom;
+  }
+}
+
+#game_details {
+  margin: 6px 0;
+  @include shadowBox();
+  @include roundedBorder(3px);
+  padding: 3px 6px;
+
+  div {
+    margin-bottom: 6px;
+  }
+}

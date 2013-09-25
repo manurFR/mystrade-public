@@ -3,6 +3,7 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.10.3.custom.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style.create.game.css' %}"/>
 {% endblock %}
 
 {% block scripts %}
@@ -13,48 +14,64 @@
 
 {% block content %}
 	<form action="{% url 'select_rules' %}" method="POST">{% csrf_token %}
-		<div class="header">Select at most {{ session.players|length }} rule cards (including the mandatory ones) :
-			<span class="floatright"><img src="{% static "select.png" %}" height="16" width="16" alt="" class="icon"/>
+		<div id="header">Select at most {{ session.players|length }} rule cards (including the mandatory ones) :
+			<span class="action"><img src="{% static "select.png" %}" height="16" width="16" alt=""/>
 				<span class="dynamic_link" id="selectall">Select all</span>
 			</span>
 		</div>
-		<div class="reminder">
-			Ruleset : {{ session.ruleset }} &mdash; 
+
+		<div id="game_details">
+            <div><strong>You selected:</strong></div>
+			<div>Ruleset : {{ session.ruleset }} &mdash;
 			Start date : {{ session.start_date|date:"SHORT_DATETIME_FORMAT" }} &mdash;
-			End date : {{ session.end_date|date:"SHORT_DATETIME_FORMAT" }}<br/>
-			Players :
+			End date : {{ session.end_date|date:"SHORT_DATETIME_FORMAT" }}</div>
+
+			{{ session.players|length }} players :
             {% for player in session.players %}
                 <div class="game-player"><a href="{% url 'otherprofile' player.id %}">{{ player.name }}</a></div>
             {% endfor %}
 		</div>
+
 		{% if error %}
 		<div class="errors">{{ error }}</div>
 		{% endif %}
-		<div class="css_table">
-		{{ formset.management_form }}
-		{% for form in formset %}
-			{% if forloop.first or forloop.counter0|divisibleby:"4" %}
-			<div class="css_table-row">
-			{% endif %}
-				<div class="css_table-cell">
-				  <div class="card with_button">
-					{{ form.card_id }}
-					<div class="card_name">{{ form.public_name.value }}</div>
-					<div class="card_desc">{{ form.description.value }}</div>
-					<div class="align_to_bottom">
-					  <div class="card_select">
-						<input type="checkbox" class="rulecard_checkbox" name="{{ form.selected_rule.html_name }}" id="id_{{ form.selected_rule.html_name }}" {% if form.selected_rule.value %}checked="checked"{% endif %} {% if form.mandatory.value %}disabled="disabled"{% endif %} />
-						<label for="id_{{ form.selected_rule.html_name }}">{% if form.mandatory.value %}Mandatory{% else %}Keep{% endif %}</label>
-					  </div>
-					</div>
-				  </div>
-				</div>
-			{% if forloop.counter|divisibleby:"4" or forloop.last %}
-			</div>
-			{% endif %}
-		{% endfor %}
-		</div>
-		<div class="floatright">
+
+        <div id="zone_rules">
+            <div id="zone_rulecards">
+                {% for rulecard in rulecards %}
+                    <div class="rulecard{% if rulecard.mandatory %} mandatory{% endif %}" data-rulecard-id="{{ rulecard.id }}">
+                        <div class="rulecard_name">{{ rulecard.public_name }}</div>
+                        <div class="rulecard_desc">{{ rulecard.description }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+{#		<div class="css_table">#}
+{#		{{ formset.management_form }}#}
+{#		{% for form in formset %}#}
+{#			{% if forloop.first or forloop.counter0|divisibleby:"4" %}#}
+{#			<div class="css_table-row">#}
+{#			{% endif %}#}
+{#				<div class="css_table-cell">#}
+{#				  <div class="card with_button">#}
+{#					{{ form.card_id }}#}
+{#					<div class="card_name">{{ form.public_name.value }}</div>#}
+{#					<div class="card_desc">{{ form.description.value }}</div>#}
+{#					<div class="align_to_bottom">#}
+{#					  <div class="card_select">#}
+{#						<input type="checkbox" class="rulecard_checkbox" name="{{ form.selected_rule.html_name }}" id="id_{{ form.selected_rule.html_name }}" {% if form.selected_rule.value %}checked="checked"{% endif %} {% if form.mandatory.value %}disabled="disabled"{% endif %} />#}
+{#						<label for="id_{{ form.selected_rule.html_name }}">{% if form.mandatory.value %}Mandatory{% else %}Keep{% endif %}</label>#}
+{#					  </div>#}
+{#					</div>#}
+{#				  </div>#}
+{#				</div>#}
+{#			{% if forloop.counter|divisibleby:"4" or forloop.last %}#}
+{#			</div>#}
+{#			{% endif %}#}
+{#		{% endfor %}#}
+{#		</div>#}
+		<div class="action">
 			<input type="submit" value="Submit"/>
 		</div>
 	</form>

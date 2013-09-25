@@ -5,6 +5,7 @@
 {% block styles %}
 <link rel="stylesheet" href="{% static 'jquery/jquery-ui-1.10.3.custom.min.css' %}" />
 <link rel="stylesheet" href="{% static 'jquery/jquery-ui-timepicker-addon.css' %}" />
+<link rel="stylesheet" href="{% static 'css/style.create.game.css' %}"/>
 {% endblock %}
 
 {% block scripts %}
@@ -14,11 +15,9 @@
 {% endblock %}
 
 {% block content %}
+<h2>Create a new game</h2>
 <form action="" method="post">{% csrf_token %}
-	<table class="fullwidth formtable">
-		<tr>
-			<td colspan="2" class="header">Create new game</th>
-		</tr>
+	<table id="table_create_game">
 		{% for err in form.non_field_errors %}
 		<tr>
 			<td colspan="2"><span class="errors">{{ err }}</span></td>
@@ -30,7 +29,7 @@
 		</tr>
         <tr>
             <th>&nbsp;</th>
-            <td><div class="upperhelptext" id="ruleset_description"></div></td>
+            <td><div class="helptext" id="ruleset_description"></div></td>
         </tr>
 		<tr>
 			<th>{{ form.start_date.label_tag }} :</th>
@@ -45,7 +44,7 @@
 			<td>{{ form.players|attr:"size:10" }}&nbsp;<span class="errors">{{ form.players.errors.as_text }}</span></td>
 		</tr>
 	</table>
-	<div class="submit-button floatright">
+	<div class="submit-button">
 		<input type="submit" value="Next: Select rules >>" />
 	</div>
 </form>
@@ -63,9 +62,9 @@
         $("input[type=submit]").button();
 
         var descriptions = [];
-        {% for ruleset in rulesets %}
-            descriptions[{{ ruleset.id }}] = "{{ ruleset.description|escape }}";
-        {% endfor %}
+    {% for ruleset in rulesets %}
+        descriptions[{{ ruleset.id }}] = "{{ ruleset.description|escape }}";
+    {% endfor %}
 
         $("#id_ruleset").on("change", function() {
             var ruleset_id = $(this).children("option:selected").val();
