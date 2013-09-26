@@ -376,14 +376,14 @@ def select_rules(request):
     except ValidationError:
         return redirect('create_game')
 
-    rulecards_queryset = RuleCard.objects.filter(ruleset=ruleset).order_by('ref_name')
+    rulecards = RuleCard.objects.filter(ruleset = ruleset).order_by('ref_name')
 
     if request.method == 'POST':
         RuleCardsFormSet = formset_factory(RuleCardFormParse)
         formset = RuleCardsFormSet(request.POST)
         if formset.is_valid():
             selected_rules = []
-            for card in rulecards_queryset:
+            for card in rulecards:
                 if card.mandatory:
                     selected_rules.append(card)
                     continue
@@ -399,7 +399,7 @@ def select_rules(request):
                                                      'description': card.description,
                                                      'mandatory': bool(card.mandatory),
                                                      'selected_rule': bool(card in selected_rules)}
-                                                    for card in rulecards_queryset])
+                                                    for card in rulecards])
                 return render(request, 'game/select_rules.html', {'formset': formset, 'session': request.session, 'error': error})
             else:
                 game = Game.objects.create(ruleset    = ruleset,
@@ -444,13 +444,7 @@ def select_rules(request):
 
                 return redirect('game', game.id)
     else:
-        RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra=0)
-        formset = RuleCardsFormSet(initial=[{'card_id': card.id,
-                                             'public_name': card.public_name,
-                                             'description': card.description,
-                                             'mandatory': bool(card.mandatory)}
-                                            for card in rulecards_queryset])
-        return render(request, 'game/select_rules.html', {'formset': formset, 'session': request.session})
+        return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session})
 
 #############################################################################
 ##                            Close Game                                   ##

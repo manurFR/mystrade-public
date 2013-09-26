@@ -1,5 +1,6 @@
 @import "base";
 
+/**** FIRST PAGE ****/
 #table_create_game {
   margin-right: 250px;
 
@@ -45,6 +46,7 @@
   }
 }
 
+/**** SELECT RULES ****/
 #game_details {
   margin: 6px 0;
   @include shadowBox();
@@ -54,4 +56,24 @@
   div {
     margin-bottom: 6px;
   }
+
+  #rule_counter {
+    @include font($size: 12pt, $weight: bold);
+
+    #nb_selected_rules {
+      @include font($size: 13pt);
+      color: red;
+    }
+  }
+}
+
+#zone_rules { // hack to center the cards
+  width: floor($pageWidth/$fullWidthOfARuleCard) * $fullWidthOfARuleCard;
+  margin: 0 auto;
+}
+
+#submit_form {
+  text-align: center;
+  clear: both;
+  padding: 25px 0;
 }

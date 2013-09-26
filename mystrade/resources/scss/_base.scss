@@ -4,7 +4,7 @@
 body {
   background-color: $backgroundColor;
   color: $normalText;
-  width: 980px;
+  width: $pageWidth;
   margin: 5px auto 0 auto;
   @include font($family: ('Lucida Grande', Verdana, Arial, sans-serif), $size: $defaultFontSize);
 }
@@ -183,6 +183,7 @@ $marginOfCommodityCards: 3px;
 $widthOfRuleCards: 235px;
 $marginOfRuleCards: 3px;
 $horizontalPaddingOfRuleCards: 8px;
+$fullWidthOfARuleCard: 2 * $marginOfRuleCards + 2 * $horizontalPaddingOfRuleCards + 2 * 1px /* border */ + $widthOfRuleCards;
 .rulecard {
   border: $lightSolidBorder;
   @include roundedBorder(10px);
