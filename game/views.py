@@ -379,70 +379,61 @@ def select_rules(request):
     rulecards = RuleCard.objects.filter(ruleset = ruleset).order_by('ref_name')
 
     if request.method == 'POST':
-        RuleCardsFormSet = formset_factory(RuleCardFormParse)
-        formset = RuleCardsFormSet(request.POST)
-        if formset.is_valid():
-            selected_rules = []
-            for card in rulecards:
-                if card.mandatory:
-                    selected_rules.append(card)
-                    continue
-                for form in formset:
-                    if form.cleaned_data['card_id'] == card.id and form.cleaned_data['selected_rule']:
-                        selected_rules.append(card)
-                        break
-            if len(selected_rules) > len(players):
-                error = "Please select at most {0} rule cards (including the mandatory ones)".format(len(players))
-                RuleCardsFormSet = formset_factory(RuleCardFormDisplay, extra = 0)
-                formset = RuleCardsFormSet(initial=[{'card_id': card.id,
-                                                     'public_name': card.public_name,
-                                                     'description': card.description,
-                                                     'mandatory': bool(card.mandatory),
-                                                     'selected_rule': bool(card in selected_rules)}
-                                                    for card in rulecards])
-                return render(request, 'game/select_rules.html', {'formset': formset, 'session': request.session, 'error': error})
-            else:
-                game = Game.objects.create(ruleset    = ruleset,
-                                           master     = request.user,
-                                           start_date = start_date,
-                                           end_date   = end_date)
-                for player in players:
-                    GamePlayer.objects.create(game = game, player = player)
-                for rule in selected_rules:
-                    game.rules.add(rule)
-                del request.session['ruleset']
-                del request.session['start_date']
-                del request.session['end_date']
-                del request.session['players']
+        selected_rules = []
+        for rulecard in rulecards:
+            if rulecard.mandatory:
+                selected_rules.append(rulecard)
+                continue
+            key = "rulecard_{0}".format(rulecard.id)
+            if key in request.POST and request.POST[key] == "True":
+                selected_rules.append(rulecard)
+                rulecard.selected = True
 
-                # deal starting cards
-                deal_cards(game)
+        if len(selected_rules) > len(players):
+            error = "Please select at most {0} rule cards (including the mandatory ones)".format(len(players))
+            return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session, 'error': error})
 
-                # record score stats at the game creation
-                stats.record(game)
+        game = Game.objects.create(ruleset    = ruleset,
+                                   master     = request.user,
+                                   start_date = start_date,
+                                   end_date   = end_date)
+        for player in players:
+            GamePlayer.objects.create(game = game, player = player)
+        for rule in selected_rules:
+            game.rules.add(rule)
+        del request.session['ruleset']
+        del request.session['start_date']
+        del request.session['end_date']
+        del request.session['players']
 
-                # email notification
-                all_players = {}
-                for player in game.players.all():
-                     all_players[player] = {'name': player.name,
-                                            'url': request.build_absolute_uri(reverse('otherprofile', args=[player.id]))}
+        # deal starting cards
+        deal_cards(game)
 
-                for player in all_players.iterkeys():
-                     opponents = dict(all_players) # make a copy
-                     del opponents[player]
-                     list_opponents = sorted(opponents.itervalues(), key = lambda opponent: opponent['name'])
-                     rules = rules_currently_in_hand(game, player)
-                     commodities = commodities_in_hand(game, player)
-                     utils.send_notification_email('game_create', player,
-                                                   {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities,
-                                                    'url': request.build_absolute_uri(reverse('game', args=[game.id]))})
+        # record score stats at the game creation
+        stats.record(game)
 
-                # email notification for the admins
-                utils.send_notification_email('game_create_admin', [admin[1] for admin in settings.ADMINS],
-                                               {'game': game, 'players': sorted(all_players.itervalues(), key = lambda player: player['name']),
-                                                'rules': selected_rules})
+        # email notification
+        all_players = {}
+        for player in game.players.all():
+             all_players[player] = {'name': player.name,
+                                    'url': request.build_absolute_uri(reverse('otherprofile', args=[player.id]))}
 
-                return redirect('game', game.id)
+        for player in all_players.iterkeys():
+             opponents = dict(all_players) # make a copy
+             del opponents[player]
+             list_opponents = sorted(opponents.itervalues(), key = lambda opponent: opponent['name'])
+             rules = rules_currently_in_hand(game, player)
+             commodities = commodities_in_hand(game, player)
+             utils.send_notification_email('game_create', player,
+                                           {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities,
+                                            'url': request.build_absolute_uri(reverse('game', args=[game.id]))})
+
+        # email notification for the admins
+        utils.send_notification_email('game_create_admin', [admin[1] for admin in settings.ADMINS],
+                                       {'game': game, 'players': sorted(all_players.itervalues(), key = lambda player: player['name']),
+                                        'rules': selected_rules})
+
+        return redirect('game', game.id)
     else:
         return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session})
 

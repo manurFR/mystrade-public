@@ -33,14 +33,17 @@
 
     <form action="{% url 'select_rules' %}" method="POST">{% csrf_token %}
         {% if error %}
-        <div class="errors">{{ error }}</div>
+            <div class="errors" id="error_rules">
+                <img class="warning" src="{% static 'warning.png' %}" height="16" width="16" alt=""/>
+                {{ error }}
+            </div>
         {% endif %}
         <div id="zone_rules">
             <div id="zone_rulecards">
                 {% for rulecard in rulecards %}
-                    <div class="rulecard{% if rulecard.mandatory %} mandatory card_selected{% else %} selectable{% endif %}">
+                    <div class="rulecard{% if rulecard.mandatory %} mandatory card_selected{% else %} selectable{% endif %}{% if rulecard.selected %} card_selected{% endif %}">
                         {% if rulecard.mandatory %}<div class="note helptext">(mandatory)</div>
-                        {% else %}<input type="hidden" name="rulecard_{{ rulecard.id }}" value="False"/>{% endif %}
+                        {% else %}<input type="hidden" name="rulecard_{{ rulecard.id }}" value="{% if rulecard.selected %}True{% else %}False{% endif %}"/>{% endif %}
                         <div class="rulecard_name">{{ rulecard.public_name }}</div>
                         <div class="rulecard_desc">{{ rulecard.description }}</div>
                     </div>

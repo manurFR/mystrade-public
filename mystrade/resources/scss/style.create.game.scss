@@ -67,6 +67,11 @@
   }
 }
 
+#error_rules {
+  text-align: center;
+  margin: 10px 0;
+}
+
 #zone_rules { // hack to center the cards
   width: floor($pageWidth/$fullWidthOfARuleCard) * $fullWidthOfARuleCard;
   margin: 0 auto;

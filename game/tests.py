@@ -67,7 +67,7 @@ class GameCreationViewsTest(TestCase):
         self.client.login(username = 'test1', password = 'test')
 
     def test_create_game_only_with_the_permission(self):
-        # initially logged as testCanCreate
+        # initially logged as testUserCanCreate
         response = self.client.get("/game/create/")
         self.assertEqual(200, response.status_code)
         self.client.logout()
@@ -147,22 +147,21 @@ class GameCreationViewsTest(TestCase):
         session['players'] = self.testUsersNoCreate[:4] # only 4 players
         session.save()
         response = self.client.post("/game/selectrules/",
-                                    {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
-                                     'form-0-card_id': 1, 'form-0-selected_rule': 'on',
-                                     'form-1-card_id': 2, 'form-1-selected_rule': 'on',
-                                     'form-2-card_id': 3, 'form-2-selected_rule': 'on',
-                                     'form-3-card_id': 4,
-                                     'form-4-card_id': 5,
-                                     'form-5-card_id': 6,
-                                     'form-6-card_id': 7,
-                                     'form-7-card_id': 8,
-                                     'form-8-card_id': 9,
-                                     'form-9-card_id': 10, 'form-9-selected_rule': 'on',
-                                     'form-10-card_id': 11,
-                                     'form-11-card_id': 12,
-                                     'form-12-card_id': 13, 'form-12-selected_rule': 'on',
-                                     'form-13-card_id': 14,
-                                     'form-14-card_id': 15
+                                    {'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG01').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG02').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG03').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG04').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG05').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG06').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG07').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG08').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG09').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG10').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG11').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG12').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG13').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG14').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG15').id): 'False'
                                     })
         self.assertEqual(200, response.status_code)
         self.assertTemplateUsed(response, 'game/select_rules.html')
