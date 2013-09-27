@@ -1,0 +1,19 @@
+vendredi 27 septembre 2013, 15:59:48 (UTC+0200)
+     100 files     129 text files.
+classified 129 filesDuplicate file check 129 files (127 known unique)Unique:      100 files                                               129 unique files.                              
+Counting:  100    5934 files ignored.
+
+http://cloc.sourceforge.net v 1.53  T=1.0 s (82.0 files/s, 8470.0 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+Python                          43           1100            459           4766
+HTML                            24            161              0           1584
+Javascript                       2             23             10            211
+Bourne Shell                     7             23             22             81
+SQL                              1              4              2             19
+CSS                              5              0              0              5
+-------------------------------------------------------------------------------
+SUM:                            82           1311            493           6666
+-------------------------------------------------------------------------------
+
