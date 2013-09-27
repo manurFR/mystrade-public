@@ -43,6 +43,11 @@
     {% if scoresheets %}{% include "scoring/score.html" with specification="Current" %}{% endif %}
 {% endif %}
 
+<h3>Scores Evolution</h3>
+<div id="scores_chart">
+    <img src="{% url 'stats' game.id %}" alt="Chart of the scores evolution in time"/>
+</div>
+
 <h3>Rules in this game</h3>
 
 <div id="zone_rules">

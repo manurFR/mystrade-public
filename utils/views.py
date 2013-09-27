@@ -1,27 +1,21 @@
 import numpy
 
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.views.decorators.cache import never_cache
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib import dates
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 from game.models import Game
 from models import StatsScore
 
-def format_date(x, pos=None):
-    return dates.num2date(x).strftime('%Y-%m-%d')
-
 @login_required
+@never_cache
 def stats(request, game_id):
     game = get_object_or_404(Game, id = game_id)
-
-    if not game.has_super_access(request.user):
-        raise PermissionDenied
 
     x = []
     y = {}
@@ -49,6 +43,7 @@ def stats(request, game_id):
     legend.get_frame().set_alpha(0.5)
 
     figure = plt.figure(1)
+    figure.patch.set_facecolor('#FFB600')
     figure.autofmt_xdate()
 
     plt.subplots_adjust(bottom=0.13)

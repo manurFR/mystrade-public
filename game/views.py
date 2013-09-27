@@ -10,7 +10,6 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q, F
-from django.forms.formsets import formset_factory
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.timezone import now, utc, make_naive
 
@@ -21,7 +20,7 @@ from game.models import Game, CommodityInHand, GamePlayer, Message
 from ruleset.models import RuleCard, Ruleset
 from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
-from trade.forms import RuleCardFormParse, RuleCardFormDisplay, ERROR_EMPTY_OFFER
+from trade.forms import ERROR_EMPTY_OFFER
 from trade.models import Trade
 from profile.helpers import UserNameCache
 from trade.views import _prepare_offer_form, _parse_offer_form, FormInvalidException

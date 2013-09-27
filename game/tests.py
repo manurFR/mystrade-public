@@ -1,5 +1,4 @@
 import datetime
-from unittest import skip
 from django.contrib.auth import get_user_model
 
 from django.core import mail
@@ -167,7 +166,6 @@ class GameCreationViewsTest(TestCase):
         self.assertTemplateUsed(response, 'game/select_rules.html')
         self.assertEqual("Please select at most 4 rule cards (including the mandatory ones)", response.context['error'])
 
-    @skip("until redesign")
     @override_settings(ADMINS = (('admin', 'admin@mystrade.com'),))
     def test_create_game_complete_save_and_clean_session(self):
         response = self.client.post("/game/create/", {'ruleset': 1,
@@ -176,22 +174,21 @@ class GameCreationViewsTest(TestCase):
                                                       'players': [player.id for player in self.testUsersNoCreate][:4]})
         self.assertRedirects(response, "/game/selectrules/")
         response = self.client.post("/game/selectrules/",
-                                    {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
-                                     'form-0-card_id': 1, 'form-0-selected_rule': 'on',
-                                     'form-1-card_id': 2, 'form-1-selected_rule': 'on',
-                                     'form-2-card_id': 3, 'form-2-selected_rule': 'on',
-                                     'form-3-card_id': 4,
-                                     'form-4-card_id': 5,
-                                     'form-5-card_id': 6,
-                                     'form-6-card_id': 7,
-                                     'form-7-card_id': 8,
-                                     'form-8-card_id': 9, 'form-8-selected_rule': 'on',
-                                     'form-9-card_id': 10,
-                                     'form-10-card_id': 11,
-                                     'form-11-card_id': 12,
-                                     'form-12-card_id': 13,
-                                     'form-13-card_id': 14,
-                                     'form-14-card_id': 15
+                                    {'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG01').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG02').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG03').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG04').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG05').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG06').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG07').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG08').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG09').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG10').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG11').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG12').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG13').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG14').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG15').id): 'False'
                                     })
 
         created_game = Game.objects.get(master = self.testUserCanCreate.id)
@@ -218,7 +215,7 @@ class GameCreationViewsTest(TestCase):
         self.assertIn('Test1 has just created game #{0}, and you\'ve been selected to join it !'.format(created_game.id), emailTest2.body)
         self.assertEqual(2, emailTest2.body.count('- Rule'))
         self.assertIn("The game has already started ! Start trading here:", emailTest2.body)
-        self.assertIn('/trade/{0}'.format(created_game.id), emailTest2.body)
+        self.assertIn('/game/{0}'.format(created_game.id), emailTest2.body)
 
         self.assertEqual(1, list_recipients.count('admin@mystrade.com'))
         emailAdmin = mail.outbox[list_recipients.index('admin@mystrade.com')]

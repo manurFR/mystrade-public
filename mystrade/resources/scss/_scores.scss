@@ -42,10 +42,10 @@
 .player_scoresheet {
   margin: 0.83em 0;
   @include font($size: $defaultFontSize);
+  @include shadowBox($inset: inset);
   @include roundedBorder(8px);
   padding: 8px;
   background-color: lighten($backgroundColor, 13%);
-  @include shadowBox($inset: inset);
 }
 
 .grand_total {
@@ -68,6 +68,10 @@
   &.points {
     min-width: 70px;
   }
+}
+
+#scores_chart img {
+  width: $widthOfZoneHand - 4px;
 }
 
 .known_rules {

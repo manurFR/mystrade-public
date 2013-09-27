@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-from unittest import skip
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.template import Template
@@ -206,7 +205,6 @@ class StatsTest(MystradeTestCase):
 
         self.assertEqual(stats_loginUser.date_score, stats_alternativeUser.date_score)
 
-    @skip("until redesign")
     def test_record_scores_at_game_creation(self):
         self.game.delete()
         self.client.logout()
@@ -217,22 +215,21 @@ class StatsTest(MystradeTestCase):
                                                       'players': [self.loginUser.id, self.alternativeUser.id, self.admin_player.id]})
         self.assertRedirects(response, "/game/selectrules/")
         response = self.client.post("/game/selectrules/",
-                                    {'form-TOTAL_FORMS': 15, 'form-INITIAL_FORMS': 15,
-                                     'form-0-card_id': 1, 'form-0-selected_rule': 'on',
-                                     'form-1-card_id': 2, 'form-1-selected_rule': 'on',
-                                     'form-2-card_id': 3, 'form-2-selected_rule': 'on',
-                                     'form-3-card_id': 4,
-                                     'form-4-card_id': 5,
-                                     'form-5-card_id': 6,
-                                     'form-6-card_id': 7,
-                                     'form-7-card_id': 8,
-                                     'form-8-card_id': 9,
-                                     'form-9-card_id': 10,
-                                     'form-10-card_id': 11,
-                                     'form-11-card_id': 12,
-                                     'form-12-card_id': 13,
-                                     'form-13-card_id': 14,
-                                     'form-14-card_id': 15
+                                    {'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG01').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG02').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG03').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG04').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG05').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG06').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG07').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG08').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG09').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG10').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG11').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG12').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG13').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG14').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG15').id): 'False'
                                     })
 
         created_game = Game.objects.get(master = self.master)
