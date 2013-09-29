@@ -46,6 +46,11 @@
                 <td>{{ user_form.send_notifications }}&nbsp;<span class="errors">{{ user_form.send_notifications.errors.as_text }}</span>
                     <span class="helptext">{{ user_form.send_notifications.help_text }}</span></td>
             </tr>
+            <tr>
+                <th>{{ user_form.timezone.label_tag }} :</th>
+                <td>{{ user_form.timezone }}&nbsp;<span class="errors">{{ user_form.timezone.errors.as_text }}</span>
+                    <span class="helptext">{{ user_form.timezone.help_text }}</span></td>
+            </tr>
 			<tr>
 				<th>{{ user_form.bio.label_tag }} :</th>
 				<td>{{ user_form.bio|attr:"cols:75"|attr:"rows:6" }}&nbsp;<span class="errors">{{ user_form.bio.errors.as_text }}</span>

@@ -5,4 +5,4 @@ class MystradeUserForm(forms.ModelForm):
 
     class Meta:
         model = get_user_model()
-        fields = ['username', 'first_name', 'last_name', 'email', 'send_notifications', 'bio', 'contact']
+        fields = ['username', 'first_name', 'last_name', 'email', 'send_notifications', 'timezone', 'bio', 'contact']
