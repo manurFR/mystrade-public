@@ -1,3 +1,4 @@
+import pytz
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.db.models.query import QuerySet
@@ -8,6 +9,8 @@ class MystradeUserManager(BaseUserManager):
 
 class MystradeUser(AbstractUser):
     send_notifications = models.BooleanField("Send game notifications", help_text = "Check to receive email alerts about your trades and games")
+
+    timezone = models.CharField(max_length= 50, choices = [(tz, tz) for tz in pytz.common_timezones], help_text = "Your timezone")
 
     bio = models.TextField(blank = True, help_text = "Your presentation text")
     contact = models.TextField(blank = True, help_text = "Your email address will never be publicly displayed. Specify here how other players can reach you (IM, email, etc.)")
