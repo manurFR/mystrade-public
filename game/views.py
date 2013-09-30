@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def welcome(request):
-    games = Game.objects.filter(Q(master=request.user) | Q(players=request.user)).distinct().order_by('-closing_date', '-end_date')
+    games = Game.objects.filter(Q(master = request.user) | Q(players = request.user)).distinct().order_by('-closing_date', '-end_date')
 
     cache = UserNameCache()
 

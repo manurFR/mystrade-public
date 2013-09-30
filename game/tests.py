@@ -57,6 +57,24 @@ class WelcomePageViewTest(MystradeTestCase):
         self.assertItemsEqual([self.game, game_mastered], list(response.context['games']))
         self.assertNotIn(other_game, response.context['games'])
 
+    def test_welcome_game_dates_are_displayed_in_user_timezone(self):
+        self.game.start_date =  utc.localize(datetime.datetime(2013, 9, 5, 23, 30, 0))
+        self.game.save()
+
+        self.loginUser.timezone = "Europe/Paris" # in september, Paris is UTC+2 (including DST)
+        self.loginUser.save()
+
+        response = self.client.get(reverse("welcome"))
+        self.assertContains(response, "09/06/2013 1:30 a.m.")
+        self.assertNotContains(response, "09/05/2013 11:30 p.m.")
+
+        self.loginUser.timezone = "America/Phoenix" # Phoenix, AZ is UTC-7 and doesn't have DST
+        self.loginUser.save()
+
+        response = self.client.get(reverse("welcome"))
+        self.assertContains(response, "09/05/2013 4:30 p.m.")
+        self.assertNotContains(response, "09/05/2013 11:30 p.m.")
+
 class GameCreationViewsTest(TestCase):
     fixtures = ['test_users.json'] # from profile app
 
@@ -705,6 +723,18 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
 
         response = self._getTabRecently()
         self.assertContains(response, 'The game master has received the cards submitted by')
+
+    def test_tab_recently_events_are_dated_in_the_user_timezone(self):
+        self.game.start_date = utc.localize(datetime.datetime(2013, 8, 14, 20, 12, 0))
+        self.game.save()
+
+        self.loginUser.timezone = "Asia/Hong_Kong" # UTC+8 no DST
+        self.loginUser.save()
+
+        response = self._getTabRecently()
+        self.assertContains(response, 'Game #{0} has started.'.format(self.game.id))
+        self.assertContains(response, '<div class="event_date">Aug. 15, 2013</div>')
+        self.assertContains(response, '<div class="event_time">4:12 a.m.</div>')
 
     def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())
