@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.utils.timezone import now, localtime
 from game.models import Message
 from ruleset.models import Ruleset, RuleCard
 from utils.utils import roundTimeToMinute
@@ -11,7 +12,7 @@ from utils.utils import roundTimeToMinute
 class CreateGameForm(forms.Form):
     ruleset = forms.ModelChoiceField(queryset = Ruleset.objects.all(), empty_label = None)
 
-    start_date = forms.DateTimeField(initial = roundTimeToMinute(roundToMinutes = 15).strftime("%m/%d/%Y %H:%M"))
+    start_date = forms.DateTimeField(initial = roundTimeToMinute(localtime(now()), roundToMinutes = 15).strftime("%m/%d/%Y %H:%M"))
     end_date = forms.DateTimeField()
 
     players = forms.ModelMultipleChoiceField(queryset = get_user_model().objects.none())

@@ -33,11 +33,13 @@
         </tr>
 		<tr>
 			<th>{{ form.start_date.label_tag }} :</th>
-			<td>{{ form.start_date|add_class:"jqueryui-datepicker"|attr:"size:17" }}&nbsp;<span class="errors">{{ form.start_date.errors.as_text }}</span></td>
+			<td>{{ form.start_date|add_class:"jqueryui-datepicker"|attr:"size:17" }}&nbsp;&nbsp;&nbsp;<span class="helptext">in your timezone ({{ user.timezone }})</span><br/>
+                <span class="errors">{{ form.start_date.errors.as_text }}</span></td>
 		</tr>
 		<tr>
 			<th>{{ form.end_date.label_tag }} :</th>
-			<td>{{ form.end_date|add_class:"jqueryui-datepicker"|attr:"size:17" }}&nbsp;<span class="errors">{{ form.end_date.errors.as_text }}</span></td>
+			<td>{{ form.end_date|add_class:"jqueryui-datepicker"|attr:"size:17" }}&nbsp;&nbsp;&nbsp;<span class="helptext">in your timezone ({{ user.timezone }})</span><br/>
+                <span class="errors">{{ form.end_date.errors.as_text }}</span></td>
 		</tr>
 		<tr>
 			<th>{{ form.players.label_tag }} :</th>

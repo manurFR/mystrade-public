@@ -6,6 +6,7 @@ from django.core.mail import EmailMessage
 from django.core.mail.message import BadHeaderError
 from django.template import Context
 from django.template.loader import get_template
+from django.utils.timezone import now
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ def roundTimeToMinute(dt = None, roundToMinutes = 1):
          roundTo : Closest number of minutes to round to, default 1 minute.
     """
     if dt is None:
-        dt = datetime.datetime.now()
+        dt = now()
     dt = dt.replace(second = 0, microsecond = 0)
     if dt.minute % roundToMinutes <= roundToMinutes / 2:
         return dt - datetime.timedelta(minutes = dt.minute % roundToMinutes)

@@ -186,9 +186,11 @@ class GameCreationViewsTest(TestCase):
 
     @override_settings(ADMINS = (('admin', 'admin@mystrade.com'),))
     def test_create_game_complete_save_and_clean_session(self):
+        self.testUserCanCreate.timezone = "Indian/Maldives" # UTC+5 no DST -- we'll check that the datetimes will be kept in utc
+        self.testUserCanCreate.save()
         response = self.client.post("/game/create/", {'ruleset': 1,
                                                       'start_date': '11/10/2012 18:30',
-                                                      'end_date': '11/13/2037 00:15',
+                                                      'end_date': '11/13/2015 00:15',
                                                       'players': [player.id for player in self.testUsersNoCreate][:4]})
         self.assertRedirects(response, "/game/selectrules/")
         response = self.client.post("/game/selectrules/",
@@ -213,8 +215,8 @@ class GameCreationViewsTest(TestCase):
         self.assertRedirects(response, "/game/{0}/".format(created_game.id))
 
         self.assertEqual(1, created_game.ruleset_id)
-        self.assertEqual(get_default_timezone().localize(datetime.datetime(2012, 11, 10, 18, 30)), created_game.start_date)
-        self.assertEqual(get_default_timezone().localize(datetime.datetime(2037, 11, 13, 00, 15)), created_game.end_date)
+        self.assertEqual(datetime.datetime(2012, 11, 10, 13, 30, tzinfo = utc), created_game.start_date)
+        self.assertEqual(datetime.datetime(2015, 11, 12, 19, 15, tzinfo = utc), created_game.end_date)
         self.assertItemsEqual(list(self.testUsersNoCreate)[:4], list(created_game.players.all()))
         self.assertListEqual([1, 2, 3, 9], [rule.id for rule in created_game.rules.all()])
         self.assertFalse('ruleset' in self.client.session)

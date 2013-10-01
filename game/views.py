@@ -350,8 +350,8 @@ def create_game(request):
         form = CreateGameForm(request.user, request.POST)
         if form.is_valid():
             request.session['ruleset'] = form.cleaned_data['ruleset']
-            request.session['start_date'] = form.cleaned_data['start_date']
-            request.session['end_date'] = form.cleaned_data['end_date']
+            request.session['start_date'] = form.cleaned_data['start_date'].astimezone(utc)
+            request.session['end_date'] = form.cleaned_data['end_date'].astimezone(utc)
             request.session['players'] = sorted(form.cleaned_data['players'].all(), key = lambda player: player.name) # convert from Queryset to list
             return redirect('select_rules')
     else:
