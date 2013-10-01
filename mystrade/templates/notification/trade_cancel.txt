@@ -1,5 +1,5 @@
-{% autoescape off %}Game #{{ game.id }}: {{ trade.finalizer.name }} has cancelled the trade
-In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.finalizer.name }} has cancelled the trade including the following elements:
+{% load tz %}{% autoescape off %}Game #{{ game.id }}: {{ trade.finalizer.name }} has cancelled the trade
+{% timezone player_timezone %}In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.finalizer.name }} has cancelled the trade including the following elements:{% endtimezone %}
 ==== {{ trade.initiator.name }} offered ===
 {% include "notification/_offer_detail.txt" with offer=trade.initiator_offer %}
 

@@ -348,7 +348,7 @@ def _trade_event_notification(request, trade):
         recipient = trade.initiator
 
     utils.send_notification_email(template, recipient,
-                                  {'game': trade.game, 'trade': trade,
+                                  {'game': trade.game, 'trade': trade, 'player_timezone': recipient.timezone,
                                    'url': request.build_absolute_uri(reverse('game_with_trade', args = [trade.game_id, trade.id]))})
 
 class FormInvalidException(Exception):

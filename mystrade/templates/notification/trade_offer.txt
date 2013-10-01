@@ -1,5 +1,5 @@
-{% autoescape off %}Game #{{ game.id }}: You have been offered a trade by {{ trade.initiator.name }}
-In game #{{ game.id }}, {{ trade.initiator.name }} has offered you a new trade on {{ trade.creation_date|date:"SHORT_DATETIME_FORMAT" }},
+{% load tz %}{% autoescape off %}Game #{{ game.id }}: You have been offered a trade by {{ trade.initiator.name }}
+{% timezone player_timezone %}In game #{{ game.id }}, {{ trade.initiator.name }} has offered you a new trade on {{ trade.creation_date|date:"SHORT_DATETIME_FORMAT" }},{% endtimezone %}
 with the following elements:
 {% include "notification/_offer_detail.txt" with offer=trade.initiator_offer %}
 

@@ -1,5 +1,6 @@
 import logging
 import datetime
+from pytz import timezone
 
 import bleach
 from django.http import HttpResponse
@@ -11,7 +12,7 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q, F
 from django.shortcuts import render, get_object_or_404, redirect
-from django.utils.timezone import now, utc, make_naive
+from django.utils.timezone import now, utc, make_naive, get_current_timezone
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, MessageForm
@@ -425,6 +426,7 @@ def select_rules(request):
              commodities = commodities_in_hand(game, player)
              utils.send_notification_email('game_create', player,
                                            {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities,
+                                            'player_timezone': player.timezone,
                                             'url': request.build_absolute_uri(reverse('game', args=[game.id]))})
 
         # email notification for the admins
@@ -435,6 +437,12 @@ def select_rules(request):
         return redirect('game', game.id)
     else:
         return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session})
+
+def _get_localized_datetime(dt, player):
+    if player.timezone:
+        return dt.astimezone(timezone(player.timezone))
+    else:
+        return dt.astimezone(get_current_timezone())
 
 #############################################################################
 ##                            Close Game                                   ##
@@ -475,6 +483,7 @@ def close_game(request, game_id):
                     for rank, scoresheet in enumerate(scoresheets, 1):
                         utils.send_notification_email('game_close', scoresheet.gameplayer.player,
                                                       {'game': game, 'rank': rank, 'nb_players': len(scoresheets), 'scoresheet': scoresheet,
+                                                       'player_timezone': scoresheet.gameplayer.player.timezone,
                                                        'url': request.build_absolute_uri(reverse('game', args = [game.id]))})
 
                     # email notification for the admins

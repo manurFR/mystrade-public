@@ -129,7 +129,7 @@ class UtilsTest(TestCase):
         game = mommy.make(Game, master = user)
         trade = mommy.make(Trade, initiator = user, responder = user, finalizer = user)
 
-        data = {'game': game, 'trade': trade}
+        data = {'game': game, 'trade': trade, 'player_timezone': 'Africa/Abidjan'}
 
         for template in ['game_close', 'game_close_admin', 'game_create', 'game_create_admin',
                          'trade_accept', 'trade_cancel', 'trade_decline', 'trade_offer', 'trade_reply']:

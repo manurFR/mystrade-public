@@ -1,5 +1,5 @@
-{% autoescape off %}Game #{{ game.id }} has been closed by {{ game.master.name }}
-{{ game.master.name|capfirst }} has closed game #{{ game.id }} on {{ game.closing_date|date:"SHORT_DATETIME_FORMAT" }}
+{% load tz %}{% autoescape off %}Game #{{ game.id }} has been closed by {{ game.master.name }}
+{% timezone player_timezone %}{{ game.master.name|capfirst }} has closed game #{{ game.id }} on {{ game.closing_date|date:"SHORT_DATETIME_FORMAT" }}{% endtimezone %}
 
 {% if rank <= 3 %}Congratulations, you are {% if rank == 1 %}the winner{% elif rank == 2 %}in the second place{% else %}in the third place{% endif %} !
 {% else %}{% load humanize %}You're {{ rank|ordinal }} of {{ nb_players }} players.{% endif %}

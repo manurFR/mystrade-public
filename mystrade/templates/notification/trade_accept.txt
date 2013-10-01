@@ -1,5 +1,5 @@
-{% autoescape off %}Game #{{ game.id }}: {{ trade.initiator.name }} has accepted the trade
-In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.initiator.name }} has accepted your offer.
+{% load tz %}{% autoescape off %}Game #{{ game.id }}: {{ trade.initiator.name }} has accepted the trade
+{% timezone player_timezone %}In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.initiator.name }} has accepted your offer.{% endtimezone %}
 These elements have been traded :
 === {{ trade.initiator.name }} gave you ===
 {% with offer=trade.initiator_offer %}

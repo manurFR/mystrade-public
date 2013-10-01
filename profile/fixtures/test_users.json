@@ -16,6 +16,7 @@
             "email": "test1@test.com",
             "date_joined": "2012-11-14T21:14:43.486Z",
             "send_notifications": "True",
+            "timezone": "Europe/Paris",
             "bio": "",
             "contact": ""
         }
@@ -37,6 +38,7 @@
             "email": "test2@test.com",
             "date_joined": "2012-11-14T21:14:54Z",
             "send_notifications": "True",
+            "timezone": "Europe/Paris",
             "bio": "",
             "contact": ""
         }
@@ -58,6 +60,7 @@
             "email": "test3@test.com",
             "date_joined": "2012-11-14T21:16:06.794Z",
             "send_notifications": "True",
+            "timezone": "Europe/Paris",
             "bio": "",
             "contact": ""
         }
@@ -79,6 +82,7 @@
             "email": "test4@test.com",
             "date_joined": "2012-11-14T21:16:15.139Z",
             "send_notifications": "True",
+            "timezone": "Europe/Paris",
             "bio": "",
             "contact": ""
         }
@@ -100,6 +104,7 @@
             "email": "test5@test.com",
             "date_joined": "2012-11-14T21:16:25.940Z",
             "send_notifications": "True",
+            "timezone": "Europe/Paris",
             "bio": "",
             "contact": ""
         }
@@ -121,6 +126,7 @@
             "email": "test6@test.com",
             "date_joined": "2012-11-14T21:16:35.504Z",
             "send_notifications": "True",
+            "timezone": "Europe/Paris",
             "bio": "",
             "contact": ""
         }
@@ -142,6 +148,7 @@
             "email": "test7@test.com",
             "date_joined": "2012-11-14T21:16:42.608Z",
             "send_notifications": "True",
+            "timezone": "Europe/Paris",
             "bio": "",
             "contact": ""
         }
@@ -163,6 +170,7 @@
             "email": "test8@test.com",
             "date_joined": "2012-11-14T21:16:51.240Z",
             "send_notifications": "True",
+            "timezone": "Europe/Paris",
             "bio": "",
             "contact": ""
         }
@@ -184,6 +192,7 @@
             "email": "test9@test.com",
             "date_joined": "2012-11-14T21:16:59.278Z",
             "send_notifications": "True",
+            "timezone": "Europe/Paris",
             "bio": "",
             "contact": ""
         }
@@ -205,6 +214,7 @@
             "email": "admin@test.com",
             "date_joined": "2012-11-14T21:16:59.278Z",
             "send_notifications": "True",
+            "timezone": "Europe/Paris",
             "bio": "",
             "contact": ""
         }
@@ -226,6 +236,7 @@
             "email": "admin_player@test.com",
             "date_joined": "2012-11-14T21:16:59.278Z",
             "send_notifications": "True",
+            "timezone": "Europe/Paris",
             "bio": "admin that is also a player in the game",
             "contact": ""
         }
@@ -247,6 +258,7 @@
             "email": "unrelated@test.com",
             "date_joined": "2012-11-14T21:16:59.278Z",
             "send_notifications": "False",
+            "timezone": "Europe/Paris",
             "bio": "Unrelated user",
             "contact": ""
         }

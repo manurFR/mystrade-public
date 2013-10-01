@@ -1,5 +1,5 @@
-{% autoescape off %}Game #{{ game.id }}: {{ trade.finalizer.name }} has declined the trade
-In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.finalizer.name }} has declined your offer.
+{% load tz %}{% autoescape off %}Game #{{ game.id }}: {{ trade.finalizer.name }} has declined the trade
+{% timezone player_timezone %}In game #{{ game.id }}, on {{ trade.closing_date|date:"SHORT_DATETIME_FORMAT" }} {{ trade.finalizer.name }} has declined your offer.{% endtimezone %}
 The trade included the following elements:
 === {{ trade.initiator.name }} offered ===
 {% include "notification/_offer_detail.txt" with offer=trade.initiator_offer %}

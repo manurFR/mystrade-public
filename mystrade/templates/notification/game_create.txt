@@ -1,4 +1,4 @@
-{% autoescape off %}Game #{{ game.id }} has been created by {{ game.master.name }}
+{%load tz %}{% autoescape off %}Game #{{ game.id }} has been created by {{ game.master.name }}
 {{ game.master.name|capfirst }} has just created game #{{ game.id }}, and you've been selected to join it !
 
 The other players are:
@@ -13,8 +13,8 @@ Here's the hand dealt to you:
 {% for rih in rules %}- Rule {{ rih.rulecard.public_name }}: {{ rih.rulecard.description|safe }}
 {% endfor %}
 
-{% if game.is_active %}The game has already started ! Start trading here:{% else %}The game will start on {{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}. Be ready and visit the site:{% endif %}
-{{ url }}
+{% timezone player_timezone %}{% if game.is_active %}The game has already started ! Start trading here:{% else %}The game will start on {{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}. Be ready and visit the site:{% endif %}
+{{ url }}{% endtimezone %}
 
 Have a fun game!
 
