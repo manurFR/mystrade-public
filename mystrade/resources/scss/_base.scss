@@ -216,6 +216,9 @@ $fullWidthOfARuleCard: 2 * $marginOfRuleCards + 2 * $horizontalPaddingOfRuleCard
     margin: 1px;
     @include roundedBorder(10px);
   }
+
+  .origin {
+  }
 }
 
 $heightOfThumbnailRuleCards: 22px;
