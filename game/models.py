@@ -58,6 +58,9 @@ class RuleInHand(models.Model):
     ownership_date = models.DateTimeField("The date when this card was acquired")
     abandon_date = models.DateTimeField("The date when this card was exchanged", null = True)
 
+    previous_owner = models.ForeignKey(settings.AUTH_USER_MODEL, null = True, verbose_name = "The player that gave this rulecard", related_name = '+')
+    next_owner = models.ForeignKey(settings.AUTH_USER_MODEL, null = True, verbose_name = "The player to whom this rulecard was given", related_name = '+')
+
     def __unicode__(self):
         return "Rule <{0}> owned by {1} in game {2}".format(self.rulecard.ref_name, self.player.name, self.game_id)
 
