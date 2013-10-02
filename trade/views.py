@@ -213,13 +213,15 @@ def accept_trade(request, game_id, trade_id):
                     # Exchange rule cards
                     for rule_from_initiator in trade.initiator_offer.rulecards:
                         RuleInHand.objects.create(game = trade.game, player = trade.responder, rulecard = rule_from_initiator.rulecard,
-                            ownership_date = trade.closing_date)
+                                                  ownership_date = trade.closing_date, previous_owner = trade.initiator)
                         rule_from_initiator.abandon_date = trade.closing_date
+                        rule_from_initiator.next_owner = trade.responder
                         rule_from_initiator.save()
                     for rule_from_responder in trade.responder_offer.rulecards:
                         RuleInHand.objects.create(game = trade.game, player = trade.initiator, rulecard = rule_from_responder.rulecard,
-                            ownership_date = trade.closing_date)
+                                                  ownership_date = trade.closing_date, previous_owner = trade.responder)
                         rule_from_responder.abandon_date = trade.closing_date
+                        rule_from_responder.next_owner = trade.initiator
                         rule_from_responder.save()
 
                     # Exchange commodity cards

@@ -653,15 +653,27 @@ class ModifyTradeViewsTest(MystradeTestCase):
         self.assertIsNotNone(trade.closing_date)
 
         # rule cards : should have been swapped
-        self.assertIsNotNone(RuleInHand.objects.get(pk = rih1.id).abandon_date)
+        rih1_after_trade = RuleInHand.objects.get(pk=rih1.id)
+        self.assertIsNotNone(rih1_after_trade.abandon_date)
+        self.assertEqual(self.alternativeUser, rih1_after_trade.next_owner)
+        self.assertIsNone(rih1_after_trade.previous_owner)
+
         hand_initiator = RuleInHand.objects.filter(game = self.game, player = self.loginUser, abandon_date__isnull = True)
         self.assertEqual(1, hand_initiator.count())
         self.assertEqual(rulecard2, hand_initiator[0].rulecard)
+        self.assertEqual(self.alternativeUser, hand_initiator[0].previous_owner)
+        self.assertIsNone(hand_initiator[0].next_owner)
 
-        self.assertIsNotNone(RuleInHand.objects.get(pk = rih2.id).abandon_date)
+        rih2_after_trade = RuleInHand.objects.get(pk=rih2.id)
+        self.assertIsNotNone(rih2_after_trade.abandon_date)
+        self.assertEqual(self.loginUser, rih2_after_trade.next_owner)
+        self.assertIsNone(rih2_after_trade.previous_owner)
+
         hand_responder = RuleInHand.objects.filter(game = self.game, player = self.alternativeUser, abandon_date__isnull = True)
         self.assertEqual(1, hand_responder.count())
         self.assertEqual(rulecard1, hand_responder[0].rulecard)
+        self.assertEqual(self.loginUser, hand_responder[0].previous_owner)
+        self.assertIsNone(hand_responder[0].next_owner)
 
         # commodity cards : the initiator should now own 2 commodity1, 1 commodity2 and 2 commodity3, wherea
         #  the responder should own 4 commodity1, 1 commodity2 and no commodity3
@@ -914,7 +926,9 @@ class TransactionalViewsTest(TransactionTestCase):
         # rule cards : no swapping
         with self.assertRaises(RuleInHand.DoesNotExist):
             RuleInHand.objects.get(game = self.game, player = self.alternativeUser, rulecard = rih.rulecard)
-        self.assertIsNone(RuleInHand.objects.get(pk = rih.id).abandon_date)
+        rih_after_trade = RuleInHand.objects.get(pk = rih.id)
+        self.assertIsNone(rih_after_trade.abandon_date)
+        self.assertIsNone(rih_after_trade.next_owner)
 
         # commodity cards : no change
         self.assertEqual(1, CommodityInHand.objects.filter(game = self.game, player = self.alternativeUser).count())
