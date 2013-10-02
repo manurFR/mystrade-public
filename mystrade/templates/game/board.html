@@ -80,33 +80,37 @@
                     <div id="zone_rulecards">
                         {% for rih in rulecards %}
                         <div class="rulecard{% if rih.is_in_a_pending_trade %} not_tradable{% elif not hand_submitted %} selectable{% endif %}" data-rih-id="{{ rih.id }}" data-public-name="{{ rih.rulecard.public_name }}">
-                            <div class="note helptext"></div>
-                            <div class="rulecard_name">{{ rih.rulecard.public_name }}</div>
-                            <div class="rulecard_desc">{{ rih.rulecard.description }}</div>
-                            <div class="origin">
-                            {% if rih.previous_owner or rih.next_owner %}
-                                {% if rih.previous_owner %}<div class="game-player">{{ rih.previous_owner.name }}</div>
-                                    <img src="{% static 'arrow_simple.png' %}" width="15" alt="=&gt;"/>{% endif %}
-                                <div class="game-player"><strong>you</strong></div>
-                                {% if rih.next_owner %}<img src="{% static 'arrow_simple.png' %}" width="15" alt="=&gt;"/>
-                                    <div class="game-player">{{ rih.next_owner.name }}</div>{% endif %}
-                            {% else %}<span class="helptext">dealt at game start</span>{% endif %}
+                            <div class="container">
+                                <div class="note helptext"></div>
+                                <div class="rulecard_name">{{ rih.rulecard.public_name }}</div>
+                                <div class="rulecard_desc">{{ rih.rulecard.description }}</div>
+                                <div class="origin">
+                                {% if rih.previous_owner or rih.next_owner %}
+                                    {% if rih.previous_owner %}<div class="game-player">{{ rih.previous_owner.name }}</div>
+                                        <img src="{% static 'arrow_origin.png' %}" width="20" alt="=&gt;"/>{% endif %}
+                                    <div class="game-player"><strong>you</strong></div>
+                                    {% if rih.next_owner %}<img src="{% static 'arrow_origin.png' %}" width="20" alt="=&gt;"/>
+                                        <div class="game-player">{{ rih.next_owner.name }}</div>{% endif %}
+                                {% else %}<span class="helptext">dealt at game start</span>{% endif %}
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                         {% for rih in former_rulecards %}
                         <div class="rulecard former">
-                            <div class="note helptext">(previously owned)</div>
-                            <div class="rulecard_name">{{ rih.rulecard.public_name }}</div>
-                            <div class="rulecard_desc">{{ rih.rulecard.description }}</div>
-                            <div class="origin">
-                                {% if rih.previous_owner or rih.next_owner %}
-                                    {% if rih.previous_owner %}<div class="game-player">{{ rih.previous_owner.name }}</div>
-                                        <img src="{% static 'arrow_simple.png' %}" width="15" alt="=&gt;"/>{% endif %}
-                                    <div class="game-player"><strong>you</strong></div>
-                                    {% if rih.next_owner %}<img src="{% static 'arrow_simple.png' %}" width="15" alt="=&gt;"/>
-                                        <div class="game-player">{{ rih.next_owner.name }}</div>{% endif %}
-                                {% else %}<span class="helptext">dealt at game start</span>{% endif %}
+                            <div class="container">
+                                <div class="note helptext">(previously owned)</div>
+                                <div class="rulecard_name">{{ rih.rulecard.public_name }}</div>
+                                <div class="rulecard_desc">{{ rih.rulecard.description }}</div>
+                                <div class="origin">
+                                    {% if rih.previous_owner or rih.next_owner %}
+                                        {% if rih.previous_owner %}<div class="game-player">{{ rih.previous_owner.name }}</div>
+                                            <img src="{% static 'arrow_origin.png' %}" width="20" alt="=&gt;"/>{% endif %}
+                                        <div class="game-player"><strong>you</strong></div>
+                                        {% if rih.next_owner %}<img src="{% static 'arrow_origin.png' %}" width="20" alt="=&gt;"/>
+                                            <div class="game-player">{{ rih.next_owner.name }}</div>{% endif %}
+                                    {% else %}<span class="helptext">dealt at game start</span>{% endif %}
+                                </div>
                             </div>
                         </div>
                         {% endfor %}

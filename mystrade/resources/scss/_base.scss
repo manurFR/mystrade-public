@@ -180,6 +180,7 @@ $marginOfCommodityCards: 3px;
   }
 }
 
+$heightOfRuleCards: 140px;
 $widthOfRuleCards: 235px;
 $marginOfRuleCards: 3px;
 $horizontalPaddingOfRuleCards: 8px;
@@ -188,8 +189,8 @@ $fullWidthOfARuleCard: 2 * $marginOfRuleCards + 2 * $horizontalPaddingOfRuleCard
   border: $lightSolidBorder;
   @include roundedBorder(10px);
   float: left;
+  height: $heightOfRuleCards;
   width: $widthOfRuleCards;
-  height: 140px;
   margin: $marginOfRuleCards;
   padding: 4px $horizontalPaddingOfRuleCards;
   @include shadowBox($blur: 5px);
@@ -197,14 +198,6 @@ $fullWidthOfARuleCard: 2 * $marginOfRuleCards + 2 * $horizontalPaddingOfRuleCard
   &.former {
     border: $lightDashedBorder;
     color: $mediumLightText;
-  }
-
-  .rulecard_name {
-    @include font($size: 1.5em, $weight: bold);
-  }
-
-  .rulecard_desc {
-    line-height: 1.2em;
   }
 
   &.excluded {
@@ -217,7 +210,27 @@ $fullWidthOfARuleCard: 2 * $marginOfRuleCards + 2 * $horizontalPaddingOfRuleCard
     @include roundedBorder(10px);
   }
 
-  .origin {
+  .container { /* .container is there only to permit .origin to be locked to the bottom right corner */
+    position: relative;
+    height: $heightOfRuleCards;
+
+    .rulecard_name {
+      @include font($size: 1.5em, $weight: bold);
+    }
+
+    .rulecard_desc {
+      line-height: 1.2em;
+    }
+
+    .origin {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+
+      img {
+        vertical-align: text-top;
+      }
+    }
   }
 }
 
