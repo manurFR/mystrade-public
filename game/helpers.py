@@ -2,13 +2,11 @@ from game.models import RuleInHand, CommodityInHand
 from trade.models import Offer
 
 
-def rules_currently_in_hand(game, user):
-    return RuleInHand.objects.filter(game = game, player = user, abandon_date__isnull = True).order_by('rulecard__ref_name')
+def rules_in_hand(game, user, currently_in_hand = True):
+    return RuleInHand.objects.filter(game = game, player = user, abandon_date__isnull = currently_in_hand).order_by('rulecard__ref_name')
 
-def rules_formerly_in_hand(game, user, current_rulecards = []):
-    """ Exclude former rulecard that are in the hand again now, and remove duplicates """
-    return list(RuleInHand.objects.filter(game = game, player = user, abandon_date__isnull = False).
-                                exclude(rulecard__in = current_rulecards).distinct('rulecard__ref_name').order_by('rulecard__ref_name'))
+def rules_formerly_in_hand(game, user):
+    return rules_in_hand(game, user, currently_in_hand = False)
 
 def known_rules(game, user):
     """ All the rules known by the user, whether in hand now or before. Duplicates are removed.

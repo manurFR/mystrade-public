@@ -16,7 +16,7 @@ from django.utils.timezone import now, utc, make_naive, get_current_timezone
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, MessageForm
-from game.helpers import rules_currently_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules, free_informations_until_now
+from game.helpers import rules_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules, free_informations_until_now
 from game.models import Game, CommodityInHand, GamePlayer, Message
 from ruleset.models import RuleCard, Ruleset
 from scoring.card_scoring import tally_scores, Scoresheet
@@ -87,8 +87,8 @@ def game_board(request, game_id, trade_id = None):
             commodities = commodities_in_hand(game, request.user)
             commodities_not_submitted = CommodityInHand.objects.none()
 
-        rulecards = rules_currently_in_hand(game, request.user)
-        former_rulecards = rules_formerly_in_hand(game, request.user, current_rulecards = [r.rulecard for r in rulecards])
+        rulecards = rules_in_hand(game, request.user)
+        former_rulecards = rules_formerly_in_hand(game, request.user)
 
         free_informations = free_informations_until_now(game, request.user)
 
@@ -422,7 +422,7 @@ def select_rules(request):
              opponents = dict(all_players) # make a copy
              del opponents[player]
              list_opponents = sorted(opponents.itervalues(), key = lambda opponent: opponent['name'])
-             rules = rules_currently_in_hand(game, player)
+             rules = rules_in_hand(game, player)
              commodities = commodities_in_hand(game, player)
              utils.send_notification_email('game_create', player,
                                            {'game': game, 'opponents': list_opponents, 'rules': rules, 'commodities': commodities,

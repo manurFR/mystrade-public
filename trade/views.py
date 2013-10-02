@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils.timezone import now
-from game.helpers import rules_currently_in_hand, commodities_in_hand
+from game.helpers import rules_in_hand, commodities_in_hand
 from game.models import RuleInHand, CommodityInHand, Game, GamePlayer
 from trade.forms import DeclineReasonForm, TradeForm, OfferForm
 from trade.models import Trade, TradedCommodities, Offer
@@ -286,7 +286,7 @@ def decline_trade(request, game_id, trade_id):
 
 def _prepare_offer_form(request, game, offer = None, selected_commodities = {}, selected_rulecards = []):
     commodity_hand = commodities_in_hand(game, request.user)
-    rule_hand = [rule for rule in rules_currently_in_hand(game, request.user) if not rule.is_in_a_pending_trade()]
+    rule_hand = [rule for rule in rules_in_hand(game, request.user) if not rule.is_in_a_pending_trade()]
 
     initial = {}
     for cih in commodity_hand:
@@ -302,7 +302,7 @@ def _prepare_offer_form(request, game, offer = None, selected_commodities = {}, 
 
 def _parse_offer_form(request, game):
     commodity_hand = commodities_in_hand(game, request.user)
-    rule_hand = rules_currently_in_hand(game, request.user) # include rules reserved for another trade as they are errors that have to be detected
+    rule_hand = rules_in_hand(game, request.user) # include rules reserved for another trade as they are errors that have to be detected
 
     offer_form = OfferForm(request.POST, commodities = commodity_hand, rulecards = rule_hand)
     offer_valid = offer_form.is_valid() # fill the cleaned_data array

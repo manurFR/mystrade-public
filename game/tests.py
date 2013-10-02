@@ -16,7 +16,7 @@ from game import views
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
     prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates
-from game.helpers import rules_currently_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules
+from game.helpers import rules_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer, Message
 from ruleset.models import Ruleset, RuleCard, Commodity
 from scoring.card_scoring import Scoresheet
@@ -433,12 +433,11 @@ class GameBoardZoneHandTest(MystradeTestCase):
                                 mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rulecard2,
                                            abandon_date = utc.localize(datetime.datetime(2013, 01, 13, 8, 5)))
 
-        # one should see one rulecard 2 in rules currently owned and only one rulecard 1 in former rules
-        #  (no duplicates and no copies of cards currently in hand)
         response = self._assertGetGamePage()
 
         self.assertEqual([rulecard2], [rih.rulecard for rih in response.context['rulecards']])
-        self.assertEqual([rulecard1], [rih.rulecard for rih in response.context['former_rulecards']])
+        # multiple occurences of former rulecards are displayed, even if the rulecard is also in the current hand
+        self.assertEqual([rulecard1, rulecard1, rulecard2], [rih.rulecard for rih in response.context['former_rulecards']])
 
     def test_game_board_displays_free_informations_from_ACCEPTED_trades(self):
         offer1_from_me_as_initiator = mommy.make(Offer, free_information = "I don't need to see that 1")
@@ -1532,9 +1531,9 @@ class HelpersTest(MystradeTestCase):
         mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = rmx11,
                           abandon_date = utc.localize(datetime.datetime(2013, 11, 1, 12, 0, 0)))
 
-        rules_in_hand = rules_currently_in_hand(self.game, self.loginUser)
+        rulesinhand = rules_in_hand(self.game, self.loginUser)
 
-        self.assertEqual([rmx08, rmx09], [r.rulecard for r in rules_in_hand])
+        self.assertEqual([rmx08, rmx09], [r.rulecard for r in rulesinhand])
 
     def test_rules_formerly_in_hand(self):
         hag05 = RuleCard.objects.get(ref_name='HAG05')
@@ -1549,9 +1548,9 @@ class HelpersTest(MystradeTestCase):
         mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = hag07,
                    abandon_date = utc.localize(datetime.datetime(2013, 1, 8, 16, 0, 0)))
 
-        rules_in_hand = rules_formerly_in_hand(self.game, self.loginUser, [hag07])
+        rulesinhand = rules_formerly_in_hand(self.game, self.loginUser)
 
-        self.assertEqual([hag05, hag06], [r.rulecard for r in rules_in_hand])
+        self.assertEqual([hag05, hag06, hag06, hag07], [r.rulecard for r in rulesinhand])
 
     def test_known_rules(self):
         hag05 = RuleCard.objects.get(ref_name='HAG05')
@@ -1581,5 +1580,3 @@ class HelpersTest(MystradeTestCase):
         commodities = commodities_in_hand(self.game, self.loginUser)
 
         self.assertEqual([cih2, cih1], list(commodities))
-
-
