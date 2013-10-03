@@ -1,0 +1,10 @@
+{% load staticfiles %}
+<div class="origin" {% if rih.previous_owner or rih.next_owner %}title="Card {% if rih.previous_owner %}given by {{ rih.previous_owner.name }}{% if rih.next_owner %}, and {% endif %}{% endif %}{% if rih.next_owner %}transmitted to {{ rih.next_owner.name }}{% endif %}"{% endif %}>
+    {% if rih.previous_owner or rih.next_owner %}
+        {% if rih.previous_owner %}<div class="game-player">{{ rih.previous_owner.name }}</div>
+            <img src="{% static 'arrow_origin.png' %}" width="20" alt="=&gt;"/>{% endif %}
+        <div class="game-player"><strong>you</strong></div>
+        {% if rih.next_owner %}<img src="{% static 'arrow_origin.png' %}" width="20" alt="=&gt;"/>
+            <div class="game-player">{{ rih.next_owner.name }}</div>{% endif %}
+    {% else %}<span class="helptext">dealt at game start</span>{% endif %}
+</div>
