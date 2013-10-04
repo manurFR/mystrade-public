@@ -140,9 +140,10 @@ def _fetch_scoresheets(game):
 
 def _online_players(game, players):
     list_of_online_players_id = [];
+    date_now = now()
     for player in players:
         last_seen = player.gameplayer_set.get(game = game).last_seen
-        if last_seen and now() - last_seen <= datetime.timedelta(seconds = SECONDS_BEFORE_OFFLINE):
+        if last_seen and date_now - last_seen <= datetime.timedelta(seconds = SECONDS_BEFORE_OFFLINE):
             list_of_online_players_id.append(str(player.id) )
 
     return "[" + ", ".join(list_of_online_players_id) + "]";
