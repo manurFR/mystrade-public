@@ -226,9 +226,10 @@ $fullWidthOfARuleCard: 2 * $marginOfRuleCards + 2 * $horizontalPaddingOfRuleCard
       position: absolute;
       bottom: 0;
       right: 0;
+      @include font($size: 8pt);
 
       img {
-        vertical-align: text-top;
+        vertical-align: middle;
       }
     }
   }

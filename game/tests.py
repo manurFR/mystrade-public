@@ -226,7 +226,6 @@ class GameCreationViewsTest(TestCase):
         self.assertFalse('profiles' in self.client.session)
 
         # notification emails sent
-        self.assertEqual(5, len(mail.outbox))
         list_recipients = [msg.to[0] for msg in mail.outbox]
 
         self.assertEqual(1, list_recipients.count('test2@test.com'))

@@ -368,7 +368,7 @@ class ShowTradeViewTest(MystradeTestCase):
         trade = self._prepare_trade('DECLINED', finalizer = self.alternativeUser)
         response = self._getShowTrade(trade)
 
-        self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\"><a href=\".*\">test5</a>")
+        self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\".*><a href=\".*\">test5</a>")
         self.assertNotContains(response, "with the following reason given:")
 
         trade.decline_reason = "Because I do not need it"
@@ -376,7 +376,7 @@ class ShowTradeViewTest(MystradeTestCase):
 
         response = self._getShowTrade(trade)
 
-        self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\"><a href=\".*\">test5</a>")
+        self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\".*><a href=\".*\">test5</a>")
         self.assertContains(response, "gave the following reason to decline:")
         self.assertContains(response, "Because I do not need it")
 

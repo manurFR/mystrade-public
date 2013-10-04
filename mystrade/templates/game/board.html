@@ -30,7 +30,7 @@
             <div>
                 {% for player in players %}
                     {% if player == user %}<div class="game-player">{{ player.name }} (you)</div>
-                    {% else %}<div class="game-player"><a href="{% url 'otherprofile' player.id %}">{{ player.name }}</a></div>{% endif %}
+                    {% else %}<div class="game-player" data-player-id="{{ player.id }}"><a href="{% url 'otherprofile' player.id %}">{{ player.name }}</a></div>{% endif %}
                 {% endfor %}
             </div>
         </div>
@@ -246,6 +246,17 @@
         }
 
         /********************************************************************************************
+         **                                   Online status                                        **
+         ********************************************************************************************/
+        function updateOnlineStatus(onlinePlayers) {
+            $(".game-player[data-player-id]").each(function() {
+                if ($.inArray($(this).data("playerId"), onlinePlayers) > 0) {
+                    $(this).append("<img class=\"icon-online\" title=\"online player\" src=\"{% static 'online.png' %}\" height=\"16\" width=\"16\" alt=\"*\"/>");
+                }
+            }).tooltip();
+        }
+
+        /********************************************************************************************
          **                           Script for card selections                                   **
          ********************************************************************************************/
     {% if not show_control_board and not hand_submitted %}
@@ -299,6 +310,8 @@
             $("#link_show_trade_list").on("click", function() {
                 $("#zone_trade_list").dialog("open");
             });
+
+            updateOnlineStatus([3, 5, 8, 7]);
 
         {% if trade_id %} {# if the url asks for showing a specific trade #}
             refreshTrade({{ trade_id }});
