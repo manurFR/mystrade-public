@@ -50,6 +50,8 @@ def welcome(request):
 ##                            Game Board                                   ##
 #############################################################################
 
+SECONDS_BEFORE_OFFLINE = 10 * 60
+
 @login_required
 def game_board(request, game_id, trade_id = None):
     game = get_object_or_404(Game, id = game_id)
@@ -70,7 +72,8 @@ def game_board(request, game_id, trade_id = None):
         except Trade.DoesNotExist:
             pass
 
-    context = {'game': game, 'players': players, 'message_form': MessageForm(), 'maxMessageLength': Message.MAX_LENGTH,
+    context = {'game': game, 'players': players, 'online_players': _online_players(game, players),
+               'message_form': MessageForm(), 'maxMessageLength': Message.MAX_LENGTH,
                'trade_id': verified_trade_id, 'events_refresh_delay': EVENTS_REFRESH_DELAY}
 
     if request.user in players and not game.is_closed():
@@ -134,6 +137,15 @@ def _fetch_scoresheets(game):
                                       ScoreFromRule.objects.filter(game=game, player=gameplayer.player).order_by('rulecard__step', 'rulecard__public_name')))
     scoresheets.sort(key = lambda scoresheet: scoresheet.total_score, reverse = True)
     return scoresheets
+
+def _online_players(game, players):
+    list_of_online_players_id = [];
+    for player in players:
+        last_seen = player.gameplayer_set.get(game = game).last_seen
+        if last_seen and now() - last_seen <= datetime.timedelta(seconds = SECONDS_BEFORE_OFFLINE):
+            list_of_online_players_id.append(str(player.id) )
+
+    return "[" + ", ".join(list_of_online_players_id) + "]";
 
 #############################################################################
 ##                      Events (Tab "Recently")                            ##

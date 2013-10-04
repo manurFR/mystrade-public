@@ -250,8 +250,10 @@
          ********************************************************************************************/
         function updateOnlineStatus(onlinePlayers) {
             $(".game-player[data-player-id]").each(function() {
-                if ($.inArray($(this).data("playerId"), onlinePlayers) > 0) {
+                if ($.inArray($(this).data("playerId"), onlinePlayers) >= 0) {
                     $(this).append("<img class=\"icon-online\" title=\"online player\" src=\"{% static 'online.png' %}\" height=\"16\" width=\"16\" alt=\"*\"/>");
+                } else {
+                    $(this).find("img.icon-online").remove();
                 }
             }).tooltip();
         }
@@ -311,8 +313,7 @@
                 $("#zone_trade_list").dialog("open");
             });
 
-            updateOnlineStatus([3, 5, 8, 7]);
-
+            updateOnlineStatus({{ online_players }});
         {% if trade_id %} {# if the url asks for showing a specific trade #}
             refreshTrade({{ trade_id }});
             zoneTabs.tabs("option", "active", 1);

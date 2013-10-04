@@ -18,6 +18,7 @@ from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards,
 from game.forms import validate_number_of_players, validate_dates
 from game.helpers import rules_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer, Message
+from game.views import SECONDS_BEFORE_OFFLINE
 from ruleset.models import Ruleset, RuleCard, Commodity
 from scoring.card_scoring import Scoresheet
 from scoring.models import ScoreFromCommodity, ScoreFromRule
@@ -351,10 +352,30 @@ class GameBoardMainTest(MystradeTestCase):
         self.assertIsNone(response.context['trade_id'])
         self.assertNotContains(response, "refreshTrade({0});".format(trade.id))
 
+    def test_game_board_shows_online_users(self):
+        response = self._assertGetGamePage()
+        # the loginUser is always identified as online since the middleware has been run by the time we get to the view func
+        self.assertContains(response, "updateOnlineStatus([{0}]);".format(self.loginUser.id))
+
+        date_now = now()
+        player5 = GamePlayer.objects.get(game=self.game, player__id=5)
+        player5.last_seen = date_now + datetime.timedelta(seconds = -SECONDS_BEFORE_OFFLINE + 20)
+        player5.save()
+        player6 = GamePlayer.objects.get(game=self.game, player__id=6)
+        player6.last_seen = date_now + datetime.timedelta(seconds = -SECONDS_BEFORE_OFFLINE + 10)
+        player6.save()
+        player7 = GamePlayer.objects.get(game=self.game, player__id=7)
+        player7.last_seen = date_now + datetime.timedelta(seconds = -SECONDS_BEFORE_OFFLINE - 10)
+        player7.save()
+
+        response = self._assertGetGamePage()
+        # only the players who were last seen in less than SECONDS_BEFORE_OFFLINE seconds are identified as online
+        self.assertContains(response, "updateOnlineStatus([{0}, 5, 6]);".format(self.loginUser.id))
+
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
             game = self.game
-        response = self.client.get("/game/{0}/".format(game.id), follow = True)
+        response = self.client.get(reverse('game', args = [game.id]), follow = True)
         self.assertEqual(status_code, response.status_code)
         return response
 
