@@ -1580,3 +1580,33 @@ class HelpersTest(MystradeTestCase):
         commodities = commodities_in_hand(self.game, self.loginUser)
 
         self.assertEqual([cih2, cih1], list(commodities))
+
+class OnlineStatusMiddlewareTest(MystradeTestCase):
+
+    def test_the_requests_related_to_a_specific_game_update_the_last_seen_timestamp(self):
+        self.assertIsNone(self._get_last_seen())
+
+        self.client.get(reverse("welcome"))
+        self.assertIsNone(self._get_last_seen())
+
+        self.client.get(reverse("otherprofile", args = [self.alternativeUser.id]))
+        self.assertIsNone(self._get_last_seen())
+
+        self.client.get(reverse("game", args = [self.game.id]))
+        last_seen_game_board = self._get_last_seen()
+        self.assertIsNotNone(last_seen_game_board)
+
+        self.client.get(reverse("events", args = [self.game.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        last_seen_events = self._get_last_seen()
+        self.assertIsNotNone(last_seen_events)
+        self.assertNotEqual(last_seen_game_board, last_seen_events)
+
+        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                           status = 'INITIATED', initiator_offer = mommy.make(Offer))
+        self.client.get(reverse("cancel_trade", args = [self.game.id, trade.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        last_seen_cancel_trade = self._get_last_seen()
+        self.assertIsNotNone(last_seen_cancel_trade)
+        self.assertNotEqual(last_seen_events, last_seen_cancel_trade)
+
+    def _get_last_seen(self):
+        return GamePlayer.objects.get(game = self.game, player = self.loginUser).last_seen

@@ -20,6 +20,7 @@
         "fields": {
             "game": 1,
             "submit_date": null,
+            "last_seen": null,
             "player": [
                 "test2"
             ]
@@ -31,6 +32,7 @@
         "fields": {
             "game": 1,
             "submit_date": null,
+            "last_seen": null,
             "player": [
                 "test3"
             ]
@@ -42,6 +44,7 @@
         "fields": {
             "game": 1,
             "submit_date": null,
+            "last_seen": null,
             "player": [
                 "test4"
             ]
@@ -53,6 +56,7 @@
         "fields": {
             "game": 1,
             "submit_date": null,
+            "last_seen": null,
             "player": [
                 "test5"
             ]
@@ -64,6 +68,7 @@
         "fields": {
             "game": 1,
             "submit_date": null,
+            "last_seen": null,
             "player": [
                 "test6"
             ]
@@ -75,6 +80,7 @@
         "fields": {
             "game": 1,
             "submit_date": null,
+            "last_seen": null,
             "player": [
                 "test7"
             ]
@@ -86,6 +92,7 @@
         "fields": {
             "game": 1,
             "submit_date": null,
+            "last_seen": null,
             "player": [
                 "test8"
             ]
@@ -97,6 +104,7 @@
         "fields": {
             "game": 1,
             "submit_date": null,
+            "last_seen": null,
             "player": [
                 "test9"
             ]
@@ -108,6 +116,7 @@
         "fields": {
             "game": 1,
             "submit_date": null,
+            "last_seen": null,
             "player": [
                 "admin_player"
             ]
