@@ -49,6 +49,7 @@ class GamePlayer(models.Model):
     player = models.ForeignKey(settings.AUTH_USER_MODEL)
 
     submit_date = models.DateTimeField(null = True)
+    last_seen = models.DateTimeField("The last time this player sent an HTTP request related to this game", null = True)
 
 class RuleInHand(models.Model):
     game = models.ForeignKey(Game)
