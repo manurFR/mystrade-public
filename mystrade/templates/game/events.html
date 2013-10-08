@@ -61,7 +61,7 @@
 {% endfor %}
 <div class="show_more">{% if datenext %}<a id="link_show_more_events">show more events &gt;</a>{% endif %}</div>
 
-<script> {# deleteMessage(), refreshEvents() and refreshTrade() functions are found in board.html, which encloses this file #}
+<script> {# called functions are found in board.html, which will enclose this file #}
     lastEventsRefreshDate = "{{ lastEventsRefreshDate }}";
     $(".delete_icon").tooltip({ show: false }).on("click", function(event) { deleteMessage(event.target); });
     $(".event_text .warning_icon").tooltip();

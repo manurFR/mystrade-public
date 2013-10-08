@@ -30,7 +30,7 @@
             <div>
                 {% for player in players %}
                     {% if player == user %}<div class="game-player">{{ player.name }} (you)</div>
-                    {% else %}<div class="game-player" data-player-id="{{ player.id }}"><a href="{% url 'otherprofile' player.id %}">{{ player.name }}</a></div>{% endif %}
+                    {% else %}{% include "common/name_or_you.html" with who=player %}{% endif %}
                 {% endfor %}
             </div>
         </div>
@@ -172,6 +172,11 @@
                         $("#zone_events").html(data);
                         $("#zone_events").find(".event.highlight").effect("highlight", {}, 3000).removeClass("highlight");
                     }
+
+                    var stringOnlinePlayers = jqXHR.getResponseHeader("online_players");
+                    if (stringOnlinePlayers.match("^\\[(\\d+,?\\s?)*\\]$")) { {# validate we have only a list of numbers before json-parsing #}
+                        updateOnlineStatus($.parseJSON(stringOnlinePlayers));
+                    }
                 });
         }
 
@@ -249,9 +254,10 @@
          **                                   Online status                                        **
          ********************************************************************************************/
         function updateOnlineStatus(onlinePlayers) {
-            $(".game-player[data-player-id]").each(function() {
+            $("#zone_player_list, #zone_events").find(".game-player[data-player-id]").each(function() {
                 if ($.inArray($(this).data("playerId"), onlinePlayers) >= 0) {
-                    $(this).append("<img class=\"icon-online\" title=\"online player\" src=\"{% static 'online.png' %}\" height=\"16\" width=\"16\" alt=\"*\"/>");
+                    $(this).not(":has(img.icon-online)")
+                            .append("<img class=\"icon-online\" title=\"online player\" src=\"{% static 'online.png' %}\" height=\"16\" width=\"16\" alt=\"*\"/>");
                 } else {
                     $(this).find("img.icon-online").remove();
                 }

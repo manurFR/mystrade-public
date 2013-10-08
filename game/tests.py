@@ -1,3 +1,4 @@
+import ast
 import datetime
 from django.contrib.auth import get_user_model
 
@@ -756,6 +757,47 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, 'Game #{0} has started.'.format(self.game.id))
         self.assertContains(response, '<div class="event_date">Aug. 15, 2013</div>')
         self.assertContains(response, '<div class="event_time">4:12 a.m.</div>')
+
+    def test_tab_recently_refreshes_online_users(self):
+        response = self._getTabRecently()
+        # the loginUser is always identified as online since the middleware has been run by the time we get to the view func
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(response.has_header('online_players'))
+        online_players = ast.literal_eval(response['online_players'])
+        self.assertItemsEqual([self.loginUser.id], online_players)
+
+        date_now = now()
+        player5 = GamePlayer.objects.get(game=self.game, player__id=5)
+        player5.last_seen = date_now + datetime.timedelta(seconds = -SECONDS_BEFORE_OFFLINE + 20)
+        player5.save()
+        player6 = GamePlayer.objects.get(game=self.game, player__id=6)
+        player6.last_seen = date_now + datetime.timedelta(seconds = -SECONDS_BEFORE_OFFLINE + 10)
+        player6.save()
+        player7 = GamePlayer.objects.get(game=self.game, player__id=7)
+        player7.last_seen = date_now + datetime.timedelta(seconds = -SECONDS_BEFORE_OFFLINE - 10)
+        player7.save()
+
+        response = self._getTabRecently()
+        # only the players who were last seen in less than SECONDS_BEFORE_OFFLINE seconds are identified as online
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(response.has_header('online_players'))
+        online_players = ast.literal_eval(response['online_players'])
+        self.assertItemsEqual([self.loginUser.id, 5, 6], online_players)
+
+    def test_tab_recently_returns_only_the_online_users_if_nothing_has_changed(self):
+        date_now = now()
+        player5 = GamePlayer.objects.get(game=self.game, player__id=5)
+        player5.last_seen = date_now + datetime.timedelta(seconds = -SECONDS_BEFORE_OFFLINE + 20)
+        player5.save()
+        player6 = GamePlayer.objects.get(game=self.game, player__id=6)
+        player6.last_seen = date_now + datetime.timedelta(seconds = -SECONDS_BEFORE_OFFLINE + 10)
+        player6.save()
+
+        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(self.game.creation_date, views.FORMAT_EVENT_PERMALINK))
+        self.assertEqual(204, response.status_code)
+        self.assertTrue(response.has_header('online_players'))
+        online_players = ast.literal_eval(response['online_players'])
+        self.assertItemsEqual([self.loginUser.id, 5, 6], online_players)
 
     def test_tab_recently_post_a_message_works_and_redirect_as_a_GET_request(self):
         self.assertEqual(0, Message.objects.count())

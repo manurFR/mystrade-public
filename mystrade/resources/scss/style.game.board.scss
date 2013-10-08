@@ -23,15 +23,6 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   margin-left: 180px;
   padding-top: 4px;
 
-  .icon-online {
-    display: inline-block;
-    position: relative;
-    top: -4px;
-    right: 0;
-    margin-left: 0;
-    cursor: help;
-  }
-
   > div {
     float: right;
   }
@@ -266,6 +257,14 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   // hack to have the button closer to the textarea
   position: relative;
   top: -10px;
+}
+
+.icon-online {
+  position: relative;
+  top: -3px;
+  right: -2px;
+  margin-left: -2px;
+  cursor: help;
 }
 
 /* Styling for tab New/View Trade */

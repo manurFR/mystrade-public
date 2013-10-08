@@ -236,11 +236,14 @@ def events(request, game_id):
                     new_events = True
 
         if first_load or history_request or new_events:
-            return render(request, 'game/events.html',
+            response = render(request, 'game/events.html',
                           {'game': game, 'events': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious,
                            'lastEventsRefreshDate': datetime.datetime.strftime(now(), FORMAT_EVENT_PERMALINK)})
         else:
-            return HttpResponse(status = 204) # 204 = No Content
+            response = HttpResponse(status = 204) # 204 = No Content
+
+        response['online_players'] = _online_players(game, game.players.all())
+        return response
 
     raise PermissionDenied
 

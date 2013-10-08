@@ -1,3 +1,3 @@
 {% spaceless %}
-<div class="game-player" data-player-id="{{ who.id }}">{% if who == user %}<strong>you</strong>{% else %}<a href="{% url 'otherprofile' who.id %}">{{ who.name }}</a>{% endif %}</div>
+<div class="game-player"{% if who == user %}><strong>you</strong>{% else %} data-player-id="{{ who.id }}"><a href="{% url 'otherprofile' who.id %}">{{ who.name }}</a>{% endif %}</div>
 {% endspaceless %}
