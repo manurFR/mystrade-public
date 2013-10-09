@@ -51,6 +51,8 @@ def game_list(request):
 #############################################################################
 
 SECONDS_BEFORE_OFFLINE = 10 * 60
+COOKIE_LAST_VISITED_GAME_KEY = "mystrade-lastVisitedGame-id"
+COOKIE_LAST_VISITED_GAME_DURATION = 7 * 24 * 60 * 60 # in seconds
 
 @login_required
 def game_board(request, game_id, trade_id = None):
@@ -127,7 +129,11 @@ def game_board(request, game_id, trade_id = None):
         context.update({'show_control_board': True, 'super_access': super_access,
                         'scoresheets': scoresheets, 'random_scoring': random_scoring, 'rank': rank})
 
-    return render(request, 'game/board.html', context)
+    response = render(request, 'game/board.html', context)
+
+    _set_lastVisitedGame_cookie_if_needed(response, game)
+
+    return response
 
 def _fetch_scoresheets(game):
     scoresheets = []
@@ -147,6 +153,12 @@ def _online_players(game, players):
             list_of_online_players_id.append(str(player.id) )
 
     return "[" + ", ".join(list_of_online_players_id) + "]";
+
+def _set_lastVisitedGame_cookie_if_needed(response, game):
+    if game.has_started() and not game.is_closed():
+        response.set_cookie(COOKIE_LAST_VISITED_GAME_KEY, game.id, max_age = COOKIE_LAST_VISITED_GAME_DURATION)
+    elif game.is_closed():
+        response.delete_cookie(COOKIE_LAST_VISITED_GAME_KEY)
 
 #############################################################################
 ##                      Events (Tab "Recently")                            ##

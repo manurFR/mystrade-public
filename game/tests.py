@@ -373,6 +373,59 @@ class GameBoardMainTest(MystradeTestCase):
         # only the players who were last seen in less than SECONDS_BEFORE_OFFLINE seconds are identified as online
         self.assertContains(response, "updateOnlineStatus([{0}, 5, 6]);".format(self.loginUser.id))
 
+    def test_game_board_set_a_cookie_for_active_games(self):
+        self.game.start_date = now() + datetime.timedelta(days = -2)
+        self.game.end_date = now() + datetime.timedelta(days = 2)
+        self.game.save()
+
+        response = self._assertGetGamePage()
+
+        self.assertTrue(response.cookies.has_key('mystrade-lastVisitedGame-id'))
+        self.assertEqual(str(self.game.id), response.cookies['mystrade-lastVisitedGame-id'].value)
+
+    def test_game_board_set_no_cookie_for_games_not_started(self):
+        self.game.start_date = now() + datetime.timedelta(days = 2)
+        self.game.end_date = now() + datetime.timedelta(days = 4)
+        self.game.save()
+
+        response = self._assertGetGamePage()
+
+        self.assertFalse(response.cookies.has_key('mystrade-lastVisitedGame-id'))
+
+    def test_game_board_the_cookie_keeps_the_last_visited_game(self):
+        self.game.start_date = now() + datetime.timedelta(days = -2)
+        self.game.end_date = now() + datetime.timedelta(days = 2)
+        self.game.save()
+
+        response = self._assertGetGamePage()
+
+        game2 = mommy.make(Game, start_date = now() + datetime.timedelta(days = -1), end_date = now() + datetime.timedelta(days = 3))
+        mommy.make(GamePlayer, game = game2, player = self.loginUser)
+
+        response = self._assertGetGamePage(game = game2)
+
+        self.assertTrue(response.cookies.has_key('mystrade-lastVisitedGame-id'))
+        self.assertEqual(str(game2.id), response.cookies['mystrade-lastVisitedGame-id'].value)
+
+    def test_game_board_the_cookie_is_deleted_if_the_game_is_closed(self):
+        self.game.start_date = now() + datetime.timedelta(days = -2)
+        self.game.end_date = now() + datetime.timedelta(minutes = -1)
+        self.game.save()
+
+        response = self._assertGetGamePage()
+
+        self.assertTrue(response.cookies.has_key('mystrade-lastVisitedGame-id'))
+        self.assertEqual(str(self.game.id), response.cookies['mystrade-lastVisitedGame-id'].value)
+        self.assertTrue(self.client.cookies.has_key('mystrade-lastVisitedGame-id'))
+
+        self.game.closing_date = now() + datetime.timedelta(seconds = -5)
+        self.game.save()
+
+        response = self._assertGetGamePage()
+        # actually, a client is asked to delete a cookie by setting its expiration date to 1970/01/01
+        self.assertTrue(response.cookies.has_key('mystrade-lastVisitedGame-id'))
+        self.assertEqual('Thu, 01-Jan-1970 00:00:00 GMT', response.cookies['mystrade-lastVisitedGame-id']['expires'])
+
     def _assertGetGamePage(self, game = None, status_code = 200):
         if game is None:
             game = self.game
