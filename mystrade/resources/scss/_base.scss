@@ -195,6 +195,14 @@ $fullWidthOfARuleCard: 2 * $marginOfRuleCards + 2 * $horizontalPaddingOfRuleCard
   padding: 4px $horizontalPaddingOfRuleCards;
   @include shadowBox($blur: 5px);
 
+  .rulecard_name {
+    @include font($size: 1.5em, $weight: bold);
+  }
+
+  .rulecard_desc {
+    line-height: 1.2em;
+  }
+
   &.former {
     border: $lightDashedBorder;
     color: $mediumLightText;
@@ -213,14 +221,6 @@ $fullWidthOfARuleCard: 2 * $marginOfRuleCards + 2 * $horizontalPaddingOfRuleCard
   .container { /* .container is there only to permit .origin to be locked to the bottom right corner */
     position: relative;
     height: $heightOfRuleCards;
-
-    .rulecard_name {
-      @include font($size: 1.5em, $weight: bold);
-    }
-
-    .rulecard_desc {
-      line-height: 1.2em;
-    }
 
     .origin {
       position: absolute;

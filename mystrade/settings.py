@@ -167,7 +167,7 @@ INSTALLED_APPS = (
 
 AUTH_USER_MODEL = 'profile.MystradeUser'
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'welcome'
+LOGIN_REDIRECT_URL = 'nopath'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

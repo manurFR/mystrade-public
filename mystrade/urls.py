@@ -6,7 +6,7 @@ from game import views as game_views
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^$',         game_views.welcome),
+    url(r'^$',         game_views.game_list, name = 'nopath'),
     url(r'^login$',    'django.contrib.auth.views.login', {'template_name': 'profile/login.html'}, name='login'),
     url(r'^logout$',   'django.contrib.auth.views.logout_then_login', name='logout'),
     url(r'^rules/',    TemplateView.as_view(template_name = 'rules.html'), name='rules'),

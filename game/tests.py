@@ -26,54 +26,54 @@ from scoring.models import ScoreFromCommodity, ScoreFromRule
 from trade.models import Offer, Trade, TradedCommodities
 from utils.tests import MystradeTestCase
 
-class WelcomePageViewTest(MystradeTestCase):
+class EntryPageViewTest(MystradeTestCase):
 
-    def test_url_with_no_path_should_display_welcome_page_if_authenticated(self):
+    def test_url_with_no_path_should_display_game_list_page_if_authenticated(self):
         """ ie http://host.com/ should actually display the same page as http://host.com/game/ """
         response = self.client.get("")
         self.assertEqual(200, response.status_code)
-        self.assertTemplateUsed(response, "game/welcome.html")
+        self.assertTemplateUsed(response, "game/game_list.html")
 
         self.client.logout()
         response = self.client.get("")
         self.assertRedirects(response, "/login?next=/")
 
-    def test_welcome_needs_login(self):
-        response = self.client.get(reverse("welcome"))
+    def test_game_list_needs_login(self):
+        response = self.client.get(reverse("game_list"))
         self.assertEqual(200, response.status_code)
 
         self.client.logout()
-        response = self.client.get(reverse("welcome"))
+        response = self.client.get(reverse("game_list"))
         self.assertRedirects(response, "/login?next=/game/")
 
-    def test_welcome_games_query(self):
+    def test_game_list_query(self):
         game_mastered = mommy.make(Game, master = self.loginUser,
                                        end_date = utc.localize(datetime.datetime(2022, 11, 1, 12, 0, 0)))
         mommy.make(GamePlayer, game = game_mastered, player = self.alternativeUser)
         other_game = mommy.make(Game, master = self.alternativeUser,
                                end_date = utc.localize(datetime.datetime(2022, 11, 5, 12, 0, 0)))
 
-        response = self.client.get(reverse("welcome"))
+        response = self.client.get(reverse("game_list"))
 
         self.assertEqual(200, response.status_code)
         self.assertItemsEqual([self.game, game_mastered], list(response.context['games']))
         self.assertNotIn(other_game, response.context['games'])
 
-    def test_welcome_game_dates_are_displayed_in_user_timezone(self):
+    def test_game_list_dates_are_displayed_in_user_timezone(self):
         self.game.start_date =  utc.localize(datetime.datetime(2013, 9, 5, 23, 30, 0))
         self.game.save()
 
         self.loginUser.timezone = "Europe/Paris" # in september, Paris is UTC+2 (including DST)
         self.loginUser.save()
 
-        response = self.client.get(reverse("welcome"))
+        response = self.client.get(reverse("game_list"))
         self.assertContains(response, "09/06/2013 1:30 a.m.")
         self.assertNotContains(response, "09/05/2013 11:30 p.m.")
 
         self.loginUser.timezone = "America/Phoenix" # Phoenix, AZ is UTC-7 and doesn't have DST
         self.loginUser.save()
 
-        response = self.client.get(reverse("welcome"))
+        response = self.client.get(reverse("game_list"))
         self.assertContains(response, "09/05/2013 4:30 p.m.")
         self.assertNotContains(response, "09/05/2013 11:30 p.m.")
 
@@ -1648,7 +1648,7 @@ class OnlineStatusMiddlewareTest(MystradeTestCase):
     def test_the_requests_related_to_a_specific_game_update_the_last_seen_timestamp(self):
         self.assertIsNone(self._get_last_seen())
 
-        self.client.get(reverse("welcome"))
+        self.client.get(reverse("game_list"))
         self.assertIsNone(self._get_last_seen())
 
         self.client.get(reverse("otherprofile", args = [self.alternativeUser.id]))

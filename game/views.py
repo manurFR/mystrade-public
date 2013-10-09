@@ -30,7 +30,7 @@ from utils import utils, stats
 logger = logging.getLogger(__name__)
 
 @login_required
-def welcome(request):
+def game_list(request):
     games = Game.objects.filter(Q(master = request.user) | Q(players = request.user)).distinct().order_by('-closing_date', '-end_date')
 
     cache = UserNameCache()
@@ -44,7 +44,7 @@ def welcome(request):
             game.hand_submitted = participations[game.id].submit_date is not None
         else:
             game.hand_submitted = False
-    return render(request, 'game/welcome.html', {'games': games})
+    return render(request, 'game/game_list.html', {'games': games})
 
 #############################################################################
 ##                            Game Board                                   ##

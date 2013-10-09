@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, url
 
 urlpatterns = patterns('game.views',
-    url(r'^$',                           'welcome',             name = 'welcome'),
+    url(r'^$',                           'game_list',           name = 'game_list'),
     url(r'^(\d+)/$',                     'game_board',          name = 'game'),
     url(r'^(\d+)/trade/(\d+)/$',         'game_board',          name = 'game_with_trade'),
     url(r'^(\d+)/events/$',              'events',              name = 'events'),
