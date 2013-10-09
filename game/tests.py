@@ -793,7 +793,7 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         player6.last_seen = date_now + datetime.timedelta(seconds = -SECONDS_BEFORE_OFFLINE + 10)
         player6.save()
 
-        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(self.game.creation_date, views.FORMAT_EVENT_PERMALINK))
+        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(self.game.start_date, views.FORMAT_EVENT_PERMALINK))
         self.assertEqual(204, response.status_code)
         self.assertTrue(response.has_header('online_players'))
         online_players = ast.literal_eval(response['online_players'])
