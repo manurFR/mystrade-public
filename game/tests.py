@@ -28,7 +28,7 @@ from utils.tests import MystradeTestCase
 
 class EntryPageViewTest(MystradeTestCase):
 
-    def test_url_with_no_path_should_display_game_list_page_if_authenticated(self):
+    def test_url_with_no_path_should_display_game_list_page_if_authenticated_and_the_cookie_is_not_set(self):
         """ ie http://host.com/ should actually display the same page as http://host.com/game/ """
         response = self.client.get("")
         self.assertEqual(200, response.status_code)
@@ -37,6 +37,26 @@ class EntryPageViewTest(MystradeTestCase):
         self.client.logout()
         response = self.client.get("")
         self.assertRedirects(response, "/login?next=/")
+
+    def test_url_with_no_path_should_redirect_to_game_board_if_cookie_is_set(self):
+        # preparation : set a cookie
+        self.client.get(reverse('game', args = [self.game.id]))
+        self.assertTrue(self.client.cookies.has_key('mystrade-lastVisitedGame-id'))
+        self.assertEqual(str(self.game.id), self.client.cookies['mystrade-lastVisitedGame-id'].value)
+
+        # test
+        response = self.client.get("")
+        self.assertRedirects(response, reverse('game', args = [self.game.id]))
+
+    def test_game_list_never_redirects_to_game_board_even_if_a_cookie_is_set(self):
+        # preparation : set a cookie
+        self.client.get(reverse('game', args = [self.game.id]))
+        self.assertTrue(self.client.cookies.has_key('mystrade-lastVisitedGame-id'))
+        self.assertEqual(str(self.game.id), self.client.cookies['mystrade-lastVisitedGame-id'].value)
+
+        # test
+        response = self.client.get(reverse("game_list"))
+        self.assertTemplateUsed(response, "game/game_list.html")
 
     def test_game_list_needs_login(self):
         response = self.client.get(reverse("game_list"))

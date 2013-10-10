@@ -31,6 +31,9 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def game_list(request):
+    if request.resolver_match.url_name == 'nopath' and request.COOKIES.has_key(COOKIE_LAST_VISITED_GAME_KEY):
+        return redirect(reverse('game', args = [request.COOKIES[COOKIE_LAST_VISITED_GAME_KEY]]))
+
     games = Game.objects.filter(Q(master = request.user) | Q(players = request.user)).distinct().order_by('-closing_date', '-end_date')
 
     cache = UserNameCache()
