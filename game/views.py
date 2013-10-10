@@ -131,7 +131,7 @@ def game_board(request, game_id, trade_id = None):
 
     response = render(request, 'game/board.html', context)
 
-    _set_lastVisitedGame_cookie_if_needed(response, game)
+    _set_lastVisitedGame_cookie_if_needed(request, response, game)
 
     return response
 
@@ -154,11 +154,12 @@ def _online_players(game, players):
 
     return "[" + ", ".join(list_of_online_players_id) + "]";
 
-def _set_lastVisitedGame_cookie_if_needed(response, game):
+def _set_lastVisitedGame_cookie_if_needed(request, response, game):
     if game.has_started() and not game.is_closed():
         response.set_cookie(COOKIE_LAST_VISITED_GAME_KEY, game.id, max_age = COOKIE_LAST_VISITED_GAME_DURATION)
     elif game.is_closed():
-        response.delete_cookie(COOKIE_LAST_VISITED_GAME_KEY)
+        if request.COOKIES.has_key(COOKIE_LAST_VISITED_GAME_KEY) and request.COOKIES[COOKIE_LAST_VISITED_GAME_KEY] == str(game.id):
+            response.delete_cookie(COOKIE_LAST_VISITED_GAME_KEY)
 
 #############################################################################
 ##                      Events (Tab "Recently")                            ##

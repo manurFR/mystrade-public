@@ -408,6 +408,8 @@ class GameBoardMainTest(MystradeTestCase):
         self.assertEqual(str(game2.id), response.cookies['mystrade-lastVisitedGame-id'].value)
 
     def test_game_board_the_cookie_is_deleted_if_the_game_is_closed(self):
+        # actually, a client is asked to delete a cookie by setting its expiration date to 1970/01/01
+        # cookie creation
         self.game.start_date = now() + datetime.timedelta(days = -2)
         self.game.end_date = now() + datetime.timedelta(minutes = -1)
         self.game.save()
@@ -418,11 +420,20 @@ class GameBoardMainTest(MystradeTestCase):
         self.assertEqual(str(self.game.id), response.cookies['mystrade-lastVisitedGame-id'].value)
         self.assertTrue(self.client.cookies.has_key('mystrade-lastVisitedGame-id'))
 
+        # seeing a game board page for another closed game doesn't change the cookie value and doesn't delete it
+        game2 = mommy.make(Game, closing_date = now() + datetime.timedelta(days = -1))
+        mommy.make(GamePlayer, game = game2, player = self.loginUser)
+
+        response = self._assertGetGamePage(game = game2)
+        self.assertTrue(self.client.cookies.has_key('mystrade-lastVisitedGame-id'))
+        self.assertNotEqual('Thu, 01-Jan-1970 00:00:00 GMT', self.client.cookies['mystrade-lastVisitedGame-id']['expires'])
+        self.assertEqual(str(self.game.id), self.client.cookies['mystrade-lastVisitedGame-id'].value)
+
+        # seeing a game board for the lastVisitedGame once it has been closed should delete the cookie
         self.game.closing_date = now() + datetime.timedelta(seconds = -5)
         self.game.save()
 
         response = self._assertGetGamePage()
-        # actually, a client is asked to delete a cookie by setting its expiration date to 1970/01/01
         self.assertTrue(response.cookies.has_key('mystrade-lastVisitedGame-id'))
         self.assertEqual('Thu, 01-Jan-1970 00:00:00 GMT', response.cookies['mystrade-lastVisitedGame-id']['expires'])
 
