@@ -51,7 +51,8 @@ class Commodity(models.Model):
 
     name = models.CharField(max_length = 50)
     value = models.IntegerField("Initial value of the commodity (optional)", null = True)
-    color = models.CharField("HTML background color to display the cards", max_length = 20, default="white")
+    color = models.CharField("HTML background color to display the cards", max_length = 20, default = "white")
+    symbol = models.CharField("Class of the identifying symbol", max_length = 255, null = True)
 
     def __unicode__(self):
         return self.name
