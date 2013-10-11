@@ -471,14 +471,14 @@ class GameBoardZoneHandTest(MystradeTestCase):
                           commodity = Commodity.objects.get(ruleset = 1, name = "Blue"), nb_cards = 1)
 
         response = self._assertGetGamePage()
-        self.assertContains(response, '<span class="commodity_card selectable" title="Blue"', count = 1)
+        self.assertContains(response, 'title="Blue"', count = 1)
 
         cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser,
                           commodity = Commodity.objects.get(ruleset = 1, name = "Red"), nb_cards = 4, nb_submitted_cards = 2)
 
         response = self._assertGetGamePage()
-        self.assertContains(response, '<span class="commodity_card selectable" title="Blue"', count = 1)
-        self.assertContains(response, '<span class="commodity_card selectable" title="Red"', count = 4)
+        self.assertContains(response, 'title="Blue"', count = 1)
+        self.assertContains(response, 'title="Red"', count = 4)
 
     def test_game_board_doesnt_show_commodities_with_no_cards(self):
         commodity1 = mommy.make(Commodity, name = 'Commodity1', color="col1")
@@ -505,11 +505,11 @@ class GameBoardZoneHandTest(MystradeTestCase):
 
         response = self._assertGetGamePage()
 
-        self.assertContains(response, '<span class="commodity_card" title="Blue"', count = 1)
-        self.assertContains(response, '<span class="commodity_card not_submitted" title="Blue -- not submitted"', count = 2)
-        self.assertContains(response, '<span class="commodity_card" title="Red"', count = 2)
-        self.assertNotContains(response, '<span class="commodity_card" title="Orange"')
-        self.assertContains(response, '<span class="commodity_card not_submitted" title="Orange -- not submitted"', count = 1)
+        self.assertContains(response, 'title="Blue"', count = 1)
+        self.assertContains(response, 'title="Blue -- not submitted"', count = 2)
+        self.assertContains(response, 'title="Red"', count = 2)
+        self.assertNotContains(response, 'title="Orange"')
+        self.assertContains(response, 'title="Orange -- not submitted"', count = 1)
 
     def test_game_board_displays_rulecards(self):
         rih1 = mommy.make(RuleInHand, game = self.game, player = self.loginUser, rulecard = RuleCard.objects.get(ref_name = 'HAG04'),

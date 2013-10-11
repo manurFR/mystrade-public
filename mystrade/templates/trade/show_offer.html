@@ -7,7 +7,7 @@ Offered by {% include "common/name_or_you.html" with who=giver %}:
     <h3>Commodities</h3>
     {% for card in offer.tradedcommodities %}
         {% for copy in card.nb_traded_cards|as_range %}
-            {% include "common/commodity_card.html" with name=card.commodityinhand.commodity.name commodity_id=card.commodityinhand.commodity_id color=card.commodityinhand.commodity.color %}
+            {% include "common/commodity_card.html" with commodity=card.commodityinhand.commodity %}
         {% endfor %}
     {% endfor %}
 </div>

@@ -45,9 +45,9 @@
                     <div class="cell_scoresheet">
                         {% for copy in sfc.nb_submitted_cards|as_range %}
                             {% if copy >= sfc.nb_scored_cards %}
-                                {% include "common/commodity_card.html" with name=sfc.commodity.name commodity_id=sfc.commodity_id color=sfc.commodity.color extra_classes="mini_commodity_card excluded" title_note="not scored" %}
+                                {% include "common/commodity_card.html" with commodity=sfc.commodity extra_classes="mini_commodity_card excluded" title_note="not scored" %}
                             {% else %}
-                                {% include "common/commodity_card.html" with name=sfc.commodity.name commodity_id=sfc.commodity_id color=sfc.commodity.color extra_classes="mini_commodity_card" %}
+                                {% include "common/commodity_card.html" with commodity=sfc.commodity extra_classes="mini_commodity_card" %}
                             {% endif %}
                         {% endfor %}
                     </div>

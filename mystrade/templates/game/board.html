@@ -59,17 +59,17 @@
                     {% for cih in commodities %}
                         {% for copy in cih.nb_cards|as_range %}
                             {% if copy >= cih.nb_tradable_cards %}
-                                {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="not_tradable" %}
+                                {% include "common/commodity_card.html" with commodity=cih.commodity extra_classes="not_tradable" %}
                             {% elif game.is_active and not hand_submitted %}
-                                {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="selectable" %}
+                                {% include "common/commodity_card.html" with commodity=cih.commodity extra_classes="selectable" %}
                             {% else %}
-                                {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color %}
+                                {% include "common/commodity_card.html" with commodity=cih.commodity %}
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
                     {% for cih in commodities_not_submitted %}
                         {% for copy in cih.nb_cards|as_range %}
-                            {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="not_submitted" title_note="not submitted" %}
+                            {% include "common/commodity_card.html" with commodity=cih.commodity extra_classes="not_submitted" title_note="not submitted" %}
                         {% endfor %}
                     {% endfor %}
                 </div>

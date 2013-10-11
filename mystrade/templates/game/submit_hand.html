@@ -16,7 +16,7 @@ will be aborted.
 
         {% for cih in commodities %}
             {% for copy in cih.nb_cards|as_range %}
-                {% include "common/commodity_card.html" with name=cih.commodity.name commodity_id=cih.commodity_id color=cih.commodity.color extra_classes="selectable card_selected"%}
+                {% include "common/commodity_card.html" with commodity=cih.commodity extra_classes="selectable card_selected"%}
             {% endfor %}
         {% endfor %}
 

@@ -25,10 +25,7 @@ function refreshSelectedCommodities() {
             currentCommodityId = $(this).data("commodityId");
             var numberOfThisCommodity = parseInt($("input#id_commodity_" + currentCommodityId).val(), 10);
             for (var i = 0; i < numberOfThisCommodity; i++) {
-                selectedCommodities +=
-                    '{% include "common/commodity_card.html" with name="#name#" commodity_id="#commodityId#" color="#color#" extra_classes="selectable"%}'
-                        .replace("#name#", $(this).data("name")).replace("#commodityId#", ""+currentCommodityId)
-                        .replace("#color#", $(this).css("background-color"));
+                selectedCommodities += $(this).clone().removeClass("card_selected").wrap('<p>').parent().html();
             }
         }
     });
