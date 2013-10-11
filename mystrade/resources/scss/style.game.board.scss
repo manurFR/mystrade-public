@@ -1,6 +1,17 @@
 @import "base";
+@import "cards";
 
-$widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
+/* Symbol font */
+@font-face {
+  font-family: 'CircleThings';
+  src: url('../font/circlethings-webfont.eot');
+  src: url('../font/circlethings-webfont.eot?#iefix') format('embedded-opentype'),
+       url('../font/circlethings-webfont.woff') format('woff'),
+       url('../font/circlethings-webfont.ttf') format('truetype'),
+       url('../font/circlethings-webfont.svg#circle_thingsnormal') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
 
 /* Page structure */
 #zone_content {}
@@ -33,6 +44,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   width: 100%;
 }
 
+$widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 #zone_hand {
   float: left;
   width: $widthOfZoneHand;

@@ -1,0 +1,122 @@
+@mixin symbol_style($sizeOfSymbols, $heightOfCards) {
+  @include font($size: $sizeOfSymbols);
+
+  &:before {
+    position: relative;
+    left: 1px;
+    top: ($heightOfCards - $sizeOfSymbols) / 2;
+    color: $backgroundColor;
+  }
+}
+
+$heightOfCommodityCards: 50px;
+$marginOfCommodityCards: 3px;
+
+.commodity_card {
+  display: inline-block;
+  @include roundedBorder(2px);
+  width: 25px;
+  height: $heightOfCommodityCards;
+  margin: $marginOfCommodityCards;
+  @include shadowBox($blur: 5px);
+
+  @include font($family: 'CircleThings');
+
+  @include symbol_style(21px, $heightOfCommodityCards);
+
+  &.excluded {
+    background: url(../stripe.png);
+  }
+
+  &.card_selected {
+    border: gray solid 3px;
+    margin: 0;
+    @include roundedBorder(4px);
+  }
+
+  &.mini_commodity_card {
+    height: 40px;
+    width: 20px;
+    margin: 1px;
+
+    @include symbol_style(16px, 40px);
+  }
+}
+
+$heightOfRuleCards: 140px;
+$widthOfRuleCards: 235px;
+$marginOfRuleCards: 3px;
+$horizontalPaddingOfRuleCards: 8px;
+$fullWidthOfARuleCard: 2 * $marginOfRuleCards + 2 * $horizontalPaddingOfRuleCards + 2 * 1px /* border */ + $widthOfRuleCards;
+
+.rulecard {
+  border: $lightSolidBorder;
+  @include roundedBorder(10px);
+  float: left;
+  height: $heightOfRuleCards;
+  width: $widthOfRuleCards;
+  margin: $marginOfRuleCards;
+  padding: 4px $horizontalPaddingOfRuleCards;
+  @include shadowBox($blur: 5px);
+
+  .rulecard_name {
+    @include font($size: 1.5em, $weight: bold);
+  }
+
+  .rulecard_desc {
+    line-height: 1.2em;
+  }
+
+  &.former {
+    border: $lightDashedBorder;
+    color: $mediumLightText;
+  }
+
+  &.excluded {
+    background: url(../stripe.png);
+  }
+
+  &.card_selected {
+    border: gray solid 3px;
+    margin: 1px;
+    @include roundedBorder(10px);
+  }
+
+  .container { /* .container is there only to permit .origin to be locked to the bottom right corner */
+    position: relative;
+    height: $heightOfRuleCards;
+
+    .origin {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      @include font($size: 8pt);
+
+      img {
+        vertical-align: middle;
+      }
+    }
+  }
+}
+
+$heightOfThumbnailRuleCards: 22px;
+
+.rulecard_thumbnail {
+  display: inline-block;
+  text-align: center;
+  border: $lightSolidBorder;
+  @include roundedBorder(5px);
+  height: $heightOfThumbnailRuleCards;
+  min-width: 1em;
+  margin: 1px;
+  padding: 4px;
+  @include font($size: 1.4em, $weight: bold);
+  @include shadowBox($blur: 5px);
+}
+
+/* CircleThings symbols -- see http://www.dafont.com/fr/circle-things.font */
+.symbol-b:before         { content: 'b'; }
+.symbol-f:before         { content: 'f'; }
+.symbol-h-oblique:before { content: 'H'; }
+.symbol-l-oblique:before { content: 'L'; }
+.symbol-x:before         { content: 'x'; }
