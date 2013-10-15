@@ -1,2 +1,7 @@
 @import "base";
 @import "cards";
+@import "scores";
+
+.player_scoresheet {
+  width: $fullWidthOfARuleCard * 2.7;
+}
