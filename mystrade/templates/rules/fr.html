@@ -1,17 +1,16 @@
 {% extends "base.html" %}
 {% load staticfiles %}
 
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/style.rules.css' %}" />
+{% endblock %}
+
 {% block content %}
-    <div class="reminder">
-        <img src="{% static 'warning.png' %}" alt=""/>
-        Cette page de r&egrave;gles est r&eacute;dig&eacute;e en fran&ccedil;ais. Tout le reste du site est en anglais.
-    </div>
+    <h2>R&egrave;gles du jeu</h2>
 
-    <div class="header">R&egrave;gles du jeu</div>
+    <h3>Principes</h3>
 
-    <h4>Principes</h4>
-
-    <p>Au début d'une partie, chaque joueur reçoit une main (<em>hand</em>) aléatoire de cartes, réparties en deux catégories :</p>
+    <p>Au début d'une partie, chaque joueur reçoit une main aléatoire de cartes, réparties en deux catégories :</p>
     <ul>
         <li>Deux cartes règles (<em>rules</em>) ;</li>
         <li>Dix cartes biens (<em>commodities</em>).</li>
@@ -24,7 +23,7 @@
     <p>Le nombre de règles en jeu est initialement secret, mais chacune d'entre elles est numérotée et présente en un minimum de deux exemplaires,
     répartis aléatoirement entre tous les joueurs.</p>
 
-    <h4>Echanges</h4>
+    <h3>Echanges</h3>
 
     <p>Les joueurs poursuivent leurs deux objectifs parallèles d'obtention d'informations sur les règles et de constitution d'une main optimale
     en proposant à leurs adversaires de réaliser des échanges (<em>trades</em>). Chacun des deux joueurs impliqués dans un projet d'échange
@@ -32,11 +31,11 @@
     qu'il le souhaite. Tout type d'accord est permis tant qu'il satisfait les deux joueurs, et le nombre d'échanges durant une partie n'est pas limité.</p>
 
     <p>Tant que l'échange n'a pas été accepté par les deux joueurs, chacun ne visualise dans l'offre de l'autre partie que les biens,
-    le <em>numéro</em> des règles, et la présence ou non d'une information libre. Le <em>détail</em> des règles et de l'information libre ne sont   révélés
+    le <em>numéro</em> des règles, et la présence ou non d'une information libre. Le <em>détail</em> des règles et de l'information libre ne sont révélés
     qu'après acceptation mutuelle des deux offres. Il est toutefois possible d'accompagner son offre d'un commentaire, visible immédiatement
     par l'autre joueur, afin d'apporter des précisions sur ces éléments cachés ou de détailler ses souhaits pour l'offre en retour.</p>
 
-    <h4>Fin de partie</h4>
+    <h3>Fin de partie</h3>
 
     <p>Chaque partie est définie avec une date et heure de fin (<em>end date</em>) ; lorsque celle-ci est atteinte, plus aucun échange ne peut être
     réalisé (y compris les échanges encore non acceptés par les deux joueurs, qui ne pourront pas être menés à leur terme). Le score des
@@ -46,17 +45,47 @@
     <strong>avant la date de fin</strong> de la partie en choisissant quelles cartes sont remises au maître du jeu. Les joueurs qui
     n'auront pas pris cette initiative à la date de fin soumettront automatiquement toutes les cartes biens de leur main.</p>
 
-    <h4>Exemple de règles</h4>
-    <ol>
-        <li>Les cartes "souris" valent un point.</li>
-        <li>Les biens "chien" et "chat" valent deux points chacun.</li>
-        <li>Une carte "mouton" vaut trois fois le nombre de points d'une carte "souris".</li>
-        <li>Chaque carte "chat" annule une carte "souris", qui ne vaut plus aucun point.</li>
-        <li>Chaque ensemble d'une carte "mouton" et d'une carte "chien" rapporte un bonus de trois points.</li>
-        <li>Il n'y a pas de place pour plus de six animaux dans votre ferme. Si votre main comporte plus de six cartes, on en retirera au hasard jusqu'à ce qu'il n'en reste que six.</li>
-    </ol>
+    <h3>Exemple de règles</h3>
+    <div style="display: inline-block;">
+        <div class="rulecard">
+            <div class="container">
+                <div class="rulecard_name">1</div>
+                <div class="rulecard_desc">Les cartes "souris" valent un point.</div>
+            </div>
+        </div>
+        <div class="rulecard">
+            <div class="container">
+                <div class="rulecard_name">2</div>
+                <div class="rulecard_desc">Les biens "chien" et "chat" valent deux points chacun.</div>
+            </div>
+        </div>
+        <div class="rulecard">
+            <div class="container">
+                <div class="rulecard_name">3</div>
+                <div class="rulecard_desc">Une carte "mouton" vaut trois fois le nombre de points d'une carte "souris".</div>
+            </div>
+        </div>
+        <div class="rulecard">
+            <div class="container">
+                <div class="rulecard_name">4</div>
+                <div class="rulecard_desc">Chaque carte "chat" annule une carte "souris", qui ne vaut plus aucun point.</div>
+            </div>
+        </div>
+        <div class="rulecard">
+            <div class="container">
+                <div class="rulecard_name">5</div>
+                <div class="rulecard_desc">Chaque ensemble d'une carte "mouton" et d'une carte "chien" rapporte un bonus de trois points.</div>
+            </div>
+        </div>
+        <div class="rulecard">
+            <div class="container">
+                <div class="rulecard_name">6</div>
+                <div class="rulecard_desc">Il n'y a pas de place pour plus de six animaux dans votre ferme. Si votre main comporte plus de six cartes, on en retirera au hasard jusqu'à ce qu'il n'en reste que six.</div>
+            </div>
+        </div>
+    </div>
 
-    <h4>Exemple de score</h4>
+    <h3>Exemple de score</h3>
 
     <ul>
         <li>
