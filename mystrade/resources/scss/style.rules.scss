@@ -2,6 +2,10 @@
 @import "cards";
 @import "scores";
 
+h3 {
+  @include font($size: 11pt);
+}
+
 .player_scoresheet {
   width: $fullWidthOfARuleCard * 2.7;
 }

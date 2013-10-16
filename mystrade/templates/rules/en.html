@@ -14,30 +14,35 @@
 
     <p>At the beginning of a game, each player gets a random hand of cards, from two categories:</p>
     <ul>
-        <li>Two Rule cards (out of a larger set, defined by the game master);</li>
-        <li>Ten Commodity cards, of variable worth.</li>
+        <li>Ten Commodity cards, of variable worth;</li>
+        <li>Two Rule cards (out of a larger set, defined by the game master).</li>
     </ul>
 
-    <p>The objective is to have, at the end of the game, the combination of <strong>commodity</strong> cards worth the biggest amount of points.
+    <p>The objective is to have, at the end of the game, the most valuable combination of <strong>commodity</strong> cards.
     The catch is that players know only a part of the rules at the start, but their points will be computed from the whole set of rules available in
     the game !</p>
 
     <p>The number of rules used in a game is initially secret, but each rule is identified by a number, and at least two copies of each are dealt randomly
     to all players at the start of the game.</p>
 
-    <h3>Echanges</h3>
+    <h3>Trades</h3>
 
-    <p>Les joueurs poursuivent leurs deux objectifs parallèles d'obtention d'informations sur les règles et de constitution d'une main optimale
-    en proposant à leurs adversaires de réaliser des échanges (<em>trades</em>). Chacun des deux joueurs impliqués dans un projet d'échange
-    soumet à l'autre une offre contenant autant de cartes (biens et/ou règles), ainsi que d' &laquo; informations libres &raquo; (<em>free informations</em>),
-    qu'il le souhaite. Tout type d'accord est permis tant qu'il satisfait les deux joueurs, et le nombre d'échanges durant une partie n'est pas limité.</p>
+    <p>Trades of cards are the way by which players seek to fulfill their two objectives: learning the content of as many <strong>rule</strong> cards as
+    possible, and gathering the most valuable set of <strong>commodity</strong> cards. Each player involved in a tentative trade submits to the other an
+    offer including as many cards (commodities and/or rules), and as many &laquo; free informations &raquo;, as wished. Any kind of deal is permitted,
+    as long as it satisfies both players; the number of trades occuring during a game is not limited.</p>
 
     <div class="image_left"><img src="{% static 'propaganda/animals_trade.png' %}" alt="screenshot of a trade proposal" width="300"/></div>
 
-    <p>Tant que l'échange n'a pas été accepté par les deux joueurs, chacun ne visualise dans l'offre de l'autre partie que les biens,
-    le <em>numéro</em> des règles, et la présence ou non d'une information libre. Le <em>détail</em> des règles et de l'information libre ne sont révélés
-    qu'après acceptation mutuelle des deux offres. Il est toutefois possible d'accompagner son offre d'un commentaire, visible immédiatement
-    par l'autre joueur, afin d'apporter des précisions sur ces éléments cachés ou de détailler ses souhaits pour l'offre en retour.</p>
+    <p>As long as a trade has not been accepted by both players, they can only see from each other's offer:
+        <ul>
+            <li>the list of commodities,</li>
+            <li>the <em>number</em> of the offered rules,</li>
+            <li>and whether a free information has been provided or not.</li>
+        </ul>
+    The <em>full text</em> of the rules and of the free information will be  revealed only once both players have accepted the other one's offer.<br/>
+    A player can always join a comment to the submitted offer, and that piece of text will be immediately visible by the other player. Such a comment could
+    clarify the subject of the hidden elements of the offer, and/or specify what is expected back for it, etc.</p>
 
     <h3>Fin de partie</h3>
 
