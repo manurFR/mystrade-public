@@ -8,8 +8,8 @@ TEMPLATE_DEBUG = DEBUG
 
 # Required when DEBUG is False, ie in production, to prevent "host-poisoning attacks".
 ALLOWED_HOSTS = [
-    'mystrade.alwaysdata.net', # Allow domain and subdomains
-    #'.example.com.', # Also allow FQDN and subdomains
+    'mystrade.alwaysdata.net',
+    '.mystra.de', # prefix with dot to allow domain and subdomains
 ]
 
 ADMINS = (
@@ -45,6 +45,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'mystrade.middlewares.TimezoneMiddleware', # after AuthenticationMiddleware !
+    'mystrade.middlewares.OnlineStatusMiddleware', # after AuthenticationMiddleware !
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
