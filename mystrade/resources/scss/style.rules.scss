@@ -5,3 +5,19 @@
 .player_scoresheet {
   width: $fullWidthOfARuleCard * 2.7;
 }
+
+.image_right {
+  float: right;
+  padding: 2px;
+  margin-left: 8px;
+  @include shadowBox();
+  @include roundedBorder(8px);
+}
+
+.image_left {
+  float: left;
+  padding: 2px;
+  margin-right: 8px;
+  @include shadowBox();
+  @include roundedBorder(8px);
+}

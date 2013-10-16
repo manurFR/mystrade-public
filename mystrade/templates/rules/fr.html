@@ -8,6 +8,8 @@
 {% block content %}
     <h2>R&egrave;gles du jeu</h2>
 
+    <div class="image_right"><img src="{% static 'propaganda/animals_commodities.png' %}" alt="screenshot of a player's hand with commodities" width="240"/></div>
+
     <h3>Principes</h3>
 
     <p>Au début d'une partie, chaque joueur reçoit une main aléatoire de cartes, réparties en deux catégories :</p>
@@ -29,6 +31,8 @@
     en proposant à leurs adversaires de réaliser des échanges (<em>trades</em>). Chacun des deux joueurs impliqués dans un projet d'échange
     soumet à l'autre une offre contenant autant de cartes (biens et/ou règles), ainsi que d' &laquo; informations libres &raquo; (<em>free informations</em>),
     qu'il le souhaite. Tout type d'accord est permis tant qu'il satisfait les deux joueurs, et le nombre d'échanges durant une partie n'est pas limité.</p>
+
+    <div class="image_left"><img src="{% static 'propaganda/animals_trade.png' %}" alt="screenshot of a trade proposal" width="300"/></div>
 
     <p>Tant que l'échange n'a pas été accepté par les deux joueurs, chacun ne visualise dans l'offre de l'autre partie que les biens,
     le <em>numéro</em> des règles, et la présence ou non d'une information libre. Le <em>détail</em> des règles et de l'information libre ne sont révélés
@@ -96,12 +100,12 @@
             <h3>Main rendue</h3>
             <div class="table_scoresheet">
                 <div class="row_scoresheet even_color">
-                    <div class="cell_scoresheet">2 chats</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_cat.png' %}"/><img src="{% static 'propaganda/animals_card_cat.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 2 pts each</em></div>
                     <div class="cell_scoresheet points">= <strong>4 pts</strong></div>
                 </div>
                 <div class="row_scoresheet odd_color">
-                    <div class="cell_scoresheet">2 chiens</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_dog.png' %}"/><img src="{% static 'propaganda/animals_card_dog.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 2 pts each</em></div>
                     <div class="cell_scoresheet points">= <strong>4 pts</strong></div>
                 </div>
@@ -120,17 +124,17 @@
             <h3>Main rendue</h3>
             <div class="table_scoresheet">
                 <div class="row_scoresheet even_color">
-                    <div class="cell_scoresheet">3 souris</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_mouse.png' %}"/><img src="{% static 'propaganda/animals_card_mouse.png' %}"/><img src="{% static 'propaganda/animals_card_mouse.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 1 pt each</em></div>
                     <div class="cell_scoresheet points">= <strong>3 pts</strong></div>
                 </div>
                 <div class="row_scoresheet odd_color">
-                    <div class="cell_scoresheet">1 chat</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_cat.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 2 pts each</em></div>
                     <div class="cell_scoresheet points">= <strong>2 pts</strong></div>
                 </div>
                 <div class="row_scoresheet even_color">
-                    <div class="cell_scoresheet">1 chien</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_dog.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 2 pts each</em></div>
                     <div class="cell_scoresheet points">= <strong>2 pts</strong></div>
                 </div>
@@ -160,22 +164,22 @@
             <h3>Main rendue</h3>
             <div class="table_scoresheet">
                 <div class="row_scoresheet even_color">
-                    <div class="cell_scoresheet">1 souris</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_mouse.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 1 pt each</em></div>
                     <div class="cell_scoresheet points">= <strong>1 pt</strong></div>
                 </div>
                 <div class="row_scoresheet odd_color">
-                    <div class="cell_scoresheet">1 chat</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_cat.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 2 pts each</em></div>
                     <div class="cell_scoresheet points">= <strong>2 pts</strong></div>
                 </div>
                 <div class="row_scoresheet even_color">
-                    <div class="cell_scoresheet">1 chien</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_dog.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 2 pts each</em></div>
                     <div class="cell_scoresheet points">= <strong>2 pts</strong></div>
                 </div>
                 <div class="row_scoresheet odd_color">
-                    <div class="cell_scoresheet">4 moutons</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_sheep.png' %}"/><img src="{% static 'propaganda/animals_card_sheep.png' %}"/><img src="{% static 'propaganda/animals_card_sheep.png' %}"/><img src="{% static 'propaganda/animals_card_sheep.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 3 pts each</em></div>
                     <div class="cell_scoresheet points">= <strong>12 pts</strong></div>
                 </div>
@@ -220,17 +224,17 @@
             <h3>Main rendue</h3>
             <div class="table_scoresheet">
                 <div class="row_scoresheet even_color">
-                    <div class="cell_scoresheet">1 chat</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_cat.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 2 pts each</em></div>
                     <div class="cell_scoresheet points">= <strong>2 pts</strong></div>
                 </div>
                 <div class="row_scoresheet odd_color">
-                    <div class="cell_scoresheet">3 chiens</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_dog.png' %}"/><img src="{% static 'propaganda/animals_card_dog.png' %}"/><img src="{% static 'propaganda/animals_card_dog.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 2 pts each</em></div>
                     <div class="cell_scoresheet points">= <strong>6 pts</strong></div>
                 </div>
                 <div class="row_scoresheet even_color">
-                    <div class="cell_scoresheet">2 moutons</div>
+                    <div class="cell_scoresheet"><img src="{% static 'propaganda/animals_card_sheep.png' %}"/><img src="{% static 'propaganda/animals_card_sheep.png' %}"/></div>
                     <div class="cell_scoresheet"><em>x 3 pts each</em></div>
                     <div class="cell_scoresheet points">= <strong>6 pts</strong></div>
                 </div>

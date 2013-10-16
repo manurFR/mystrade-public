@@ -1,0 +1,642 @@
+[
+    {
+        "pk": 1,
+        "model": "ruleset.ruleset",
+        "fields": {
+            "name": "Original Haggle (1969)",
+            "module": "haggle",
+            "description": "The original Haggle ruleset from Sid Sackson's A Gamut of Games 1969 book. Rule #9 has been modified to replace player elimination by a loss of 10 points."
+        }
+    },
+    {
+        "pk": 2,
+        "model": "ruleset.ruleset",
+        "fields": {
+            "name": "Remixed Haggle (2013)",
+            "module": "remixed",
+            "description": "Our 'remix' of the original Haggle, changing some colors, their value, and almost all the rules in subtle ways, all of this in order to obfuscate the ruleset a bit. It may prevent that googling the original ruleset would bring an unfair advantage. The original principles and basic rule mechanisms have been kept the same."
+        }
+    },
+    {
+        "pk": 3,
+        "model": "ruleset.ruleset",
+        "fields": {
+            "name": "Animal Farm (2013)",
+            "module": "farm",
+            "description": "Demo ruleset."
+        }
+    },
+    {
+        "pk": 1,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "1",
+            "description": "Orange cards have a basic value of 4, which is equal to the sum of the basic values of a red card and a yellow card.",
+            "mandatory": true,
+            "ruleset": 1,
+            "ref_name": "HAG01",
+            "glob": false
+        }
+    },
+    {
+        "pk": 2,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "2",
+            "description": "White cards have the highest basic value and are equal to a red card and a blue card.",
+            "mandatory": true,
+            "ruleset": 1,
+            "ref_name": "HAG02",
+            "glob": false
+        }
+    },
+    {
+        "pk": 3,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "3",
+            "description": "Blue cards have a basic value twice that of yellow and half that of orange.",
+            "mandatory": true,
+            "ruleset": 1,
+            "ref_name": "HAG03",
+            "glob": false
+        }
+    },
+    {
+        "pk": 4,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "4",
+            "description": "If a player has more than three white cards, all of his/her white cards lose their value.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG04",
+            "step": 10,
+            "glob": false
+        }
+    },
+	{
+        "pk": 5,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "5",
+            "description": "A player can score only as many orange cards as he/she has blue cards.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG05",
+            "step": 10,
+            "glob": false
+        }
+    },
+	{
+        "pk": 6,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "6",
+            "description": "For each player that has five or more blue cards, 10 points are deducted from every other player's score.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG06",
+            "step": 30,
+            "glob": true
+        }
+    },
+    {
+        "pk": 7,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "7",
+            "description": "A set of three red cards protects you from one set of five blue cards.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG07",
+            "step": 31,
+            "glob": false
+        }
+    },   
+    {
+        "pk": 8,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "8",
+            "description": "The player with the most yellow cards gets a bonus of the number of those cards squared. If two or more players tie for most yellow, the bonus is calculated instead for the player with the next highest number of yellows.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG08",
+            "step": 32,
+            "glob": true
+        }
+    },
+    {
+        "pk": 9,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "9",
+            "description": "If a player hands in seven or more cards of the same color, for each of these colors 10 points are deducted from his/her score.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG09",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 10,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "10",
+            "description": "Each set of five different colors gives a bonus of 10 points.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG10",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 11,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "11",
+            "description": "If a \"pyramid\" is handed in with no other cards, the final value of the hand is doubled. A pyramid consists of four cards of one color, three cards of a second color, two cards of a third, and one card of a fourth color.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG11",
+            "step": 40,
+            "glob": false
+        }
+    },
+    {
+        "pk": 12,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "12",
+            "description": "The player with the most red cards doubles their value. In case of a tie, no player collects the extra value.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG12",
+            "step": 32,
+            "glob": true
+        }
+    },
+    {
+        "pk": 13,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "13",
+            "description": "Each set of two yellow cards doubles the value of one white card.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG13",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 14,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "14",
+            "description": "Each set of three blue cards quadruples the value of one orange card.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG14",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 15,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "15",
+            "description": "No more than thirteen cards in a hand can be scored. If more are handed in, the excess will be removed at random.",
+            "mandatory": false,
+            "ruleset": 1,
+            "ref_name": "HAG15",
+            "step": 0,
+            "glob": false
+        }
+    },
+    {
+        "pk": 16,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "1",
+            "description": "Green cards have the highest basic value, which is equal to the sum of the basic values of a yellow card and a blue card.",
+            "mandatory": true,
+            "ruleset": 2,
+            "ref_name": "RMX01",
+            "glob": false
+        }
+    },
+    {
+        "pk": 17,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "2",
+            "description": "White cards have a basic value twice that of blue and half that of yellow.",
+            "mandatory": true,
+            "ruleset": 2,
+            "ref_name": "RMX02",
+            "glob": false
+        }
+    },
+    {
+        "pk": 18,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "3",
+            "description": "Pink cards have a basic value of 3, which is equal to the sum of the basic values of a blue card and a white card.",
+            "mandatory": true,
+            "ruleset": 2,
+            "ref_name": "RMX03",
+            "glob": false
+        }
+    },
+    {
+        "pk": 19,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "4",
+            "description": "If a player has a combined number of yellow and green cards strictly higher than five cards, all of his/her green cards lose their value.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX04",
+            "step": 10,
+            "glob": false
+        }
+    },
+    {
+        "pk": 20,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "5",
+            "description": "A player can score only as many yellow cards as he/she has pink cards.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX05",
+            "step": 10,
+            "glob": false
+        }
+    },
+    {
+        "pk": 21,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "6",
+            "description": "For each player that has five or more blue cards, 10 points are deducted from every other player's score.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX06",
+            "step": 30,
+            "glob": true
+        }
+    },
+    {
+        "pk": 22,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "7",
+            "description": "A set of three yellow cards protects you from one set of five blue cards.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX07",
+            "step": 31,
+            "glob": false
+        }
+    },
+    {
+        "pk": 23,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "8",
+            "description": "Each set of five different colors gives a bonus of 8 points.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX08",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 24,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "9",
+            "description": "The player with the most white cards triples their value. In case of a tie, no player collects the extra value.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX09",
+            "step": 32,
+            "glob": true
+        }
+    },
+    {
+        "pk": 25,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "10",
+            "description": "If the total of the basic values of all the cards handed in by a player is higher than 39 points, cards are removed at random until the total becomes less or equal than 39 points. Only the basic values are considered, before any other rule is applied.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX10",
+            "step": 0,
+            "glob": false
+        }
+    },
+    {
+        "pk": 26,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "11",
+            "description": "If a player hands in seven or more cards of the same color, 10 points are deducted from his/her score for each of these colors.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX11",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 27,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "12",
+            "description": "The player with the most blue cards doubles the value of his/her pink cards. In case of a tie, no player collects the extra value.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX12",
+            "step": 32,
+            "glob": true
+        }
+    },
+    {
+        "pk": 28,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "13",
+            "description": "If four colors are handed in with the same number of cards for each, and no cards are handed in from the fifth color, the final value of the hand is doubled.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX13",
+            "step": 40,
+            "glob": false
+        }
+    },
+    {
+        "pk": 29,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "14",
+            "description": "Each set of two pink cards doubles the value of one yellow card.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX14",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 30,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "15",
+            "description": "Each set of three white cards triples the value of one green card.",
+            "mandatory": false,
+            "ruleset": 2,
+            "ref_name": "RMX15",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 31,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "1",
+            "description": "Mice are worth one point each.",
+            "mandatory": true,
+            "ruleset": 3,
+            "ref_name": "FAR1",
+            "glob": false
+        }
+    },
+    {
+        "pk": 32,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "2",
+            "description": "Cats and dogs are both worth two points per card.",
+            "mandatory": true,
+            "ruleset": 3,
+            "ref_name": "FAR2",
+            "glob": false
+        }
+    },
+    {
+        "pk": 33,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "3",
+            "description": "A sheep card is worth three mouse cards.",
+            "mandatory": true,
+            "ruleset": 3,
+            "ref_name": "FAR3",
+            "glob": false
+        }
+    },
+    {
+        "pk": 34,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "4",
+            "description": "Each cat cancels one mouse card, which then isn't worth any points.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "FAR4",
+            "step": 10,
+            "glob": false
+        }
+    },
+    {
+        "pk": 35,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "5",
+            "description": "Each set of a dog card and a sheep card gives a bonus of three points.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "FAR5",
+            "step": 10,
+            "glob": false
+        }
+    },
+    {
+        "pk": 36,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "6",
+            "description": "There's no accomodation for more than six animals in your farm. If you hand in more than six cards at the end of the game, some cards will be removed randomly until there are only six left.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "FAR6",
+            "step": 5,
+            "glob": false
+        }
+    },
+    {
+        "pk": 1,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Yellow",
+            "ruleset": 1,
+            "value": 1,
+            "color": "yellow",
+            "symbol": "symbol-e-oblique"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Blue",
+            "ruleset": 1,
+            "value": 2,
+            "color": "blue",
+            "symbol": "symbol-j-hole"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Red",
+            "ruleset": 1,
+            "value": 3,
+            "color": "red",
+            "symbol": "symbol-m"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Orange",
+            "ruleset": 1,
+            "value": 4,
+            "color": "orange",
+            "symbol": "symbol-b"
+        }
+    },
+    {
+        "pk": 5,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "White",
+            "ruleset": 1,
+            "value": 5,
+            "color": "white",
+            "symbol": "symbol-q-oblique"
+        }
+    },
+    {
+        "pk": 6,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Blue",
+            "ruleset": 2,
+            "value": 1,
+            "color": "blue",
+            "symbol": "symbol-b"
+        }
+    },
+    {
+        "pk": 7,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "White",
+            "ruleset": 2,
+            "value": 2,
+            "color": "white",
+            "symbol": "symbol-f"
+        }
+    },
+    {
+        "pk": 8,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Pink",
+            "ruleset": 2,
+            "value": 3,
+            "color": "hotpink",
+            "symbol": "symbol-h-oblique"
+        }
+    },
+    {
+        "pk": 9,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Yellow",
+            "ruleset": 2,
+            "value": 4,
+            "color": "yellow",
+            "symbol": "symbol-l-oblique"
+        }
+    },
+    {
+        "pk": 10,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Green",
+            "ruleset": 2,
+            "value": 5,
+            "color": "green",
+            "symbol": "symbol-r"
+        }
+    },
+    {
+        "pk": 11,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Mouse",
+            "ruleset": 3,
+            "value": 1,
+            "color": "lightseagreen",
+            "symbol": "symbol-mouse"
+        }
+    },
+    {
+        "pk": 12,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Cat",
+            "ruleset": 3,
+            "value": 2,
+            "color": "lightblue",
+            "symbol": "symbol-cat"
+        }
+    },
+    {
+        "pk": 13,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Dog",
+            "ruleset": 3,
+            "value": 2,
+            "color": "chartreuse",
+            "symbol": "symbol-dog"
+        }
+    },
+    {
+        "pk": 14,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "Sheep",
+            "ruleset": 3,
+            "value": 3,
+            "color": "lightpink",
+            "symbol": "symbol-sheep"
+        }
+    }
+]
