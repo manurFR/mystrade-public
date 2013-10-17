@@ -3,7 +3,7 @@ import datetime
 from pytz import timezone
 
 import bleach
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 import markdown
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required, login_required
@@ -48,6 +48,13 @@ def game_list(request):
         else:
             game.hand_submitted = False
     return render(request, 'game/game_list.html', {'games': games})
+
+
+def rules(request, lang = 'en'):
+    if lang in ['en', 'fr']:
+        return render(request, 'rules/{}.html'.format(lang))
+
+    raise Http404
 
 #############################################################################
 ##                            Game Board                                   ##
@@ -529,4 +536,3 @@ def close_game(request, game_id):
             return HttpResponse()
 
     raise PermissionDenied
-
