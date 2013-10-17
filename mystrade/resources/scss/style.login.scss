@@ -1,6 +1,6 @@
 @import "base";
 
-#zone_content {
+#login_form {
   background-color: $infoPanelColor;
   margin-top: 50px;
   margin-left: auto;
@@ -22,25 +22,68 @@
       vertical-align: middle;
     }
   }
-}
 
-.form-row {
-  .label {
-    color: #333333;
-    float: left;
-    font-size: 1em;
-    line-height: 2em;
-    padding-right: 0.5em;
-    text-align: right;
-    width: 9em;
+  .form-row {
+    .label {
+      color: #333333;
+      float: left;
+      font-size: 1em;
+      line-height: 2em;
+      padding-right: 0.5em;
+      text-align: right;
+      width: 9em;
+    }
+
+    .input {
+      width: 14em;
+    }
   }
 
-  .input {
-    width: 14em;
+  .submit-row {
+    padding-top: 1em;
+    padding-bottom: 0.5em;
   }
 }
 
-.submit-row {
-  padding-top: 1em;
-  padding-bottom: 0.5em;
+#zone_propaganda {
+  position: absolute;
+  top: 400px;
+  left: 0;
+  width: 100%;
+  height: 240px;
+  background-color: darken($backgroundColor, 6%);
+  padding: 4px 0;
+  text-align: center;
+
+  .top_copy {
+    @include font($size: 13pt, $weight: bold);
+  }
+
+  .copy {
+    @include font($size: 12pt, $weight: bold);
+    position: absolute;
+  }
+
+  #first {
+    top: 60px;
+    left: 200px;
+  }
+
+  #second {
+    top: 120px;
+    left: 400px;
+  }
+
+  #third {
+    top: 180px;
+    left: 600px;
+  }
+
+  #contact {
+    position: absolute;
+    bottom: 4px;
+    left: 450px;
+    @include font($size: 9pt, $style: italic);
+  }
+
 }

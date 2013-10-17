@@ -13,28 +13,39 @@
 {% endblock %}
 
 {% block content %}
-	{% if form.errors %}
-		<p class="errors">Your username and password didn't match. Please try again.</p>
-	{% endif %}
+    <div id="login_form">
+        {% if form.errors %}
+            <p class="errors">Your username and password didn't match. Please try again.</p>
+        {% endif %}
 
-	<form method="post" action="{% url 'login' %}">
-		{% csrf_token %}
-		<table class="login">
-			<tr class="form-row">
-			    <td class="label">{{ form.username.label_tag }} :</td>
-			    <td>{{ form.username|attr:"autocapitalize:off" }}</td>
-			</tr>
-			<tr class="form-row">
-			    <td class="label">{{ form.password.label_tag }} :</td>
-			    <td>{{ form.password }}</td>
-			</tr>
-		</table>
-		
-		<div class="submit-row">
-			<input type="submit" value="Log in" />
-		</div>
-		<input type="hidden" name="next" value="{{ next }}" />
-	</form>
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            <table class="login">
+                <tr class="form-row">
+                    <td class="label">{{ form.username.label_tag }} :</td>
+                    <td>{{ form.username|attr:"autocapitalize:off" }}</td>
+                </tr>
+                <tr class="form-row">
+                    <td class="label">{{ form.password.label_tag }} :</td>
+                    <td>{{ form.password }}</td>
+                </tr>
+            </table>
+
+            <div class="submit-row">
+                <input type="submit" value="Log in" />
+            </div>
+            <input type="hidden" name="next" value="{{ next }}" />
+        </form>
+    </div>
+
+    <div id="zone_propaganda">
+        <div class="top_copy">MysTrade: a casual game for fine negotiators</div>
+        <div class="copy" id="first">Will you make the best deals ?</div>
+        <div class="copy" id="second">Will you outsmart your opponents ?</div>
+        <div class="copy" id="third">Will you make them laugh ?</div>
+
+        <div id="contact">Do you want to join the fun ? Great ! Please ask for an account at <a href="mailto:hello&#64;mystra&#46;de">hello&#64;mystra&#46;de</a>. (Yes it's old-school. For now.)</div>
+    </div>
 
 	<script type="text/javascript">
         $(function() {
