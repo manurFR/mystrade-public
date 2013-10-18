@@ -53,50 +53,56 @@
   height: 240px;
   background-color: darken($backgroundColor, 6%);
   padding: 4px 0;
-  text-align: center;
 
-  .top_copy {
+  .top_sentence {
     @include font($size: 13pt, $weight: bold);
+    text-align: center;
   }
 
-  .copy {
+  #copy {
     @include font($size: 12pt, $weight: bold);
-    position: absolute;
-  }
 
-  #first {
-    top: 60px;
-    left: 200px;
-  }
+    float: left;
+    margin-top: 30px;
+    margin-left: 15%;
+    width: 30%;
 
-  #second {
-    top: 120px;
-    left: 400px;
-  }
+    #second {
+      margin-top: 40px;
+      margin-left: 15%;
+    }
 
-  #third {
-    top: 180px;
-    left: 600px;
+    #third {
+      margin-top: 40px;
+      margin-left: 30%;
+    }
   }
 
   #know {
-    top: 80px;
-    right: 530px;
-    text-align: left;
-  }
+    @include font($size: 12pt, $weight: bold);
 
-  #screenshot {
-    position: absolute;
-    top: 45px;
-    right: 300px;
-    border: 1px solid $linkColor;
+    float: right;
+    margin-top: 30px;
+    margin-right: 12%;
+    width: 33%;
+
+    #text {
+      float: left;
+      margin-top: 30px;
+      margin-right: 10px;
+    }
+
+    #screenshot {
+      float: right;
+      border: 1px solid $linkColor;
+    }
   }
 
   #contact {
-    position: absolute;
-    bottom: 4px;
-    left: 450px;
     @include font($size: 9pt, $style: italic);
+    clear: both;
+    margin-top: 205px;
+    text-align: center;
   }
 }
 
@@ -114,6 +120,6 @@
 #colorbox, #cboxContent, #cboxLoadedContent{box-sizing:content-box; -moz-box-sizing:content-box; -webkit-box-sizing:content-box;}
 
 #cboxContent {
-  padding: 8px;
+  padding: 6px 8px;
   background-color: white;
 }
