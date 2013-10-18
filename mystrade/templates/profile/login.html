@@ -10,6 +10,7 @@
 {% block scripts %}
     <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
     <script src="{% static 'jquery/jquery-ui-1.10.3.custom.min.js' %}"></script>
+    <script src="{% static 'jquery/jquery.colorbox-min.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -44,6 +45,12 @@
         <div class="copy" id="second">Will you outsmart your opponents ?</div>
         <div class="copy" id="third">Will you make them laugh ?</div>
 
+        <div class="copy" id="know">
+            <p>Read the <a href="{% url 'rules' %}">Rules</a></p>
+            <p>Watch a screenshot:</p>
+        </div>
+        <a id="screenshot" href="{% static "propaganda/screenshot_game.png" %}"><img src="{% static "propaganda/screenshot_game_thumbnail.png" %}" width="201" height="150"/></a>
+
         <div id="contact">Do you want to join the fun ? Great ! Please ask for an account at <a href="mailto:hello&#64;mystra&#46;de">hello&#64;mystra&#46;de</a>. (Yes it's old-school. For now.)</div>
     </div>
 
@@ -51,6 +58,7 @@
         $(function() {
             $("input[type=submit]").button();
             $("#id_username").focus();
+            $("#screenshot").colorbox({height: '95%', closeButton: false});
         });
 	</script>
 {% endblock content %}
