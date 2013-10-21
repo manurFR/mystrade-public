@@ -29,4 +29,8 @@
   .message_content {
     width: auto;
   }
+
+  #zone_propaganda {
+    @include font($size: 10pt);
+  }
 }

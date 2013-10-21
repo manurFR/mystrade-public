@@ -39,34 +39,29 @@
         </form>
     </div>
 
+    <div id="band_propaganda"></div>
+
     <div id="zone_propaganda">
-        <div class="top_sentence">MysTrade: a casual game for fine negotiators</div>
+        <div id="zone_propaganda_wrapper">
+            <div id="zone_propaganda_content">
+                <div class="top_sentence">MysTrade: a casual game for fine negotiators</div>
 
-        <div id="copy">
-            <div id="first">Will you make the best deals ?</div>
-            <div id="second">Will you outsmart your opponents ?</div>
-            <div id="third">Will you make them laugh ?</div>
-        </div>
-
-        <div id="know">
-{#            <table>#}
-{#                <tr>#}
-{#                    <td id="text">#}
-            <div id="text">
-                        <p>Read the <a href="{% url 'rules' %}">Rules</a></p>
-                        <p>Watch a screenshot:</p>
+                <div id="copy">
+                    <div id="first">Will you make the best deals ?</div>
+                    <div id="second">Will you outsmart your opponents ?</div>
+                    <div id="third">Will you make them laugh ?</div>
                 </div>
-{#                    </td>#}
-{#                    <td id="image">#}
-                        <a id="screenshot" href="{% static "propaganda/screenshot_game.png" %}">
-                            <img src="{% static "propaganda/screenshot_game_thumbnail.png" %}" width="201" height="150"/>
-                        </a>
-{#                    </td>#}
-{#                </tr>#}
-{#            </table>#}
-        </div>
 
-        <div id="contact">Do you want to join the fun ? Great ! Please ask for an account at <a href="mailto:hello&#64;mystra&#46;de">hello&#64;mystra&#46;de</a>. (Yes it's old-school. For now.)</div>
+                <div id="know">
+                    <p>Read the <a href="{% url 'rules' %}">Rules</a> &mdash; Watch a screenshot:</p>
+                    <a id="screenshot" href="{% static "propaganda/screenshot_game.png" %}">
+                        <img src="{% static "propaganda/screenshot_game_thumbnail.png" %}" width="146" height="110"/>
+                    </a>
+                </div>
+
+                <div id="contact">Do you want to join the fun ? Great ! Please ask for an account at <a href="mailto:hello&#64;mystra&#46;de">hello&#64;mystra&#46;de</a>. (Yes it's old-school. For now.)</div>
+            </div>
+        </div>
     </div>
 
 	<script type="text/javascript">
