@@ -52,7 +52,7 @@ def game_list(request):
 
 def rules(request, lang = 'en'):
     if lang in ['en', 'fr']:
-        return render(request, 'rules/{}.html'.format(lang))
+        return render(request, 'rules/{0}.html'.format(lang))
 
     raise Http404
 
