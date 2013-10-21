@@ -58,7 +58,7 @@ if (( $? )); then
 fi
 
 # Collect staticfiles
-$HOME/mystrade/manage.py collectstatic --noinput --ignore=favicon.ico
+$HOME/mystrade/manage.py collectstatic --noinput --clear --ignore=favicon.ico
 if (( $? )); then
     DEPLOY_WITH_WARNINGS=1
     echo "** WARNING ** [$HOME/mystrade/manage.py collectstatic --noinput --ignore=favicon.ico] failed";
