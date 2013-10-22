@@ -416,6 +416,7 @@
                 })
                 .done(function() {
                     $("body").css("cursor", "");
+                    lastEventsRefreshDate = null; // force the refresh
                     refreshEvents();
                 });
         }

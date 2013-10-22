@@ -28,7 +28,7 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 EMAIL_SUBJECT_PREFIX = '[MysTrade] ' # for admins
 
-EMAIL_MYSTRADE = 'mystrade@manur.org'
+EMAIL_MYSTRADE = 'hello@mystra.de'
 
 DATABASES = {
     'default': {
