@@ -17,7 +17,7 @@ from game import views
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
     prepare_deck, dispatch_cards, CommodityCardDealer
 from game.forms import validate_number_of_players, validate_dates
-from game.helpers import rules_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules
+from game.helpers import rules_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules, free_informations_until_now
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer, Message
 from game.views import SECONDS_BEFORE_OFFLINE
 from ruleset.models import Ruleset, RuleCard, Commodity
@@ -1726,6 +1726,26 @@ class HelpersTest(MystradeTestCase):
         commodities = commodities_in_hand(self.game, self.loginUser)
 
         self.assertEqual([cih2, cih1], list(commodities))
+
+    def test_free_informations_until_now(self):
+        closing_date = now()
+
+        offer1 = mommy.make(Offer, free_information = "info1")
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                            status = 'ACCEPTED', initiator_offer = mommy.make(Offer), responder_offer = offer1,
+                            closing_date = closing_date)
+
+        offer2 = mommy.make(Offer, free_information = "info2")
+        trade1 = mommy.make(Trade, game = self.game, initiator = self.alternativeUser, responder = self.loginUser,
+                            status = 'ACCEPTED', initiator_offer = offer2, responder_offer = mommy.make(Offer),
+                            closing_date = closing_date)
+
+        free_infos = free_informations_until_now(self.game, self.loginUser)
+
+        self.assertEqual(2, len(free_infos))
+        self.assertIn({'offerer': self.alternativeUser, 'date': closing_date, 'free_information': "info1"}, free_infos)
+        self.assertIn({'offerer': self.alternativeUser, 'date': closing_date, 'free_information': "info2"}, free_infos)
+
 
 class OnlineStatusMiddlewareTest(MystradeTestCase):
 
