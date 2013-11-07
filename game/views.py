@@ -186,6 +186,9 @@ class Event(object):
         self.deletable = False
         self.trade = trade # only for trade-related events
 
+    def has_happened(self):
+        return self.date <= now()
+
 # noinspection PyTypeChecker
 @login_required
 def events(request, game_id):

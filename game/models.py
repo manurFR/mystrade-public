@@ -114,3 +114,6 @@ class Message(models.Model):
     @property
     def date(self):
         return self.posting_date
+
+    def has_happened(self):
+        return self.date <= now()

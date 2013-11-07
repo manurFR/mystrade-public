@@ -693,6 +693,13 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         response = self._getTabRecently()
         self.assertContains(response, 'Game #{0} is over. Scores have been calculated.'.format(self.game.id))
 
+    def test_tab_recently_event_for_game_start_when_it_has_not_started_yet(self):
+        self.game.start_date = now() + datetime.timedelta(hours = 3, seconds = 2) # a few seconds because otherwise timeuntil would display '2 hours, 59 minutes'
+        self.game.save()
+
+        response = self._getTabRecently()
+        self.assertContains(response, 'Game #{0} will start in 3 hours.'.format(self.game.id))
+
     def test_tab_recently_events_include_own_trades(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                             status = 'INITIATED', creation_date = now() + datetime.timedelta(hours = -1),

@@ -3,7 +3,8 @@
 <div class="show_previous">{% if dateprevious %}<a id="link_show_previous_events">&lt; show previous events</a>{% endif %}</div>
 {% regroup events by date|naturalday as grouped_events %}
 {% for group in grouped_events %}
-    {% if dateprevious or group.grouper != 'today' %}<div class="event_date">{{ group.grouper|capfirst }}</div>{% endif %}
+    {# let's print the date, except if it's the first page of events and this date is the first and it's 'today' #}
+    {% if dateprevious or group.grouper != 'today' or not events.0.has_happened %}<div class="event_date">{{ group.grouper|capfirst }}</div>{% endif %}
     {% for evt in group.list %}
         <div class="event{% if evt.highlight %} highlight{% endif %}">
             <div class="event_time">{{ evt.date|time }}</div>
@@ -14,7 +15,8 @@
                 {% if evt.sender == user %} have {% else %} has {% endif %}
                 posted a message:
             {% elif evt.event_type == 'game_start' %}
-                Game #{{ game.id }} has started.
+                {% if evt.has_happened %}Game #{{ game.id }} has started.
+                {% else %}Game #{{ game.id }} will start in {{ evt.date|timeuntil }}.{% endif %}
             {% elif evt.event_type == 'game_end' %}
                 Game #{{ game.id }} has ended.
                 {% include "common/name_or_you.html" with who=evt.sender %} will soon calculate scores.
