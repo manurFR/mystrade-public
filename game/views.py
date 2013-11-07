@@ -162,7 +162,7 @@ def _online_players(game, players):
         if last_seen and date_now - last_seen <= datetime.timedelta(seconds = SECONDS_BEFORE_OFFLINE):
             list_of_online_players_id.append(str(player.id) )
 
-    return "[" + ", ".join(list_of_online_players_id) + "]";
+    return "[" + ", ".join(list_of_online_players_id) + "]"
 
 def _set_lastVisitedGame_cookie_if_needed(request, response, game):
     if game.has_started() and not game.is_closed():

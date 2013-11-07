@@ -27,7 +27,7 @@ def free_informations_until_now(game, user):
 
     for offer in Offer.objects.filter(free_information__isnull = False, trade_initiated__game = game,
                                       trade_initiated__responder = user, trade_initiated__status = 'ACCEPTED'):
-        free_informations.append({'offerer': offer.trade_initiated.responder,
+        free_informations.append({'offerer': offer.trade_initiated.initiator,
                                   'date': offer.trade_initiated.closing_date,
                                   'free_information': offer.free_information})
 
