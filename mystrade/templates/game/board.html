@@ -168,6 +168,11 @@
                 })
                 .done(function(data, textStatus, jqXHR) {
                     $("#zone_events").css("cursor", "");
+
+                    if (jqXHR.getResponseHeader("full_refresh") === "True") {
+                        window.location.reload(true);
+                    }
+
                     if (jqXHR.status != 204) { // 204 = No Content, which means no new events where found ; don't refresh
                         $("#zone_events").html(data);
                         $("#zone_events").find(".event.highlight").effect("highlight", {}, 3000).removeClass("highlight");
@@ -190,12 +195,13 @@
         }
         function setUpEventsRefreshIfTheEventsTabIsOpen() {
             var zoneSubmitHand = $("#zone_submit_hand");
-            if (!eventsRefreshIntervalId &&
-                    $("#zone_tabs").tabs("option", "active") === 0 && // events ("Recently") tab opened
-                    !$("#zone_trade_list").dialog("isOpen") && // "Show all trade" modal dialog not opened
-                    (!zoneSubmitHand.is(".ui-dialog") || !zoneSubmitHand.dialog("isOpen")) && // "Choose final cards" modal dialog not opened
-                    $("#link_show_previous_events").length == 0 && // the Recently tab shows the most recent events
-                    $("body").attr("visibilityState") === "visible") { // the tab is currently active in the browser
+            if (!eventsRefreshIntervalId                                  // not already set
+                    && $("#zone_tabs").tabs("option", "active") === 0     // events ("Recently") tab opened
+                    && !$("#zone_trade_list").dialog("isOpen")            // "Show all trade" modal dialog not opened
+                    && (!zoneSubmitHand.is(".ui-dialog")                  // "Choose final cards" modal dialog not opened
+                                   || !zoneSubmitHand.dialog("isOpen"))
+                    && $("#link_show_previous_events").length == 0        // the Recently tab shows the most recent events
+                    && $("body").attr("visibilityState") === "visible") { // the tab is currently active in the browser
                 launchEventsRefresh();
                 refreshEvents(); // run it the first time
             }

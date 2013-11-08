@@ -155,7 +155,7 @@ def _fetch_scoresheets(game):
     return scoresheets
 
 def _online_players(game, players):
-    list_of_online_players_id = [];
+    list_of_online_players_id = []
     date_now = now()
     for player in players:
         last_seen = player.gameplayer_set.get(game = game).last_seen
@@ -253,13 +253,13 @@ def events(request, game_id):
         # is it the first fetch of the events since the game board has loaded -- otherwise it's a later periodic refresh
         first_load = 'lastEventsRefreshDate' not in request.GET
 
-        new_events = False
+        new_events = []
         if not first_load:
             lastEventsRefreshDate = datetime.datetime.strptime(request.GET.get('lastEventsRefreshDate'), FORMAT_EVENT_PERMALINK)
             for event in displayed_events:
                 if make_naive(event.date, utc) > lastEventsRefreshDate:
                     event.highlight = True
-                    new_events = True
+                    new_events.append(event)
 
         if first_load or history_request or new_events:
             response = render(request, 'game/events.html',
@@ -268,6 +268,7 @@ def events(request, game_id):
         else:
             response = HttpResponse(status = 204) # 204 = No Content
 
+        response['full_refresh'] = _full_refresh_needed(game, first_load, new_events, request.user)
         response['online_players'] = _online_players(game, game.players.all())
         return response
 
@@ -289,6 +290,26 @@ def _events_in_the_range(events, start_date = None, end_date = None):
                 start_index = index
                 range_of_events = [evt]
     return range_of_events
+
+def _full_refresh_needed(game, first_load, new_events, me):
+    """ For a player during the game, let's ask for an immediate refresh of the whole game board if :
+         - it's not the first display of recent events after loading the game board
+         - and among the new events, there is at least one ACCEPTED by the other player (because it will modify the hand and/or free informations of the current player)
+
+        For the game master watching the score board, the presence of an ACCEPTED trade in the new events must provoke a full refresh too,
+         since the scores have been modified by the trade.
+    """
+    if not first_load:
+        if me in game.players.all() and not game.is_closed():
+            for event in new_events:
+                if event.event_type == 'finalize_trade':
+                    if event.trade.status == 'ACCEPTED' and event.trade.finalizer != me:
+                        return "True"
+        else: # score board
+            for event in new_events:
+                if event.event_type == 'accept_trade':
+                    return "True"
+    return "False"
 
 #############################################################################
 ##                          Public Messages                                ##

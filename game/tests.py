@@ -761,6 +761,8 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, 'declined a <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade2.id))
         self.assertContains(response, 'accepted a <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade3.id))
 
+        self.assertEqual("False", response.get('full_refresh', "False"))
+
     def test_tab_recently_events_include_accepted_trade_from_other_players(self):
         # trade1 is ACCEPTED and between two players that are not the loginUser
         initiator_offer = mommy.make(Offer, rules = mommy.make(RuleInHand, _quantity = 2))
@@ -805,11 +807,13 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
 
         self.login_as(self.master)
 
-        response = self._getTabRecently()
+        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(self.game.start_date, views.FORMAT_EVENT_PERMALINK))
         self.assertNotContains(response, 'gave 2 cards')
         self.assertContains(response, 'A successful trade has been performed:', count = 1)
         self.assertContains(response, 'gave 3 cards')
         self.assertContains(response, 'gave 4 card')
+
+        self.assertEqual("True", response.get('full_refresh', "False")) # the accepted trade provokes a full refresh
 
     def test_tab_recently_the_last_event_for_a_pending_trade_stands_out(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
@@ -958,6 +962,23 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
             self.fail("Message should have been deleted")
         except Message.DoesNotExist:
             pass
+
+    def test_refresh_needed_for_the_other_player_when_a_trade_has_been_accepted(self):
+        date_now = now()
+        mommy.make(Trade, game = self.game, initiator = self.alternativeUser, responder = self.loginUser,
+                   initiator_offer = mommy.make(Offer), responder_offer = mommy.make(Offer),
+                   finalizer = self.alternativeUser, status = 'ACCEPTED', closing_date = date_now)
+
+        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(date_now + datetime.timedelta(seconds = -1), views.FORMAT_EVENT_PERMALINK))
+
+        self.assertEqual("True", response.get('full_refresh'))
+
+        # for the game master too
+        self.login_as(self.master)
+
+        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(date_now + datetime.timedelta(seconds = -1), views.FORMAT_EVENT_PERMALINK))
+
+        self.assertEqual("True", response.get('full_refresh'))
 
     def _getTabRecently(self, querystring = None):
         url = "/game/{0}/events".format(self.game.id)
