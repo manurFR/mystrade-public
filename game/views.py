@@ -324,10 +324,11 @@ def post_message(request, game_id):
 
     if request.is_ajax() and request.method == 'POST':
         message_form = MessageForm(data = request.POST)
-        if message_form.is_valid() and len(message_form.cleaned_data['message']) > 0:
-            # bleach allowed tags : 'a','abbr','acronym','b','blockquote','code','em','i','li','ol','strong', 'ul'
-            secure_message = bleach.clean(markdown.markdown(message_form.cleaned_data['message']), strip = True)
-            Message.objects.create(game = game, sender = request.user, content = secure_message)
+        if message_form.is_valid():
+            if len(message_form.cleaned_data['message']) > 0:
+                # bleach allowed tags : 'a','abbr','acronym','b','blockquote','code','em','i','li','ol','strong', 'ul'
+                secure_message = bleach.clean(markdown.markdown(message_form.cleaned_data['message']), strip = True)
+                Message.objects.create(game = game, sender = request.user, content = secure_message)
             return HttpResponse()
         else:
             return HttpResponse(message_form.errors['message'], status = 422)

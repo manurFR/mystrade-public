@@ -907,6 +907,15 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         except Message.DoesNotExist:
             self.fail("Message was not created for expected game and sender")
 
+    def test_tab_recently_post_an_empty_message_does_nothing(self):
+        # and no KeyError thrown
+        try:
+            response = self._postMessage('')
+        except KeyError:
+            self.fail("Posting an empty message shouldn't result in a KeyError")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, Message.objects.count())
+
     def test_tab_recently_posting_a_message_fails_for_more_than_255_characters(self):
         response = self._postMessage('A'*300)
         self.assertContains(response, 'Ensure this value has at most 255 characters (it has 300).', status_code = 422)
