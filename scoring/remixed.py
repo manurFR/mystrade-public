@@ -75,18 +75,19 @@ def RMX09(self, scoresheets):
                                         score = 2 * winner.nb_scored_cards('White') * winner.actual_value('White'))
 
 def RMX10(self, scoresheet):
-    """If the total of the basic values of all the cards handed in by a player is higher than 39 points,
-        cards are removed at random until the total becomes less or equal than 39 points.
+    """If the total of the basic values of all the cards handed in by a player is higher than 35 points,
+        cards are removed at random until the total becomes less or equal than 35 points.
         Only the basic values of the cards are considered, before any other rule is applied.
     """
+    THRESHOLD = 35
     present_colors = []
     for sfc in scoresheet.scores_from_commodity:
         if sfc.nb_scored_cards > 0:
             present_colors.append(sfc.name)
     initial_score = scoresheet.total_score
-    if initial_score > 39:
+    if initial_score > THRESHOLD:
         discarded = {}
-        while scoresheet.total_score > 39:
+        while scoresheet.total_score > THRESHOLD:
             selected_color = random.choice(present_colors)
             scoresheet.set_nb_scored_cards(selected_color, nb_scored_cards = scoresheet.nb_scored_cards(selected_color) - 1)
             if selected_color not in discarded:
@@ -95,7 +96,7 @@ def RMX10(self, scoresheet):
                 discarded[selected_color] += 1
             if scoresheet.nb_scored_cards(selected_color) == 0:
                 present_colors.remove(selected_color)
-        detail = 'Since the total of the basic values of your cards was {0} points (more than 39), '.format(initial_score)
+        detail = 'Since the total of the basic values of your cards was {0} points (more than {1}), '.format(initial_score, THRESHOLD)
         detail += 'the following cards have been discarded to bring the new basic total (before applying all other rules) to {0} points: '.format(scoresheet.total_score)
         for index, color in enumerate(discarded.iterkeys()):
             detail += '{0} {1} card'.format(discarded[color], color) + ('s' if discarded[color] > 1 else '')

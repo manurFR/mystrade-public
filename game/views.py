@@ -501,12 +501,6 @@ def select_rules(request):
     else:
         return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session})
 
-def _get_localized_datetime(dt, player):
-    if player.timezone:
-        return dt.astimezone(timezone(player.timezone))
-    else:
-        return dt.astimezone(get_current_timezone())
-
 #############################################################################
 ##                            Close Game                                   ##
 #############################################################################

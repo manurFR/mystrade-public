@@ -126,19 +126,19 @@ class RemixedHaggleTest(TestCase):
         assertRuleNotApplied(player3, rulecard)
 
     def test_RMX10(self):
-        """If the total of the basic values of all the cards handed in by a player is higher than 39 points,
-            cards are removed at random until the total becomes less or equal than 39 points.
+        """If the total of the basic values of all the cards handed in by a player is higher than 35 points,
+            cards are removed at random until the total becomes less or equal than 35 points.
             Only the basic values of the cards are considered, before any other rule is applied.
         """
         rulecard = RuleCard.objects.get(ref_name = 'RMX10')
         scoresheet = _prepare_scoresheet(self.game, "p1", blue = 4, white = 4, pink = 4, yellow = 4, green = 4)
         self.assertEqual(4+8+12+16+20, scoresheet.total_score)
         rulecard.perform(scoresheet)
-        self.assertLess(scoresheet.total_score, 40)
+        self.assertLess(scoresheet.total_score, 36)
         self.assertEqual(1, len(scoresheet.scores_from_rule))
         sfr = scoresheet.scores_from_rule[0]
         self.assertEqual('RMX10', sfr.rulecard.ref_name)
-        self.assertTrue(sfr.detail.startswith('Since the total of the basic values of your cards was 60 points (more than 39)'))
+        self.assertTrue(sfr.detail.startswith('Since the total of the basic values of your cards was 60 points (more than 35)'))
 
     def test_RMX11(self):
         """If a player hands in seven or more cards of the same color,

@@ -12,13 +12,14 @@ from utils.utils import roundTimeToMinute
 class CreateGameForm(forms.Form):
     ruleset = forms.ModelChoiceField(queryset = Ruleset.objects.all(), empty_label = None)
 
-    start_date = forms.DateTimeField(initial = roundTimeToMinute(localtime(now()), roundToMinutes = 15).strftime("%m/%d/%Y %H:%M"))
+    start_date = forms.DateTimeField()
     end_date = forms.DateTimeField()
 
     players = forms.ModelMultipleChoiceField(queryset = get_user_model().objects.none())
 
     def __init__(self, game_master, *args, **kwargs):
         super(CreateGameForm, self).__init__(*args, **kwargs)
+        self.fields['start_date'].initial = roundTimeToMinute(localtime(now()), roundToMinutes = 15).strftime("%m/%d/%Y %H:%M")
         self.fields['players'].queryset = get_user_model().objects.exclude(id = game_master.id).order_by_full_name()
 
     def clean(self):
