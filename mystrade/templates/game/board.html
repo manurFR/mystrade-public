@@ -404,6 +404,7 @@
                 .done(function() {
                     $("body").css("cursor", "");
                     refreshEvents();
+                    $("#post_message").find(":input").prop("disabled", false);
                     $("#id_message").val("").focus(); // clear the textarea
                 });
             $("body").css("cursor", "wait");
