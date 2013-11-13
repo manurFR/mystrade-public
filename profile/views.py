@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.shortcuts import render, redirect, get_object_or_404
 from profile.forms import MystradeUserForm
 
@@ -35,3 +35,10 @@ def editprofile(request):
         password_form = PasswordChangeForm(user = request.user)
 
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form})
+
+def sign_up(request):
+    user_form = MystradeUserForm()
+    user_form['send_notifications'].field.initial = True
+    password_form = SetPasswordForm(user = None)
+
+    return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form, 'sign_up': True})

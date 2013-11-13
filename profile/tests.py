@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 from model_mommy import mommy
 from profile.models import MystradeUser
@@ -122,3 +123,14 @@ class ViewsTest(TestCase):
                                     follow = True)
 
         self.assertFormError(response, 'user_form', 'timezone', "Select a valid choice. Alderaan/Aldera is not one of the available choices.")
+
+class SignUpTest(TestCase):
+    def test_view_sign_up_page(self):
+        response = self.client.get(reverse("signup"))
+        self.assertContains(response, "Create profile")
+        self.assertNotContains(response, "Back")
+        self.assertNotContains(response, "Change password")
+        self.assertNotContains(response, "New password confirmation")
+        self.assertContains(response, "Type your password")
+        self.assertContains(response, "Please type your password again")
+        self.assertTrue(response.context['user_form']['send_notifications'].field.initial)

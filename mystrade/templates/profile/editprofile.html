@@ -10,14 +10,15 @@
 {% block scripts %}
     <script src="{% static 'jquery/jquery-1.8.2.min.js' %}"></script>
     <script src="{% static 'jquery/jquery-ui-1.10.3.custom.min.js' %}"></script>
+    <script src="//cdn.jsdelivr.net/jstimezonedetect/1.0.5/jstz.min.js"></script>
 {% endblock %}
 
 {% block content %}
 	<form action="{% url 'editprofile' %}" method="POST">{% csrf_token %}
 		<table id="table_profile">
 			<tr>
-				<td colspan="2" class="header">Edit profile
-                    <span class="note">&lt; <a href="{% url 'profile' %}">Back</a></span>
+				<td colspan="2" class="header">{% if sign_up %}Create profile
+                    {% else %}Edit profile <span class="note">&lt; <a href="{% url 'profile' %}">Back</a>{% endif %}</span>
                 </td>
 			</tr>
 			<tr>
@@ -28,18 +29,18 @@
 			<tr>
 				<th>{{ user_form.first_name.label_tag }} :</th>
 				<td>{{ user_form.first_name }}&nbsp;<span class="errors">{{ user_form.first_name.errors.as_text }}</span>
-				    <span class="helptext">{{ user_form.first_name.help_text }}</span></td>
+				    <span class="helptext">(optional)</span></td>
 			</tr>
 			<tr>
 				<th>{{ user_form.last_name.label_tag }} :</th>
 				<td>{{ user_form.last_name }}&nbsp;<span class="errors">{{ user_form.last_name.errors.as_text }}</span>
-				    <span class="helptext">{{ user_form.last_name.help_text }}</span>
+				    <span class="helptext">(optional)</span>
 				    <div class="helptext">People will see you as : <div class="game-player"><span id="displayed_name"></span></div></div></td>
 			</tr>
 			<tr>
 				<th>{{ user_form.email.label_tag }} :</th>
 				<td>{{ user_form.email|attr:"size:40" }}&nbsp;<span class="errors">{{ user_form.email.errors.as_text }}</span>
-				    <span class="helptext">{{ user_form.email.help_text }}</span></td>
+				    <span class="helptext">Required</span></td>
 			</tr>
             <tr>
                 <th>{{ user_form.send_notifications.label_tag }} :</th>
@@ -65,23 +66,27 @@
 
         <table id="table_password">
 			<tr>
-				<td colspan="2" class="header">Change password
-					<span class="helptext">Let blank to keep the same password</span></td>
+				<td colspan="2" class="header">{% if sign_up %}Password
+                    {% else %}Change password <span class="helptext">Let blank to keep the same password</span>{% endif %}</td>
 			</tr>
+        {% if not sign_up %}
             <tr>
                 <th>{{ password_form.old_password.label_tag }} :</th>
                 <td>{{ password_form.old_password }}&nbsp;<span class="errors">{{ password_form.old_password.errors.as_text }}</span>
                     <span class="helptext">{{ password_form.old_password.help_text }}</span></td>
             </tr>
+        {% endif %}
 			<tr>
-				<th>{{ password_form.new_password1.label_tag }} :</th>
+				<th>{% if sign_up %}<label for="id_new_password1">Type your password :</label>
+                    {% else %}{{ password_form.new_password1.label_tag }} :{% endif %}</th>
 				<td>{{ password_form.new_password1 }}&nbsp;<span class="errors">{{ password_form.new_password1.errors.as_text }}</span>
-				    <span class="helptext">{{ password_form.new_password1.help_text }}</span></td>
+				    <span class="helptext">Required</span></td>
 			</tr>
 			<tr>
-				<th>{{ password_form.new_password2.label_tag }} :</th>
+				<th>{% if sign_up %}<label for="id_new_password2">Please type your password again :</label>
+                    {% else %}{{ password_form.new_password2.label_tag }} :{% endif %}</th>
 				<td>{{ password_form.new_password2 }}&nbsp;<span class="errors">{{ password_form.new_password2.errors.as_text }}</span>
-				    <span class="helptext">{{ password_form.new_password2.help_text }}</span></td>
+				    <span class="helptext">Required</span></td>
 			</tr>
 		</table>
 
@@ -93,6 +98,16 @@
     <script type="text/javascript">
         $(function() {
             $("input[type=submit]").button();
+
+            {% if sign_up %}
+                $("#id_username").focus();
+                var guessed_timezone = jstz.determine().name();
+                $("#id_timezone").find("option").each(function() {
+                    if ($(this).text() === guessed_timezone) {
+                        this.selected = true;
+                    }
+                });
+            {% endif %}
         });
 
         function getDisplayedName() {
