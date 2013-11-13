@@ -32,7 +32,7 @@ class ViewsTest(TestCase):
         self.client.login(username = 'test', password = 'test')
 
     def test_display_own_profile(self):
-        response = self.client.get("/profile/")
+        response = self.client.get(reverse("profile"))
 
         self.assertContains(response, "test@aaa.com")
         self.assertContains(response, "line<br />jump")
@@ -41,7 +41,7 @@ class ViewsTest(TestCase):
         self.assertTemplateUsed(response, 'profile/profile.html')
 
     def test_display_profile_with_own_id_is_redirected(self):
-        response = self.client.get("/profile/{0}/".format(self.testUser.id))
+        response = self.client.get(reverse("otherprofile", args = [self.testUser.id]))
 
         self.assertRedirects(response, "/profile/")
 
@@ -51,7 +51,7 @@ class ViewsTest(TestCase):
         otherUser.set_password('password');
         otherUser.save()
 
-        response = self.client.get("/profile/{0}/".format(otherUser.id))
+        response = self.client.get(reverse("otherprofile", args = [otherUser.id]))
 
         self.assertContains(response, "Luke Skywalker")
         self.assertNotContains(response, "someone@bbb.com")
@@ -61,7 +61,7 @@ class ViewsTest(TestCase):
         self.assertTemplateUsed(response, 'profile/otherprofile.html')
 
     def test_editprofile_change_user_fields_and_password(self):
-        response = self.client.post("/profile/edit/",
+        response = self.client.post(reverse("editprofile"),
                                     {'username': 'test', 'first_name': 'Leia', 'last_name': 'Organa',
                                      'send_notifications': '',
                                      'timezone': 'Europe/Rome',
@@ -82,43 +82,43 @@ class ViewsTest(TestCase):
         self.assertTemplateUsed(response, 'profile/profile.html')
 
     def test_editprofile_bad_old_password(self):
-        response = self.client.post("/profile/edit/",
+        response = self.client.post(reverse("editprofile"),
                                     {'old_password': 'BAD', 'new_password1': 'alderaan', 'new_password2': 'alderaan'},
                                     follow = True)
         self.assertFormError(response, 'password_form', 'old_password', "Your old password was entered incorrectly. Please enter it again.")
 
-        response = self.client.post("/profile/edit/",
+        response = self.client.post(reverse("editprofile"),
                                     {'old_password': '', 'new_password1': 'alderaan', 'new_password2': 'alderaan'},
                                     follow = True)
         self.assertFormError(response, 'password_form', 'old_password', "This field is required.")
 
     def test_editprofile_bad_new_passwords(self):
-        response = self.client.post("/profile/edit/",
+        response = self.client.post(reverse("editprofile"),
                                     {'old_password': 'test', 'new_password1': 'pass1', 'new_password2': ''},
                                     follow = True)
         self.assertFormError(response, 'password_form', 'new_password2', "This field is required.")
 
-        response = self.client.post("/profile/edit/",
+        response = self.client.post(reverse("editprofile"),
                                     {'old_password': 'test', 'new_password1': '', 'new_password2': 'pass2'},
                                     follow = True)
         self.assertFormError(response, 'password_form', 'new_password1', "This field is required.")
 
-        response = self.client.post("/profile/edit/",
+        response = self.client.post(reverse("editprofile"),
                                     {'old_password': 'test', 'new_password1': 'pass1', 'new_password2': 'pass2'},
                                     follow = True)
         self.assertFormError(response, 'password_form', 'new_password2', "The two password fields didn't match.")
 
     def test_editprofile_password_fields_not_evaluated_when_new_password1_is_empty(self):
-        response = self.client.post("/profile/edit/",
+        response = self.client.post(reverse("editprofile"),
                                     {'username': 'test', 'first_name': 'Leia', 'last_name': 'Organa',
-                                     'timezone': 'Europe/Paris',
+                                     'timezone': 'Europe/Paris', 'email': 'test@aaa.com',
                                      'old_password': 'bogus', 'new_password1': '', 'new_password2': 'alderaan'},
                                     follow = True)
         self.assertNotContains(response, "Your old password was entered incorrectly. Please enter it again.")
         self.assertNotContains(response, "The two password fields didn&#39;t match.")
 
     def test_editprofile_timezone_is_validated_against_pytz_common_timezones(self):
-        response = self.client.post("/profile/edit/",
+        response = self.client.post(reverse("editprofile"),
                                     {'timezone': 'Alderaan/Aldera'},
                                     follow = True)
 
@@ -134,3 +134,49 @@ class SignUpTest(TestCase):
         self.assertContains(response, "Type your password")
         self.assertContains(response, "Please type your password again")
         self.assertTrue(response.context['user_form']['send_notifications'].field.initial)
+
+    def test_register_fails_when_required_fields_are_not_specified(self):
+        response = self.client.post(reverse("signup"),
+            {
+                'username':         '',
+                'email':            '',
+                'timezone':         '',
+                'new_password1':    '',
+                'new_password2':    ''
+            })
+
+        self.assertFormError(response, 'user_form', 'username', 'This field is required.')
+        self.assertFormError(response, 'user_form', 'email', 'The email address is required.')
+        self.assertFormError(response, 'user_form', 'timezone', 'This field is required.')
+        self.assertFormError(response, 'password_form', 'new_password1', 'This field is required.')
+        self.assertFormError(response, 'password_form', 'new_password2', 'This field is required.')
+
+    def test_register_fails_when_email_is_not_valid(self):
+        response = self.client.post(reverse("signup"),
+            {
+                'username':         'test',
+                'email':            'abc',
+                'timezone':         'Europe/Berlin',
+                'new_password1':    'pwd',
+                'new_password2':    'pwd'
+            })
+
+        self.assertFormError(response, 'user_form', 'email', 'Enter a valid email address.')
+
+    def test_register_keeps_timezone_and_other_fields_when_errors_are_detected(self):
+        response = self.client.post(reverse("signup"),
+            {
+                'username':         'test',
+                'first_name':       'johnny',
+                'email':            '',
+                'timezone':         'Pacific/Tahiti',
+                'contact':          'my contact',
+                'new_password1':    'pwd',
+                'new_password2':    'pwd'
+            })
+
+        self.assertFormError(response, 'user_form', 'email', 'The email address is required.')
+
+        self.assertEqual("johnny", response.context['user_form']['first_name'].data)
+        self.assertEqual("Pacific/Tahiti", response.context['user_form']['timezone'].data)
+        self.assertEqual("my contact", response.context['user_form']['contact'].data)

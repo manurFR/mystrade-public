@@ -37,8 +37,15 @@ def editprofile(request):
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form})
 
 def sign_up(request):
-    user_form = MystradeUserForm()
-    user_form['send_notifications'].field.initial = True
-    password_form = SetPasswordForm(user = None)
+    if request.method == 'POST':
+        user_form = MystradeUserForm(data = request.POST)
+        password_form = SetPasswordForm(data = request.POST, user = None)
+
+        if user_form.is_valid():
+            pass
+    else:
+        user_form = MystradeUserForm()
+        user_form['send_notifications'].field.initial = True
+        password_form = SetPasswordForm(user = None)
 
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form, 'sign_up': True})

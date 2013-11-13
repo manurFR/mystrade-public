@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block content %}
-	<form action="{% url 'editprofile' %}" method="POST">{% csrf_token %}
+	<form action="{% if sign_up %}{% url 'signup' %}{% else %}{% url 'editprofile' %}{% endif %}" method="POST">{% csrf_token %}
 		<table id="table_profile">
 			<tr>
 				<td colspan="2" class="header">{% if sign_up %}Create profile
@@ -101,12 +101,9 @@
 
             {% if sign_up %}
                 $("#id_username").focus();
-                var guessed_timezone = jstz.determine().name();
-                $("#id_timezone").find("option").each(function() {
-                    if ($(this).text() === guessed_timezone) {
-                        this.selected = true;
-                    }
-                });
+              {% if not user_form.timezone.data %} {# initialise the timezone with a best guess at the first loading of the page #}
+                $("#id_timezone").val(jstz.determine().name());
+              {% endif %}
             {% endif %}
         });
 
