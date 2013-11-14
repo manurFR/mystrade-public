@@ -1,0 +1,10 @@
+Registration activation on mystrade.com
+Welcome to MysTrade.com -- a game of mysterious trades!
+
+We're happy to have you ready to play with us, but first you will need to
+activate your account. To do so, please navigate to the link below:
+
+    {{ activation_url }}
+
+Thanks,
+The MysTrade team

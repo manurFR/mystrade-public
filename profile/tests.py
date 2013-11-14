@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.hashers import check_password
+from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from model_mommy import mommy
@@ -208,7 +209,7 @@ class SignUpTest(TestCase):
         self.assertFormError(response, 'user_form', 'username', 'User with this Username already exists.')
         self.assertFormError(response, 'user_form', 'email', 'User with this email address already exists.')
 
-    def test_register_successful_creates_a_user_and_sends_an_activation_email(self):
+    def test_register_successful_creates_an_inactive_user_and_sends_an_activation_email(self):
         response = self.client.post(reverse("signup"),
             {
                 'username':             'test',
@@ -241,4 +242,10 @@ class SignUpTest(TestCase):
         except get_user_model().DoesNotExist:
             self.fail("A user should have been created")
 
-    # TODO insert fails ?
+        # notification email sent
+        self.assertEqual(1, len(mail.outbox))
+        email = mail.outbox[0]
+        self.assertEqual(['j.cash@bab.com'], email.to)
+        self.assertEqual('[MysTrade] Registration activation on mystrade.com', email.subject)
+        self.assertIn('please navigate to the link below', email.body)
+        self.assertIn('/profile/activation/{0}'.format('a498222bf5be6758e027aa19255afc48fbf491c0'), email.body)

@@ -1,10 +1,14 @@
+# coding=utf-8
+import hashlib
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.models import UserManager
+from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.timezone import now
 from profile.forms import MystradeUserForm
+from utils import utils
 
 
 @login_required
@@ -38,6 +42,9 @@ def editprofile(request):
 
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form})
 
+
+
+
 def sign_up(request):
     if request.method == 'POST':
         user_form = MystradeUserForm(data = request.POST)
@@ -61,6 +68,11 @@ def sign_up(request):
             user.set_password(password_form.cleaned_data['new_password1'])
             user.save()
 
+            # create an activation key and send it to the new user
+            activation_key = _generate_activation_key(user_form.cleaned_data['username'])
+            utils.send_notification_email("registration_activation", email,
+                                          {'activation_url': request.build_absolute_uri(reverse('activation', args = [activation_key]))})
+
             return render(request, 'profile/registration_complete.html')
     else:
         user_form = MystradeUserForm()
@@ -68,3 +80,12 @@ def sign_up(request):
         password_form = SetPasswordForm(user = None)
 
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form, 'sign_up': True})
+
+def _generate_activation_key(username, salt = 'µy5Tr@d3'):
+    crypted_salt = hashlib.sha1(salt).hexdigest()[:5]
+    if isinstance(username, unicode):
+        username = username.encode('utf-8')
+    return hashlib.sha1(salt+username).hexdigest()
+
+def activation(request):
+    pass
