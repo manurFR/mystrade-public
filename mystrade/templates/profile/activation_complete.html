@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/style.profile.css' %}" />
+{% endblock %}
+
+{% block content %}
+    <h2>Welcome {{ user.name }}!</h2>
+
+    <p>Your registration has been successful. You will now be able to join a game. Please wait to be invited.</p>
+{% endblock content %}

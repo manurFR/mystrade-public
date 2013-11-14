@@ -298,7 +298,8 @@ class SignUpTest(TestCase):
         user = get_user_model().objects.get(id = user.id)
         self.assertTrue(user.is_active)
 
-        # self.assertIn('_auth_user_id', self.client.session)
-        # self.assertEqual(self.client.session['_auth_user_id'], user.pk)
+        self.assertIn('_auth_user_id', self.client.session)
+        self.assertEqual(self.client.session['_auth_user_id'], user.pk)
+        self.assertTemplateUsed(response, "profile/activation_complete.html")
 
 

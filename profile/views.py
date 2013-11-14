@@ -2,7 +2,7 @@
 import datetime
 import hashlib
 import re
-from django.contrib.auth import get_user_model, authenticate, login
+from django.contrib.auth import get_user_model, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.models import UserManager
@@ -104,9 +104,9 @@ def activation(request, user_id, activation_key):
                 user.is_active = True
                 user.save()
 
-                # authenticate(username = user.username, password = user.password)
-                # if login(request, user):
-                return redirect("signup")
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                login(request, user)
+                return render(request, 'profile/activation_complete.html')
 
     raise PermissionDenied
 
