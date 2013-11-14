@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'css/style.profile.css' %}" />
+{% endblock %}
+
+{% block content %}
+    <h2>Sorry.</h2>
+
+    <p>Your activation link has expired. Try again to <a href="{% url 'signup' %}">sign up</a>.</p>
+{% endblock content %}

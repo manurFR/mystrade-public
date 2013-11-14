@@ -46,9 +46,6 @@ def editprofile(request):
 
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form})
 
-
-
-
 def sign_up(request):
     if request.method == 'POST':
         user_form = MystradeUserForm(data = request.POST)
@@ -73,7 +70,7 @@ def sign_up(request):
             user.save()
 
             # create an activation key and send it to the new user
-            activation_key = _generate_activation_key(user_form.cleaned_data['username'])
+            activation_key = _generate_activation_key(user)
             utils.send_notification_email("registration_activation", email,
                                           {'activation_url': request.build_absolute_uri(reverse('activation', args = [user.id, activation_key]))})
 
@@ -85,11 +82,12 @@ def sign_up(request):
 
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form, 'sign_up': True})
 
-def _generate_activation_key(username, salt = 'µy5Tr@d3'):
+def _generate_activation_key(user, salt = 'µy5Tr@d3'):
     crypted_salt = hashlib.sha1(salt).hexdigest()[:5]
+    username = user.username
     if isinstance(username, unicode):
         username = username.encode('utf-8')
-    return hashlib.sha1(salt+username).hexdigest()
+    return hashlib.sha1(crypted_salt + str(user.date_joined.microsecond) + username).hexdigest()
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 def activation(request, user_id, activation_key):
@@ -98,13 +96,17 @@ def activation(request, user_id, activation_key):
             user = get_user_model().objects.get(pk = user_id)
         except get_user_model().DoesNotExist:
             raise PermissionDenied
-        if not _activation_key_expired(user) and activation_key == _generate_activation_key(user.username):
-            user.is_active = True
-            user.save()
+        if activation_key == _generate_activation_key(user):
+            if _activation_key_expired(user):
+                user.delete()
+                return render(request, 'profile/activation_expired.html')
+            else:
+                user.is_active = True
+                user.save()
 
-            # authenticate(username = user.username, password = user.password)
-            # if login(request, user):
-            return redirect("signup")
+                # authenticate(username = user.username, password = user.password)
+                # if login(request, user):
+                return redirect("signup")
 
     raise PermissionDenied
 

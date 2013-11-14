@@ -8,6 +8,8 @@ from django.test.utils import override_settings
 from django.utils.timezone import now
 from model_mommy import mommy
 from profile.models import MystradeUser
+from profile.views import _generate_activation_key
+
 
 class MystradeUserNameTest(TestCase):
     def test_name_first_and_last(self):
@@ -251,7 +253,7 @@ class SignUpTest(TestCase):
         self.assertEqual(['j.cash@bab.com'], email.to)
         self.assertEqual('[MysTrade] Registration activation on mystrade.com', email.subject)
         self.assertIn('please navigate to the link below', email.body)
-        self.assertIn('/profile/activation/{0}/{1}'.format(created_user.id, 'a498222bf5be6758e027aa19255afc48fbf491c0'), email.body)
+        self.assertIn('/profile/activation/{0}/{1}'.format(created_user.id, _generate_activation_key(created_user)), email.body)
 
     def test_activation_of_an_invalid_key(self):
         user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com')
@@ -264,12 +266,19 @@ class SignUpTest(TestCase):
         self.assertEqual(403, response.status_code)
 
     @override_settings(ACCOUNT_ACTIVATION_DAYS = 2)
-    def test_expired_activation_key(self):
+    def test_activation_with_expired_key_fails_and_deletes_the_user(self):
         user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com',
                           date_joined = now() + datetime.timedelta(days = -3))
 
-        response = self.client.get(reverse("activation", args = [user.id, 'a498222bf5be6758e027aa19255afc48fbf491c0']))
-        self.assertEqual(403, response.status_code)
+        response = self.client.get(reverse("activation", args = [user.id, _generate_activation_key(user)]), follow = True)
+        self.assertEqual(200, response.status_code)
+        try:
+            user = get_user_model().objects.get(username = 'test')
+            self.fail("User with expired key should have been deleted")
+        except get_user_model().DoesNotExist:
+            pass
+        self.assertTemplateUsed(response, "profile/activation_expired.html")
+        self.assertContains(response, "Your activation link has expired")
 
     def test_activation_with_the_bad_key_fails(self):
         user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com', is_active = False)
@@ -283,7 +292,7 @@ class SignUpTest(TestCase):
         user.set_password('pwd123')
         user.save()
 
-        response = self.client.get(reverse("activation", args = [user.id, 'a498222bf5be6758e027aa19255afc48fbf491c0']), follow = True)
+        response = self.client.get(reverse("activation", args = [user.id, _generate_activation_key(user)]), follow = True)
         self.assertEqual(200, response.status_code)
 
         user = get_user_model().objects.get(id = user.id)
