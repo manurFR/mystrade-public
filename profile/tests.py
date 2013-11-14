@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from model_mommy import mommy
@@ -163,6 +163,18 @@ class SignUpTest(TestCase):
 
         self.assertFormError(response, 'user_form', 'email', 'Enter a valid email address.')
 
+    def test_register_fails_when_timezone_does_not_exist(self):
+        response = self.client.post(reverse("signup"),
+                                    {
+                                        'username':         'test',
+                                        'email':            'test@aaa.com',
+                                        'timezone':         'Moon/Moonbase_Alpha',
+                                        'new_password1':    'pwd',
+                                        'new_password2':    'pwd'
+                                    })
+
+        self.assertFormError(response, 'user_form', 'timezone', 'Select a valid choice. Moon/Moonbase_Alpha is not one of the available choices.')
+
     def test_register_keeps_timezone_and_other_fields_when_errors_are_detected(self):
         response = self.client.post(reverse("signup"),
             {
@@ -195,5 +207,38 @@ class SignUpTest(TestCase):
 
         self.assertFormError(response, 'user_form', 'username', 'User with this Username already exists.')
         self.assertFormError(response, 'user_form', 'email', 'User with this email address already exists.')
+
+    def test_register_successful_creates_a_user_and_sends_an_activation_email(self):
+        response = self.client.post(reverse("signup"),
+            {
+                'username':             'test',
+                'first_name':           'johnny',
+                'last_name':            'cash',
+                'email':                'j.cash@BaB.com',
+                'send_notifications':   'on',
+                'timezone':             'America/Chicago',
+                'bio':                  'my bio',
+                'contact':              'my contact',
+                'new_password1':        'pwd123',
+                'new_password2':        'pwd123'
+            })
+
+        self.assertContains(response, "has been sent to the email address you supplied")
+
+        try:
+            created_user = get_user_model().objects.get(username = 'test')
+            self.assertEqual('johnny', created_user.first_name)
+            self.assertEqual('cash', created_user.last_name)
+            self.assertEqual('j.cash@bab.com', created_user.email)
+            self.assertTrue(created_user.send_notifications)
+            self.assertEqual('America/Chicago', created_user.timezone)
+            self.assertEqual('my bio', created_user.bio)
+            self.assertEqual('my contact', created_user.contact)
+            self.assertFalse(created_user.is_active)
+            self.assertFalse(created_user.is_staff)
+            self.assertFalse(created_user.is_superuser)
+            self.assertTrue(check_password('pwd123', created_user.password))
+        except get_user_model().DoesNotExist:
+            self.fail("A user should have been created")
 
     # TODO insert fails ?

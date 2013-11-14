@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
+from django.contrib.auth.models import UserManager
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.timezone import now
 from profile.forms import MystradeUserForm
 
 
@@ -41,8 +43,25 @@ def sign_up(request):
         user_form = MystradeUserForm(data = request.POST)
         password_form = SetPasswordForm(data = request.POST, user = None)
 
-        if user_form.is_valid():
-            pass
+        if user_form.is_valid() and password_form.is_valid():
+            email = UserManager.normalize_email(user_form.cleaned_data['email'])
+
+            user = get_user_model()(username            = user_form.cleaned_data['username'],
+                                    first_name          = user_form.cleaned_data['first_name'],
+                                    last_name           = user_form.cleaned_data['last_name'],
+                                    email               = email,
+                                    send_notifications  = user_form.cleaned_data['send_notifications'],
+                                    timezone            = user_form.cleaned_data['timezone'],
+                                    bio                 = user_form.cleaned_data['bio'],
+                                    contact             = user_form.cleaned_data['contact'],
+                                    is_active           = False,
+                                    is_staff            = False,
+                                    is_superuser        = False,
+                                    date_joined         = now())
+            user.set_password(password_form.cleaned_data['new_password1'])
+            user.save()
+
+            return render(request, 'profile/registration_complete.html')
     else:
         user_form = MystradeUserForm()
         user_form['send_notifications'].field.initial = True
