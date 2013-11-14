@@ -180,3 +180,20 @@ class SignUpTest(TestCase):
         self.assertEqual("johnny", response.context['user_form']['first_name'].data)
         self.assertEqual("Pacific/Tahiti", response.context['user_form']['timezone'].data)
         self.assertEqual("my contact", response.context['user_form']['contact'].data)
+
+    def test_register_username_and_email_must_be_unique(self):
+        mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com')
+
+        response = self.client.post(reverse("signup"),
+            {
+                'username':         'test',
+                'email':            'test@aaa.com',
+                'timezone':         'Europe/Madrid',
+                'new_password1':    'pwd',
+                'new_password2':    'pwd'
+            })
+
+        self.assertFormError(response, 'user_form', 'username', 'User with this Username already exists.')
+        self.assertFormError(response, 'user_form', 'email', 'User with this email address already exists.')
+
+    # TODO insert fails ?
