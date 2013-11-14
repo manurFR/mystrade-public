@@ -30,6 +30,8 @@ EMAIL_SUBJECT_PREFIX = '[MysTrade] ' # for admins
 
 EMAIL_MYSTRADE = 'hello@mystra.de'
 
+ACCOUNT_ACTIVATION_DAYS = 2
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.

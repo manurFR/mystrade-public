@@ -1,8 +1,11 @@
+import datetime
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from django.core import mail
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.test.utils import override_settings
+from django.utils.timezone import now
 from model_mommy import mommy
 from profile.models import MystradeUser
 
@@ -248,4 +251,45 @@ class SignUpTest(TestCase):
         self.assertEqual(['j.cash@bab.com'], email.to)
         self.assertEqual('[MysTrade] Registration activation on mystrade.com', email.subject)
         self.assertIn('please navigate to the link below', email.body)
-        self.assertIn('/profile/activation/{0}'.format('a498222bf5be6758e027aa19255afc48fbf491c0'), email.body)
+        self.assertIn('/profile/activation/{0}/{1}'.format(created_user.id, 'a498222bf5be6758e027aa19255afc48fbf491c0'), email.body)
+
+    def test_activation_of_an_invalid_key(self):
+        user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com')
+
+        response = self.client.get(reverse("activation", args = [user.id, '%invalid@']))
+        self.assertEqual(403, response.status_code)
+
+    def test_activation_of_an_unknown_user(self):
+        response = self.client.get(reverse("activation", args = ['987654', 'a'*40]))
+        self.assertEqual(403, response.status_code)
+
+    @override_settings(ACCOUNT_ACTIVATION_DAYS = 2)
+    def test_expired_activation_key(self):
+        user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com',
+                          date_joined = now() + datetime.timedelta(days = -3))
+
+        response = self.client.get(reverse("activation", args = [user.id, 'a498222bf5be6758e027aa19255afc48fbf491c0']))
+        self.assertEqual(403, response.status_code)
+
+    def test_activation_with_the_bad_key_fails(self):
+        user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com', is_active = False)
+        response = self.client.get(reverse("activation", args = [user.id, 'a'*40]), follow = True)
+        self.assertEqual(403, response.status_code)
+        user = get_user_model().objects.get(id = user.id)
+        self.assertFalse(user.is_active)
+
+    def test_activation_with_a_correct_key_makes_the_user_active_and_logs_her(self):
+        user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com', is_active = False)
+        user.set_password('pwd123')
+        user.save()
+
+        response = self.client.get(reverse("activation", args = [user.id, 'a498222bf5be6758e027aa19255afc48fbf491c0']), follow = True)
+        self.assertEqual(200, response.status_code)
+
+        user = get_user_model().objects.get(id = user.id)
+        self.assertTrue(user.is_active)
+
+        # self.assertIn('_auth_user_id', self.client.session)
+        # self.assertEqual(self.client.session['_auth_user_id'], user.pk)
+
+

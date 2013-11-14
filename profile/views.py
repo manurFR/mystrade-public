@@ -1,12 +1,16 @@
 # coding=utf-8
+import datetime
 import hashlib
-from django.contrib.auth import get_user_model
+import re
+from django.contrib.auth import get_user_model, authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.models import UserManager
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.timezone import now
+from mystrade import settings
 from profile.forms import MystradeUserForm
 from utils import utils
 
@@ -71,7 +75,7 @@ def sign_up(request):
             # create an activation key and send it to the new user
             activation_key = _generate_activation_key(user_form.cleaned_data['username'])
             utils.send_notification_email("registration_activation", email,
-                                          {'activation_url': request.build_absolute_uri(reverse('activation', args = [activation_key]))})
+                                          {'activation_url': request.build_absolute_uri(reverse('activation', args = [user.id, activation_key]))})
 
             return render(request, 'profile/registration_complete.html')
     else:
@@ -87,5 +91,22 @@ def _generate_activation_key(username, salt = 'µy5Tr@d3'):
         username = username.encode('utf-8')
     return hashlib.sha1(salt+username).hexdigest()
 
-def activation(request):
-    pass
+SHA1_RE = re.compile('^[a-f0-9]{40}$')
+def activation(request, user_id, activation_key):
+    if request.method == 'GET' and SHA1_RE.search(activation_key):
+        try:
+            user = get_user_model().objects.get(pk = user_id)
+        except get_user_model().DoesNotExist:
+            raise PermissionDenied
+        if not _activation_key_expired(user) and activation_key == _generate_activation_key(user.username):
+            user.is_active = True
+            user.save()
+
+            # authenticate(username = user.username, password = user.password)
+            # if login(request, user):
+            return redirect("signup")
+
+    raise PermissionDenied
+
+def _activation_key_expired(user):
+    return user.date_joined + datetime.timedelta(days = settings.ACCOUNT_ACTIVATION_DAYS) <= now()
