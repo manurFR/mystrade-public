@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils.timezone import now
-from game.helpers import rules_in_hand, commodities_in_hand
+from game.helpers import rules_in_hand, commodities_in_hand, _check_game_access_or_PermissionDenied
 from game.models import RuleInHand, CommodityInHand, Game, GamePlayer
 from trade.forms import DeclineReasonForm, TradeForm, OfferForm
 from trade.models import Trade, TradedCommodities, Offer
@@ -26,9 +26,7 @@ TRADE_PAGINATION = 8
 def trade_list(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
-    super_access =  game.has_super_access(request.user)
-    if request.user not in game.players.all() and not super_access:
-        raise PermissionDenied
+    super_access = _check_game_access_or_PermissionDenied(game, request.user)
 
     if request.is_ajax():
         # the players can only see their own trades, whereas the game master can see all trades

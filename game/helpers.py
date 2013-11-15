@@ -1,3 +1,4 @@
+from django.core.exceptions import PermissionDenied
 from game.models import RuleInHand, CommodityInHand
 from trade.models import Offer
 
@@ -32,3 +33,20 @@ def free_informations_until_now(game, user):
                                   'free_information': offer.free_information})
 
     return free_informations
+
+def _check_game_access_or_PermissionDenied(game, user, players = None):
+    """ Checks if a user has the rights to access a game.
+         He/She must be a player in this game OR have super access, ie. be the game master or be an admin (staff) that is not a player in this game.
+        Giving a list of the game players as input argument is optional: it may prevents a second fetching from the database if the caller already
+         has the list.
+
+        In case the user doesn't have access to the game, a PermissionDenied exception (HTTP status code 403) is raised.
+
+        Otherwise, this function returns a boolean holding whether the user was granted permission thanks to having super access for this game or not.
+    """
+    if players is None:
+        players = game.players.all()
+    super_access = game.has_super_access(user)
+    if user not in players and not super_access:
+        raise PermissionDenied
+    return super_access

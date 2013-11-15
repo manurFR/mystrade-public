@@ -1,6 +1,5 @@
 import logging
 import datetime
-from pytz import timezone
 
 import bleach
 from django.http import HttpResponse, Http404
@@ -12,11 +11,11 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q, F
 from django.shortcuts import render, get_object_or_404, redirect
-from django.utils.timezone import now, utc, make_naive, get_current_timezone
+from django.utils.timezone import now, utc, make_naive
 
 from game.deal import deal_cards
 from game.forms import CreateGameForm, validate_number_of_players, validate_dates, MessageForm
-from game.helpers import rules_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules, free_informations_until_now
+from game.helpers import rules_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules, free_informations_until_now, _check_game_access_or_PermissionDenied
 from game.models import Game, CommodityInHand, GamePlayer, Message
 from ruleset.models import RuleCard, Ruleset
 from scoring.card_scoring import tally_scores, Scoresheet
@@ -32,7 +31,12 @@ logger = logging.getLogger(__name__)
 @login_required
 def game_list(request):
     if request.resolver_match.url_name == 'nopath' and request.COOKIES.has_key(COOKIE_LAST_VISITED_GAME_KEY):
-        return redirect(reverse('game', args = [request.COOKIES[COOKIE_LAST_VISITED_GAME_KEY]]))
+        try: # redirect to game board only if the game exists and the user has access rights
+            game = Game.objects.get(id = request.COOKIES[COOKIE_LAST_VISITED_GAME_KEY])
+            _check_game_access_or_PermissionDenied(game, request.user)
+            return redirect(reverse('game', args = [request.COOKIES[COOKIE_LAST_VISITED_GAME_KEY]]))
+        except (Game.DoesNotExist, PermissionDenied):
+            pass
 
     games = Game.objects.filter(Q(master = request.user) | Q(players = request.user)).distinct().order_by('-closing_date', '-end_date')
 
@@ -70,9 +74,7 @@ def game_board(request, game_id, trade_id = None):
 
     players = sorted(game.players.all(), key = lambda player: player.name.lower())
 
-    super_access = game.has_super_access(request.user)
-    if request.user not in players and not super_access:
-        raise PermissionDenied
+    super_access = _check_game_access_or_PermissionDenied(game, request.user, players)
 
     verified_trade_id = None
     if trade_id:
@@ -194,8 +196,7 @@ class Event(object):
 def events(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
-    if request.user not in game.players.all() and not game.has_super_access(request.user):
-        raise PermissionDenied
+    _check_game_access_or_PermissionDenied(game, request.user)
 
     if request.is_ajax():
         # Make a list of all events to display
@@ -319,8 +320,7 @@ def _full_refresh_needed(game, first_load, new_events, me):
 def post_message(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
-    if request.user not in game.players.all() and not game.has_super_access(request.user):
-        raise PermissionDenied
+    _check_game_access_or_PermissionDenied(game, request.user)
 
     if request.is_ajax() and request.method == 'POST':
         message_form = MessageForm(data = request.POST)

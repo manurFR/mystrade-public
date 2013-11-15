@@ -48,6 +48,27 @@ class EntryPageViewTest(MystradeTestCase):
         response = self.client.get("")
         self.assertRedirects(response, reverse('game', args = [self.game.id]))
 
+    def test_url_with_no_path_doesnt_redirect_when_cookie_is_set_to_unknown_game(self):
+        # preparation : set a cookie
+        self.client.cookies['mystrade-lastVisitedGame-id'] = '123456'
+
+        # test
+        response = self.client.get("", follow = True)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(response, "game/game_list.html")
+        self.assertTemplateNotUsed(response, "game/board.html")
+
+    def test_url_with_no_path_doesnt_redirect_when_cookie_is_set_to_a_game_for_which_the_user_doesnt_have_access_rights(self):
+        # preparation : set a cookie
+        other_game = mommy.make(Game)
+        self.client.cookies['mystrade-lastVisitedGame-id'] = str(other_game.id)
+
+        # test
+        response = self.client.get("", follow = True)
+        self.assertEqual(200, response.status_code)
+        self.assertTemplateUsed(response, "game/game_list.html")
+        self.assertTemplateNotUsed(response, "game/board.html")
+
     def test_game_list_never_redirects_to_game_board_even_if_a_cookie_is_set(self):
         # preparation : set a cookie
         self.client.get(reverse('game', args = [self.game.id]))
