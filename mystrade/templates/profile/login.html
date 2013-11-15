@@ -28,7 +28,10 @@
                 </tr>
                 <tr class="form-row">
                     <td class="label">{{ form.password.label_tag }} :</td>
-                    <td>{{ form.password }}</td>
+                    <td>
+                        {{ form.password }}
+                        <span class="helptext"><a href="{% url 'password_reset' %}">lost ?</a></span>
+                    </td>
                 </tr>
             </table>
 
