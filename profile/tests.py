@@ -68,11 +68,11 @@ class ViewsTest(TestCase):
 
     def test_editprofile_change_user_fields_and_password(self):
         response = self.client.post(reverse("editprofile"),
-                                    {'username': 'test', 'first_name': 'Leia', 'last_name': 'Organa',
-                                     'send_notifications': '',
-                                     'timezone': 'Europe/Rome',
-                                     'email': 'test@aaa.com', 'bio': 'princess', 'contact': 'D2-R2',
-                                     'old_password': 'test', 'new_password1': 'alderaan', 'new_password2': 'alderaan'},
+            {'username': 'test', 'first_name': 'Leia', 'last_name': 'Organa',
+             'send_notifications': '',
+             'timezone': 'Europe/Rome',
+             'email': 'test@aaa.com', 'bio': 'princess', 'contact': 'D2-R2',
+             'old_password': 'test', 'new_password1': 'alderaan', 'new_password2': 'alderaan'},
                                     follow = True)
 
         self.assertEqual(200, response.status_code)
@@ -171,13 +171,13 @@ class SignUpTest(TestCase):
 
     def test_register_fails_when_timezone_does_not_exist(self):
         response = self.client.post(reverse("signup"),
-                                    {
-                                        'username':         'test',
-                                        'email':            'test@aaa.com',
-                                        'timezone':         'Moon/Moonbase_Alpha',
-                                        'new_password1':    'pwd',
-                                        'new_password2':    'pwd'
-                                    })
+            {
+                'username':         'test',
+                'email':            'test@aaa.com',
+                'timezone':         'Moon/Moonbase_Alpha',
+                'new_password1':    'pwd',
+                'new_password2':    'pwd'
+            })
 
         self.assertFormError(response, 'user_form', 'timezone', 'Select a valid choice. Moon/Moonbase_Alpha is not one of the available choices.')
 
@@ -300,4 +300,24 @@ class SignUpTest(TestCase):
 
         self.assertTemplateUsed(response, "profile/activation_complete.html")
 
+    def test_only_activated_users_can_log_in(self):
+        user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com', is_active = False)
+        user.set_password('pwd123')
+        user.save()
 
+        response = self.client.post(reverse('login'),
+            {
+                'username': 'test',
+                'password': 'pwd123'
+            })
+        self.assertContains(response, "Your username and password didn't match. Please try again.")
+
+        user.is_active = True
+        user.save()
+
+        response = self.client.post(reverse('login'),
+            {
+                'username': 'test',
+                'password': 'pwd123'
+            })
+        self.assertRedirects(response, reverse('nopath'))
