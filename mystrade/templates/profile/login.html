@@ -28,17 +28,15 @@
                 </tr>
                 <tr class="form-row">
                     <td class="label">{{ form.password.label_tag }} :</td>
-                    <td>
-                        {{ form.password }}
-                        <span class="helptext"><a href="{% url 'password_reset' %}">lost ?</a></span>
-                    </td>
+                    <td>{{ form.password }}</td>
                 </tr>
             </table>
 
             <div class="submit-row">
                 <input type="submit" value="Log in" />
             </div>
-            <div class="helptext">or <a href="{% url 'signup' %}">sign up</a> to create an account</div>
+            <div class="helptext"><a href="{% url 'signup' %}">create an account</a> |
+                                  reset a <a href="{% url 'password_reset' %}">lost password</a></div>
             <input type="hidden" name="next" value="{{ next }}" />
         </form>
     </div>

@@ -8,15 +8,30 @@ urlpatterns = patterns('profile.views',
     url(r'^edit/$',                     'editprofile',              name = 'editprofile'),
     url(r'^signup/$',                   'sign_up',                  name = 'signup'),
     url(r'^activation/(\d+)/(.+)/$',    'activation',               name = 'activation'),
+
+    # reset password when forgotten
     url(r'^password_reset/$',           password_reset, {
                                                         'template_name':         'profile/password_reset.html',
                                                         'subject_template_name': 'notification/password_reset_subject.txt',
                                                         'email_template_name':   'notification/password_reset_body.txt',
-                                                        'from_email':            settings.EMAIL_MYSTRADE
+                                                        'from_email':            settings.EMAIL_MYSTRADE,
+                                                        'extra_context':         {'action': 'password_reset'}
                                                         },
                                                                     name = 'password_reset'),
-    url(r'^password_reset_done/$',      password_reset_done,        name = 'password_reset_done'),
+    url(r'^password_reset_done/$',      password_reset_done, {
+                                                        'template_name':         'profile/password_reset.html',
+                                                        'extra_context':         {'action': 'password_reset_done'}
+                                                        },
+                                                                    name = 'password_reset_done'),
     url(r'^password_reset_confirm/(?P<uidb36>[0-9A-Za-z]{1,13})-(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-                                        password_reset_confirm,     name = 'password_reset_confirm'),
-    url(r'^password_reset_complete/$',  password_reset_complete,    name = 'password_reset_complete'),
+                                        password_reset_confirm, {
+                                                        'template_name':         'profile/password_reset.html',
+                                                        'extra_context':         {'action': 'password_reset_confirm'}
+                                                        },
+                                                                    name = 'password_reset_confirm'),
+    url(r'^password_reset_complete/$',  password_reset_complete, {
+                                                        'template_name':         'profile/password_reset.html',
+                                                        'extra_context':         {'action': 'password_reset_complete'}
+                                                        },
+                                                                    name = 'password_reset_complete'),
 )
