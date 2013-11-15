@@ -6,7 +6,8 @@
 {% endblock %}
 
 {% block content %}
-    <h2>Welcome {{ user.name }}!</h2>
+    <h2>Welcome {{ username }}!</h2>
 
-    <p>Your registration has been successful. You will now be able to join a game. Please wait to be invited.</p>
+    <p>Your registration has been successful. Please wait to be invited to join a game.</p>
+    <p>You can now <a href="{% url 'login' %}">log in</a> to the site.</p>
 {% endblock content %}

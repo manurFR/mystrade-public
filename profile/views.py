@@ -103,10 +103,7 @@ def activation(request, user_id, activation_key):
             else:
                 user.is_active = True
                 user.save()
-
-                user.backend = 'django.contrib.auth.backends.ModelBackend'
-                login(request, user)
-                return render(request, 'profile/activation_complete.html')
+                return render(request, 'profile/activation_complete.html', {'username': user.username})
 
     raise PermissionDenied
 

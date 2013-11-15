@@ -287,7 +287,7 @@ class SignUpTest(TestCase):
         user = get_user_model().objects.get(id = user.id)
         self.assertFalse(user.is_active)
 
-    def test_activation_with_a_correct_key_makes_the_user_active_and_logs_her(self):
+    def test_activation_with_a_correct_key_makes_the_user_active(self):
         user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com', is_active = False)
         user.set_password('pwd123')
         user.save()
@@ -298,8 +298,6 @@ class SignUpTest(TestCase):
         user = get_user_model().objects.get(id = user.id)
         self.assertTrue(user.is_active)
 
-        self.assertIn('_auth_user_id', self.client.session)
-        self.assertEqual(self.client.session['_auth_user_id'], user.pk)
         self.assertTemplateUsed(response, "profile/activation_complete.html")
 
 
