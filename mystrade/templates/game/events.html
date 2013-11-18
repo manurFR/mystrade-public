@@ -1,10 +1,10 @@
 {% load staticfiles %}
 {% load humanize %}
-<div class="show_previous">{% if dateprevious %}<a id="link_show_previous_events">&lt; show previous events</a>{% endif %}</div>
+<div class="show_previous">{% if last_event_previous_page %}<a id="link_show_previous_events">&lt; show previous events</a>{% endif %}</div>
 {% regroup events by date|naturalday as grouped_events %}
 {% for group in grouped_events %}
     {# let's print the date, except if it's the first page of events and this date is the first and it's 'today' #}
-    {% if dateprevious or group.grouper != 'today' or not events.0.has_happened %}<div class="event_date">{{ group.grouper|capfirst }}</div>{% endif %}
+    {% if last_event_previous_page or group.grouper != 'today' or not events.0.has_happened %}<div class="event_date">{{ group.grouper|capfirst }}</div>{% endif %}
     {% for evt in group.list %}
         <div class="event{% if evt.highlight %} highlight{% endif %}">
             <div class="event_time">{{ evt.date|time }}</div>
@@ -61,21 +61,21 @@
         </div>
     {% endfor %}
 {% endfor %}
-<div class="show_more">{% if datenext %}<a id="link_show_more_events">show more events &gt;</a>{% endif %}</div>
+<div class="show_more">{% if first_event_next_page %}<a id="link_show_more_events">show more events &gt;</a>{% endif %}</div>
 
 <script> {# called functions are found in board.html, which will enclose this file #}
     lastEventsRefreshDate = "{{ lastEventsRefreshDate }}";
     $(".delete_icon").tooltip({ show: false }).on("click", function(event) { deleteMessage(event.target); });
     $(".event_text .warning_icon").tooltip();
-    $("#link_show_previous_events").on("click", function() { refreshEvents({% if dateprevious %}null, "{{ dateprevious }}"{% endif %}); });
-    $("#link_show_more_events").on("click", function() { refreshEvents({% if datenext %}"{{ datenext }}"{% endif %}); });
+    $("#link_show_previous_events").on("click", function() { refreshEvents({% if last_event_previous_page %}null, "{{ last_event_previous_page }}"{% endif %}); });
+    $("#link_show_more_events").on("click", function() { refreshEvents({% if first_event_next_page %}"{{ first_event_next_page }}"{% endif %}); });
     $(".event_link_trade").on("click", function(event) {
         refreshTrade($(event.target).data("tradeId"));
         $("#zone_tabs").tabs("option", "active", 1)
             .find("li[aria-controls=tab-trade]").find("a").text("View Trade");
     });
 
-{% if dateprevious %}
+{% if idprevious %}
     stopEventsRefresh();
 {% else %}
     if (!eventsRefreshIntervalId) {

@@ -153,13 +153,13 @@
          **                                Events (Tab Recently)                                   **
          ********************************************************************************************/
         var lastEventsRefreshDate;
-        function refreshEvents(datenext, dateprevious) {
+        function refreshEvents(first_event_next_page, last_event_previous_page) {
             var url = "{% url 'events' game.id %}";
             if (lastEventsRefreshDate) {
                 $("#zone_events").css("cursor", "wait");
                 url += "?lastEventsRefreshDate=" + lastEventsRefreshDate;
-                if (datenext) url += "&datenext=" + datenext;
-                if (dateprevious) url += "&dateprevious=" + dateprevious;
+                if (first_event_next_page) url += "&first_event_next_page=" + first_event_next_page;
+                if (last_event_previous_page) url += "&last_event_previous_page=" + last_event_previous_page;
             }
             $.get(url)
                 .fail(function() {

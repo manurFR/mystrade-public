@@ -317,11 +317,11 @@ class GameModelsTest(MystradeTestCase):
 
 class GameBoardMainTest(MystradeTestCase):
 
-    def test_returns_a_404_if_the_game_id_doesnt_exist(self):
+    def test_game_board_returns_a_404_if_the_game_id_doesnt_exist(self):
         response = self.client.get("/game/999999999/")
         self.assertEqual(404, response.status_code)
 
-    def test_access_to_game_board_forbidden_for_users_not_related_to_the_game_except_admins(self):
+    def test_game_board_access_forbidden_for_users_not_related_to_the_game_except_admins(self):
         self._assertGetGamePage()
 
         self.login_as(self.admin)
@@ -414,7 +414,7 @@ class GameBoardMainTest(MystradeTestCase):
         # only the players who were last seen in less than SECONDS_BEFORE_OFFLINE seconds are identified as online
         self.assertContains(response, "updateOnlineStatus([{0}, 5, 6]);".format(self.loginUser.id))
 
-    def test_game_board_set_a_cookie_for_active_games(self):
+    def test_game_board_cookie_set_for_active_games(self):
         self.game.start_date = now() + datetime.timedelta(days = -2)
         self.game.end_date = now() + datetime.timedelta(days = 2)
         self.game.save()
@@ -424,7 +424,7 @@ class GameBoardMainTest(MystradeTestCase):
         self.assertTrue(response.cookies.has_key('mystrade-lastVisitedGame-id'))
         self.assertEqual(str(self.game.id), response.cookies['mystrade-lastVisitedGame-id'].value)
 
-    def test_game_board_set_no_cookie_for_games_not_started(self):
+    def test_game_board_cookie_not_set_for_games_not_started(self):
         self.game.start_date = now() + datetime.timedelta(days = 2)
         self.game.end_date = now() + datetime.timedelta(days = 4)
         self.game.save()
@@ -630,39 +630,76 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         for i in range(int(2.5 * pagination)): # prepare 2 full pages and one last partial page of messages
             mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
                        posting_date = last_date + datetime.timedelta(hours = -i))
+        # add an event of id 0 for the game start
+        total_nb_of_events = int(2.5 * pagination) + 1
 
-        somewhere_in_page_1 = last_date + datetime.timedelta(hours = -(int(pagination / 2)))
-        last_in_page_1 = last_date + datetime.timedelta(hours = -(pagination - 1))
-        first_in_page_2 = last_date + datetime.timedelta(hours = -pagination)
-        last_in_page_2 = last_date + datetime.timedelta(hours = -(2 * pagination - 1))
-        first_in_page_3 = last_date + datetime.timedelta(hours = -(2 * pagination))
+        last_in_page_1  = total_nb_of_events - pagination
+        first_in_page_2 = total_nb_of_events - pagination - 1
+        last_in_page_2  = total_nb_of_events - (2 * pagination)
+        first_in_page_3 = total_nb_of_events - (2 * pagination) - 1
 
+        somewhere_in_page_1 = total_nb_of_events - int(pagination / 2)
+
+        # fetch page 1 (initial load)
         response = self._getTabRecently()
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination) # 'pagination' messages per page
         self.assertContains(response, '$("#link_show_previous_events").on("click", function() { refreshEvents(); });')
         self.assertContains(response, '$("#link_show_more_events").on("click", function() {{ refreshEvents("{0}"); }});'
-                                        .format(strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK)))
-
-        response = self._getTabRecently("datenext=" + strftime(last_in_page_2, views.FORMAT_EVENT_PERMALINK))
+                                                                                                .format(first_in_page_2))
+        # fetch page 3 (coming from page 2)
+        response = self._getTabRecently("first_event_next_page={0}".format(first_in_page_3))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = int(pagination / 2))
         self.assertContains(response, '$("#link_show_previous_events").on("click", function() {{ refreshEvents(null, "{0}"); }});'
-                                        .format(strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK)))
+                                                                                                .format(last_in_page_2))
         self.assertContains(response, '$("#link_show_more_events").on("click", function() { refreshEvents(); });')
 
-        response = self._getTabRecently("dateprevious=" + strftime(first_in_page_3, views.FORMAT_EVENT_PERMALINK))
+        # fetch page 2 (coming from page 3)
+        response = self._getTabRecently("last_event_previous_page={0}".format(last_in_page_2))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
-        self.assertContains(response, '$("#link_show_previous_events").on("click", function() {{ refreshEvents(null, "{0}"); }});'.
-                                        format(strftime(first_in_page_2, views.FORMAT_EVENT_PERMALINK)))
-        self.assertContains(response, '$("#link_show_more_events").on("click", function() {{ refreshEvents("{0}"); }});'.
-                                        format(strftime(last_in_page_2, views.FORMAT_EVENT_PERMALINK)))
+        self.assertContains(response, '$("#link_show_previous_events").on("click", function() {{ refreshEvents(null, "{0}"); }});'
+                                                                                                .format(last_in_page_1))
+        self.assertContains(response, '$("#link_show_more_events").on("click", function() {{ refreshEvents("{0}"); }});'
+                                                                                                .format(first_in_page_3))
 
-        # case when new events have appeared: there are less than 'pagination' events after dateprevious, but we should
-        #  display the first 'pagination' events anyway and not take into account the dateprevious
-        response = self._getTabRecently("dateprevious=" + strftime(somewhere_in_page_1, views.FORMAT_EVENT_PERMALINK))
+        # fetch page 1 (coming from page 2), when new events have appeared: there are less than 'pagination' events
+        #  of id greater than 'somewhere_in_page_1', but we should display the whole first page anyway and
+        #  not take into account the last_event_previous_page
+        response = self._getTabRecently("last_event_previous_page={0}".format(somewhere_in_page_1))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
         self.assertContains(response, '$("#link_show_previous_events").on("click", function() { refreshEvents(); });') # like the default
         self.assertContains(response, '$("#link_show_more_events").on("click", function() {{ refreshEvents("{0}"); }});'
-                                        .format(strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK))) # like the default
+                                                                                                .format(first_in_page_2)) # like the default
+
+    def test_tab_recently_multiple_events_at_the_exact_same_time_are_all_displayed(self):
+        # The event were identified with their timestamp, but when a lot of them had the same timestamp (ex: automatic
+        #  hand submitting at the close of a game) it would mess up the workflow of previous/more events links.
+        pagination = views.EVENTS_PAGINATION
+        last_date = utc.localize(datetime.datetime(2012, 01, 10, 23, 00, 00))
+        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+                           status = 'ACCEPTED', creation_date = last_date + datetime.timedelta(minutes = -90),
+                           finalizer = self.loginUser, closing_date = last_date,
+                           initiator_offer = mommy.make(Offer),
+                           responder_offer = mommy.make(Offer, creation_date = last_date + datetime.timedelta(minutes = -30)))
+        msg_timestamp = last_date + datetime.timedelta(hours = -1)
+        for i in range(pagination): # prepare 1 full page of messages, all at the same timestamp
+            mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg', posting_date = msg_timestamp)
+        self.game.start_date = last_date + datetime.timedelta(hours = -2)
+        self.game.save()
+
+        # total number of events : pagination + 1 game start + 3 events for the trade
+        total_nb_of_events = pagination + 1 + 3
+
+        # let's ask for page 2. one should see two messages, the create trade and the game start
+        response = self._getTabRecently("first_event_next_page={0}".format(total_nb_of_events - pagination - 1))
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 2)
+        self.assertContains(response, 'proposed a <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade.id))
+        self.assertContains(response, "Game #{0} has started".format(self.game.id))
+
+        # from page 2, let's ask for page 1, one should see 2 events for the accepted trade (finalize and reply) and (pagination-2) messages
+        response = self._getTabRecently("last_event_previous_page={0}".format(total_nb_of_events - pagination))
+        self.assertContains(response, 'accepted a <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade.id))
+        self.assertContains(response, 'replied to your <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade.id))
+        self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination - 2)
 
     def test_tab_recently_messages_from_the_game_master_stand_out(self):
         msg = mommy.make(Message, game = self.game, sender = self.master, content = 'some message')
@@ -675,21 +712,21 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         pagination = views.EVENTS_PAGINATION
         now_date = now()
         for i in range(int(pagination + 1)): # ('pagination' + 1) messages today
-            mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
+            mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg', # id 3 to pagination + 3
                        posting_date = now_date + datetime.timedelta(seconds = -i))
-        last_in_page_1 = now_date + datetime.timedelta(seconds = -(pagination - 1))
         # add 1 message yesterday and 1 message the day before yesterday
-        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
+        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg', # id 2
                    posting_date = now_date + datetime.timedelta(days = -1))
-        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg',
+        mommy.make(Message, game = self.game, sender = self.loginUser, content = 'my test msg', # id 1
                    posting_date = now_date + datetime.timedelta(days = -2))
+        # + implicit event of id 0 : game start -- total: 12 events
 
         # 'today' should not be specified when it is the first item on the first page
         response = self._getTabRecently()
         self.assertNotContains(response, '<div class="event_date">')
 
         # on the second page, the days should be specified for 'today', 'yesterday' and the day before yesterday, duly formatted
-        response = self._getTabRecently("datenext=" + strftime(last_in_page_1, views.FORMAT_EVENT_PERMALINK))
+        response = self._getTabRecently("first_event_next_page={0}".format(11 - pagination)) # second page starts at len(events) - pagination - 1, ie. 12 - pagination - 1
         self.assertContains(response, '<div class="event_date">Today</div>')
         self.assertContains(response, '<div class="event_date">Yesterday</div>')
         # BEWARE timezone hell : now_date and all aware date variables in this test are in UTC, but the display for the user
@@ -1803,7 +1840,6 @@ class HelpersTest(MystradeTestCase):
         self.assertEqual(2, len(free_infos))
         self.assertIn({'offerer': self.alternativeUser, 'date': closing_date, 'free_information': "info1"}, free_infos)
         self.assertIn({'offerer': self.alternativeUser, 'date': closing_date, 'free_information': "info2"}, free_infos)
-
 
 class OnlineStatusMiddlewareTest(MystradeTestCase):
 

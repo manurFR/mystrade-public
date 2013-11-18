@@ -221,35 +221,42 @@ def events(request, game_id):
         for gameplayer in game.gameplayer_set.filter(submit_date__isnull = False):
             events.append(Event('submit_hand', gameplayer.submit_date, gameplayer.player))
 
-        events.sort(key = lambda evt: evt.date, reverse = True)
+        # sort by date, then by user's name for events with the same date
+        events.sort(key = lambda evt: evt.sender.name) # secondary key first
+        events.sort(key = lambda evt: evt.date) # primary key at the end
+        # set the id of each event (its order number)
+        for order, event in enumerate(events):
+            event.order = order
 
-        # Pagination by the date of the first or last event displayed
+        # Display only a page of events
         history_request = False # is it a fetch of something else than the first page of displayable events ?
-        if request.GET.get('dateprevious'):
-            start_date = datetime.datetime.strptime(request.GET.get('dateprevious'), FORMAT_EVENT_PERMALINK)
-            events_in_the_range = _events_in_the_range(events, start_date=start_date)
+        if request.GET.get('last_event_previous_page'):
+            last_event_to_display = int(request.GET.get('last_event_previous_page'))
+            events_in_the_range = events[last_event_to_display:]
             if len(events_in_the_range) >= EVENTS_PAGINATION:
-                displayed_events = events_in_the_range[-EVENTS_PAGINATION:] # take the *last* EVENTS_PAGINATION events
+                displayed_events = events_in_the_range[:EVENTS_PAGINATION] # take the *first* EVENTS_PAGINATION events
                 history_request = True
-            else: # if there are less than EVENTS_PAGINATION events after start_date, it's the beginning of the list and we take as much events as we can
-                displayed_events = events[:EVENTS_PAGINATION]
+            else: # if there are less than EVENTS_PAGINATION events to display, a full page is displayed anyway
+                displayed_events = events[-EVENTS_PAGINATION:]
         else:
-            if request.GET.get('datenext'):
-                end_date = datetime.datetime.strptime(request.GET.get('datenext'), FORMAT_EVENT_PERMALINK)
+            if request.GET.get('first_event_next_page'):
+                first_event_to_display = int(request.GET.get('first_event_next_page'))
+                events_in_the_range = events[:first_event_to_display + 1]
                 history_request = True
             else:
-                end_date = None
-            displayed_events = _events_in_the_range(events, end_date = end_date)[:EVENTS_PAGINATION] # take the *first* EVENTS_PAGINATION events
+                events_in_the_range = events
+            displayed_events = events_in_the_range[-EVENTS_PAGINATION:] # take the *last* EVENTS_PAGINATION events
 
-        if len(displayed_events) > 0 and events.index(displayed_events[0]) > 0: # events later
-            dateprevious = datetime.datetime.strftime(displayed_events[0].date, FORMAT_EVENT_PERMALINK)
+        # define the ids (excluded) of the starting/last event to be displayed in next/previous page
+        if len(displayed_events) > 0 and displayed_events[-1].order < len(events) - 1: # there are later events, to be displayed in the previous pages
+            last_event_previous_page = displayed_events[-1].order + 1
         else:
-            dateprevious = None
+            last_event_previous_page = None
 
-        if len(displayed_events) > 0 and displayed_events[-1].date > events[-1].date: # events earlier
-            datenext = datetime.datetime.strftime(displayed_events[-1].date, FORMAT_EVENT_PERMALINK)
+        if len(displayed_events) > 0 and displayed_events[0].order > 0: # there were earlier events, to be displayed in the next pages
+            first_event_next_page = displayed_events[0].order - 1
         else:
-            datenext = None
+            first_event_next_page = None
 
         # is it the first fetch of the events since the game board has loaded -- otherwise it's a later periodic refresh
         first_load = 'lastEventsRefreshDate' not in request.GET
@@ -262,9 +269,13 @@ def events(request, game_id):
                     event.highlight = True
                     new_events.append(event)
 
+        # reverse the list to display events in inverse chronological order
+        displayed_events.reverse()
+
         if first_load or history_request or new_events:
             response = render(request, 'game/events.html',
-                          {'game': game, 'events': displayed_events, 'datenext': datenext, 'dateprevious': dateprevious,
+                          {'game': game, 'events': displayed_events, 'first_event_next_page': first_event_next_page, 'last_event_previous_page': last_event_previous_page,
+                          # 'datenext': datenext, 'dateprevious': dateprevious,
                            'lastEventsRefreshDate': datetime.datetime.strftime(now(), FORMAT_EVENT_PERMALINK)})
         else:
             response = HttpResponse(status = 204) # 204 = No Content
@@ -274,23 +285,6 @@ def events(request, game_id):
         return response
 
     raise PermissionDenied
-
-def _events_in_the_range(events, start_date = None, end_date = None):
-    if start_date is None:
-        start_date = datetime.datetime.min
-    if end_date is None:
-        end_date = datetime.datetime.max
-
-    start_index = None
-    range_of_events = []
-    for index, evt in enumerate(events):
-        if start_date < make_naive(evt.date, utc) < end_date:
-            if start_index is not None:
-                range_of_events.append(evt)
-            else:
-                start_index = index
-                range_of_events = [evt]
-    return range_of_events
 
 def _full_refresh_needed(game, first_load, new_events, me):
     """ For a player during the game, let's ask for an immediate refresh of the whole game board if :
