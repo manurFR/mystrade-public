@@ -31,3 +31,30 @@ h3 {
   @include shadowBox();
   @include roundedBorder(8px);
 }
+
+#etiquette {
+  @include blackBorder();
+  @include roundedBorder($radius: 8px);
+  padding: 0 5px;
+  background-color: lighten($backgroundColor, 8%);
+
+  h2 {
+    margin-top: 4px;
+  }
+
+  #idea {
+    text-align: center;
+    margin-top: -4px;
+    margin-bottom: 6px;
+  }
+
+  ol li {
+    margin-bottom: 6px;
+  }
+
+  #lastUpdated {
+    @include font($size: 8pt, $style: italic);
+    margin-bottom: 2px;
+    text-align: right;
+  }
+}
