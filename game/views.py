@@ -178,6 +178,7 @@ def _set_lastVisitedGame_cookie_if_needed(request, response, game):
 #############################################################################
 EVENTS_PAGINATION = 8
 EVENTS_REFRESH_DELAY = 3 * 60 * 1000 # ms
+# EVENTS_REFRESH_DELAY = 5 * 1000 # ms # for tests
 FORMAT_EVENT_PERMALINK = "%Y-%m-%dT%H:%M:%S.%f"
 
 class Event(object):
@@ -221,44 +222,44 @@ def events(request, game_id):
         for gameplayer in game.gameplayer_set.filter(submit_date__isnull = False):
             events.append(Event('submit_hand', gameplayer.submit_date, gameplayer.player))
 
+        # The events are sorted by chronological order, and all manipulation will be done in this order.
+        # Only once the subset of events to display is selected will the list be reversed to show them in inverse chronological order.
+
         # sort by date, then by user's name for events with the same date
         events.sort(key = lambda evt: evt.sender.name) # secondary key first
         events.sort(key = lambda evt: evt.date) # primary key at the end
-        # set the id of each event (its order number)
-        for order, event in enumerate(events):
-            event.order = order
 
         # Display only a page of events
-        history_request = False # is it a fetch of something else than the first page of displayable events ?
-        if request.GET.get('last_event_previous_page'):
-            last_event_to_display = int(request.GET.get('last_event_previous_page'))
+        if request.GET.get('last_event'):
+            page_requested = True
+            last_event_to_display = int(request.GET.get('last_event'))
             events_in_the_range = events[last_event_to_display:]
             if len(events_in_the_range) >= EVENTS_PAGINATION:
                 displayed_events = events_in_the_range[:EVENTS_PAGINATION] # take the *first* EVENTS_PAGINATION events
-                history_request = True
             else: # if there are less than EVENTS_PAGINATION events to display, a full page is displayed anyway
                 displayed_events = events[-EVENTS_PAGINATION:]
+        elif request.GET.get('first_event'):
+            page_requested = True
+            first_event_to_display = int(request.GET.get('first_event'))
+            events_in_the_range = events[:first_event_to_display + 1]
+            displayed_events = events_in_the_range[-EVENTS_PAGINATION:] # take the *last* EVENTS_PAGINATION events
         else:
-            if request.GET.get('first_event_next_page'):
-                first_event_to_display = int(request.GET.get('first_event_next_page'))
-                events_in_the_range = events[:first_event_to_display + 1]
-                history_request = True
-            else:
-                events_in_the_range = events
+            page_requested = False
+            events_in_the_range = events
             displayed_events = events_in_the_range[-EVENTS_PAGINATION:] # take the *last* EVENTS_PAGINATION events
 
         # define the ids (excluded) of the starting/last event to be displayed in next/previous page
-        if len(displayed_events) > 0 and displayed_events[-1].order < len(events) - 1: # there are later events, to be displayed in the previous pages
-            last_event_previous_page = displayed_events[-1].order + 1
+        if len(displayed_events) > 0 and events.index(displayed_events[-1]) < len(events) - 1: # there are later events, to be displayed in the previous pages
+            last_event = events.index(displayed_events[-1]) + 1
         else:
-            last_event_previous_page = None
+            last_event = None
 
-        if len(displayed_events) > 0 and displayed_events[0].order > 0: # there were earlier events, to be displayed in the next pages
-            first_event_next_page = displayed_events[0].order - 1
+        if len(displayed_events) > 0 and events.index(displayed_events[0]) > 0: # there were earlier events, to be displayed in the next pages
+            first_event = events.index(displayed_events[0]) - 1
         else:
-            first_event_next_page = None
+            first_event = None
 
-        # is it the first fetch of the events since the game board has loaded -- otherwise it's a later periodic refresh
+        # is it the first fetch of the events since the game board has loaded? -- otherwise it's a later periodic refresh
         first_load = 'lastEventsRefreshDate' not in request.GET
 
         new_events = []
@@ -269,13 +270,12 @@ def events(request, game_id):
                     event.highlight = True
                     new_events.append(event)
 
-        # reverse the list to display events in inverse chronological order
+        # HERE we eventually reverse the list to display events in inverse chronological order
         displayed_events.reverse()
 
-        if first_load or history_request or new_events:
+        if first_load or page_requested or new_events:
             response = render(request, 'game/events.html',
-                          {'game': game, 'events': displayed_events, 'first_event_next_page': first_event_next_page, 'last_event_previous_page': last_event_previous_page,
-                          # 'datenext': datenext, 'dateprevious': dateprevious,
+                          {'game': game, 'events': displayed_events, 'first_event': first_event, 'last_event': last_event,
                            'lastEventsRefreshDate': datetime.datetime.strftime(now(), FORMAT_EVENT_PERMALINK)})
         else:
             response = HttpResponse(status = 204) # 204 = No Content

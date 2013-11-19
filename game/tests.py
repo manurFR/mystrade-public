@@ -647,14 +647,14 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertContains(response, '$("#link_show_more_events").on("click", function() {{ refreshEvents("{0}"); }});'
                                                                                                 .format(first_in_page_2))
         # fetch page 3 (coming from page 2)
-        response = self._getTabRecently("first_event_next_page={0}".format(first_in_page_3))
+        response = self._getTabRecently("first_event={0}".format(first_in_page_3))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = int(pagination / 2))
         self.assertContains(response, '$("#link_show_previous_events").on("click", function() {{ refreshEvents(null, "{0}"); }});'
                                                                                                 .format(last_in_page_2))
         self.assertContains(response, '$("#link_show_more_events").on("click", function() { refreshEvents(); });')
 
         # fetch page 2 (coming from page 3)
-        response = self._getTabRecently("last_event_previous_page={0}".format(last_in_page_2))
+        response = self._getTabRecently("last_event={0}".format(last_in_page_2))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
         self.assertContains(response, '$("#link_show_previous_events").on("click", function() {{ refreshEvents(null, "{0}"); }});'
                                                                                                 .format(last_in_page_1))
@@ -663,8 +663,8 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
 
         # fetch page 1 (coming from page 2), when new events have appeared: there are less than 'pagination' events
         #  of id greater than 'somewhere_in_page_1', but we should display the whole first page anyway and
-        #  not take into account the last_event_previous_page
-        response = self._getTabRecently("last_event_previous_page={0}".format(somewhere_in_page_1))
+        #  not take into account the last_event
+        response = self._getTabRecently("last_event={0}".format(somewhere_in_page_1))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination)
         self.assertContains(response, '$("#link_show_previous_events").on("click", function() { refreshEvents(); });') # like the default
         self.assertContains(response, '$("#link_show_more_events").on("click", function() {{ refreshEvents("{0}"); }});'
@@ -672,7 +672,7 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
 
     def test_tab_recently_multiple_events_at_the_exact_same_time_are_all_displayed(self):
         # The event were identified with their timestamp, but when a lot of them had the same timestamp (ex: automatic
-        #  hand submitting at the close of a game) it would mess up the workflow of previous/more events links.
+        #  hand submitting at the close of a game) it messed up the workflow of previous/more events links.
         pagination = views.EVENTS_PAGINATION
         last_date = utc.localize(datetime.datetime(2012, 01, 10, 23, 00, 00))
         trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
@@ -690,13 +690,13 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         total_nb_of_events = pagination + 1 + 3
 
         # let's ask for page 2. one should see two messages, the create trade and the game start
-        response = self._getTabRecently("first_event_next_page={0}".format(total_nb_of_events - pagination - 1))
+        response = self._getTabRecently("first_event={0}".format(total_nb_of_events - pagination - 1))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = 2)
         self.assertContains(response, 'proposed a <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade.id))
         self.assertContains(response, "Game #{0} has started".format(self.game.id))
 
         # from page 2, let's ask for page 1, one should see 2 events for the accepted trade (finalize and reply) and (pagination-2) messages
-        response = self._getTabRecently("last_event_previous_page={0}".format(total_nb_of_events - pagination))
+        response = self._getTabRecently("last_event={0}".format(total_nb_of_events - pagination))
         self.assertContains(response, 'accepted a <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade.id))
         self.assertContains(response, 'replied to your <a class="event_link_trade" data-trade-id="{0}">trade</a>'.format(trade.id))
         self.assertContains(response, "<div class=\"message_content\">my test msg</div>", count = pagination - 2)
@@ -726,7 +726,7 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.assertNotContains(response, '<div class="event_date">')
 
         # on the second page, the days should be specified for 'today', 'yesterday' and the day before yesterday, duly formatted
-        response = self._getTabRecently("first_event_next_page={0}".format(11 - pagination)) # second page starts at len(events) - pagination - 1, ie. 12 - pagination - 1
+        response = self._getTabRecently("first_event={0}".format(11 - pagination)) # second page starts at len(events) - pagination - 1, ie. 12 - pagination - 1
         self.assertContains(response, '<div class="event_date">Today</div>')
         self.assertContains(response, '<div class="event_date">Yesterday</div>')
         # BEWARE timezone hell : now_date and all aware date variables in this test are in UTC, but the display for the user
