@@ -10,8 +10,8 @@ class TradeForm(forms.Form):
         self.fields['responder'].queryset = get_user_model().objects.filter(gameplayer__game = game,
                                             gameplayer__submit_date__isnull = True).exclude(id = me.id).order_by_full_name()
 
-class DeclineReasonForm(forms.Form):
-    decline_reason = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
+class FinalizeReasonForm(forms.Form):
+    finalize_reason = forms.CharField(required = False, widget = forms.Textarea(attrs={'cols': '145', 'rows': '3'}))
 
 ERROR_EMPTY_OFFER = "At least one card or one free information should be offered."
 class OfferForm(forms.Form):

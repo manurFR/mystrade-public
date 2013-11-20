@@ -50,11 +50,11 @@
     {% else %}
         No offer from {% include "common/name_or_you.html" with who=trade.responder %}.
     {% endif %}
-    {% if trade.status == 'DECLINED' and trade.decline_reason %}
+    {% if trade.status == 'DECLINED' and trade.finalize_reason %}
         <hr>
         <h3>{% include "common/name_or_you.html" with who=trade.finalizer %} gave the following reason to decline:</h3>
         <div class="message_content">
-            {{ trade.decline_reason }}
+            {{ trade.finalize_reason }}
         </div>
     {% endif %}
 {% endif %}
@@ -87,7 +87,7 @@
         $("#zone_offer").hide("blind");
         $("#zone_decline").hide();
         $("#zone_choice_buttons").show("blind");
-        $("#id_decline_reason").val("")
+        $("#id_finalize_reason").val("")
     {% endif %}
     });
 

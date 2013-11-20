@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404, render
 from django.utils.timezone import now
 from game.helpers import rules_in_hand, commodities_in_hand, _check_game_access_or_PermissionDenied
 from game.models import RuleInHand, CommodityInHand, Game, GamePlayer
-from trade.forms import DeclineReasonForm, TradeForm, OfferForm
+from trade.forms import FinalizeReasonForm, TradeForm, OfferForm
 from trade.models import Trade, TradedCommodities, Offer
 from utils import utils, stats
 
@@ -73,10 +73,10 @@ def show_trade(request, game_id, trade_id):
         if trade.status == 'INITIATED' and request.user == trade.responder:
             offer_form = _prepare_offer_form(request, trade.game)
             return render(request, 'trade/trade.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access,
-                                                        'decline_reason_form': DeclineReasonForm(), 'offer_form': offer_form})
+                                                        'finalize_reason_form': FinalizeReasonForm(), 'offer_form': offer_form})
         elif trade.status == 'REPLIED' and request.user == trade.initiator:
             return render(request, 'trade/trade.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access,
-                                                        'decline_reason_form': DeclineReasonForm()})
+                                                        'finalize_reason_form': FinalizeReasonForm()})
         else:
             return render(request, 'trade/trade.html', {'game': game, 'trade': trade, 'errors': False, 'super_access': super_access})
 
@@ -269,11 +269,11 @@ def decline_trade(request, game_id, trade_id):
         if (trade.game_id == int(game_id) and trade.game.is_active() and
             ((trade.status == 'INITIATED' and request.user == trade.responder) or
             (trade.status == 'REPLIED' and request.user == trade.initiator))):
-            decline_reason_form = DeclineReasonForm(request.POST)
-            if decline_reason_form.is_valid():
+            finalize_reason_form = FinalizeReasonForm(request.POST)
+            if finalize_reason_form.is_valid():
                 trade.status = 'DECLINED'
                 trade.finalizer = request.user
-                trade.decline_reason = bleach.clean(decline_reason_form.cleaned_data['decline_reason'], tags = [], strip = True)
+                trade.finalize_reason = bleach.clean(finalize_reason_form.cleaned_data['finalize_reason'], tags = [], strip = True)
                 trade.closing_date = now()
                 trade.save()
 

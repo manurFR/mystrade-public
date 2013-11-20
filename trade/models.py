@@ -29,7 +29,7 @@ class Trade(models.Model):
 
     status = models.CharField(max_length = 15, choices =[(status, status) for status in TRADE_STATUS], default = "INITIATED") # see above
 
-    decline_reason = models.TextField(blank = True, null = True)
+    finalize_reason = models.TextField(blank = True, null = True)
     finalizer = models.ForeignKey(settings.AUTH_USER_MODEL, null = True,
         verbose_name = "Player that caused the trade to reach the current final status, null if not in a final status")
 

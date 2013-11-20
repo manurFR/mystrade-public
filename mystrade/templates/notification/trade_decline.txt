@@ -7,8 +7,8 @@ The trade included the following elements:
 {% if trade.responder_offer %}=== {{ trade.responder.name }} offered ===
 {% include "notification/_offer_detail.txt" with offer=trade.responder_offer %}{% endif %}
 
-{% if trade.decline_reason %}{{ trade.finalizer.name }} gave the following reason to decline :
-{{ trade.decline_reason }}{% endif %}
+{% if trade.finalize_reason %}{{ trade.finalizer.name }} gave the following reason to decline :
+{{ trade.finalize_reason }}{% endif %}
 
 Consult the trade on the following page:
 {{ url }}

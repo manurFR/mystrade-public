@@ -364,14 +364,14 @@ class ShowTradeViewTest(MystradeTestCase):
         self.assertNotContains(response, '<form id="accept_trade" data-trade-action="accept" data-trade-id="{0}">'.format(trade.id))
         self.assertNotContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
-    def test_decline_reason_displayed_in_show_trade_when_DECLINED(self):
+    def test_finalize_reason_displayed_in_show_trade_when_DECLINED(self):
         trade = self._prepare_trade('DECLINED', finalizer = self.alternativeUser)
         response = self._getShowTrade(trade)
 
         self.assertRegexpMatches(response.content, "declined by <div class=\"game-player\".*><a href=\".*\">test5</a>")
         self.assertNotContains(response, "with the following reason given:")
 
-        trade.decline_reason = "Because I do not need it"
+        trade.finalize_reason = "Because I do not need it"
         trade.save()
 
         response = self._getShowTrade(trade)
@@ -750,13 +750,13 @@ class ModifyTradeViewsTest(MystradeTestCase):
 
     def test_decline_trade_allowed_and_effective_for_the_responder_for_a_trade_in_status_INITIATED(self):
         trade = self._prepare_trade('INITIATED', initiator = self.alternativeUser, responder = self.loginUser)
-        response = self._assertOperationAllowed(trade.id, "decline", {'decline_reason': "this is my reason"})
+        response = self._assertOperationAllowed(trade.id, "decline", {'finalize_reason': "this is my reason"})
 
         trade = Trade.objects.get(pk = trade.id)
         self.assertEqual("DECLINED", trade.status)
         self.assertEqual(self.loginUser, trade.finalizer)
         self.assertIsNotNone(trade.closing_date)
-        self.assertEqual("this is my reason", trade.decline_reason)
+        self.assertEqual("this is my reason", trade.finalize_reason)
 
         # notification email sent
         self.assertEqual(1, len(mail.outbox))
@@ -769,13 +769,13 @@ class ModifyTradeViewsTest(MystradeTestCase):
 
     def test_decline_trade_allowed_and_effective_for_the_initiator_for_a_trade_in_status_REPLIED(self):
         trade = self._prepare_trade('REPLIED')
-        response = self._assertOperationAllowed(trade.id, "decline", {'decline_reason': "this is my reason"})
+        response = self._assertOperationAllowed(trade.id, "decline", {'finalize_reason': "this is my reason"})
 
         trade = Trade.objects.get(pk = trade.id)
         self.assertEqual("DECLINED", trade.status)
         self.assertEqual(self.loginUser, trade.finalizer)
         self.assertIsNotNone(trade.closing_date)
-        self.assertEqual("this is my reason", trade.decline_reason)
+        self.assertEqual("this is my reason", trade.finalize_reason)
 
         # notification email sent
         self.assertEqual(1, len(mail.outbox))

@@ -1,6 +1,6 @@
 <h3>Explain why you decline this offer? (optional)</h3>
 <form id="decline_trade" data-trade-action="decline" data-trade-id="{{ trade.id }}">{% csrf_token %}
-    <div>{{ decline_reason_form.decline_reason }}<br/>
+    <div>{{ finalize_reason_form.finalize_reason }}<br/>
         <span class="helptext">The other player will see this comment.</span></div>
     <div class="submit">
         <input type="submit" class="trade_submit_button" value="Yes, I confirm I decline"/> &nbsp;
