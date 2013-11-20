@@ -1,0 +1,23 @@
+<div id="zone_accept">
+    <h3>Add a comment? (optional)</h3>
+    <form id="accept_trade" data-trade-action="accept" data-trade-id="{{ trade.id }}">{% csrf_token %}
+        <div>{{ finalize_reason_form.finalize_reason }}<br/>
+            <span class="helptext">The other player will see this comment.</span></div>
+        <div class="submit">
+            <input type="submit" class="trade_submit_button" value="Yes, I confirm I accept"/> &nbsp;
+            <a class="link_reset_offer">let me think again</a>
+        </div>
+    </form>
+</div>
+
+<div id="zone_decline">
+    <h3>Explain why you decline this offer? (optional)</h3>
+    <form id="decline_trade" data-trade-action="decline" data-trade-id="{{ trade.id }}">{% csrf_token %}
+        <div>{{ finalize_reason_form.finalize_reason }}<br/>
+            <span class="helptext">The other player will see this comment.</span></div>
+        <div class="submit">
+            <input type="submit" class="trade_submit_button" value="Yes, I confirm I decline"/> &nbsp;
+            <a class="link_reset_offer">let me think again</a>
+        </div>
+    </form>
+</div>

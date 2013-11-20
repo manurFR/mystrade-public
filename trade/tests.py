@@ -364,6 +364,22 @@ class ShowTradeViewTest(MystradeTestCase):
         self.assertNotContains(response, '<form id="accept_trade" data-trade-action="accept" data-trade-id="{0}">'.format(trade.id))
         self.assertNotContains(response, '<form id="decline_trade" data-trade-action="decline" data-trade-id="{0}">'.format(trade.id))
 
+    def test_finalize_reason_displayed_in_show_trade_when_ACCEPTED(self):
+        trade = self._prepare_trade('ACCEPTED', initiator = self.alternativeUser, responder = self.loginUser, finalizer = self.alternativeUser)
+        response = self._getShowTrade(trade)
+
+        self.assertRegexpMatches(response.content, "accepted by <div class=\"game-player\".*><a href=\".*\">test5</a>")
+        self.assertNotContains(response, "accepted with the following comment:")
+
+        trade.finalize_reason = "Fine deal between us!"
+        trade.save()
+
+        response = self._getShowTrade(trade)
+
+        self.assertRegexpMatches(response.content, "accepted by <div class=\"game-player\".*><a href=\".*\">test5</a>")
+        self.assertContains(response, "accepted with the following comment:")
+        self.assertContains(response, "Fine deal between us!")
+
     def test_finalize_reason_displayed_in_show_trade_when_DECLINED(self):
         trade = self._prepare_trade('DECLINED', finalizer = self.alternativeUser)
         response = self._getShowTrade(trade)
@@ -644,13 +660,14 @@ class ModifyTradeViewsTest(MystradeTestCase):
 
         trade = self._prepare_trade('REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
 
-        response = self._assertOperationAllowed(trade.id, "accept")
+        response = self._assertOperationAllowed(trade.id, "accept", {'finalize_reason': "great deal"})
 
         # trade
         trade = Trade.objects.get(pk = trade.id)
         self.assertEqual("ACCEPTED", trade.status)
         self.assertEqual(self.loginUser, trade.finalizer)
         self.assertIsNotNone(trade.closing_date)
+        self.assertEqual("great deal", trade.finalize_reason)
 
         # rule cards : should have been swapped
         rih1_after_trade = RuleInHand.objects.get(pk=rih1.id)
@@ -913,7 +930,9 @@ class TransactionalViewsTest(TransactionTestCase):
         trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                                status = 'REPLIED', initiator_offer = offer_initiator, responder_offer = offer_responder)
 
-        response = self.client.post("/trade/{0}/{1}/accept/".format(self.game.id, trade.id), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        response = self.client.post("/trade/{0}/{1}/accept/".format(self.game.id, trade.id),
+                                    {'finalize_reason': 'crap!'},
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         self.assertEqual(200, response.status_code)
 
@@ -922,6 +941,7 @@ class TransactionalViewsTest(TransactionTestCase):
         self.assertEqual("REPLIED", trade.status)
         self.assertIsNone(trade.finalizer)
         self.assertIsNone(trade.closing_date)
+        self.assertIsNone(trade.finalize_reason)
 
         # rule cards : no swapping
         with self.assertRaises(RuleInHand.DoesNotExist):
