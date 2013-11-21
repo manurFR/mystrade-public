@@ -1030,22 +1030,78 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         except Message.DoesNotExist:
             pass
 
-    def test_refresh_needed_for_the_other_player_when_a_trade_has_been_accepted(self):
+    def test_full_refresh_needed_for_the_players(self):
+        # trade recently accepted by the other player
         date_now = now()
-        mommy.make(Trade, game = self.game, initiator = self.alternativeUser, responder = self.loginUser,
-                   initiator_offer = mommy.make(Offer), responder_offer = mommy.make(Offer),
-                   finalizer = self.alternativeUser, status = 'ACCEPTED', closing_date = date_now)
+        trade = mommy.make(Trade, game = self.game, initiator = self.alternativeUser, responder = self.loginUser,
+                           initiator_offer = mommy.make(Offer), responder_offer = mommy.make(Offer),
+                           finalizer = self.alternativeUser, status = 'ACCEPTED', closing_date = date_now)
 
         response = self._getTabRecently("lastEventsRefreshDate=" + strftime(date_now + datetime.timedelta(seconds = -1), views.FORMAT_EVENT_PERMALINK))
-
         self.assertEqual("True", response.get('full_refresh'))
 
-        # for the game master too
+        # trade recently cancelled by the other player
+        trade.status = 'CANCELLED'
+        trade.save()
+
+        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(date_now + datetime.timedelta(seconds = -1), views.FORMAT_EVENT_PERMALINK))
+        self.assertEqual("True", response.get('full_refresh'))
+
+        # trade recently declined by the other player
+        trade.status = 'DECLINED'
+        trade.save()
+
+        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(date_now + datetime.timedelta(seconds = -1), views.FORMAT_EVENT_PERMALINK))
+        self.assertEqual("True", response.get('full_refresh'))
+
+        # game already closed
+        self.game.closing_date = date_now + datetime.timedelta(seconds = -60)
+        self.game.save()
+
+        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(date_now + datetime.timedelta(seconds = -1), views.FORMAT_EVENT_PERMALINK))
+        self.assertEqual("False", response.get('full_refresh'))
+
+        # first load
+        self.game.closing_date = date_now + datetime.timedelta(seconds = 60)
+        self.game.save()
+
+        response = self._getTabRecently()
+        self.assertEqual("False", response.get('full_refresh'))
+
+    def test_full_refresh_needed_for_the_game_master(self):
         self.login_as(self.master)
 
-        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(date_now + datetime.timedelta(seconds = -1), views.FORMAT_EVENT_PERMALINK))
+        # trade recently accepted by a player
+        date_now = now()
+        trade = mommy.make(Trade, game = self.game, initiator = self.alternativeUser, responder = self.loginUser,
+                           initiator_offer = mommy.make(Offer), responder_offer = mommy.make(Offer),
+                           finalizer = self.alternativeUser, status = 'ACCEPTED', closing_date = date_now)
 
+        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(date_now + datetime.timedelta(seconds = -1), views.FORMAT_EVENT_PERMALINK))
         self.assertEqual("True", response.get('full_refresh'))
+
+        # trade recently declined by a player
+        trade.status = 'DECLINED'
+        trade.save()
+
+        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(date_now + datetime.timedelta(seconds = -1), views.FORMAT_EVENT_PERMALINK))
+        self.assertEqual("False", response.get('full_refresh'))
+
+        # game already closed
+        trade.status = 'ACCEPTED'
+        trade.save()
+        self.game.closing_date = date_now + datetime.timedelta(seconds = -60)
+        self.game.save()
+
+        response = self._getTabRecently("lastEventsRefreshDate=" + strftime(date_now + datetime.timedelta(seconds = -1), views.FORMAT_EVENT_PERMALINK))
+        self.assertEqual("False", response.get('full_refresh'))
+
+        # first load
+        self.game.closing_date = date_now + datetime.timedelta(seconds = 60)
+        self.game.save()
+
+        response = self._getTabRecently()
+        self.assertEqual("False", response.get('full_refresh'))
 
     def _getTabRecently(self, querystring = None):
         url = "/game/{0}/events".format(self.game.id)

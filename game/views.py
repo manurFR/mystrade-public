@@ -287,20 +287,22 @@ def events(request, game_id):
     raise PermissionDenied
 
 def _full_refresh_needed(game, first_load, new_events, me):
-    """ For a player during the game, let's ask for an immediate refresh of the whole game board if :
-         - it's not the first display of recent events after loading the game board
-         - and among the new events, there is at least one ACCEPTED by the other player (because it will modify the hand and/or free informations of the current player)
+    """ For a player, let's ask for an immediate refresh of the whole game board if:
+         - it's not the first display of recent events after loading the game board;
+         - and among the new events, there is at least one trade finalized by the other player
+           (because if ACCEPTED it will modify the hand and/or free informations of the current player,
+            and if CANCELLED or DECLINED it will free the card from their pending trade)
 
-        For the game master watching the score board, the presence of an ACCEPTED trade in the new events must provoke a full refresh too,
-         since the scores have been modified by the trade.
+        For the game master watching the score board, the criteria are:
+         - it's not the first display of recent events after loading the game board;
+         - there is at least an ACCEPTED trade in the new events (since the scores may have been modified by this trade).
     """
-    if not first_load:
-        if me in game.players.all() and not game.is_closed():
+    if not first_load and not game.is_closed():
+        if me in game.players.all():
             for event in new_events:
-                if event.event_type == 'finalize_trade':
-                    if event.trade.status == 'ACCEPTED' and event.trade.finalizer != me:
-                        return "True"
-        else: # score board
+                if event.event_type == 'finalize_trade' and event.trade.finalizer != me:
+                    return "True"
+        else: # game master and admins
             for event in new_events:
                 if event.event_type == 'accept_trade':
                     return "True"
