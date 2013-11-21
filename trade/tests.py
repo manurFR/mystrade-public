@@ -369,7 +369,7 @@ class ShowTradeViewTest(MystradeTestCase):
         response = self._getShowTrade(trade)
 
         self.assertRegexpMatches(response.content, "accepted by <div class=\"game-player\".*><a href=\".*\">test5</a>")
-        self.assertNotContains(response, "accepted with the following comment:")
+        self.assertNotContains(response, "added the following comment:")
 
         trade.finalize_reason = "Fine deal between us!"
         trade.save()
@@ -377,7 +377,7 @@ class ShowTradeViewTest(MystradeTestCase):
         response = self._getShowTrade(trade)
 
         self.assertRegexpMatches(response.content, "accepted by <div class=\"game-player\".*><a href=\".*\">test5</a>")
-        self.assertContains(response, "accepted with the following comment:")
+        self.assertContains(response, "added the following comment:")
         self.assertContains(response, "Fine deal between us!")
 
     def test_finalize_reason_displayed_in_show_trade_when_DECLINED(self):
@@ -708,6 +708,8 @@ class ModifyTradeViewsTest(MystradeTestCase):
         self.assertEqual('[MysTrade] Game #{0}: test2 has accepted the trade'.format(self.game.id), email.subject)
         self.assertIn('test2 has accepted your offer.'.format(self.game.id), email.body)
         self.assertIn('/game/{0}/trade/{1}/'.format(self.game.id, trade.id), email.body)
+        self.assertIn('added the following comment while accepting the trade', email.body)
+        self.assertIn('great deal', email.body)
         self.assertEqual(['test5@test.com'], email.to)
 
     def test_decline_trade_not_allowed_in_GET(self):

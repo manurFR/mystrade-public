@@ -49,7 +49,7 @@
         <h3>
             {% include "common/name_or_you.html" with who=trade.finalizer %}
             {% if trade.status == 'DECLINED' %}gave the following reason to decline:
-            {% elif trade.status == 'ACCEPTED' %}accepted with the following comment:{% endif %}
+            {% elif trade.status == 'ACCEPTED' %}added the following comment:{% endif %}
         </h3>
         <div class="message_content">
             {{ trade.finalize_reason }}

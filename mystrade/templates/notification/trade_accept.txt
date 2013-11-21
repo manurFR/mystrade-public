@@ -29,6 +29,9 @@ These elements have been traded :
 {% endfor %}{% endif %}
 {% endwith %}
 
+{% if trade.finalize_reason %}=== {{ trade.finalizer.name }} added the following comment while accepting the trade ===
+{{ trade.finalize_reason }}{% endif %}
+
 Consult the trade on the following page:
 {{ url }}
 
