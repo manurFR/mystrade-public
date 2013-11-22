@@ -1,0 +1,69 @@
+@import "common";
+
+body {
+  background-color: #187C96;
+}
+
+.modal_dialog, .modal_dialog.ui-dialog-content, .modal_dialog_class .ui-widget-header {
+  background-color: lighten(#187C96, 10%);
+}
+
+.even_color {
+  background-color: lighten(#187C96, 5%);
+
+  &:hover {
+    background-color: #187C96;
+  }
+}
+
+.odd_color {
+  background-color: darken(#187C96, 2%);
+
+  &:hover {
+    background-color: #187C96;
+  }
+}
+
+a, .dynamic_link, .event_text a.event_link_trade {
+  color: white;
+}
+
+.helptext, .event_date, .event_time {
+  color: #A7C1CE !important;
+  border-bottom-color: #A7C1CE;
+}
+
+.game-player {
+  a {
+    color: #D5D51F !important;
+    text-decoration: none;
+  }
+
+  &:hover {
+    background-color: #189DFF; // $lightBackgroundColor
+  }
+}
+
+.card_selected {
+  border-color: #1BC9C9 !important;
+}
+
+// tab headers (change only inactive tabs' header color)
+.ui-state-default:not(.ui-state-active) {
+  a, a:link, a:visited {
+    color: #AAA !important;
+  }
+}
+
+.message_content {
+  background-color: lighten(#187C96, 5%);
+}
+
+// usages of $mediumLightText
+#trade_summary, .lighter_text, .rulecard.former, .free_information {
+  color: #91ABB6;
+}
+
+.commodity_card, .rulecard, .rulecard_thumbnail {
+  @include shadowBox($blur: 5px, $color: darken(#187C96, 20%));
+}
