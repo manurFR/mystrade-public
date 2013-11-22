@@ -15,6 +15,12 @@ class MystradeUser(AbstractUser):
     bio = models.TextField(blank = True, help_text = "Your presentation text (optional)")
     contact = models.TextField(blank = True, help_text = "Your email address will never be publicly displayed. Specify here how other players can reach you (IM, email, etc.) (optional)")
 
+    FUNKY_ORANGE = 'funky_orange'
+    BLUISH_FIESTA = 'bluish_fiesta'
+    PALETTE_CHOICES = ((FUNKY_ORANGE,  'Funky Orange'),
+                       (BLUISH_FIESTA, 'Bluish Fiesta'))
+    palette = models.CharField(max_length = 50, choices = PALETTE_CHOICES, default = FUNKY_ORANGE)
+
     @property
     def name(self):
         if self.first_name and self.last_name:
