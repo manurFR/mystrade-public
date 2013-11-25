@@ -28,6 +28,13 @@
 
 #game_label {
   @include font($size: 1.9em, $weight: bold);
+
+  &.game_label_color_0 { color: blue; }
+  &.game_label_color_1 { color: red; }
+  &.game_label_color_2 { color: green; }
+  &.game_label_color_3 { color: magenta; }
+  &.game_label_color_4 { color: gray; }
+  &.game_label_color_5 { color: brown; }
 }
 
 #zone_player_list {
@@ -80,12 +87,12 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
      .ui-state-default {
        background: transparent;
-       border-color: $lightBackgroundColor;
+       border-color: $borderColor;
      }
 
      .ui-state-active {
-       background-color: $lightBackgroundColor;
-       border-color: $lightBackgroundColor;
+       background-color: $borderColor;
+       border-color: $borderColor;
      }
 
      li {
@@ -150,7 +157,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   display: table-row;
 
   &.finalized {
-    color: $mediumLightText;
+    color: $secondaryTextColor;
   }
 }
 
@@ -179,7 +186,6 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   @include roundedBorder(5px);
   padding-top: 10px;
   padding-left: 30px;
-  color: $mediumLightText;
 
   legend {
     color: #333333;
@@ -189,8 +195,8 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   }
 }
 
-.lighter_text {
-  color: $mediumLightText;
+.free_information_text {
+  color: $secondaryTextColor;
 }
 
 .submit, .show_more {
@@ -210,7 +216,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
   .event_time {
     display: inline-block;
-    color: $lightText;
+    color: $tertiaryTextColor;
     @include font($size: 0.9em);
     margin-right: 5px;
   }
@@ -231,8 +237,8 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
 .event_date {
   @include font($size: 0.9em);
-  color: $lightText;
-  border-bottom: thin dotted $lightText;
+  color: $tertiaryTextColor;
+  border-bottom: thin dotted $tertiaryTextColor;
   margin: 8px 0 4px 0;
   padding-bottom: 2px;
 }
@@ -289,7 +295,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 #trade_summary {
   text-align: center;
   margin-bottom: 15px;
-  color: $mediumLightText;
+  color: $secondaryTextColor;
   border-bottom: thin dotted;
 }
 

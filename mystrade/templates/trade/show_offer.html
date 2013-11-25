@@ -25,7 +25,7 @@ Offered by {% include "common/name_or_you.html" with who=giver %}:
 {% if offer.free_information %}
     <h3>Free information(s)</h3>
     {% if trade.status == 'ACCEPTED' or giver == user or super_access %}
-        <div class="lighter_text">{{ offer.free_information }}</div>
+        <div class="free_information_text">{{ offer.free_information }}</div>
     {% else %}
         <span class="helptext">Some information(s), hidden until trade accepted by both players.</span>
     {% endif %}

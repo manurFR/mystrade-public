@@ -27,7 +27,7 @@
 .me {
   .score_header {
     padding: 5px;
-    background-color: $infoPanelColor;
+    background-color: lighten($backgroundColor, 6%);
     @include roundedBorder(5px);
     @include shadowBox();
   }

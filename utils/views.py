@@ -43,7 +43,8 @@ def stats(request, game_id):
     legend.get_frame().set_alpha(0.5)
 
     figure = plt.figure(1)
-    figure.patch.set_facecolor('#FFB600')
+    # figure.patch.set_facecolor('#FFB600')
+    figure.patch.set_facecolor('white')
     figure.autofmt_xdate()
 
     plt.subplots_adjust(bottom=0.13)

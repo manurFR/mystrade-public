@@ -15,7 +15,7 @@
     &:first-of-type {
       text-align: center;
       @include font($weight: bold);
-      background-color: darken($backgroundColor, 5%);;
+      background-color: darken($backgroundColor, 5%);
     }
   }
 

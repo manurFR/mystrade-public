@@ -51,7 +51,7 @@ will be cancelled.
             {% for offer in free_informations %}
                 <fieldset class="free_information">
                     <legend>from <strong>{{ offer.offerer }}</strong>, {{ offer.date|timesince }} ago</legend>
-                    {{ offer.free_information }}<br/>
+                    <span class="free_information_text">{{ offer.free_information }}</span><br/>
                 </fieldset>
             {% endfor %}
         </div>

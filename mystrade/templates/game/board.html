@@ -107,7 +107,7 @@
                     {% for offer in free_informations %}
                         <fieldset class="free_information">
                             <legend>from <strong>{{ offer.offerer }}</strong>, {{ offer.date|timesince }} ago</legend>
-                            {{ offer.free_information }}<br/>
+                            <span class="free_information_text">{{ offer.free_information }}</span><br/>
                         </fieldset>
                     {% endfor %}
                 </div>
@@ -288,9 +288,8 @@
             $(".commodity_card").tooltip({ position: { my: "left bottom", at: "right+5 top-5" } });
         }
 
-        var color_list = ["blue", "red", "green", "magenta", "gray", "brown"];
         $(function() {
-            $('#zone_game_label *').css('color', color_list[({{ game.id }}) % color_list.length]);
+            $('#zone_game_label *').addClass('game_label_color_' + ({{ game.id }}) % 6);
             var zoneTabs = $("#zone_tabs");
             zoneTabs.tabs({
                 heightStyle: "content",

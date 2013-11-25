@@ -1,7 +1,7 @@
 @import "base";
 
 #login_form {
-  background-color: $infoPanelColor;
+  background-color: lighten($backgroundColor, 6%);
   margin: 50px auto;
   padding: 10px;
   border: $lightSolidBorder;

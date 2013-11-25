@@ -3,7 +3,7 @@
 /* Base tags styling */
 body {
   background-color: $backgroundColor;
-  color: $normalText;
+  color: $normalTextColor;
   width: $pageWidth;
   margin: 5px auto 0 auto;
   @include font($family: ('Lucida Grande', Verdana, Arial, sans-serif), $size: $defaultFontSize);
@@ -36,7 +36,7 @@ input[type="text"], input[type="password"], textarea, select {
 
 input, textarea, select {
   @include font($size: 10px, $weight: normal);
-  background-color: #FAFFBD;
+  background-color: $inputBackgroundColor;
   margin: 2px 0;
   padding: 2px 3px;
 }
@@ -63,7 +63,7 @@ hr {
   display: block;
   height: 1px;
   border: 0;
-  border-top: 1px solid $lightBackgroundColor;
+  border-top: 1px solid $borderColor;
   margin: 1em 10%;
   padding: 0;
 }
@@ -85,7 +85,7 @@ hr {
     top: -10px;
     left: 15px;
     @include font(("Garamond", "Times New Roman", serif), 1.4em, $style: italic);
-    color: black;
+    color: $normalTextColor;
     letter-spacing: 7px;
   }
 
@@ -100,7 +100,7 @@ hr {
 
 /* JQuery UI Modal dialogs */
 .modal_dialog, .modal_dialog.ui-dialog-content {
-  background: lighten($backgroundColor, 10%);
+  background: $modalDialogBackgroundColor;
 
   .pagination {
     margin-top: 10px;
@@ -111,7 +111,7 @@ hr {
 
 .modal_dialog_class {
   .ui-widget-header { // merge the title bar to the rest of the dialog
-    background: lighten($backgroundColor, 10%) none;
+    background: $modalDialogBackgroundColor none;
     border: none;
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
@@ -121,7 +121,7 @@ hr {
 /* Miscellaneous common styles */
 .helptext {
   @include font($size: 8pt, $style: italic, $weight: normal);
-  color: $lightText;
+  color: $tertiaryTextColor;
 }
 
 .upperhelptext {
@@ -149,7 +149,7 @@ hr {
   }
 
   &:hover {
-    background-color: $lightBackgroundColor;
+    background-color: $borderColor;
   }
 }
 
@@ -159,7 +159,7 @@ hr {
 
 .errors {
   @include font($size: 0.8em);
-  color: $lightText;
+  color: $tertiaryTextColor;
 }
 
 .warning {
@@ -172,7 +172,7 @@ hr {
 }
 
 .cancel_link {
-  color: $normalText;
+  color: $normalTextColor;
   @include font($size: 10pt);
   vertical-align: middle;
 }

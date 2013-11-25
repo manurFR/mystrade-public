@@ -1,17 +1,21 @@
 $pageWidth: 980px;
 
 $backgroundColor: #FFB600;
-$lightBackgroundColor: #FFD773;
-$infoPanelColor: #FFBF00;
+$modalDialogBackgroundColor: lighten($backgroundColor, 10%);
 
-$normalText: black;
-$mediumLightText: #644700;
-$lightText: #A67600;
+$borderColor: #FFD773;
+$selectionHaloColor: gray;
+
+$normalTextColor: black;
+$secondaryTextColor: #644700;
+$tertiaryTextColor: #A67600;
 
 $linkColor: darkgreen;
 
-$lightSolidBorder: 1px solid $lightBackgroundColor;
-$lightDashedBorder: 1px dashed $lightBackgroundColor;
+$inputBackgroundColor: #FAFFBD;
+
+$lightSolidBorder: 1px solid $borderColor;
+$lightDashedBorder: 1px dashed $borderColor;
 
 $defaultFontSize: 9pt;
 
