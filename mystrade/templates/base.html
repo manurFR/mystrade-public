@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load static %}
 
 <!DOCTYPE HTML>
 <html lang="en">
@@ -7,10 +8,14 @@
   		<meta name="description" content="MysTrade - A game of mysterious trades"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
         <link rel="icon" href="{% static 'favicon.png' %}">
+
 		{% block styles %}{% endblock %}
+        {% if user.palette and user.palette != user.DEFAULT_PALETTE %}
+            <link rel="stylesheet" href="{% get_static_prefix %}css/palette/{{ user.palette }}.css" />
+        {% endif %}
+
 		{% block scripts %}{% endblock %}
-        <link rel="stylesheet" href="{% static 'css/palette/bluish_fiesta.css' %}" />
- 	</head>  
+ 	</head>
  		
 	<body>
 		<div id="zone_toplinks">

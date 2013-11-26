@@ -19,7 +19,8 @@ class MystradeUser(AbstractUser):
     BLUISH_FIESTA = 'bluish_fiesta'
     PALETTE_CHOICES = ((FUNKY_ORANGE,  'Funky Orange'),
                        (BLUISH_FIESTA, 'Bluish Fiesta'))
-    palette = models.CharField(max_length = 50, choices = PALETTE_CHOICES, default = FUNKY_ORANGE)
+    DEFAULT_PALETTE = FUNKY_ORANGE
+    palette = models.CharField(max_length = 50, choices = PALETTE_CHOICES, default = DEFAULT_PALETTE)
 
     @property
     def name(self):

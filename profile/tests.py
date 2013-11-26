@@ -9,6 +9,7 @@ from django.utils.timezone import now
 from model_mommy import mommy
 from profile.models import MystradeUser
 from profile.views import _generate_activation_key
+from utils.tests import MystradeTestCase
 
 
 class MystradeUserNameTest(TestCase):
@@ -321,3 +322,25 @@ class SignUpTest(TestCase):
                 'password': 'pwd123'
             })
         self.assertRedirects(response, reverse('nopath'))
+
+class PaletteTest(MystradeTestCase):
+
+    def test_when_no_one_is_authenticated_we_expect_the_default_palette(self):
+        self.client.logout()
+
+        response = self.client.get(reverse("rules"))
+        self.assertNotContains(response, "css/palette")
+
+    def test_when_authenticated_with_an_alternative_palette_the_css_should_be_added(self):
+        self.loginUser.palette = MystradeUser.BLUISH_FIESTA
+        self.loginUser.save()
+
+        response = self.client.get(reverse("rules"))
+        self.assertContains(response, "css/palette/{0}.css".format(MystradeUser.BLUISH_FIESTA))
+
+    def test_when_authenticated_with_the_default_palette_the_css_should_not_be_added(self):
+        self.loginUser.palette = MystradeUser.DEFAULT_PALETTE
+        self.loginUser.save()
+
+        response = self.client.get(reverse("rules"))
+        self.assertNotContains(response, "css/palette")
