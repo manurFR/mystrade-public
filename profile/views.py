@@ -44,7 +44,9 @@ def editprofile(request):
         user_form = MystradeUserForm(instance = request.user)
         password_form = PasswordChangeForm(user = request.user)
 
-    return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form})
+    return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form,
+                                                        'palettes': get_user_model().PALETTES,
+                                                        'default_palette': get_user_model().PALETTES[get_user_model().DEFAULT_PALETTE]})
 
 def sign_up(request):
     if request.method == 'POST':

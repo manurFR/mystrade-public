@@ -54,14 +54,36 @@
             </tr>
 			<tr>
 				<th>{{ user_form.bio.label_tag }} :</th>
-				<td>{{ user_form.bio|attr:"cols:75"|attr:"rows:6" }}&nbsp;<span class="errors">{{ user_form.bio.errors.as_text }}</span>
+				<td>{{ user_form.bio|attr:"cols:75"|attr:"rows:5" }}&nbsp;<span class="errors">{{ user_form.bio.errors.as_text }}</span>
 				    <span class="helptext">{{ user_form.bio.help_text }}</span></td>
 			</tr>
 			<tr>
 				<th>{{ user_form.contact.label_tag }} :</th>
-				<td>{{ user_form.contact|attr:"cols:75"|attr:"rows:6" }}&nbsp;<span class="errors">{{ user_form.contact.errors.as_text }}</span>
+				<td>{{ user_form.contact|attr:"cols:75"|attr:"rows:5" }}&nbsp;<span class="errors">{{ user_form.contact.errors.as_text }}</span>
 				    <span class="helptext">{{ user_form.contact.help_text }}</span></td>
 			</tr>
+            <tr>
+                <th>{{ user_form.palette.label_tag }} :</th>
+                <td class="zone_palettes">
+                    <div class="palette {{ user.DEFAULT_PALETTE }}" data-key="{{ user.DEFAULT_PALETTE }}">
+                        {{ default_palette.name }}
+                        {% if default_palette.note %}<div class="helptext">{{ default_palette.note }}</div>{% endif %}
+                    </div>
+
+            {% for key, palette in palettes.iteritems %}
+                {% if key != user.DEFAULT_PALETTE %}
+                    <div class="palette {{ key }}" data-key="{{ key }}">
+                        {{ palette.name }}
+                        {% if palette.note %}<div class="helptext">{{ palette.note }}</div>{% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+                    <input type="hidden" name="palette" id="id_palette" value="{{ user_form.palette.value }}"/>
+                    &nbsp;<span class="errors">{{ user_form.palette.errors.as_text }}</span>
+                    <span class="helptext">{{ user_form.palette.help_text }}</span>
+                </td>
+            </tr>
         </table>
 
         <table id="table_password">
@@ -105,6 +127,16 @@
                 $("#id_timezone").val(jstz.determine().name());
               {% endif %}
             {% endif %}
+
+            $(".palette").on("click", function() {
+                var new_key = $(this).data("key");
+                $("#id_palette").val(new_key);
+                $(".palette").each(function() {
+                    $(this).toggleClass("selected", $(this).data("key") === new_key);
+                });
+            });
+
+            $("." + $("#id_palette").val()).addClass("selected");
         });
 
         function getDisplayedName() {

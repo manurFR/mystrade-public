@@ -32,6 +32,43 @@
   }
 }
 
+.palette {
+  float: left;
+  height: 40px;
+  width: 120px;
+  margin: 4px;
+  border: 1px solid $borderColor;
+  @include roundedBorder($radius: 5px);
+  text-align: center;
+  padding-top: 3px;
+  cursor: pointer;
+
+  &.selected {
+    border: maroon solid 3px;
+    margin: 2px;
+  }
+
+  //&.funky_orange {
+  //  @import "common";
+  //  color: $normalTextColor;
+  //  background-color: $backgroundColor;
+  //  .helptext {
+  //    @import "common";
+  //    color: $tertiaryTextColor !important;
+  //  }
+  //}
+  //
+  //&.bluish_fiesta {
+  //  @import "palette/bluish_fiesta";
+  //  color: $normalTextColor;
+  //  background-color: $backgroundColor;
+  //  .helptext {
+  //    @import "palette/bluish_fiesta";
+  //    color: $tertiaryTextColor !important;
+  //  }
+  //}
+}
+
 .note, .action {
   margin-right: 3px;
 }

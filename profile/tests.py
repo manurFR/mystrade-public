@@ -32,7 +32,7 @@ class MystradeUserNameTest(TestCase):
 class ViewsTest(TestCase):
     def setUp(self):
         self.testUser = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com', bio = 'line\r\njump',
-                                   send_notifications = True, timezone = 'Asia/Phnom_Penh')
+                                   send_notifications = True, timezone = 'Asia/Phnom_Penh', palette = MystradeUser.FUNKY_ORANGE)
         self.testUser.set_password('test');
         self.testUser.save()
 
@@ -69,11 +69,12 @@ class ViewsTest(TestCase):
 
     def test_editprofile_change_user_fields_and_password(self):
         response = self.client.post(reverse("editprofile"),
-            {'username': 'test', 'first_name': 'Leia', 'last_name': 'Organa',
-             'send_notifications': '',
-             'timezone': 'Europe/Rome',
-             'email': 'test@aaa.com', 'bio': 'princess', 'contact': 'D2-R2',
-             'old_password': 'test', 'new_password1': 'alderaan', 'new_password2': 'alderaan'},
+                                    {'username': 'test', 'first_name': 'Leia', 'last_name': 'Organa',
+                                     'send_notifications': '',
+                                     'timezone': 'Europe/Rome',
+                                     'email': 'test@aaa.com', 'bio': 'princess', 'contact': 'D2-R2',
+                                     'old_password': 'test', 'new_password1': 'alderaan', 'new_password2': 'alderaan',
+                                     'palette': MystradeUser.BLUISH_FIESTA},
                                     follow = True)
 
         self.assertEqual(200, response.status_code)
@@ -83,6 +84,7 @@ class ViewsTest(TestCase):
         self.assertEqual("Europe/Rome", modifiedUser.timezone)
         self.assertEqual("princess", modifiedUser.bio)
         self.assertEqual("D2-R2", modifiedUser.contact)
+        self.assertEqual(MystradeUser.BLUISH_FIESTA, modifiedUser.palette)
         self.assertFalse(modifiedUser.send_notifications)
         self.assertTrue(check_password('alderaan', modifiedUser.password))
 
@@ -119,7 +121,8 @@ class ViewsTest(TestCase):
         response = self.client.post(reverse("editprofile"),
                                     {'username': 'test', 'first_name': 'Leia', 'last_name': 'Organa',
                                      'timezone': 'Europe/Paris', 'email': 'test@aaa.com',
-                                     'old_password': 'bogus', 'new_password1': '', 'new_password2': 'alderaan'},
+                                     'old_password': 'bogus', 'new_password1': '', 'new_password2': 'alderaan',
+                                     'palette': MystradeUser.DEFAULT_PALETTE},
                                     follow = True)
         self.assertNotContains(response, "Your old password was entered incorrectly. Please enter it again.")
         self.assertNotContains(response, "The two password fields didn&#39;t match.")
@@ -226,6 +229,7 @@ class SignUpTest(TestCase):
                 'timezone':             'America/Chicago',
                 'bio':                  'my bio',
                 'contact':              'my contact',
+                'palette':              MystradeUser.DEFAULT_PALETTE,
                 'new_password1':        'pwd123',
                 'new_password2':        'pwd123'
             })
