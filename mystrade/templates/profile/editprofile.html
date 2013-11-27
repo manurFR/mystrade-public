@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load staticfiles %}
+{% load staticfiles static %}
 {% load widget_tweaks %}
 
 {% block styles %}
@@ -64,20 +64,14 @@
 			</tr>
             <tr>
                 <th>{{ user_form.palette.label_tag }} :</th>
-                <td class="zone_palettes">
-                    <div class="palette {{ user.DEFAULT_PALETTE }}" data-key="{{ user.DEFAULT_PALETTE }}">
-                        {{ default_palette.name }}
-                        {% if default_palette.note %}<div class="helptext">{{ default_palette.note }}</div>{% endif %}
-                    </div>
 
-            {% for key, palette in palettes.iteritems %}
-                {% if key != user.DEFAULT_PALETTE %}
-                    <div class="palette {{ key }}" data-key="{{ key }}">
+                <td class="zone_palettes">
+                {% for palette in palettes %}
+                    <div class="palette {{ palette.key }}" data-key="{{ palette.key }}">
                         {{ palette.name }}
                         {% if palette.note %}<div class="helptext">{{ palette.note }}</div>{% endif %}
                     </div>
-                {% endif %}
-            {% endfor %}
+                {% endfor %}
 
                     <input type="hidden" name="palette" id="id_palette" value="{{ user_form.palette.value }}"/>
                     &nbsp;<span class="errors">{{ user_form.palette.errors.as_text }}</span>
@@ -134,6 +128,7 @@
                 $(".palette").each(function() {
                     $(this).toggleClass("selected", $(this).data("key") === new_key);
                 });
+                loadPalette(new_key);
             });
 
             $("." + $("#id_palette").val()).addClass("selected");
@@ -162,5 +157,21 @@
         $("#id_username").on("input keyup cut paste", refreshDisplayedName);
 
         refreshDisplayedName();
+
+        function loadPalette(palette) {
+            var css;
+        {% for p in palettes %}
+            if (palette === '{{ p.key }}') {
+            {% if p.key == user.DEFAULT_PALETTE %}
+                css = '{% static 'css/style.profile.css' %}';
+            {% else %}
+                css = '{% get_static_prefix %}css/palette/{{ p.key }}.css';
+            {% endif %}
+            }
+        {% endfor %}
+
+            $("#override_style").remove();
+            $("head").append('<link id="override_style" rel="stylesheet" href="' + css + '" %}" />');
+        }
     </script>
 {% endblock content %}

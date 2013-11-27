@@ -121,7 +121,7 @@ hr {
 /* Miscellaneous common styles */
 .helptext {
   @include font($size: 8pt, $style: italic, $weight: normal);
-  color: $tertiaryTextColor;
+  color: $tertiaryTextColor !important; // 'important' is necessary for palette switching in edit profile page
 }
 
 .upperhelptext {

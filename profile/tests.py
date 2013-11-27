@@ -245,6 +245,7 @@ class SignUpTest(TestCase):
             self.assertEqual('America/Chicago', created_user.timezone)
             self.assertEqual('my bio', created_user.bio)
             self.assertEqual('my contact', created_user.contact)
+            self.assertEqual('funky_orange', created_user.palette)
             self.assertFalse(created_user.is_active)
             self.assertFalse(created_user.is_staff)
             self.assertFalse(created_user.is_superuser)

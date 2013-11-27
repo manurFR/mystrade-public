@@ -17,14 +17,11 @@ class MystradeUser(AbstractUser):
 
     FUNKY_ORANGE = 'funky_orange'
     BLUISH_FIESTA = 'bluish_fiesta'
-    PALETTES = {
-        FUNKY_ORANGE:   {'name':    'Funky Orange',
-                         'note':    '(default palette)'},
-        BLUISH_FIESTA:  {'name':    'Bluish Fiesta',
-                         'note':    'by djey & vinu'}
-    }
-    PALETTE_CHOICES = [(key, palette['name']) for key, palette in PALETTES.iteritems()]
-    DEFAULT_PALETTE = FUNKY_ORANGE
+    # the first dict in this list will be the default
+    PALETTES = [ {'key': FUNKY_ORANGE,   'name': 'Funky Orange',   'note': '(default palette)'},
+                 {'key': BLUISH_FIESTA,  'name': 'Bluish Fiesta',  'note': 'by djey & vinu'}     ]
+    PALETTE_CHOICES = [(dict['key'], dict['name']) for dict in PALETTES]
+    DEFAULT_PALETTE = PALETTES[0]['key']
     palette = models.CharField(max_length = 50, choices = PALETTE_CHOICES, default = DEFAULT_PALETTE)
 
     @property

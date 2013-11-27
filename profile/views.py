@@ -45,8 +45,7 @@ def editprofile(request):
         password_form = PasswordChangeForm(user = request.user)
 
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form,
-                                                        'palettes': get_user_model().PALETTES,
-                                                        'default_palette': get_user_model().PALETTES[get_user_model().DEFAULT_PALETTE]})
+                                                        'palettes': get_user_model().PALETTES})
 
 def sign_up(request):
     if request.method == 'POST':
@@ -64,6 +63,7 @@ def sign_up(request):
                                     timezone            = user_form.cleaned_data['timezone'],
                                     bio                 = user_form.cleaned_data['bio'],
                                     contact             = user_form.cleaned_data['contact'],
+                                    palette             = user_form.cleaned_data['palette'],
                                     is_active           = False,
                                     is_staff            = False,
                                     is_superuser        = False,
@@ -82,7 +82,8 @@ def sign_up(request):
         user_form['send_notifications'].field.initial = True
         password_form = SetPasswordForm(user = None)
 
-    return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form, 'sign_up': True})
+    return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form, 'sign_up': True,
+                                                        'palettes': get_user_model().PALETTES})
 
 def _generate_activation_key(user, salt = 'µy5Tr@d3'):
     crypted_salt = hashlib.sha1(salt).hexdigest()[:5]
