@@ -414,6 +414,262 @@
         }
     },
     {
+        "pk": 31,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "DISAPPOINTING",
+            "description": "Spice & Herbs cards are worth no points.",
+            "mandatory": true,
+            "ruleset": 3,
+            "ref_name": "PIZ01",
+            "glob": false
+        }
+    },
+    {
+        "pk": 32,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "TWO",
+            "description": "Vegetables are worth 2 points.",
+            "mandatory": true,
+            "ruleset": 3,
+            "ref_name": "PIZ02",
+            "glob": false
+        }
+    },
+    {
+        "pk": 33,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "PROTEINS",
+            "description": "Cheese and Fish & Seafood cards are worth the same number of points than Meat cards.",
+            "mandatory": true,
+            "ruleset": 3,
+            "ref_name": "PIZ03",
+            "glob": false
+        }
+    },
+    {
+        "pk": 34,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "DIET",
+            "description": "If your pizza contains no Cheese, Don Peppino will curse you but his wife will arrange so that you get a bonus of 6 points (damn doctors!).",
+            "mandatory": true,
+            "ruleset": 3,
+            "ref_name": "PIZ04",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 35,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "HEALTH",
+            "description": "The bonus you can get if you respect Don Peppino's diet has the same value as two Meat cards.",
+            "mandatory": true,
+            "ruleset": 3,
+            "ref_name": "PIZ05",
+            "glob": false
+        }
+    },
+    {
+        "pk": 36,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "TRUE SICILIAN",
+            "description": "Don Peppino likes his pizza with no more than 10 toppings (cards). Each added topping removes 5 points.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ06",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 37,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "GOOD IDEA",
+            "description": "If you pizza has more Vegetable cards than Meat, Fish & Seafood and Cheese cards combined, there is a bonus of 12 points for you.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ07",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 38,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "PET PEEVES",
+            "description": "Don Peppino dislikes the following toppings, unless paired with the appropriate ingredient: peppers, pineapple and ham. Absolutely no points can be earned from those.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ08",
+            "step": 10,
+            "glob": false
+        }
+    },
+    {
+        "pk": 39,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "BULBOUS",
+            "description": "One garlic card makes Don Peppino tolerate all the toppings he usually dislikes. But beware! More than one garlic and he'll revert to his usual tastes.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ09",
+            "step": 11,
+            "glob": false
+        }
+    },
+    {
+        "pk": 40,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "DOUBLE",
+            "description": "Each topping with at least a double ration (two cards or more) is worth 4 points more.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ10",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 41,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "TRIPLE",
+            "description": "A pizza with at least three different toppings whose name begins with the same letter brings a bonus of 8 points. (Different letters will add up.)",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ11",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 42,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "MARGARITA",
+            "description": "The cook whose pizza has the least number of different toppings will earn a bonus of 12 points. (Multiple copies of the same topping count for one.)",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ12",
+            "step": 30,
+            "glob": true
+        }
+    },
+    {
+        "pk": 43,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "POTLATCH",
+            "description": "The trade featuring the largest number of cards of the game (rules and toppings given by both players combined) will give a bonus of 10 points to both players involved. Only accepted trades count. In case of a tie between two or more trades, no one earns the bonus.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ13",
+            "step": 30,
+            "glob": true
+        }
+    },
+    {
+        "pk": 44,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "TRADER",
+            "description": "The player(s) having traded the largest number of toppings (cards given + cards received) during the course of the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ14",
+            "step": 30,
+            "glob": true
+        }
+    },
+    {
+        "pk": 45,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "SLOTH",
+            "description": "The cooks who will not have performed a trade with at least X different players during the game will lose 10 points. Only accepted trades with at least one card (rule or topping) given by each player count.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ15",
+            "step": 30,
+            "glob": false
+        }
+    },
+    {
+        "pk": 46,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "SCRABBLE PLAYER",
+            "description": "The default value of a card is doubled if the card name contains at least once the letter K or Z.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ16",
+            "step": 5,
+            "glob": false
+        }
+    },
+    {
+        "pk": 47,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "THE LAST WILL BE THE FIRST",
+            "description": "If a topping's name starts with a letter from the last ten of the alphabet, the topping is worth 2 more points than its default value.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ17",
+            "step": 6,
+            "glob": false
+        }
+    },
+    {
+        "pk": 48,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "SPICE IT UP",
+            "description": "Each Spice & Herbs card gives a bonus of 2 points to a maximum of two Vegetable cards. Each Vegetable card can earn the bonus from one Spice & Herbs card only.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ18",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
+        "pk": 49,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "SEASONED COOK",
+            "description": "The pizza with the most Spice & Herbs cards earns a bonus of 10 points. In case of a tie, each cook wil earn only 3 points.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ19",
+            "step": 30,
+            "glob": false
+        }
+    },
+    {
+        "pk": 50,
+        "model": "ruleset.rulecard",
+        "fields": {
+            "public_name": "MAMMA",
+            "description": "Mamma Peppino cooked mussels with parmesan for Christmas and eggplant with gorgonzola for Good Friday. Each of these pairing will earn you a bonus of 6 points (for at least one card of both topping). Rest In Peace, Mamma.",
+            "mandatory": false,
+            "ruleset": 3,
+            "ref_name": "PIZ20",
+            "step": 20,
+            "glob": false
+        }
+    },
+    {
         "pk": 1,
         "model": "ruleset.commodity",
         "fields": {
@@ -522,5 +778,203 @@
             "color": "green",
             "symbol": "symbol-r"
         }
-    }
+    },
+    {
+        "pk": 11,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+    {
+        "pk": ,
+        "model": "ruleset.commodity",
+        "fields": {
+            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+        }
+    },
+
+
 ]
