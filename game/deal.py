@@ -2,9 +2,6 @@ from random import shuffle
 from ruleset.models import Commodity
 from game.models import RuleInHand, CommodityInHand
 
-RULECARDS_PER_PLAYER = 2
-COMMODITY_CARDS_PER_PLAYER = 10
-
 class RuleCardDealer(object):
     def add_a_card_to_hand(self, hand, deck):
         """ From this deck, add to the hand a rule that is not already present there """
@@ -24,8 +21,8 @@ class CommodityCardDealer(object):
 def deal_cards(game):
     players = game.players.all()
     nb_players = len(players)
-    rules = dispatch_cards(nb_players, RULECARDS_PER_PLAYER, game.rules.all(), RuleCardDealer())
-    commodities = dispatch_cards(nb_players, COMMODITY_CARDS_PER_PLAYER,
+    rules = dispatch_cards(nb_players, game.ruleset.starting_rules, game.rules.all(), RuleCardDealer())
+    commodities = dispatch_cards(nb_players, game.ruleset.starting_commodities,
                                  Commodity.objects.filter(ruleset = game.ruleset), CommodityCardDealer())
     for idx, player in enumerate(players):
         for rulecard in rules[idx]:

@@ -1792,28 +1792,38 @@ class DealTest(TestCase):
             self.assertNotEqual(hand[0], hand[1])
 
     def test_deal_cards(self):
-        ruleset = Ruleset.objects.get(id = 1)
+        nb_rules_per_player = 4
+        nb_commodities_per_player = 14
+
+        ruleset = mommy.make(Ruleset, starting_rules = nb_rules_per_player, starting_commodities = nb_commodities_per_player)
+        mommy.make(Commodity, ruleset = ruleset, _quantity = 10)
         game = mommy.make(Game, ruleset = ruleset, rules = self.rules, end_date = now() + datetime.timedelta(days = 7))
         for player in self.users:
             GamePlayer.objects.create(game = game, player = player)
+
         deal_cards(game)
+
+        # check that each player has the requested number of cards
         for player in self.users:
             rules = RuleInHand.objects.filter(game = game, player = player)
-            self.assertEqual(2, len(rules))
+            self.assertEqual(nb_rules_per_player, len(rules))
             for rule in rules:
                 self.assertEqual(game.start_date, rule.ownership_date)
             commodities = CommodityInHand.objects.filter(game = game, player = player)
             nb_commodities = 0
             for commodity in commodities:
                 nb_commodities += commodity.nb_cards
-            self.assertEqual(10, nb_commodities)
+            self.assertEqual(nb_commodities_per_player, nb_commodities)
+
+        # check that each card has the expected number of copies in play (and that the difference between the least frequent and the most frequent is no more than 1)
+        min_occurence = nb_rules_per_player*len(self.users)/len(self.rules)
         for rule in self.rules:
             nb_cards = RuleInHand.objects.filter(game = game, rulecard = rule).count()
-            min_occurence = 2*6/len(self.rules)
             self.assertTrue(min_occurence <= nb_cards <= min_occurence+1)
+        min_occurence = nb_commodities_per_player *len(self.users)/10
         for commodity in Commodity.objects.filter(ruleset = ruleset):
             nb_cards = CommodityInHand.objects.filter(game = game, commodity = commodity).aggregate(Sum('nb_cards'))
-            self.assertEqual(10*6/5, nb_cards['nb_cards__sum'])
+            self.assertTrue(min_occurence <= nb_cards['nb_cards__sum'] <= min_occurence+1)
 
 class HelpersTest(MystradeTestCase):
 
