@@ -673,308 +673,266 @@
         "pk": 1,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Yellow",
-            "ruleset": 1,
-            "value": 1,
-            "color": "yellow",
-            "symbol": "symbol-e-oblique"
+            "name": "Yellow",         "ruleset": 1,     "value": 1,     "color": "yellow",      "symbol": "symbol-e-oblique"
         }
     },
     {
         "pk": 2,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Blue",
-            "ruleset": 1,
-            "value": 2,
-            "color": "blue",
-            "symbol": "symbol-j-hole"
+            "name": "Blue",           "ruleset": 1,     "value": 2,     "color": "blue",        "symbol": "symbol-j-hole"
         }
     },
     {
         "pk": 3,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Red",
-            "ruleset": 1,
-            "value": 3,
-            "color": "red",
-            "symbol": "symbol-m"
+            "name": "Red",            "ruleset": 1,     "value": 3,     "color": "red",         "symbol": "symbol-m"
         }
     },
     {
         "pk": 4,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Orange",
-            "ruleset": 1,
-            "value": 4,
-            "color": "orange",
-            "symbol": "symbol-b"
+            "name": "Orange",          "ruleset": 1,    "value": 4,     "color": "orange",      "symbol": "symbol-b"
         }
     },
     {
         "pk": 5,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "White",
-            "ruleset": 1,
-            "value": 5,
-            "color": "white",
-            "symbol": "symbol-q-oblique"
+            "name": "White",           "ruleset": 1,    "value": 5,     "color": "white",       "symbol": "symbol-q-oblique"
         }
     },
     {
         "pk": 6,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Blue",
-            "ruleset": 2,
-            "value": 1,
-            "color": "blue",
-            "symbol": "symbol-b"
+            "name": "Blue",            "ruleset": 2,    "value": 1,     "color": "blue",        "symbol": "symbol-b"
         }
     },
     {
         "pk": 7,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "White",
-            "ruleset": 2,
-            "value": 2,
-            "color": "white",
-            "symbol": "symbol-f"
+            "name": "White",           "ruleset": 2,    "value": 2,     "color": "white",       "symbol": "symbol-f"
         }
     },
     {
         "pk": 8,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Pink",
-            "ruleset": 2,
-            "value": 3,
-            "color": "hotpink",
-            "symbol": "symbol-h-oblique"
+            "name": "Pink",            "ruleset": 2,    "value": 3,     "color": "hotpink",     "symbol": "symbol-h-oblique"
         }
     },
     {
         "pk": 9,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Yellow",
-            "ruleset": 2,
-            "value": 4,
-            "color": "yellow",
-            "symbol": "symbol-l-oblique"
+            "name": "Yellow",          "ruleset": 2,    "value": 4,     "color": "yellow",      "symbol": "symbol-l-oblique"
         }
     },
     {
         "pk": 10,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Green",
-            "ruleset": 2,
-            "value": 5,
-            "color": "green",
-            "symbol": "symbol-r"
+            "name": "Green",            "ruleset": 2,   "value": 5,     "color": "green",       "symbol": "symbol-r"
         }
     },
     {
         "pk": 11,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Anchovies",        "ruleset": 3,   "value": 3,     "color": "lightblue",   "category": "Fish & Seafood"
         }
     },
     {
-        "pk": ,
+        "pk": 12,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Artichoke",        "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
         }
     },
     {
-        "pk": ,
+        "pk": 13,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Arugula (Rocket)", "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
         }
     },
     {
-        "pk": ,
+        "pk": 14,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Bacon",            "ruleset": 3,   "value": 3,     "color": "darksalmon",  "category": "Meat"
         }
     },
     {
-        "pk": ,
+        "pk": 15,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Basil",            "ruleset": 3,   "value": 0,     "color": "tan",         "category": "Spice & Herbs"
         }
     },
     {
-        "pk": ,
+        "pk": 16,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Chicken",          "ruleset": 3,   "value": 3,     "color": "darksalmon",  "category": "Meat"
         }
     },
     {
-        "pk": ,
+        "pk": 17,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Capers",           "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
         }
     },
     {
-        "pk": ,
+        "pk": 18,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Eggplant",         "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
         }
     },
     {
-        "pk": ,
+        "pk": 19,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Garlic",           "ruleset": 3,   "value": 0,     "color": "tan",         "category": "Spice & Herbs"
         }
     },
     {
-        "pk": ,
+        "pk": 20,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Goat Cheese",      "ruleset": 3,   "value": 3,     "color": "beige",       "category": "Cheese"
         }
     },
     {
-        "pk": ,
+        "pk": 21,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Gorgonzola",       "ruleset": 3,   "value": 3,     "color": "beige",       "category": "Cheese"
         }
     },
     {
-        "pk": ,
+        "pk": 22,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Ham",              "ruleset": 3,   "value": 3,     "color": "darksalmon",  "category": "Meat"
         }
     },
     {
-        "pk": ,
+        "pk": 23,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Mozzarella",       "ruleset": 3,   "value": 3,     "color": "beige",       "category": "Cheese"
         }
     },
     {
-        "pk": ,
+        "pk": 24,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Mushrooms",        "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
         }
     },
     {
-        "pk": ,
+        "pk": 25,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Mussels",          "ruleset": 3,   "value": 3,     "color": "lightblue",   "category": "Fish & Seafood"
         }
     },
     {
-        "pk": ,
+        "pk": 26,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Olives",           "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
         }
     },
     {
-        "pk": ,
+        "pk": 27,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Onions (Pickled)", "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
         }
     },
     {
-        "pk": ,
+        "pk": 28,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Oregano",          "ruleset": 3,   "value": 0,     "color": "tan",         "category": "Spice & Herbs"
         }
     },
     {
-        "pk": ,
+        "pk": 29,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Parmesan",         "ruleset": 3,   "value": 3,     "color": "beige",       "category": "Cheese"
         }
     },
     {
-        "pk": ,
+        "pk": 30,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Peppers",          "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
         }
     },
     {
-        "pk": ,
+        "pk": 31,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Pepperoni",        "ruleset": 3,   "value": 3,     "color": "darksalmon",  "category": "Meat"
         }
     },
     {
-        "pk": ,
+        "pk": 32,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Pineapple",        "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
         }
     },
     {
-        "pk": ,
+        "pk": 33,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Prosciutto",       "ruleset": 3,   "value": 3,     "color": "darksalmon",  "category": "Meat"
         }
     },
     {
-        "pk": ,
+        "pk": 34,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Sausage",          "ruleset": 3,   "value": 3,     "color": "darksalmon",  "category": "Meat"
         }
     },
     {
-        "pk": ,
+        "pk": 35,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Smoked Salmon",    "ruleset": 3,   "value": 3,     "color": "lightblue",   "category": "Fish & Seafood"
         }
     },
     {
-        "pk": ,
+        "pk": 36,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Tomato",           "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
         }
     },
     {
-        "pk": ,
+        "pk": 37,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Tuna",             "ruleset": 3,   "value": 3,     "color": "lightblue",   "category": "Fish & Seafood"
         }
     },
     {
-        "pk": ,
+        "pk": 38,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "",     "ruleset": 3,   "value": 0,    "color": "",     "category": ""
+            "name": "Zucchini (Grilled)", "ruleset": 3, "value": 2,     "color": "lightgreen",  "category": "Vegetable"
         }
-    },
-
-
+    }
 ]
