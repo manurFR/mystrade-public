@@ -4,9 +4,17 @@ from django.db import models
 from django.db.models.signals import post_init
 
 class Ruleset(models.Model):
+    DEFAULT_RULECARDS_PER_PLAYER = 2
+    DEFAULT_COMMODITY_CARDS_PER_PLAYER = 10
+
     name = models.CharField(max_length = 255)
     module = models.CharField("Internal scoring module name", max_length = 20)
-    description = models.CharField(max_length = 510)
+
+    starting_rules = models.PositiveSmallIntegerField("Number of rule cards dealt to each player at the start of the game", default = DEFAULT_RULECARDS_PER_PLAYER)
+    starting_commodities = models.PositiveSmallIntegerField("Number of commodity cards dealt to each player at the start of the game", default = DEFAULT_COMMODITY_CARDS_PER_PLAYER)
+
+    description = models.CharField("Description shown to the game master creating a game", max_length = 600)
+    intro = models.CharField("Public introduction to the game displayed to all players", max_length = 600, null = True)
 
     def __unicode__(self):
         return self.name
@@ -53,6 +61,7 @@ class Commodity(models.Model):
     value = models.IntegerField("Initial value of the commodity (optional)", null = True)
     color = models.CharField("HTML background color to display the cards", max_length = 20, default = "white")
     symbol = models.CharField("Class of the identifying symbol", max_length = 255, null = True)
+    category = models.CharField("Optional category to group commodities", max_length = 255, null = True)
 
     def __unicode__(self):
         return self.name

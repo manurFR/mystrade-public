@@ -18,6 +18,18 @@
         }
     },
     {
+        "pk": 3,
+        "model": "ruleset.ruleset",
+        "fields": {
+            "name": "Pizzaz! (2013)",
+            "module": "pizzaz",
+            "description": "Who will cook the best pizza, given toppings in short supply and the weird tastes of the Mafia boss it is made for? A classic ruleset, with an expanded range of commodities and playable by more people.",
+            "intro": "Frankie's Trattoria served the best pizzas in the country, no debate. But now that Frankie is dead, the Family wants a new supplier. Don Peppino has sent its soldato order a 'signature' pizza at each of the restaurants of the city, yours included. Your waiters have been sent all over town to learn what they can about the Boss' tastes. The women are searching everywhere for the best farm-produced, high-quality ingredients. It's gonna be a tough competition. Good Luck !<br/>Inspired by rulesets by Lindsey Dubb and Mark McEvoy.",
+            "starting_rules": 3,
+            "starting_commodities": 12
+        }
+    },
+    {
         "pk": 1,
         "model": "ruleset.rulecard",
         "fields": {
