@@ -3,18 +3,29 @@
 
 /**** FIRST PAGE ****/
 #table_create_game {
-  margin-right: 250px;
+  margin-right: 200px;
 
   th {
-    width: 100px;
+    width: 150px;
     padding-top: 6px;
     padding-right: 1em;
     text-align: right;
-    vertical-align: text-top;
+    vertical-align: top;
   }
 
   #ruleset_description {
     min-height: 60px;
+  }
+
+  #ruleset_intro {
+    min-height: 85px;
+    padding-left: 6px;
+    background-color: lighten($backgroundColor, 8%);
+    @include roundedBorder($radius: 5px);
+  }
+
+  .text_td {
+    padding-top: 6px;
   }
 }
 
@@ -25,7 +36,7 @@
 }
 
 .submit-button {
-  margin-right: 250px;
+  margin-right: 200px;
 
   input[type=submit] {
     float: right;

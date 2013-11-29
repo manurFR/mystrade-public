@@ -63,8 +63,8 @@ $shadowColor: darken($backgroundColor, 20%);
 }
 
 .player_scoresheet {
-  @include shadowBox($inset: inset);
   background-color: lighten($backgroundColor, 13%);
+  @include shadowBox($inset: inset);
 }
 
 .commodity_card, .rulecard, .rulecard_thumbnail {
@@ -116,8 +116,8 @@ body {
   background-color: darken($backgroundColor, 5%);
 }
 
-#etiquette {
-  background-color: lighten($backgroundColor, 8%);
+#etiquette, #ruleset_intro {
+  background-color: lighten($backgroundColor, 8%) !important;
 }
 
 /* Usages of $linkColor */
