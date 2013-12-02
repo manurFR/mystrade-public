@@ -17,11 +17,9 @@
     min-height: 60px;
   }
 
-  #ruleset_intro {
+  .infobox {
     min-height: 85px;
     padding-left: 6px;
-    background-color: lighten($backgroundColor, 8%);
-    @include roundedBorder($radius: 5px);
   }
 
   .text_td {

@@ -37,6 +37,9 @@
     </div>
 
     <div id="zone_game_main">
+        {% if game.ruleset.intro %}
+            <div id="zone_players_introduction" class="infobox"><strong>Foreword</strong> {{ game.ruleset.intro|linebreaksbr }}</div>
+        {% endif %}
         <div id="zone_hand">
             <div id="zone_links">
                 <img src="{% static 'action.png' %}" width="16" height="16" alt="&gt;"/>

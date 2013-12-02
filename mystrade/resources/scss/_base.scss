@@ -193,4 +193,9 @@ hr {
   }
 }
 
+.infobox {
+  background-color: lighten($backgroundColor, 8%);
+  @include roundedBorder($radius: 5px);
+}
+
 @import "responsive";

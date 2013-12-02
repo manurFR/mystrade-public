@@ -45,7 +45,7 @@
         <tr>
             <th>Players Introduction :</th>
             <td>
-                <div class="helptext text_td" id="ruleset_intro"></div>
+                <div class="helptext text_td infobox" id="players_introduction"></div>
             </td>
         </tr>
 		<tr>
@@ -90,7 +90,7 @@
         $("#id_ruleset").on("change", function() {
             var ruleset_id = $(this).children("option:selected").val();
             $("#ruleset_description").html(descriptions[ruleset_id]);
-            $("#ruleset_intro").html(intros[ruleset_id]);
+            $("#players_introduction").html(intros[ruleset_id]);
             $("#ruleset_starting_rules").text(starting_cards[ruleset_id][0]);
             $("#ruleset_starting_commodities").text(starting_cards[ruleset_id][1]);
         });

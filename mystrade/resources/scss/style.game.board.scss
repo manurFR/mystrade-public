@@ -51,6 +51,11 @@
   width: 100%;
 }
 
+#zone_players_introduction {
+  padding: 2px 6px;
+  line-height: 1.4em;
+}
+
 $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 #zone_hand {
   float: left;

@@ -116,7 +116,7 @@ body {
   background-color: darken($backgroundColor, 5%);
 }
 
-#etiquette, #ruleset_intro {
+#etiquette, .infobox {
   background-color: lighten($backgroundColor, 8%) !important;
 }
 
