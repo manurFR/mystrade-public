@@ -404,6 +404,7 @@ def submit_hand(request, game_id):
 #############################################################################
 ##                           Create Game                                   ##
 #############################################################################
+MIN_COPIES_OF_EACH_RULECARD = 2
 
 @permission_required('game.add_game')
 def create_game(request):
@@ -438,6 +439,12 @@ def select_rules(request):
 
     rulecards = RuleCard.objects.filter(ruleset = ruleset).order_by('ref_name')
 
+    # We'll have           (A) nb_max_rulecards * MIN_COPIES_OF_EACH_RULECARD     cards in play on one hand,
+    #  and we will have    (B) len(players) * starting_rules                      cards dealt at the beginning on the other hand.
+    # Those two numbers should be the same, but if it's not possible, the second one must be higher: (A) <= (B).
+    # Which gives:         nb_max_rulecards <= len(players) * starting_rules / MIN_COPIES_OF_EACH_RULECARD
+    nb_max_rulecards = int(len(players) * float(ruleset.starting_rules) / MIN_COPIES_OF_EACH_RULECARD)
+
     if request.method == 'POST':
         selected_rules = []
         for rulecard in rulecards:
@@ -449,9 +456,10 @@ def select_rules(request):
                 selected_rules.append(rulecard)
                 rulecard.selected = True
 
-        if len(selected_rules) > len(players):
-            error = "Please select at most {0} rule cards (including the mandatory ones)".format(len(players))
-            return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session, 'error': error})
+        if len(selected_rules) > nb_max_rulecards:
+            error = "Please select at most {0} rule cards (including the mandatory ones)".format(nb_max_rulecards)
+            return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session,
+                                                              'nb_max_rulecards': nb_max_rulecards, 'error': error})
 
         game = Game.objects.create(ruleset    = ruleset,
                                    master     = request.user,
@@ -496,7 +504,8 @@ def select_rules(request):
 
         return redirect('game', game.id)
     else:
-        return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session})
+        return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session,
+                                                          'nb_max_rulecards': nb_max_rulecards})
 
 #############################################################################
 ##                            Close Game                                   ##

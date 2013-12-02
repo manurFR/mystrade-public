@@ -124,6 +124,7 @@ class GameCreationViewsTest(TestCase):
     def setUp(self):
         self.testUserCanCreate = get_user_model().objects.get(username = 'test1')
         self.testUsersNoCreate = get_user_model().objects.exclude(user_permissions__codename = "add_game")
+        self.ruleset = Ruleset.objects.get(id = 1)
         self.client.login(username = 'test1', password = 'test')
 
     def test_create_game_only_with_the_permission(self):
@@ -137,21 +138,21 @@ class GameCreationViewsTest(TestCase):
         self.assertEqual(302, response.status_code)
 
     def test_create_game_without_dates_fails(self):
-        response = self.client.post("/game/create/", {'ruleset': 1, 'start_date': '', 'end_date': '11/13/2012 00:15'})
+        response = self.client.post("/game/create/", {'ruleset': self.ruleset, 'start_date': '', 'end_date': '11/13/2012 00:15'})
         self.assertFormError(response, 'form', 'start_date', 'This field is required.')
 
-        response = self.client.post("/game/create/", {'ruleset': 1, 'start_date':'11/10/2012 15:30', 'end_date': ''})
+        response = self.client.post("/game/create/", {'ruleset': self.ruleset, 'start_date':'11/10/2012 15:30', 'end_date': ''})
         self.assertFormError(response, 'form', 'end_date', 'This field is required.')
 
     def test_create_game_without_enough_players(self):
-        response = self.client.post("/game/create/", {'ruleset': 1, 
+        response = self.client.post("/game/create/", {'ruleset': self.ruleset.id,
                                                       'start_date': '11/10/2012 18:30', 
                                                       'end_date': '11/13/2012 00:15',
                                                       'players': self.testUsersNoCreate[0].id})
         self.assertFormError(response, 'form', None, 'Please select at least 3 players (as many as there are mandatory rule cards in this ruleset).')
 
     def test_create_game_first_page(self):
-        response = self.client.post("/game/create/", {'ruleset': 1,
+        response = self.client.post("/game/create/", {'ruleset': self.ruleset.id,
                                                       'start_date': '11/10/2012 18:30',
                                                       'end_date': '11/13/2012 00:15',
                                                       'players': [player.id for player in self.testUsersNoCreate]})
@@ -163,14 +164,14 @@ class GameCreationViewsTest(TestCase):
 
     def test_access_select_rules_with_incomplete_session_redirects_to_first_page(self):
         session = self.client.session
-        session['ruleset'] = 1
+        session['ruleset'] = self.ruleset
         session.save()
         response = self.client.get("/game/selectrules/")
         self.assertRedirects(response, "/game/create/")
  
     def test_access_select_rules_without_enough_players_redirects_to_first_page(self):
         session = self.client.session
-        session['ruleset'] = 1
+        session['ruleset'] = self.ruleset
         session['start_date'] = '11/10/2012 18:30'
         session['end_date'] = '11/13/2012 00:15'
         session['players'] = [self.testUsersNoCreate[0]]
@@ -180,7 +181,7 @@ class GameCreationViewsTest(TestCase):
 
     def test_access_select_rules_with_invalid_dates_redirects_to_first_page(self):
         session = self.client.session
-        session['ruleset'] = 1
+        session['ruleset'] = self.ruleset
         session['start_date'] = '11/10/2012 18:30'
         session['end_date'] = '11/13/2011 00:15'
         session['players'] = [self.testUsersNoCreate[0]]
@@ -190,7 +191,7 @@ class GameCreationViewsTest(TestCase):
 
     def test_access_select_rules(self):
         session = self.client.session
-        session['ruleset'] = 1
+        session['ruleset'] = self.ruleset
         session['start_date'] = '11/10/2012 18:30'
         session['end_date'] = '11/13/2012 00:15'
         session['players'] = self.testUsersNoCreate
@@ -201,57 +202,72 @@ class GameCreationViewsTest(TestCase):
 
     def test_create_game_with_too_many_rulecards(self):
         session = self.client.session
-        session['ruleset'] = 1
+        session['ruleset'] = self.ruleset
         session['start_date'] = '11/10/2012 18:30'
         session['end_date'] = '11/13/2012 00:15'
         session['players'] = self.testUsersNoCreate[:4] # only 4 players
         session.save()
         response = self.client.post("/game/selectrules/",
-                                    {'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG01').id): 'True',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG02').id): 'True',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG03').id): 'True',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG04').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG05').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG06').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG07').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG08').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG09').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG10').id): 'True',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG11').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG12').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG13').id): 'True',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG14').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG15').id): 'False'
+                                    {'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG01').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG02').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG03').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG04').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG05').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG06').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG07').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG08').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG09').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG10').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG11').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG12').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG13').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG14').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG15').id): 'False'
                                     })
         self.assertEqual(200, response.status_code)
         self.assertTemplateUsed(response, 'game/select_rules.html')
         self.assertEqual("Please select at most 4 rule cards (including the mandatory ones)", response.context['error'])
+        self.assertEqual(4, response.context['nb_max_rulecards'])
+
+    def test_max_rulecards_depends_on_number_of_starting_rules(self):
+        self.ruleset.starting_rules = 3
+        self.ruleset.save()
+
+        session = self.client.session
+        session['ruleset'] = self.ruleset
+        session['start_date'] = '11/10/2012 18:30'
+        session['end_date'] = '11/13/2012 00:15'
+        session['players'] = self.testUsersNoCreate[:4] # only 4 players
+        session.save()
+        response = self.client.get("/game/selectrules/")
+
+        self.assertEqual(6, response.context['nb_max_rulecards'])
 
     @override_settings(ADMINS = (('admin', 'admin@mystrade.com'),))
     def test_create_game_complete_save_and_clean_session(self):
         self.testUserCanCreate.timezone = "Indian/Maldives" # UTC+5 no DST -- we'll check that the datetimes will be kept in utc
         self.testUserCanCreate.save()
-        response = self.client.post("/game/create/", {'ruleset': 1,
+        response = self.client.post("/game/create/", {'ruleset': self.ruleset.id,
                                                       'start_date': '11/10/2012 18:30',
                                                       'end_date': '11/13/2015 00:15',
                                                       'players': [player.id for player in self.testUsersNoCreate][:4]})
         self.assertRedirects(response, "/game/selectrules/")
         response = self.client.post("/game/selectrules/",
-                                    {'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG01').id): 'True',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG02').id): 'True',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG03').id): 'True',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG04').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG05').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG06').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG07').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG08').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG09').id): 'True',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG10').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG11').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG12').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG13').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG14').id): 'False',
-                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset_id = 1, ref_name = 'HAG15').id): 'False'
+                                    {'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG01').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG02').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG03').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG04').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG05').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG06').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG07').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG08').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG09').id): 'True',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG10').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG11').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG12').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG13').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG14').id): 'False',
+                                     'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG15').id): 'False'
                                     })
 
         created_game = Game.objects.get(master = self.testUserCanCreate.id)

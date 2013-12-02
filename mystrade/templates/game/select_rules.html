@@ -12,14 +12,14 @@
 {% endblock %}
 
 {% block content %}
-    <div id="header">Select at most {{ session.players|length }} rule cards (including the mandatory ones) :
+    <div id="header">Select at most {{ nb_max_rulecards }} rule cards (including the mandatory ones) :
         <span class="action"><img src="{% static "select.png" %}" height="16" width="16" alt=""/>
             <span class="dynamic_link" id="selectall">Select all</span>
         </span>
     </div>
 
     <div id="game_details">
-        <div class="note" id="rule_counter">Rules : <span id="nb_selected_rules"></span> / {{ session.players|length }}</div>
+        <div class="note" id="rule_counter">Rules : <span id="nb_selected_rules"></span> / {{ nb_max_rulecards }}</div>
         <div><strong>You selected:</strong></div>
         <div>Ruleset : {{ session.ruleset }} &mdash;
         Start date : {{ session.start_date|date:"SHORT_DATETIME_FORMAT" }} &mdash;
