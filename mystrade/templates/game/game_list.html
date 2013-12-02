@@ -18,6 +18,7 @@
 		<div id="table_game_list">
 			<div class="row_game_list header-row">
 				<div class="cell_game_list">Game</div>
+				<div class="cell_game_list">Ruleset</div>
 				<div class="cell_game_list">Players</div>
 				<div class="cell_game_list">Start date</div>
 				<div class="cell_game_list">End date</div>
@@ -29,6 +30,7 @@
 				    #{{ game.id }}, by
 					{% if game.master == user %}<strong>{% endif %}{% include "common/name_or_you.html" with who=game.master %}{% if game.master == user %}</strong>{% endif %}
 				</div>
+				<div class="cell_game_list {{ backcolor }}">{{ game.ruleset.name }}</div>
 				<div class="cell_game_list {{ backcolor }}"><span title="{{ game.list_of_players|join:', ' }}">{{ game.players.count }} players</span></div>
 				<div class="cell_game_list {{ backcolor }}">{{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}</div>
 				<div class="cell_game_list {{ backcolor }}{% if game.less_than_24_hours_remaining and not game.hand_submitted %} end_warning{% endif %}">
