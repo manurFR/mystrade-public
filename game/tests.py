@@ -1950,5 +1950,12 @@ class OnlineStatusMiddlewareTest(MystradeTestCase):
         self.assertIsNotNone(last_seen_cancel_trade)
         self.assertNotEqual(last_seen_events, last_seen_cancel_trade)
 
+    def test_the_middleware_sets_a_first_visit_attribute_if_last_seen_was_null_for_this_game(self):
+        response = self.client.get(reverse("game", args = [self.game.id]))
+        self.assertTrue(response.context['display_foreword'])
+
+        response = self.client.get(reverse("game", args = [self.game.id]))
+        self.assertFalse(response.context['display_foreword'])
+
     def _get_last_seen(self):
         return GamePlayer.objects.get(game = self.game, player = self.loginUser).last_seen

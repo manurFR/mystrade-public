@@ -109,9 +109,12 @@ def game_board(request, game_id, trade_id = None):
 
         free_informations = free_informations_until_now(game, request.user)
 
+        display_foreword = hasattr(request, 'first_visit')
+
         context.update({'commodities': commodities, 'rulecards': rulecards, 'former_rulecards': former_rulecards,
                         'hand_submitted': hand_submitted, 'commodities_not_submitted': commodities_not_submitted,
-                        'free_informations': free_informations, 'show_control_board': False})
+                        'free_informations': free_informations, 'show_control_board': False,
+                        'display_foreword': display_foreword})
     else:
         # Scores for the game master and the admins that are NOT players in this game, and for the players after the game is closed
         scoresheets = None

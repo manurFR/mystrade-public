@@ -24,5 +24,11 @@ class OnlineStatusMiddleware(object):
             if match:
                 game_id = match.group(1)
                 # nothing will be updated if there's no GamePlayer instance (e.g. for the game master or the admins)
-                GamePlayer.objects.filter(game__id = game_id, player = request.user).update(last_seen = now())
-            return
+                try:
+                    gp = GamePlayer.objects.get(game__id = game_id, player = request.user)
+                    if gp.last_seen is None:
+                        request.first_visit = True
+                    gp.last_seen = now()
+                    gp.save()
+                except GamePlayer.DoesNotExist:
+                    pass

@@ -37,16 +37,26 @@
     </div>
 
     <div id="zone_game_main">
-        {% if game.ruleset.intro %}
-            <div id="zone_players_introduction" class="infobox"><strong>Foreword</strong> {{ game.ruleset.intro|linebreaksbr }}</div>
-        {% endif %}
         <div id="zone_hand">
             <div id="zone_links">
                 <img src="{% static 'action.png' %}" width="16" height="16" alt="&gt;"/>
+                {% if game.ruleset.intro %}<a id="link_foreword">Foreword</a> | {% endif %}
                 {% if game.is_active and not super_access and not hand_submitted %}<a id="link_new_trade">Propose new trade</a> | {% endif %}
                 <a id="link_show_trade_list">Show all trades</a>
                 {% if game.is_active and not super_access and not hand_submitted %} | <a id="link_submit_hand">Choose final cards</a>{% endif %}
             </div>
+
+            {% if game.ruleset.intro %}
+                <div id="zone_foreword" class="infobox">
+                    <div id="ruleset_name">
+                        {{ game.ruleset.name }}
+                        <div class="note">
+                            <span id="link_close_foreword" class="selectable ui-icon ui-icon-circle-close" style="display:inline-block; vertical-align: text-bottom;" title="close"></span>
+                        </div>
+                    </div>
+                    <div>{{ game.ruleset.intro|linebreaksbr }}</div>
+                </div>
+            {% endif %}
 
             {% if show_control_board %}
                 {% include "game/control.html" %}
@@ -326,6 +336,12 @@
             $("#link_show_trade_list").on("click", function() {
                 $("#zone_trade_list").dialog("open");
             });
+            $("#link_foreword, #link_close_foreword").on("click", function() {
+                $("#zone_foreword").slideToggle();
+            });
+        {% if display_foreword %}
+            $("#zone_foreword").show();
+        {% endif %}
 
             updateOnlineStatus({{ online_players }});
         {% if trade_id %} {# if the url asks for showing a specific trade #}
