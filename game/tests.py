@@ -518,15 +518,15 @@ class GameBoardZoneHandTest(MystradeTestCase):
         self.assertContains(response, 'title="Red"', count = 4)
 
     def test_game_board_doesnt_show_commodities_with_no_cards(self):
-        commodity1 = mommy.make(Commodity, name = 'Commodity1', color="col1")
-        commodity2 = mommy.make(Commodity, name = 'Commodity2', color="col2")
+        commodity1 = mommy.make(Commodity, name = 'Commodity1', color="col1", symbol="a")
+        commodity2 = mommy.make(Commodity, name = 'Commodity2', color="col2", symbol="b")
         cih1 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity1, nb_cards = 1)
         cih2 = CommodityInHand.objects.create(game = self.game, player = self.loginUser, commodity = commodity2, nb_cards = 0)
 
         response = self._assertGetGamePage()
 
-        self.assertContains(response, '<span class="commodity_card selectable" title="Commodity1"', count = 1)
-        self.assertNotContains(response, '<span class="commodity_card selectable" title="Commodity2"')
+        self.assertContains(response, 'title="Commodity1"', count = 1)
+        self.assertNotContains(response, 'title="Commodity2"')
 
     def test_game_board_separate_submitted_and_nonsubmitted_commodities_to_players_who_have_submitted_their_hand(self):
         gameplayer = GamePlayer.objects.get(game = self.game, player = self.loginUser)
@@ -1163,7 +1163,7 @@ class SubmitHandTest(MystradeTestCase):
 
         response = self._assertGetSubmitHandPage()
 
-        self.assertContains(response, '<span class="commodity_card selectable card_selected"', count = 6)
+        self.assertContains(response, '<span class="commodity_card', count = 6)
         self.assertContains(response, 'data-commodity-id="{0}"'.format(commodity1.id), count = 1)
         self.assertContains(response, 'data-commodity-id="{0}"'.format(commodity2.id), count = 2)
         self.assertContains(response, 'data-commodity-id="{0}"'.format(commodity3.id), count = 3)

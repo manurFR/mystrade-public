@@ -1,4 +1,3 @@
-from game.helpers import commodities_in_hand
 from game.models import GamePlayer, CommodityInHand
 from ruleset.models import Commodity
 from scoring.models import ScoreFromRule, ScoreFromCommodity
@@ -55,7 +54,7 @@ class Scoresheet(object):
         self.score_for_commodity(name).actual_value = actual_value
 
     def register_score_from_rule(self, rulecard, detail = '', score = None, is_random = None):
-        sfr = ScoreFromRule(game=self.gameplayer.game, player=self.gameplayer.player, rulecard=rulecard, detail=detail, score=score)
+        sfr = ScoreFromRule(game = self.gameplayer.game, player = self.gameplayer.player, rulecard = rulecard, detail = detail, score = score)
         self._scores_from_rule.append(sfr)
         # This will not be persisted, and thus will only serve in warning the game master of the non-determinism
         # of the current scores' calculation on the his/her control board
