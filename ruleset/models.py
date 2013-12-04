@@ -65,3 +65,6 @@ class Commodity(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def category_acronym(self):
+        return ''.join([word[0:1] for word in self.category.split()]).upper()

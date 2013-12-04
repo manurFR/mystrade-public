@@ -25,7 +25,8 @@ function refreshSelectedCommodities() {
             currentCommodityId = $(this).data("commodityId");
             var numberOfThisCommodity = parseInt($("input#id_commodity_" + currentCommodityId).val(), 10);
             for (var i = 0; i < numberOfThisCommodity; i++) {
-                selectedCommodities += $(this).clone().removeClass("card_selected").wrap('<p>').parent().html();
+                selectedCommodities += $(this).clone().removeClass("card_selected").attr("title", $(this).data("name"))
+                                         .wrap('<p>').parent().html();
             }
         }
     });
@@ -33,6 +34,7 @@ function refreshSelectedCommodities() {
         .find(".commodity_card").on("click.tradeselect", function(event) {
             clickOnCommodity(correspondingCommodityInHand(event.target, true));
         });
+    activateTooltips();
 }
 
 function refreshSelectedRulecards() {
@@ -107,7 +109,7 @@ function prepareCardsInHandForSelection() {
     allCommodities.filter(".not_tradable").addClass("excluded").each(function() {
         $(this).attr("title", $(this).data("name") + " - Reserved for a pending trade");
     });
-    allRulecards.filter(".not_tradable").addClass("excluded").children(".note")
+    allRulecards.filter(".not_tradable").addClass("excluded").find(".note")
         .text("(reserved for a pending trade)");
 
     // mark as selectable the tradable cards
@@ -135,7 +137,7 @@ function resetCardsInHandWhenSelectionIsDisabled() {
     allCommodityCards.filter(".not_tradable").removeClass("excluded").each(function() {
         $(this).attr("title", $(this).data("name"));
     });
-    allRulecards.filter(".not_tradable").removeClass("excluded").children(".note").text("");
+    allRulecards.filter(".not_tradable").removeClass("excluded").find(".note").text("");
 
     $(".click2createtrade").hide();
 }

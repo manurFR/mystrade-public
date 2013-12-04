@@ -750,14 +750,14 @@
         "pk": 12,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Artichoke",        "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
+            "name": "Artichoke",        "ruleset": 3,   "value": 2,     "color": "forestgreen",  "category": "Vegetable"
         }
     },
     {
         "pk": 13,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Arugula (Rocket)", "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
+            "name": "Arugula (Rocket)", "ruleset": 3,   "value": 2,     "color": "forestgreen",  "category": "Vegetable"
         }
     },
     {
@@ -785,14 +785,14 @@
         "pk": 17,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Capers",           "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
+            "name": "Capers",           "ruleset": 3,   "value": 2,     "color": "forestgreen",  "category": "Vegetable"
         }
     },
     {
         "pk": 18,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Eggplant",         "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
+            "name": "Eggplant",         "ruleset": 3,   "value": 2,     "color": "forestgreen",  "category": "Vegetable"
         }
     },
     {
@@ -834,7 +834,7 @@
         "pk": 24,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Mushrooms",        "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
+            "name": "Mushrooms",        "ruleset": 3,   "value": 2,     "color": "forestgreen",  "category": "Vegetable"
         }
     },
     {
@@ -848,14 +848,14 @@
         "pk": 26,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Olives",           "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
+            "name": "Olives",           "ruleset": 3,   "value": 2,     "color": "forestgreen",  "category": "Vegetable"
         }
     },
     {
         "pk": 27,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Onions (Pickled)", "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
+            "name": "Onions (Pickled)", "ruleset": 3,   "value": 2,     "color": "forestgreen",  "category": "Vegetable"
         }
     },
     {
@@ -876,7 +876,7 @@
         "pk": 30,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Peppers",          "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
+            "name": "Peppers",          "ruleset": 3,   "value": 2,     "color": "forestgreen",  "category": "Vegetable"
         }
     },
     {
@@ -890,7 +890,7 @@
         "pk": 32,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Pineapple",        "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
+            "name": "Pineapple",        "ruleset": 3,   "value": 2,     "color": "forestgreen",  "category": "Vegetable"
         }
     },
     {
@@ -918,7 +918,7 @@
         "pk": 36,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Tomato",           "ruleset": 3,   "value": 2,     "color": "lightgreen",  "category": "Vegetable"
+            "name": "Tomato",           "ruleset": 3,   "value": 2,     "color": "forestgreen",  "category": "Vegetable"
         }
     },
     {
@@ -932,7 +932,7 @@
         "pk": 38,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Zucchini (Grilled)", "ruleset": 3, "value": 2,     "color": "lightgreen",  "category": "Vegetable"
+            "name": "Zucchini (Grilled)", "ruleset": 3, "value": 2,     "color": "forestgreen",  "category": "Vegetable"
         }
     }
 ]
