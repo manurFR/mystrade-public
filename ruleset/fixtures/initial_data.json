@@ -418,7 +418,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "DISAPPOINTING",
-            "description": "Spice & Herbs cards are worth no points.",
+            "description": "Spice & Herbs [S&H] cards are worth no points.",
             "mandatory": true,
             "ruleset": 3,
             "ref_name": "PIZ01",
@@ -430,7 +430,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "TWO",
-            "description": "Vegetables are worth 2 points.",
+            "description": "Vegetables [V] are worth 2 points.",
             "mandatory": true,
             "ruleset": 3,
             "ref_name": "PIZ02",
@@ -442,7 +442,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "PROTEINS",
-            "description": "Cheese and Fish & Seafood cards are worth the same number of points than Meat cards.",
+            "description": "Cheese [C] and Fish & Seafood [F&S] cards are worth the same number of points than Meat [M] cards.",
             "mandatory": true,
             "ruleset": 3,
             "ref_name": "PIZ03",
@@ -454,7 +454,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "DIET",
-            "description": "If your pizza contains no Cheese, Don Peppino will curse you but his wife will arrange so that you get a bonus of 6 points (damn doctors!).",
+            "description": "If your pizza contains no Cheese [C], Don Peppino will curse you but his wife will arrange so that you get a bonus of 6 points (damn doctors!).",
             "mandatory": true,
             "ruleset": 3,
             "ref_name": "PIZ04",
@@ -467,7 +467,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "HEALTH",
-            "description": "The bonus you can get if you respect Don Peppino's diet has the same value as two Meat cards.",
+            "description": "The bonus you can get if you respect Don Peppino's diet has the same value as two Meat [M] cards.",
             "mandatory": true,
             "ruleset": 3,
             "ref_name": "PIZ05",
@@ -492,7 +492,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "GOOD IDEA",
-            "description": "If you pizza has more Vegetable cards than Meat, Fish & Seafood and Cheese cards combined, there is a bonus of 12 points for you.",
+            "description": "If you pizza has more Vegetable [V] cards than Meat [M], Fish & Seafood [F&S] and Cheese [C] cards combined, there is a bonus of 12 points for you.",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ07",
@@ -635,7 +635,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "SPICE IT UP",
-            "description": "Each Spice & Herbs card gives a bonus of 2 points to a maximum of two Vegetable cards. Each Vegetable card can earn the bonus from one Spice & Herbs card only.",
+            "description": "Each Spice & Herbs [S&H] card gives a bonus of 2 points to a maximum of two Vegetable [V] cards. Each Vegetable card can earn the bonus from one Spice & Herbs card only.",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ18",
@@ -648,7 +648,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "SEASONED COOK",
-            "description": "The pizza with the most Spice & Herbs cards earns a bonus of 10 points. In case of a tie, each cook wil earn only 3 points.",
+            "description": "The pizza with the most Spice & Herbs [S&H] cards earns a bonus of 10 points. In case of a tie, each cook wil earn only 3 points.",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ19",
