@@ -3,21 +3,21 @@
 """
 import random
 
-def HAG04(self, scoresheet):
+def HAG04(rulecard, scoresheet):
     """If a player has more than three white cards, all of his/her white cards lose their value."""
     if scoresheet.nb_scored_cards('White') > 3:
         scoresheet.set_actual_value('White', actual_value = 0)
-        scoresheet.register_score_from_rule(self,
+        scoresheet.register_score_from_rule(rulecard,
             'Since there are {0} white cards (more than three), their value is set to zero.'.format(scoresheet.nb_scored_cards('White')))
 
-def HAG05(self, scoresheet):
+def HAG05(rulecard, scoresheet):
     """"A player can score only as many as orange cards as he/she has blue cards."""
     if scoresheet.nb_scored_cards('Orange') > scoresheet.nb_scored_cards('Blue'):
         scoresheet.set_nb_scored_cards('Orange', nb_scored_cards = scoresheet.nb_scored_cards('Blue'))
-        scoresheet.register_score_from_rule(self,
+        scoresheet.register_score_from_rule(rulecard,
             'Since there are {0} blue card(s), only {0} orange card(s) score.'.format(scoresheet.nb_scored_cards('Blue')))
 
-def HAG06(self, scoresheets):
+def HAG06(rulecard, scoresheets):
     """If a player has five or more blue cards, 10 points are deducted from every other player's score.
 
         # Global rulecard #
@@ -29,11 +29,11 @@ def HAG06(self, scoresheets):
     for culprit in culprits:
         for victim in scoresheets:
             if victim != culprit:
-                victim.register_score_from_rule(self,
+                victim.register_score_from_rule(rulecard,
                               'Since {0} has {1} blue cards, 10 points are deducted.'.format(culprit.player_name, culprit.nb_scored_cards('Blue')),
                               score = -10)
 
-def HAG07(self, scoresheet):
+def HAG07(rulecard, scoresheet):
     """A set of three red cards protects you from one set of five blue cards."""
     nb_sets = int(scoresheet.nb_scored_cards('Red')) / 3
     for _i in range(nb_sets):
@@ -41,10 +41,10 @@ def HAG07(self, scoresheet):
             if sfr.rulecard.ref_name == 'HAG06' and sfr.score:
                 sfr.score = None
                 sfr.detail = sfr.detail.replace('are deducted.', 'should have been deducted...')
-                scoresheet.register_score_from_rule(self, '...but a set of three red cards cancels that penalty.')
+                scoresheet.register_score_from_rule(rulecard, '...but a set of three red cards cancels that penalty.')
     return scoresheet
 
-def HAG08(self, scoresheets):
+def HAG08(rulecard, scoresheets):
     """The player with the most yellow cards gets a bonus of the number of those cards squared. 
        If two or more players tie for most yellow, the bonus is calculated instead for the player 
        with the next highest number of yellows.
@@ -55,12 +55,12 @@ def HAG08(self, scoresheets):
     for winning_number in range(max(yellows), 1, -1):
         if yellows.count(winning_number) == 1:
             winner = scoresheets[yellows.index(winning_number)]
-            winner.register_score_from_rule(self,
+            winner.register_score_from_rule(rulecard,
                           'Having the most yellow cards ({0} cards) gives a bonus of {0}x{0} points.'.format(winner.nb_scored_cards('Yellow')),
                           score = winner.nb_scored_cards('Yellow') ** 2)
             break
 
-def HAG09(self, scoresheet):
+def HAG09(rulecard, scoresheet):
     """If a player hands in seven or more cards of the same color, 
        for each of these colors 10 points are deducted from his/her score.
 
@@ -68,11 +68,11 @@ def HAG09(self, scoresheet):
     """
     for sfc in scoresheet.scores_from_commodity:
         if sfc.nb_submitted_cards >= 7:
-            scoresheet.register_score_from_rule(self,
+            scoresheet.register_score_from_rule(rulecard,
                               'Since {0} {1} cards where submitted (seven or more), 10 points are deducted.'.format(sfc.nb_submitted_cards, sfc.name),
                               score = -10)
 
-def HAG10(self, scoresheet):
+def HAG10(rulecard, scoresheet):
     """Each set of five different colors gives a bonus of 10 points."""
     min_color_number = None
     nb_colors = 0
@@ -82,9 +82,9 @@ def HAG10(self, scoresheet):
             min_color_number = sfc.nb_scored_cards
     if min_color_number and nb_colors >= 5:
         for _i in range(min_color_number):
-            scoresheet.register_score_from_rule(self, 'A set of five different colors gives a bonus of 10 points.', score = 10)
+            scoresheet.register_score_from_rule(rulecard, 'A set of five different colors gives a bonus of 10 points.', score = 10)
 
-def HAG11(self, scoresheet):
+def HAG11(rulecard, scoresheet):
     """If a \"pyramid\" is submitted with no other cards, the value of the hand is doubled.
        A pyramid consists of four cards of one color, three cards of a second color, 
        two cards of a third, and one card of a fourth color.
@@ -97,11 +97,11 @@ def HAG11(self, scoresheet):
             nb_colors.append({ 'color': sfc.name, 'nb_cards': sfc.nb_submitted_cards })
     nb_colors.sort(key = lambda item: item['nb_cards'])
     if [item['nb_cards'] for item in nb_colors] == [1, 2, 3, 4]:
-        scoresheet.register_score_from_rule(self,
+        scoresheet.register_score_from_rule(rulecard,
                       'A pyramid of 4 {0} cards, 3 {1} cards, 2 {2} cards, 1 {3} card and no other card doubles the score.'.format(nb_colors[3]['color'], nb_colors[2]['color'], nb_colors[1]['color'], nb_colors[0]['color']),
                       score = scoresheet.total_score)
 
-def HAG12(self, scoresheets):
+def HAG12(rulecard, scoresheets):
     """The player with the most red cards double their value.
        In case of a tie, no player collects the extra value.
 
@@ -111,29 +111,29 @@ def HAG12(self, scoresheets):
     reds = [player.nb_scored_cards('Red') for player in scoresheets]
     if reds.count(max(reds)) == 1 and max(reds) > 0:
         winner = scoresheets[reds.index(max(reds))]
-        winner.register_score_from_rule(self,
+        winner.register_score_from_rule(rulecard,
                       'Having the most red cards ({0} cards) doubles their value.'.format(winner.nb_scored_cards('Red')),
                       score = winner.nb_scored_cards('Red') * winner.actual_value('Red'))
 
-def HAG13(self, scoresheet):
+def HAG13(rulecard, scoresheet):
     """Each set of two yellow cards doubles the value of one white card."""
     nb_sets = int(scoresheet.nb_scored_cards('Yellow')) / 2
     nb_bonus = min(nb_sets, scoresheet.nb_scored_cards('White'))
     for _i in range(nb_bonus):
-        scoresheet.register_score_from_rule(self,
+        scoresheet.register_score_from_rule(rulecard,
                       'A pair of yellow cards doubles the value of one white card.',
                       score = scoresheet.actual_value('White'))
 
-def HAG14(self, scoresheet):
+def HAG14(rulecard, scoresheet):
     """Each set of three blue cards quadruples the value of one orange card."""
     nb_sets = int(scoresheet.nb_scored_cards('Blue')) / 3
     nb_bonus = min(nb_sets, scoresheet.nb_scored_cards('Orange'))
     for _i in range(nb_bonus):
-        scoresheet.register_score_from_rule(self,
+        scoresheet.register_score_from_rule(rulecard,
                       'A set of three blue cards quadruples the value of one orange card.',
                       score = 3 * scoresheet.actual_value('Orange'))
 
-def HAG15(self, scoresheet):
+def HAG15(rulecard, scoresheet):
     """No more than thirteen cards in a hand can be scored.
        If more are submitted, the excess will be removed at random.
     """
@@ -159,4 +159,4 @@ def HAG15(self, scoresheet):
         for index, color in enumerate(discarded.iterkeys()):
             detail += '{0} {1} card'.format(discarded[color], color) + ('s' if discarded[color] > 1 else '')
             detail += ', ' if index < (len(discarded) - 1) else '.'
-        scoresheet.register_score_from_rule(self, detail, is_random = True)
+        scoresheet.register_score_from_rule(rulecard, detail, is_random = True)

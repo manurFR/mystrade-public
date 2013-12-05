@@ -492,7 +492,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "GOOD IDEA",
-            "description": "If you pizza has more Vegetable [V] cards than Meat [M], Fish & Seafood [F&S] and Cheese [C] cards combined, there is a bonus of 12 points for you.",
+            "description": "If your pizza has more Vegetable [V] cards than Meat [M], Fish & Seafood [F&S] and Cheese [C] cards combined, there is a bonus of 12 points for you.",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ07",
@@ -518,7 +518,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "BULBOUS",
-            "description": "One garlic card makes Don Peppino tolerate all the toppings he usually dislikes. But beware! More than one garlic and he'll revert to his usual tastes.",
+            "description": "One garlic card makes Don Peppino tolerate all the toppings he usually dislikes. But beware! More than one garlic and he'll revert to his usual distastes.",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ09",
@@ -557,7 +557,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "MARGARITA",
-            "description": "The cook whose pizza has the least number of different toppings will earn a bonus of 12 points. (Multiple copies of the same topping count for one.)",
+            "description": "The cook whose pizza has the smallest number of different toppings will earn a bonus of 12 points. In case of a tie, each player will earn the bonus. (Multiple copies of the same topping count for one.)",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ12",
