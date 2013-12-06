@@ -1,8 +1,11 @@
+import datetime
 from django.test import TestCase
+from django.utils.timezone import utc
 from model_mommy import mommy
-from game.models import Game
+from game.models import Game, CommodityInHand, RuleInHand
 from ruleset.models import Ruleset, RuleCard
 from scoring.tests.commons import _prepare_scoresheet, assertRuleNotApplied, assertRuleApplied
+from trade.models import Trade, Offer, TradedCommodities
 
 
 class PizzazTest(TestCase):
@@ -145,3 +148,58 @@ class PizzazTest(TestCase):
         assertRuleNotApplied(player2, rulecard)
         self.assertEqual(2*3 + 2 + 12, player3.total_score)
         assertRuleApplied(player3, rulecard, 'You have the smallest number of different toppings (2 toppings) of all the players. You earn a bonus of 12 points.', 12)
+
+    def test_PIZ13(self):
+        """The trade featuring the largest number of cards of the game (rules and toppings given by both players
+            combined) will give a bonus of 10 points to both players involved. Only accepted trades count.
+            In case of a tie between two or more trades, no one earns the bonus."""
+        rulecard = RuleCard.objects.get(ref_name = 'PIZ13')
+        player1 = _prepare_scoresheet(self.game, "p1", mushrooms = 5, ham = 1)
+        player2 = _prepare_scoresheet(self.game, "p2", mushrooms = 3, mussels = 1, mozzarella = 3)
+        player3 = _prepare_scoresheet(self.game, "p3", pepperoni = 2, pineapple = 4)
+
+        p1 = player1.gameplayer.player
+        rih1 = mommy.make(RuleInHand, game = self.game, player = p1, rulecard = rulecard)
+        p2 = player2.gameplayer.player
+        rih2 = mommy.make(RuleInHand, game = self.game, player = p2, rulecard = rulecard)
+        p3 = player3.gameplayer.player
+        rih3 = mommy.make(RuleInHand, game = self.game, player = p3, rulecard = rulecard)
+
+        trade1 = mommy.make(Trade, game = self.game, initiator = p1, responder = p2, status = 'REPLIED',  # 12 cards included, but trade not ACEPTED
+                            initiator_offer = _prepare_offer(self.game, p1, [rih1], {'mushrooms': 5, 'ham': 1}),
+                            responder_offer = _prepare_offer(self.game, p2, [rih2], {'mushrooms': 3, 'mozzarella': 3}))
+        trade2 = mommy.make(Trade, game = self.game, initiator = p2, responder = p3, status = 'ACCEPTED',  # 8 cards included
+                            initiator_offer = _prepare_offer(self.game, p2, [rih3], {'mushrooms': 2, 'mozzarella': 2}),
+                            responder_offer = _prepare_offer(self.game, p3, [rih2], {'pepperoni': 1, 'pineapple': 1}),
+                            closing_date = utc.localize(datetime.datetime(2013, 11, 21, 15, 25, 0)))
+        trade3 = mommy.make(Trade, game = self.game, initiator = p2, responder = p3, status = 'ACCEPTED',  # 2 cards included
+                            initiator_offer = _prepare_offer(self.game, p1, [], {'mushrooms': 1}),
+                            responder_offer = _prepare_offer(self.game, p3, [], {'pineapple': 1}),
+                            closing_date = utc.localize(datetime.datetime(2013, 11, 22, 16, 25, 0)))
+
+        rulecard.perform([player1, player2, player3])
+
+        self.assertEqual(5*2 + 3, player1.total_score)
+        assertRuleNotApplied(player1, rulecard)
+        self.assertEqual(3*2 + 3 + 3*3 + 10, player2.total_score)
+        assertRuleApplied(player2, rulecard, 'Your trade with p3 (accepted on 2013/11/21 03:25 PM) included 8 cards. ' +
+                                             'It is the largest number of cards exchanged in a trade. You both earn a bonus of 10 points.',
+                                             score = 10)
+        self.assertEqual(2*3 + 4*2 + 10, player3.total_score)
+        assertRuleApplied(player3, rulecard, 'Your trade with p2 (accepted on 2013/11/21 03:25 PM) included 8 cards. ' +
+                                             'It is the largest number of cards exchanged in a trade. You both earn a bonus of 10 points.',
+                                             score = 10)
+
+    # TODO test_PIZ13_tie
+
+def _prepare_offer(game, player, rules, commodities):
+    offer = mommy.make(Offer, rules = rules)
+    for name, nb_traded_cards in commodities.iteritems():
+        try:
+            cih = CommodityInHand.objects.get(game = game, player = player, commodity__name__iexact = name)
+            tc = mommy.make(TradedCommodities, offer = offer, commodityinhand = cih, nb_traded_cards = nb_traded_cards)
+            offer.tradedcommodities_set.add(tc)
+        except CommodityInHand.DoesNotExist:
+            pass
+    return offer
+

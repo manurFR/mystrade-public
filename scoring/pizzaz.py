@@ -1,6 +1,8 @@
 """
     Rule card scoring resolution for ruleset "Pizzaz!"
 """
+from trade.models import Trade
+
 
 def PIZ04(rulecard, scoresheet):
     """ If your pizza contains no Cheese, Don Peppino will curse you but his wife will arrange so
@@ -98,3 +100,33 @@ def PIZ12(rulecard, scoresheets):
         if nb_toppings == min_toppings:
             player.register_score_from_rule(rulecard, 'You have the smallest number of different toppings ({0} toppings) of all the players. You earn a bonus of 12 points.'.format(min_toppings),
                                             score = 12)
+
+def PIZ13(rulecard, scoresheets):
+    """The trade featuring the largest number of cards of the game (rules and toppings given by both players
+        combined) will give a bonus of 10 points to both players involved. Only accepted trades count.
+        In case of a tie between two or more trades, no one earns the bonus.
+
+        # Global rulecard #
+    """
+    MESSAGE_DETAIL = 'Your trade with {0} (accepted on {1:%Y/%m/%d %I:%M %p}) included {2} cards. It is the largest number of cards exchanged in a trade. You both earn a bonus of 10 points.'
+
+    cards_count = {}
+    for trade in Trade.objects.filter(game = scoresheets[0].gameplayer.game, status = 'ACCEPTED'):
+        nb_cards = trade.initiator_offer.rules.count() + sum([tc.nb_traded_cards for tc in trade.initiator_offer.tradedcommodities_set.all()])
+        nb_cards += trade.responder_offer.rules.count() + sum([tc.nb_traded_cards for tc in trade.responder_offer.tradedcommodities_set.all()])
+        cards_count[trade] = nb_cards
+
+    max_cards = max(cards_count.itervalues())
+
+    for trade, nb_cards in cards_count.iteritems():
+        if nb_cards == max_cards:
+            scoresheet_initiator = None
+            scoresheet_responder = None
+            for scoresheet in scoresheets:
+                if scoresheet.gameplayer.player == trade.initiator:
+                    scoresheet_initiator = scoresheet
+                elif scoresheet.gameplayer.player == trade.responder:
+                    scoresheet_responder = scoresheet
+
+            scoresheet_initiator.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(trade.responder.name, trade.closing_date, nb_cards), score = 10)
+            scoresheet_responder.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(trade.initiator.name, trade.closing_date, nb_cards), score = 10)
