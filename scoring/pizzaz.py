@@ -1,6 +1,7 @@
 """
     Rule card scoring resolution for ruleset "Pizzaz!"
 """
+from django.db.models import Q
 from trade.models import Trade
 
 
@@ -94,7 +95,7 @@ def PIZ12(rulecard, scoresheets):
         # use of nb_submitted_cards and not nb_scored_cards because cards excluded by other rules (such as PIZ08) should not help us win here
         toppings_count[player] = len([sfc for sfc in player.scores_from_commodity if sfc.nb_submitted_cards > 0])
 
-    min_toppings = min(toppings_count.itervalues())
+    min_toppings = min(toppings_count.values())
 
     for player, nb_toppings in toppings_count.iteritems():
         if nb_toppings == min_toppings:
@@ -116,17 +117,40 @@ def PIZ13(rulecard, scoresheets):
         nb_cards += trade.responder_offer.rules.count() + sum([tc.nb_traded_cards for tc in trade.responder_offer.tradedcommodities_set.all()])
         cards_count[trade] = nb_cards
 
-    max_cards = max(cards_count.itervalues())
+    max_cards = max(cards_count.values())
 
-    for trade, nb_cards in cards_count.iteritems():
-        if nb_cards == max_cards:
-            scoresheet_initiator = None
-            scoresheet_responder = None
-            for scoresheet in scoresheets:
-                if scoresheet.gameplayer.player == trade.initiator:
-                    scoresheet_initiator = scoresheet
-                elif scoresheet.gameplayer.player == trade.responder:
-                    scoresheet_responder = scoresheet
+    if cards_count.values().count(max_cards) == 1: # detect tie
+        for trade, nb_cards in cards_count.iteritems():
+            if nb_cards == max_cards:
+                scoresheet_initiator = None
+                scoresheet_responder = None
+                for scoresheet in scoresheets:
+                    if scoresheet.gameplayer.player == trade.initiator:
+                        scoresheet_initiator = scoresheet
+                    elif scoresheet.gameplayer.player == trade.responder:
+                        scoresheet_responder = scoresheet
 
-            scoresheet_initiator.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(trade.responder.name, trade.closing_date, nb_cards), score = 10)
-            scoresheet_responder.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(trade.initiator.name, trade.closing_date, nb_cards), score = 10)
+                scoresheet_initiator.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(trade.responder.name, trade.closing_date, nb_cards), score = 10)
+                scoresheet_responder.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(trade.initiator.name, trade.closing_date, nb_cards), score = 10)
+
+def PIZ14(rulecard, scoresheets):
+    """ The player(s) having traded the largest number of toppings (cards given + cards received) during
+         the course of the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus. """
+    toppings_count = {}
+    for scoresheet in scoresheets:
+        nb_traded_toppings = 0
+        for trade in Trade.objects.filter(Q(initiator = scoresheet.gameplayer.player) | Q(responder = scoresheet.gameplayer.player),
+                                          game = scoresheet.gameplayer.game, status = 'ACCEPTED'):
+            nb_traded_toppings += sum([tc.nb_traded_cards for tc in trade.initiator_offer.tradedcommodities_set.all()]
+                                    + [tc.nb_traded_cards for tc in trade.responder_offer.tradedcommodities_set.all()])
+        toppings_count[scoresheet] = nb_traded_toppings
+
+    max_toppings = max(toppings_count.values())
+    winners = [scoresheet for scoresheet, nb_traded_toppings in toppings_count.iteritems() if nb_traded_toppings == max_toppings]
+
+    for scoresheet in winners:
+        tied = ""
+        if len(winners) > 1:
+            tied = ", tied with {0}".format(", ".join([player.gameplayer.player.name for player in winners if player != scoresheet]))
+        scoresheet.register_score_from_rule(rulecard, 'Your trades have included the largest number of exchanged toppings in the game ({0} toppings{1}). You earn a bonus of 10 point.'.format(max_toppings, tied),
+                                            score = 10)
