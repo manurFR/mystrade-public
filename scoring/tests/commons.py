@@ -28,12 +28,15 @@ def _prepare_scoresheet(game, player, **commodities):
     return Scoresheet(_prepare_hand(game, player, **commodities))
 
 def assertRuleApplied(scoresheet, rulecard, detail = '', score = None, times = 1):
+    rulecards = ['{0} ({1}) - {2}{3}'.format(sfr.rulecard.public_name, sfr.rulecard.ref_name, sfr.detail, " / score= " + str(sfr.score) if sfr.score else '')
+                 for sfr in scoresheet.scores_from_rule]
     for _i in range(times):
         for sfr in scoresheet.scores_from_rule:
             if sfr.rulecard == rulecard and sfr.detail == detail and sfr.score == score:
                 break
         else:
-            raise AssertionError
+            rulecards.insert(0, 'Actual scores from rules:')
+            raise AssertionError(rulecards)
 
 def assertRuleNotApplied(scoresheet, rulecard):
     applied_rules = [sfr.rulecard for sfr in scoresheet.scores_from_rule]

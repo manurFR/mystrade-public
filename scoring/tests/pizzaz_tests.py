@@ -32,7 +32,7 @@ class PizzazTest(TestCase):
         scoresheet = _prepare_scoresheet(self.game, "p1", ham = 6, mushrooms = 5) # ham: 3 pts, mushrooms: 2 pts
         rulecard.perform(scoresheet)
         self.assertEqual(6*3 + 5*2 - 5, scoresheet.total_score)
-        assertRuleApplied(scoresheet, rulecard, 'Since your pizza had 11 toppings (more than 10), you lose 5 points.', score = -5)
+        assertRuleApplied(scoresheet, rulecard, 'Since your pizza has 11 toppings (more than 10), you lose 5 points.', score = -5)
 
     def test_PIZ07(self):
         """ If your pizza has more Vegetable [V] cards than Meat [M], Fish & Seafood [F&S] and Cheese [C] cards combined,
@@ -129,6 +129,7 @@ class PizzazTest(TestCase):
         player2 = _prepare_scoresheet(self.game, "p2", mushrooms = 1, mussels = 1, mozzarella = 2)
         player3 = _prepare_scoresheet(self.game, "p3", parmesan = 1, pepperoni = 2, pineapple = 1, prosciutto = 1)
         rulecard.perform([player1, player2, player3])
+
         self.assertEqual(5*2 + 3 + 12, player1.total_score)
         assertRuleApplied(player1, rulecard, 'You have the smallest number of different toppings (2 toppings) of all the players. You earn a bonus of 12 points.', 12)
         self.assertEqual(2 + 3 + 2*3, player2.total_score)
@@ -277,6 +278,171 @@ class PizzazTest(TestCase):
         self.assertEqual(2*2, scoresheet4.total_score)
         assertRuleNotApplied(scoresheet4, rulecard)
 
+    def test_PIZ15(self):
+        """ The cooks who will not have performed a trade with at least 7 different players during the game will
+             lose 10 points. Only accepted trades with at least one card (rule or topping) given by each player count. """
+        rulecard = RuleCard.objects.get(ref_name = 'PIZ15')
+        players = []
+        scoresheets = []
+        rih = []
+        for i in range(11):
+            player, scoresheet = _prepare_scoresheet_and_returns_tuple(self.game, "p{0}".format(i), olives = 3, mozzarella = 2)
+            players.append(player)
+            scoresheets.append(scoresheet)
+            rih.append(mommy.make(RuleInHand, game = self.game, player = player))
+
+        for i in range(9): # 2 trades with 2 different players for each player 1 to 8, plus one trade including player 0 and one including player 9
+            mommy.make(Trade, game = self.game, initiator = players[i], responder = players[i+1], status = 'ACCEPTED',
+                       initiator_offer = _prepare_offer(self.game, players[i], [], {'olives': 1}),
+                       responder_offer = _prepare_offer(self.game, players[i+1], [], {'mozzarella': 1}),
+                       closing_date = utc.localize(datetime.datetime(2013, 11, i+1, 13, 00, 0)))
+        for i in range(1, 6): # 5 more different friends to trade with for player 0, but those trades do not include cards, only free informations
+            mommy.make(Trade, game = self.game, initiator = players[0], responder = players[i], status = 'ACCEPTED',
+                       initiator_offer = mommy.make(Offer, free_information = 'free'),
+                       responder_offer = mommy.make(Offer, free_information = 'info'),
+                       closing_date = utc.localize(datetime.datetime(2013, 11, 10+i, 14, 00, 0)))
+        for i in range(1, 6): # 5 more different friends to trade with for player 1, but those trades were not ACCEPTED
+            mommy.make(Trade, game = self.game, initiator = players[1], responder = players[i], status = 'REPLIED',
+                       initiator_offer = _prepare_offer(self.game, players[1], [], {'olives': 2}),
+                       responder_offer = _prepare_offer(self.game, players[i], [], {'mozzarella': 2}),
+                       closing_date = utc.localize(datetime.datetime(2013, 11, 15+i, 15, 00, 0)))
+        for i in range(1, 6): # 5 more different friends to trade with for player 2, but the responder did not give any card
+            mommy.make(Trade, game = self.game, initiator = players[2], responder = players[i], status = 'ACCEPTED',
+                       initiator_offer = _prepare_offer(self.game, players[2], [], {'olives': 2}),
+                       responder_offer = mommy.make(Offer, free_information = 'info'),
+                       closing_date = utc.localize(datetime.datetime(2013, 11, 20+i, 16, 00, 0)))
+        for i in range(1, 6): # 5 more different friends to trade with players 7 and 8, making them both avoiding the loss
+            mommy.make(Trade, game = self.game, initiator = players[7], responder = players[i], status = 'ACCEPTED',
+                       initiator_offer = _prepare_offer(self.game, players[7], [], {'olives': 2}),
+                       responder_offer = _prepare_offer(self.game, players[i], [rih[i]], {}), # only a rulecard, to check they are taken in account
+                       closing_date = utc.localize(datetime.datetime(2013, 11, 24+i, 17, 00, 0)))
+            mommy.make(Trade, game = self.game, initiator = players[i], responder = players[8], status = 'ACCEPTED',
+                       initiator_offer = _prepare_offer(self.game, players[i], [rih[i]], {}),
+                       responder_offer = _prepare_offer(self.game, players[8], [], {'mozzarella': 2}),
+                       closing_date = utc.localize(datetime.datetime(2013, 11, 24+i, 18, 00, 0)))
+
+        for scoresheet in scoresheets:
+            rulecard.perform(scoresheet)
+
+        for i in [0, 9]:
+            self.assertEqual(3*2 + 2*3 - 10, scoresheets[i].total_score)
+            assertRuleApplied(scoresheets[i], rulecard, 'Since you have performed trades (including one card or more given by each player) with only 1 other player (less than the 7 players required), you lose 10 points.', score = -10)
+        for i in range(1, 6):
+            self.assertEqual(3*2 + 2*3 - 10, scoresheets[i].total_score)
+            assertRuleApplied(scoresheets[i], rulecard, 'Since you have performed trades (including one card or more given by each player) with only 4 different players (less than the 7 players required), you lose 10 points.', score = -10)
+        self.assertEqual(3*2 + 2*3 - 10, scoresheets[6].total_score)
+        assertRuleApplied(scoresheets[6], rulecard, 'Since you have performed trades (including one card or more given by each player) with only 2 different players (less than the 7 players required), you lose 10 points.', score = -10)
+
+        self.assertEqual(3*2 + 2*3, scoresheets[7].total_score)
+        assertRuleNotApplied(scoresheets[7], rulecard)
+        self.assertEqual(3*2 + 2*3, scoresheets[8].total_score)
+        assertRuleNotApplied(scoresheets[8], rulecard)
+
+        self.assertEqual(3*2 + 2*3 - 10, scoresheets[10].total_score)
+        assertRuleApplied(scoresheets[10], rulecard, 'Since you have not performed any trades (including one card or more given by each player) although you were required to do it with at least 7 other players, you lose 10 points.', score = -10)
+
+    def test_PIZ16(self):
+        """ The default value of a card is doubled if the card name contains at least once the letter K or Z. """
+        rulecard = RuleCard.objects.get(ref_name = 'PIZ16')
+        scoresheet = _prepare_scoresheet(self.game, "p1", artichoke = 1)
+        rulecard.perform(scoresheet)
+        self.assertEqual(4, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecard, 'Since it contains the letter K, the value of each Artichoke card is doubled.')
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", mozzarella = 1) # doubled only once even if there are 2 Zs
+        rulecard.perform(scoresheet)
+        self.assertEqual(6, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecard, 'Since it contains the letter Z, the value of each Mozzarella card is doubled.')
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", bacon = 1)
+        rulecard.perform(scoresheet)
+        self.assertEqual(3, scoresheet.total_score)
+        assertRuleNotApplied(scoresheet, rulecard)
+
+    def test_PIZ17(self):
+        """ If a topping's name starts with a letter from the last ten of the alphabet, the topping is worth
+             2 more points than its default value. """
+        rulecard = RuleCard.objects.get(ref_name = 'PIZ17')
+        scoresheet = _prepare_scoresheet(self.game, "p1", anchovies = 1, peppers = 1, sausage = 1, tuna = 1)
+        rulecard.perform(scoresheet)
+        self.assertEqual(3 + 2 + 5 + 5, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecard, 'Since it starts with a letter from the last ten of the alphabet (Q to Z), each Sausage card is worth two more points than other Meat cards.')
+        assertRuleApplied(scoresheet, rulecard, 'Since it starts with a letter from the last ten of the alphabet (Q to Z), each Tuna card is worth two more points than other Fish & Seafood cards.')
+
+    def test_PIZ18(self):
+        """ Each Herb [H] card gives a bonus of 2 points to a maximum of two Vegetable [V] cards.
+             Each Vegetable card can earn the bonus from one Herb card only. """
+        rulecard = RuleCard.objects.get(ref_name = 'PIZ18')
+        scoresheet = _prepare_scoresheet(self.game, "p1", basil = 2, peppers = 2, olives = 1)
+        rulecard.perform(scoresheet)
+        self.assertEqual(0 + 2*2 + 2 + 3*2, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecard, '2 Herb cards have given a bonus of 2 points each to a total of 3 Vegetable cards in your hand.', score = 6)
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", basil = 1, olives = 1)
+        rulecard.perform(scoresheet)
+        self.assertEqual(0 + 2 + 2, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecard, '1 Herb card have given a bonus of 2 points each to a total of 1 Vegetable card in your hand.', score = 2)
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", basil = 3, peppers = 4, olives = 4)
+        rulecard.perform(scoresheet)
+        self.assertEqual(0 + 4*2 + 4*2 + 6*2, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecard, '3 Herb cards have given a bonus of 2 points each to a total of 6 Vegetable cards in your hand.', score = 12)
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", basil = 1, ham = 1)
+        rulecard.perform(scoresheet)
+        self.assertEqual(0 + 3, scoresheet.total_score)
+        assertRuleNotApplied(scoresheet, rulecard)
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", peppers = 2)
+        rulecard.perform(scoresheet)
+        self.assertEqual(2*2, scoresheet.total_score)
+        assertRuleNotApplied(scoresheet, rulecard)
+
+    def test_PIZ19(self):
+        """ The pizza with the most Herb [H] cards earns a bonus of 10 points.
+             In case of a tie, each cook will earn only 3 points. """
+        rulecard = RuleCard.objects.get(ref_name = 'PIZ19')
+        player1 = _prepare_scoresheet(self.game, "p1", mushrooms = 2, basil = 2)
+        player2 = _prepare_scoresheet(self.game, "p2", mussels = 4, oregano = 3, garlic = 2)
+        player3 = _prepare_scoresheet(self.game, "p3", parmesan = 3, basil = 1, oregano = 1, garlic = 1)
+        rulecard.perform([player1, player2, player3])
+
+        self.assertEqual(2*2 + 0, player1.total_score)
+        assertRuleNotApplied(player1, rulecard)
+        self.assertEqual(4*3 + 0 + 0 + 10, player2.total_score)
+        assertRuleApplied(player2, rulecard, 'Your pizza has the most Herb cards from all the players (5 Herb cards). You earn a bonus of 10 points.', score = 10)
+        self.assertEqual(3*3 + 0 + 0 + 0, player3.total_score)
+        assertRuleNotApplied(player3, rulecard)
+
+    def test_PIZ19_tie(self):
+        rulecard = RuleCard.objects.get(ref_name = 'PIZ19')
+        player1 = _prepare_scoresheet(self.game, "p1", mushrooms = 2, basil = 4)
+        player2 = _prepare_scoresheet(self.game, "p2", mussels = 4, oregano = 2, garlic = 2)
+        player3 = _prepare_scoresheet(self.game, "p3", parmesan = 3, basil = 1, oregano = 1, garlic = 2)
+        rulecard.perform([player1, player2, player3])
+
+        self.assertEqual(2*2 + 0 + 3, player1.total_score)
+        assertRuleApplied(player1, rulecard, 'Your pizza has the most Herb cards from all the players (4 Herb cards, tied with p2, p3). You earn a bonus of 3 points.', score = 3)
+        self.assertEqual(4*3 + 0 + 0 + 3, player2.total_score)
+        assertRuleApplied(player2, rulecard, 'Your pizza has the most Herb cards from all the players (4 Herb cards, tied with p1, p3). You earn a bonus of 3 points.', score = 3)
+        self.assertEqual(3*3 + 0 + 0 + 0 + 3, player3.total_score)
+        assertRuleApplied(player3, rulecard, 'Your pizza has the most Herb cards from all the players (4 Herb cards, tied with p1, p2). You earn a bonus of 3 points.', score = 3)
+
+    def test_PIZ20(self):
+        """ Mamma Peppino cooked mussels with parmesan for Christmas and eggplant with gorgonzola for Good Friday.
+             Each of these pairing will earn you a bonus of 6 points (for at least one card of both topping). Rest In Peace, Mamma. """
+        rulecard = RuleCard.objects.get(ref_name = 'PIZ20')
+        scoresheet = _prepare_scoresheet(self.game, "p1", mussels = 2, parmesan = 3, gorgonzola = 2, eggplant = 3)
+        rulecard.perform(scoresheet)
+        self.assertEqual(2*3 + 3*3 + 2*3 + 3*2 + 6 + 6, scoresheet.total_score) # only one bonus for each dish
+        assertRuleApplied(scoresheet, rulecard, 'Since your pizza includes at least one Mussels card and at least one Parmesan card, you earn a bonus of 6 points.', score = 6)
+        assertRuleApplied(scoresheet, rulecard, 'Since your pizza includes at least one Eggplant card and at least one Gorgonzola card, you earn a bonus of 6 points.', score = 6)
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", mussels = 2, eggplant = 3)
+        rulecard.perform(scoresheet)
+        self.assertEqual(2*3 + 3*2, scoresheet.total_score)
+        assertRuleNotApplied(scoresheet, rulecard)
+
 def _prepare_scoresheet_and_returns_tuple(game, player, **commodities):
     scoresheet = _prepare_scoresheet(game, player, **commodities)
     player = scoresheet.gameplayer.player
@@ -292,4 +458,3 @@ def _prepare_offer(game, player, rules, commodities):
         tc = mommy.make(TradedCommodities, offer = offer, commodityinhand = cih, nb_traded_cards = nb_traded_cards)
         offer.tradedcommodities_set.add(tc)
     return offer
-

@@ -1,6 +1,7 @@
 """
     Rule card scoring resolution for ruleset "Pizzaz!"
 """
+from math import ceil
 from django.db.models import Q
 from trade.models import Trade
 
@@ -22,7 +23,7 @@ def PIZ06(rulecard, scoresheet):
         total_scored_cards += sfc.nb_scored_cards
     if total_scored_cards > 10:
         removed_points = (total_scored_cards - 10) * 5
-        scoresheet.register_score_from_rule(rulecard, 'Since your pizza had {0} toppings (more than 10), you lose {1} points.'.format(total_scored_cards, removed_points),
+        scoresheet.register_score_from_rule(rulecard, 'Since your pizza has {0} toppings (more than 10), you lose {1} points.'.format(total_scored_cards, removed_points),
                                             score = -removed_points)
 
 def PIZ07(rulecard, scoresheet):
@@ -113,9 +114,7 @@ def PIZ13(rulecard, scoresheets):
 
     cards_count = {}
     for trade in Trade.objects.filter(game = scoresheets[0].gameplayer.game, status = 'ACCEPTED'):
-        nb_cards = trade.initiator_offer.rules.count() + sum([tc.nb_traded_cards for tc in trade.initiator_offer.tradedcommodities_set.all()])
-        nb_cards += trade.responder_offer.rules.count() + sum([tc.nb_traded_cards for tc in trade.responder_offer.tradedcommodities_set.all()])
-        cards_count[trade] = nb_cards
+        cards_count[trade] = trade.initiator_offer.total_traded_cards + trade.responder_offer.total_traded_cards
 
     max_cards = max(cards_count.values())
 
@@ -141,8 +140,8 @@ def PIZ14(rulecard, scoresheets):
         nb_traded_toppings = 0
         for trade in Trade.objects.filter(Q(initiator = scoresheet.gameplayer.player) | Q(responder = scoresheet.gameplayer.player),
                                           game = scoresheet.gameplayer.game, status = 'ACCEPTED'):
-            nb_traded_toppings += sum([tc.nb_traded_cards for tc in trade.initiator_offer.tradedcommodities_set.all()]
-                                    + [tc.nb_traded_cards for tc in trade.responder_offer.tradedcommodities_set.all()])
+            nb_traded_toppings += sum([tc.nb_traded_cards for tc in trade.initiator_offer.tradedcommodities]
+                                    + [tc.nb_traded_cards for tc in trade.responder_offer.tradedcommodities])
         toppings_count[scoresheet] = nb_traded_toppings
 
     max_toppings = max(toppings_count.values())
@@ -154,3 +153,94 @@ def PIZ14(rulecard, scoresheets):
             tied = ", tied with {0}".format(", ".join([player.gameplayer.player.name for player in winners if player != scoresheet]))
         scoresheet.register_score_from_rule(rulecard, 'Your trades have included the largest number of exchanged toppings in the game ({0} toppings{1}). You earn a bonus of 10 point.'.format(max_toppings, tied),
                                             score = 10)
+
+def PIZ15(rulecard, scoresheet):
+    """ The cooks who will not have performed a trade with at least 7 different players during the game will
+         lose 10 points. Only accepted trades with at least one card (rule or topping) given by each player count. """
+    traders = set()
+    for trade in Trade.objects.filter(game = scoresheet.gameplayer.game, status = 'ACCEPTED', initiator = scoresheet.gameplayer.player):
+        if trade.initiator_offer.total_traded_cards > 0 and trade.responder_offer.total_traded_cards > 0:
+            traders.add(trade.responder)
+    for trade in Trade.objects.filter(game = scoresheet.gameplayer.game, status = 'ACCEPTED', responder = scoresheet.gameplayer.player):
+        if trade.initiator_offer.total_traded_cards > 0 and trade.responder_offer.total_traded_cards > 0:
+            traders.add(trade.initiator)
+
+    if len(traders) == 0:
+        scoresheet.register_score_from_rule(rulecard, 'Since you have not performed any trades (including one card or more given by each player) although you were required to do it with at least 7 other players, you lose 10 points.',
+                                            score = -10)
+    elif len(traders) == 1:
+        scoresheet.register_score_from_rule(rulecard, 'Since you have performed trades (including one card or more given by each player) with only 1 other player (less than the 7 players required), you lose 10 points.',
+                                            score = -10)
+    elif len(traders) < 7:
+        scoresheet.register_score_from_rule(rulecard, 'Since you have performed trades (including one card or more given by each player) with only {0} different players (less than the 7 players required), you lose 10 points.'.format(len(traders)),
+                                            score = -10)
+
+def PIZ16(rulecard, scoresheet):
+    """ The default value of a card is doubled if the card name contains at least once the letter K or Z. """
+    for sfc in scoresheet.scores_from_commodity:
+        if 'k' in sfc.commodity.name.lower():
+            sfc.actual_value *= 2
+            scoresheet.register_score_from_rule(rulecard, 'Since it contains the letter K, the value of each {0} card is doubled.'.format(sfc.commodity.name))
+        elif 'z' in sfc.commodity.name.lower():
+            sfc.actual_value *= 2
+            scoresheet.register_score_from_rule(rulecard, 'Since it contains the letter Z, the value of each {0} card is doubled.'.format(sfc.commodity.name))
+
+def PIZ17(rulecard, scoresheet):
+    """ If a topping's name starts with a letter from the last ten of the alphabet, the topping is worth
+         2 more points than its default value. """
+    for sfc in scoresheet.scores_from_commodity:
+        if ord('z') - ord(sfc.commodity.name.lower()[0:1]) < 10:
+            sfc.actual_value += 2
+            scoresheet.register_score_from_rule(rulecard, 'Since it starts with a letter from the last ten of the alphabet (Q to Z), each {0} card is worth two more points than other {1} cards.'
+                                                          .format(sfc.commodity.name, sfc.commodity.category))
+
+def PIZ18(rulecard, scoresheet):
+    """ Each Herb [H] card gives a bonus of 2 points to a maximum of two Vegetable [V] cards.
+         Each Vegetable card can earn the bonus from one Herb card only. """
+    herbs = 0
+    vegetables = 0
+    for sfc in scoresheet.scores_from_commodity:
+        category = sfc.commodity.category.lower()
+        if category == 'vegetable':
+            vegetables += sfc.nb_scored_cards
+        elif category == 'herb':
+            herbs += sfc.nb_scored_cards
+
+    if herbs and vegetables:
+        if herbs * 2 < vegetables: # more vegetables than we can attribute the bonus to : limit the number of vegetables that will earn it
+            vegetables = herbs * 2
+        elif herbs * 2 > vegetables: # less vegetables than the largest number we can attribute the bonus to : limit the number of herbs that are used to give the bonus
+            herbs = int(ceil(float(vegetables) / 2))
+
+        scoresheet.register_score_from_rule(rulecard, '{0} Herb card{1} have given a bonus of 2 points each to a total of {2} Vegetable card{3} in your hand.'
+                                                      .format(herbs, 's' if herbs > 1 else '', vegetables, 's' if vegetables > 1 else ''), score = vegetables * 2)
+
+def PIZ19(rulecard, scoresheets):
+    """ The pizza with the most Herb [H] cards earns a bonus of 10 points.
+         In case of a tie, each cook will earn only 3 points. """
+    herbs_count = {}
+    for player in scoresheets:
+        herbs_count[player] = sum([sfc.nb_scored_cards for sfc in player.scores_from_commodity if sfc.commodity.category.lower() == 'herb'])
+
+    max_herbs = max(herbs_count.values())
+    winners = sorted([scoresheet for scoresheet, nb_herbs in herbs_count.iteritems() if nb_herbs == max_herbs],
+                     key = lambda scoresheet: scoresheet.gameplayer.player.name.lower())
+
+    for scoresheet in winners:
+        bonus = 10
+        tied = ""
+        if len(winners) > 1:
+            bonus = 3
+            tied = ", tied with {0}".format(", ".join([player.gameplayer.player.name for player in winners if player != scoresheet]))
+        scoresheet.register_score_from_rule(rulecard, 'Your pizza has the most Herb cards from all the players ({0} Herb cards{1}). You earn a bonus of {2} points.'
+                                                      .format(max_herbs, tied, bonus), score = bonus)
+
+def PIZ20(rulecard, scoresheet):
+    """ Mamma Peppino cooked mussels with parmesan for Christmas and eggplant with gorgonzola for Good Friday.
+         Each of these pairing will earn you a bonus of 6 points (for at least one card of both topping). Rest In Peace, Mamma. """
+    if scoresheet.nb_scored_cards('Mussels') > 0 and scoresheet.nb_scored_cards('Parmesan') > 0:
+        scoresheet.register_score_from_rule(rulecard, 'Since your pizza includes at least one Mussels card and at least one Parmesan card, you earn a bonus of 6 points.',
+                                            score = 6)
+    if scoresheet.nb_scored_cards('Eggplant') > 0 and scoresheet.nb_scored_cards('Gorgonzola') > 0:
+        scoresheet.register_score_from_rule(rulecard, 'Since your pizza includes at least one Eggplant card and at least one Gorgonzola card, you earn a bonus of 6 points.',
+                                            score = 6)

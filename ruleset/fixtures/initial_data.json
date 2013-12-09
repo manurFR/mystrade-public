@@ -418,7 +418,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "DISAPPOINTING",
-            "description": "Spice & Herbs [S&H] cards are worth no points.",
+            "description": "Herb [H] cards are worth no points.",
             "mandatory": true,
             "ruleset": 3,
             "ref_name": "PIZ01",
@@ -596,7 +596,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "SLOTH",
-            "description": "The cooks who will not have performed a trade with at least X different players during the game will lose 10 points. Only accepted trades with at least one card (rule or topping) given by each player count.",
+            "description": "The cooks who will not have performed a trade with at least 7 different players during the game will lose 10 points. Only accepted trades with at least one card (rule or topping) given by each player count.",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ15",
@@ -635,7 +635,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "SPICE IT UP",
-            "description": "Each Spice & Herbs [S&H] card gives a bonus of 2 points to a maximum of two Vegetable [V] cards. Each Vegetable card can earn the bonus from one Spice & Herbs card only.",
+            "description": "Each Herb [H] card gives a bonus of 2 points to a maximum of two Vegetable [V] cards. Each Vegetable card can earn the bonus from one Herb card only.",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ18",
@@ -648,12 +648,12 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "SEASONED COOK",
-            "description": "The pizza with the most Spice & Herbs [S&H] cards earns a bonus of 10 points. In case of a tie, each cook wil earn only 3 points.",
+            "description": "The pizza with the most Herb [H] cards earns a bonus of 10 points. In case of a tie, each cook will earn only 3 points.",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ19",
             "step": 30,
-            "glob": false
+            "glob": true
         }
     },
     {
@@ -771,7 +771,7 @@
         "pk": 15,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Basil",            "ruleset": 3,   "value": 0,     "color": "tan",         "category": "Spice & Herbs"
+            "name": "Basil",            "ruleset": 3,   "value": 0,     "color": "tan",         "category": "Herb"
         }
     },
     {
@@ -799,7 +799,7 @@
         "pk": 19,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Garlic",           "ruleset": 3,   "value": 0,     "color": "tan",         "category": "Spice & Herbs"
+            "name": "Garlic",           "ruleset": 3,   "value": 0,     "color": "tan",         "category": "Herb"
         }
     },
     {
@@ -862,7 +862,7 @@
         "pk": 28,
         "model": "ruleset.commodity",
         "fields": {
-            "name": "Oregano",          "ruleset": 3,   "value": 0,     "color": "tan",         "category": "Spice & Herbs"
+            "name": "Oregano",          "ruleset": 3,   "value": 0,     "color": "tan",         "category": "Herb"
         }
     },
     {
