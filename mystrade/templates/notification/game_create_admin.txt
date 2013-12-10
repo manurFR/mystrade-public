@@ -1,5 +1,8 @@
 {% autoescape off %}Game #{{ game.id }} has been created by {{ game.master.name }}
-{{ game.master.name|capfirst }} has just created game #{{ game.id }}.
+{{ game.master.name|capfirst }} has just created game #{{ game.id }} with the "{{ game.ruleset.name }}" ruleset.
+
+{% if game.ruleset.intro %}The game foreword:
+{{ game.ruleset.intro|wordwrap:120 }}{% endif %}
 
 The players are:
 {% for player in players %}- {{ player.name }} ({{ player.url }})
@@ -8,7 +11,7 @@ The players are:
 The ruleset is: {{ game.ruleset.name }}.
 
 The selected rules are:
-{% for rulecard in rules %}- Rule {{ rulecard.public_name }}: {{ rulecard.description|safe }}
+{% for rulecard in rules %}- Rule {{ rulecard.public_name }}: {{ rulecard.description|safe|wordwrap:110 }}
 {% endfor %}
 
 {% include "notification/footer.txt" %}{% endautoescape %}

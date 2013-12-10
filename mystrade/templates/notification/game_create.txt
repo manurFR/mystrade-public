@@ -1,5 +1,9 @@
 {%load tz %}{% autoescape off %}Game #{{ game.id }} has been created by {{ game.master.name }}
-{{ game.master.name|capfirst }} has just created game #{{ game.id }}, and you've been selected to join it !
+{{ game.master.name|capfirst }} has just created game #{{ game.id }} with the "{{ game.ruleset.name }}" ruleset,
+and you've been selected to join it !
+
+{% if game.ruleset.intro %}The game foreword:
+{{ game.ruleset.intro|wordwrap:120 }}{% endif %}
 
 The other players are:
 {% for opponent in opponents %}- {{ opponent.name }} ({{ opponent.url }})
@@ -10,7 +14,7 @@ Here's the hand dealt to you:
 {% for cih in commodities %}- {{ cih.nb_cards }} {{ cih.commodity.name }} card{{ cih.nb_cards|pluralize }}
 {% endfor %}
 * Rules:
-{% for rih in rules %}- Rule {{ rih.rulecard.public_name }}: {{ rih.rulecard.description|safe }}
+{% for rih in rules %}- Rule {{ rih.rulecard.public_name }}: {{ rih.rulecard.description|safe|wordwrap:110 }}
 {% endfor %}
 
 {% timezone player_timezone %}{% if game.is_active %}The game has already started ! Start trading here:{% else %}The game will start on {{ game.start_date|date:"SHORT_DATETIME_FORMAT" }}. Be ready and visit the site:{% endif %}

@@ -290,7 +290,7 @@ class GameCreationViewsTest(TestCase):
         self.assertEqual(1, list_recipients.count('test2@test.com'))
         emailTest2 = mail.outbox[list_recipients.index('test2@test.com')]
         self.assertEqual('[MysTrade] Game #{0} has been created by test1'.format(created_game.id), emailTest2.subject)
-        self.assertIn('Test1 has just created game #{0}, and you\'ve been selected to join it !'.format(created_game.id), emailTest2.body)
+        self.assertIn('Test1 has just created game #{0} with the "Original Haggle (1969)" ruleset'.format(created_game.id), emailTest2.body)
         self.assertEqual(2, emailTest2.body.count('- Rule'))
         self.assertIn("The game has already started ! Start trading here:", emailTest2.body)
         self.assertIn('/game/{0}'.format(created_game.id), emailTest2.body)
@@ -298,7 +298,7 @@ class GameCreationViewsTest(TestCase):
         self.assertEqual(1, list_recipients.count('admin@mystrade.com'))
         emailAdmin = mail.outbox[list_recipients.index('admin@mystrade.com')]
         self.assertEqual('[MysTrade] Game #{0} has been created by test1'.format(created_game.id), emailAdmin.subject)
-        self.assertIn('Test1 has just created game #{0}.'.format(created_game.id), emailAdmin.body)
+        self.assertIn('Test1 has just created game #{0} with the "Original Haggle (1969)" ruleset'.format(created_game.id), emailAdmin.body)
         self.assertIn("The ruleset is: {0}".format(created_game.ruleset.name), emailAdmin.body)
         self.assertEqual(4, emailAdmin.body.count('- Rule'))
 
