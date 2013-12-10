@@ -1,0 +1,146 @@
+/* ###>>>   Bluish Fiesta palette for MysTrade   <<<###
+   by Jérôme 'djey' Canler & Vinu Segar, november 2013
+*/
+
+$backgroundColor: #FAEBD7;
+
+$selectionHaloColor: #9A9AAF;
+
+$secondaryTextColor: #306F54;
+$tertiaryTextColor: #8B8378;
+
+$linkColor: #A37B46;
+
+/* Game label colormap */
+#game_label {
+  &.game_label_color_0 { color: blue; }
+  &.game_label_color_1 { color: #BB0000; } // red
+  &.game_label_color_2 { color: darkgreen; }
+  &.game_label_color_3 { color: pink; }
+  &.game_label_color_4 { color: yellowgreen; }
+  &.game_label_color_5 { color: maroon; }
+}
+
+/* Game player box */
+.game-player {
+  a {
+    color: #2D4F69 !important;
+    text-decoration: none;
+
+    &:hover {
+      color: black !important;
+    }
+  }
+}
+
+/* Tab headers (change only inactive tabs' header color) */
+.ui-state-default:not(.ui-state-active) {
+  a, a:link, a:visited {
+    color: $tertiaryTextColor !important;
+  }
+}
+
+/* ******************************************************************************************
+ * **      There shouldn't be anything to change below these lines. But check anyway.      **
+ * ****************************************************************************************** */
+
+/* Shadow mixin and its overriding usages */
+$shadowColor: darken($backgroundColor, 40%);
+
+@mixin shadowBox($offset: 2px, $blur: 10px, $color: $shadowColor, $inset: "") {
+  box-shadow: $offset $offset $blur $color unquote($inset);
+  -moz-box-shadow: $offset $offset $blur $color unquote($inset);
+  -webkit-box-shadow: $offset $offset $blur $color unquote($inset);
+}
+
+.image_right, .image_left, #game_details {
+  @include shadowBox();
+}
+
+.me .score_header {
+  background-color: lighten($backgroundColor, 6%);
+  @include shadowBox();
+}
+
+.player_scoresheet {
+  background-color: lighten($backgroundColor, 13%);
+  @include shadowBox($inset: inset);
+}
+
+.commodity_card, .rulecard, .rulecard_thumbnail {
+  @include shadowBox($blur: 5px);
+}
+
+#table_profile, #table_password {
+  tr.longtext td div:not(.helptext) {
+    @include shadowBox($inset: inset);
+  }
+}
+
+/* Usages of $backgroundColor and its derivatives */
+$modalDialogBackgroundColor: lighten($backgroundColor, 6%);
+
+body {
+  background-color: $backgroundColor;
+}
+
+.modal_dialog, .modal_dialog.ui-dialog-content, .modal_dialog_class .ui-widget-header {
+  background-color: $modalDialogBackgroundColor;
+}
+
+.even_color, .known_rules {
+  background-color: lighten($backgroundColor, 2%);
+
+  &:hover {
+    background-color: $backgroundColor;
+  }
+}
+
+.odd_color {
+  background-color: darken($backgroundColor, 2%);
+
+  &:hover {
+    background-color: $backgroundColor;
+  }
+}
+
+.message_content {
+  background-color: lighten($backgroundColor, 5%);
+
+  &.admin {
+    background: darken($backgroundColor, 4%);
+  }
+}
+
+#table_game_list .row_game_list:first-of-type, #header, #table_profile tr:first-of-type td, #table_password tr:first-of-type td {
+  background-color: darken($backgroundColor, 5%);
+}
+
+#etiquette, .infobox {
+  background-color: lighten($backgroundColor, 8%) !important;
+}
+
+/* Usages of $linkColor */
+a, .dynamic_link, .event_text a.event_link_trade, .ui-widget-content a {
+  color: $linkColor;
+}
+
+/* Usages of $secondaryTextColor */
+#trade_summary, .rulecard.former, .row_trade_list.finalized {
+  color: $secondaryTextColor;
+}
+
+/* Usages of $tertiaryTextColor */
+.helptext, .event_date, .event_time, .errors {
+  color: $tertiaryTextColor !important;
+  border-bottom-color: $tertiaryTextColor;
+}
+
+/* Usages of $selectionHaloColor */
+.card_selected {
+  border-color: $selectionHaloColor !important;
+}
+
+.free_information_text {
+  color: $selectionHaloColor;
+}
