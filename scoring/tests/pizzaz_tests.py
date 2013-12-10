@@ -212,6 +212,17 @@ class PizzazTest(TestCase):
         self.assertEqual(2*2 + 2*3, scoresheet3.total_score)
         assertRuleNotApplied(scoresheet3, rulecard)
 
+    def test_PIZ13_no_trades_should_not_raise_ValueError(self):
+        rulecard = RuleCard.objects.get(ref_name = 'PIZ13')
+        player1, scoresheet1 = _prepare_scoresheet_and_returns_tuple(self.game, "p1", olives = 3, mozzarella = 2)
+        player2, scoresheet2 = _prepare_scoresheet_and_returns_tuple(self.game, "p2", pepperoni = 2, pineapple = 1, ham = 1)
+        player3, scoresheet3 = _prepare_scoresheet_and_returns_tuple(self.game, "p3", mushrooms = 2, mozzarella = 2)
+
+        try:
+            rulecard.perform([scoresheet1, scoresheet2, scoresheet3])
+        except ValueError:
+            self.fail("PIZ13 for a player without accepted trades should not raise a ValueError")
+
     def test_PIZ14(self):
         """ The player(s) having traded the largest number of toppings (cards given + cards received) during
              the course of the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus. """
