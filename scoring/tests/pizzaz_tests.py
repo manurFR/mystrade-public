@@ -4,7 +4,8 @@ from django.utils.timezone import utc
 from model_mommy import mommy
 from game.models import Game, CommodityInHand, RuleInHand
 from ruleset.models import Ruleset, RuleCard
-from scoring.tests.commons import _prepare_scoresheet, assertRuleNotApplied, assertRuleApplied
+from scoring.card_scoring import tally_scores
+from scoring.tests.commons import _prepare_scoresheet, assertRuleNotApplied, assertRuleApplied, _prepare_hand
 from trade.models import Trade, Offer, TradedCommodities
 
 
@@ -442,6 +443,33 @@ class PizzazTest(TestCase):
         rulecard.perform(scoresheet)
         self.assertEqual(2*3 + 3*2, scoresheet.total_score)
         assertRuleNotApplied(scoresheet, rulecard)
+
+    def test_all_rules_pizzaz_together(self):
+        for rule in RuleCard.objects.filter(ruleset__id = 3):
+            self.game.rules.add(rule)
+        gp1 = _prepare_hand(self.game, "p1", peppers = 2, chicken = 2, eggplant = 1, gorgonzola = 1) # PIZ08, PIZ10, PIZ16x2, PIZ20
+        gp2 = _prepare_hand(self.game, "p2", ham = 4, garlic = 1, mushrooms = 1) # PIZ04, PIZ08, PIZ09, PIZ10, PIZ12, PIZ18
+        gp3 = _prepare_hand(self.game, "p3", capers = 3, mushrooms = 3, sausage = 3, bacon = 1) # PIZ04, PIZ07, PIZ10x3, PIZ17
+        gp4 = _prepare_hand(self.game, "p4", bacon = 3, oregano = 1, gorgonzola = 2, artichoke = 1, prosciutto = 3, tomato = 2) # PIZ06, PIZ10x4, PIZ16x2, PIZ17, PIZ18
+        gp5 = _prepare_hand(self.game, "p5", anchovies = 1, artichoke = 1, arugula = 1, olives = 1, onions = 1, oregano = 2) # PIZ04, PIZ07, PIZ10, PIZ11x2, PIZ16x3, PIZ18, PIZ19
+        gp6 = _prepare_hand(self.game, "p6", mussels = 2, parmesan = 1, olives = 1) # PIZ10, PIZ12, PIZ20
+
+        mommy.make(Trade, game = self.game, initiator = gp2.player, responder = gp6.player, status = 'ACCEPTED',  # PIZ13 & PIZ14 to p2 and p6
+                   initiator_offer = _prepare_offer(self.game, gp2.player, [], {'mussels': 2, 'parmesan': 1}),
+                   responder_offer = _prepare_offer(self.game, gp6.player, [], {'ham': 4, 'garlic': 1}),
+                   closing_date = utc.localize(datetime.datetime(2013, 11, 1, 13, 00, 0)))
+
+        # + everyone loses 10 points with PIZ15
+
+        scoresheets = tally_scores(self.game)
+        self.assertEqual(6, len(scoresheets))
+
+        self.assertEqual(0 + 2*6 + 2 + 3*2 + 4 + 6 - 10,                            scoresheets[0].total_score)
+        self.assertEqual(4*3 + 0 + 2 + 6 + 4 + 12 + 2 + 10 + 10 - 10,               scoresheets[1].total_score)
+        self.assertEqual(3*2 + 3*2 + 3*5 + 3 + 6 + 12 + 3*4 - 10,                   scoresheets[2].total_score)
+        self.assertEqual(3*3 + 0 + 2*6 + 4 + 3*3 + 2*4 - 2*5 + 4*4 + 2*2 - 10,      scoresheets[3].total_score)
+        self.assertEqual(3 + 4 + 4 + 2 + 4 + 0 + 6 + 12 + 4 + 2*8 + 4*2 + 10 - 10,  scoresheets[4].total_score)
+        self.assertEqual(2*3 + 3 + 2 + 4 + 12 + 6 + 10 + 10 - 10,                   scoresheets[5].total_score)
 
 def _prepare_scoresheet_and_returns_tuple(game, player, **commodities):
     scoresheet = _prepare_scoresheet(game, player, **commodities)

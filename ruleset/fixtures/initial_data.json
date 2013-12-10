@@ -442,7 +442,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "PROTEINS",
-            "description": "Cheese [C] and Fish & Seafood [F&S] cards are worth the same number of points than Meat [M] cards.",
+            "description": "Cheese [C] and Fish & Seafood [F&S] cards are worth the same number of points as Meat [M] cards.",
             "mandatory": true,
             "ruleset": 3,
             "ref_name": "PIZ03",

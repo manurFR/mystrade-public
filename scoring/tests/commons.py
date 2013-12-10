@@ -19,7 +19,7 @@ def _prepare_hand(game, player, **commodities):
         gameplayer = mommy.make(GamePlayer, game = game, player = p)
 
     for name, nb_submitted_cards in commodities.iteritems():
-        commodity = Commodity.objects.get(ruleset = game.ruleset, name__iexact = name)
+        commodity = Commodity.objects.get(ruleset = game.ruleset, name__istartswith = name)
         mommy.make(CommodityInHand, game = game, player = p, commodity = commodity,
                    nb_cards = nb_submitted_cards, nb_submitted_cards = nb_submitted_cards)
     return gameplayer

@@ -11,6 +11,7 @@
 
 $heightOfCommodityCards: 50px;
 $marginOfCommodityCards: 3px;
+$paddingOfNamedCommodityCards: 4px;
 
 .commodity_card {
   display: inline-block;
@@ -27,7 +28,7 @@ $marginOfCommodityCards: 3px;
   }
 
   &.named {
-    padding: 4px 4px 0 4px;
+    padding: $paddingOfNamedCommodityCards $paddingOfNamedCommodityCards 0 $paddingOfNamedCommodityCards;
     min-width: 40px;
     max-width: 60px;
     vertical-align: top;
