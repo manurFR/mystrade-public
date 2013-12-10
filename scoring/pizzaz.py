@@ -9,11 +9,7 @@ from trade.models import Trade
 def PIZ04(rulecard, scoresheet):
     """ If your pizza contains no Cheese, Don Peppino will curse you but his wife will arrange so
         that you get a bonus of 6 points (damn doctors!).  """
-    nb_cheeses = 0
-    for sfc in scoresheet.scores_from_commodity:
-        if sfc.commodity.category.lower() == 'cheese':
-            nb_cheeses += 1
-    if nb_cheeses == 0:
+    if scoresheet.nb_scored_cards_from_categories('Cheese') == 0:
         scoresheet.register_score_from_rule(rulecard, 'A pizza with no cheese gives you a bonus of 6 points.', score = 6)
 
 def PIZ06(rulecard, scoresheet):
@@ -29,14 +25,8 @@ def PIZ06(rulecard, scoresheet):
 def PIZ07(rulecard, scoresheet):
     """If you pizza has more Vegetable [V] cards than Meat [M], Fish & Seafood [F&S] and Cheese [C] cards combined,
         there is a bonus of 12 points for you."""
-    vegetables = 0
-    proteins = 0
-    for sfc in scoresheet.scores_from_commodity:
-        category = sfc.commodity.category.lower()
-        if category == 'vegetable':
-            vegetables += sfc.nb_scored_cards
-        elif category in ['meat', 'fish & seafood', 'cheese']:
-            proteins += sfc.nb_scored_cards
+    vegetables = scoresheet.nb_scored_cards_from_categories('Vegetable')
+    proteins = scoresheet.nb_scored_cards_from_categories('Meat', 'Fish & Seafood', 'Cheese')
     if vegetables > proteins:
         scoresheet.register_score_from_rule(rulecard, 'There is more Vegetable cards in your pizza than Meat, Fish & Seafood and Cheese cards combined. You earn a bonus of 12 points.',
                                             score = 12)
@@ -197,15 +187,8 @@ def PIZ17(rulecard, scoresheet):
 def PIZ18(rulecard, scoresheet):
     """ Each Herb [H] card gives a bonus of 2 points to a maximum of two Vegetable [V] cards.
          Each Vegetable card can earn the bonus from one Herb card only. """
-    herbs = 0
-    vegetables = 0
-    for sfc in scoresheet.scores_from_commodity:
-        category = sfc.commodity.category.lower()
-        if category == 'vegetable':
-            vegetables += sfc.nb_scored_cards
-        elif category == 'herb':
-            herbs += sfc.nb_scored_cards
-
+    herbs = scoresheet.nb_scored_cards_from_categories('Herb')
+    vegetables = scoresheet.nb_scored_cards_from_categories('Vegetable')
     if herbs and vegetables:
         if herbs * 2 < vegetables: # more vegetables than we can attribute the bonus to : limit the number of vegetables that will earn it
             vegetables = herbs * 2
@@ -218,9 +201,7 @@ def PIZ18(rulecard, scoresheet):
 def PIZ19(rulecard, scoresheets):
     """ The pizza with the most Herb [H] cards earns a bonus of 10 points.
          In case of a tie, each cook will earn only 3 points. """
-    herbs_count = {}
-    for player in scoresheets:
-        herbs_count[player] = sum([sfc.nb_scored_cards for sfc in player.scores_from_commodity if sfc.commodity.category.lower() == 'herb'])
+    herbs_count = dict((player, player.nb_scored_cards_from_categories('Herb')) for player in scoresheets)
 
     max_herbs = max(herbs_count.values())
     winners = sorted([scoresheet for scoresheet, nb_herbs in herbs_count.iteritems() if nb_herbs == max_herbs],

@@ -44,6 +44,13 @@ class Scoresheet(object):
     def nb_scored_cards(self, name):
         return self.score_for_commodity(name).nb_scored_cards
 
+    def nb_scored_cards_from_categories(self, *categories):
+        nb_scored_cards = 0
+        for sfc in self.scores_from_commodity:
+            if sfc.commodity.category in categories:
+                nb_scored_cards += sfc.nb_scored_cards
+        return nb_scored_cards
+
     def actual_value(self, name):
         return self.score_for_commodity(name).actual_value
 
