@@ -127,7 +127,7 @@ $heightOfThumbnailRuleCards: 22px;
   text-align: center;
   border: $lightSolidBorder;
   @include roundedBorder(5px);
-  height: $heightOfThumbnailRuleCards;
+  min-height: $heightOfThumbnailRuleCards;
   min-width: 1em;
   margin: 1px;
   padding: 4px;
