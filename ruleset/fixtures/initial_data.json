@@ -570,7 +570,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "POTLATCH",
-            "description": "The trade featuring the largest number of cards of the game (rules and toppings given by both players combined) will give a bonus of 10 points to both players involved. Only accepted trades count. In case of a tie between two or more trades, no one earns the bonus.",
+            "description": "The trade featuring the largest number of cards of the game (rules and toppings from both players combined) will give a bonus of 10 points to both players. Only accepted trades count. In case of a tie between two or more trades, no one earns the bonus.",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ13",

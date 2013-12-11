@@ -126,7 +126,7 @@ a, .dynamic_link, .event_text a.event_link_trade, .ui-widget-content a {
 }
 
 /* Usages of $secondaryTextColor */
-#trade_summary, .rulecard.former, .row_trade_list.finalized {
+#trade_summary, .rulecard.former, .row_trade_list.finalized .column_trade_status {
   color: $secondaryTextColor;
 }
 

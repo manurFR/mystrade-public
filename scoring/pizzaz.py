@@ -127,7 +127,10 @@ def PIZ13(rulecard, scoresheets):
 
 def PIZ14(rulecard, scoresheets):
     """ The player(s) having traded the largest number of toppings (cards given + cards received) during
-         the course of the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus. """
+         the course of the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus.
+
+        # Global rulecard #
+    """
     toppings_count = {}
     for scoresheet in scoresheets:
         nb_traded_toppings = 0
@@ -203,7 +206,10 @@ def PIZ18(rulecard, scoresheet):
 
 def PIZ19(rulecard, scoresheets):
     """ The pizza with the most Herb [H] cards earns a bonus of 10 points.
-         In case of a tie, each cook will earn only 3 points. """
+         In case of a tie, each cook will earn only 3 points.
+
+        # Global rulecard #
+    """
     herbs_count = dict((player, player.nb_scored_cards_from_categories('Herb')) for player in scoresheets)
 
     max_herbs = max(herbs_count.values())

@@ -166,7 +166,7 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 .row_trade_list {
   display: table-row;
 
-  &.finalized {
+  &.finalized .column_trade_status {
     color: $secondaryTextColor;
   }
 }
