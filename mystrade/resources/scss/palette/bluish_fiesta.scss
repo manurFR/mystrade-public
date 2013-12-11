@@ -11,6 +11,8 @@ $tertiaryTextColor: #A7C1CE;
 
 $linkColor: white;
 
+$shadowColor: darken($backgroundColor, 20%);
+
 /* Game label colormap */
 #game_label {
   &.game_label_color_0 { color: blue; }
@@ -45,8 +47,6 @@ $linkColor: white;
  * ****************************************************************************************** */
 
 /* Shadow mixin and its overriding usages */
-$shadowColor: darken($backgroundColor, 20%);
-
 @mixin shadowBox($offset: 2px, $blur: 10px, $color: $shadowColor, $inset: "") {
   box-shadow: $offset $offset $blur $color unquote($inset);
   -moz-box-shadow: $offset $offset $blur $color unquote($inset);

@@ -21,7 +21,7 @@ class MystradeUser(AbstractUser):
     # the first dict in this list will be the default
     PALETTES = [ {'key': FUNKY_ORANGE,   'name': 'Funky Orange',   'note': '(default palette)'},
                  {'key': BLUISH_FIESTA,  'name': 'Bluish Fiesta',  'note': 'by djey & vinu'},
-                 {'key': ANTIQUE_BOUTIQUE, 'name': 'Antique Boutique', 'note': 'under construction'}]
+                 {'key': ANTIQUE_BOUTIQUE, 'name': 'Antique Boutique', 'note': 'by manur & djey'}]
     PALETTE_CHOICES = [(dict['key'], dict['name']) for dict in PALETTES]
     DEFAULT_PALETTE = PALETTES[0]['key']
     palette = models.CharField(max_length = 50, choices = PALETTE_CHOICES, default = DEFAULT_PALETTE)

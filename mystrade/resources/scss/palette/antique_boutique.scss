@@ -1,23 +1,28 @@
-/* ###>>>   Bluish Fiesta palette for MysTrade   <<<###
-   by Jérôme 'djey' Canler & Vinu Segar, november 2013
+/* ###>>>   Antique Boutique palette for MysTrade   <<<###
+           by Manur & Jérôme 'djey', december 2013
 */
 
 $backgroundColor: #FAEBD7;
 
-$selectionHaloColor: #9A9AAF;
+$selectionHaloColor: #4949A7;
 
-$secondaryTextColor: #306F54;
+$secondaryTextColor: #3F936F;
 $tertiaryTextColor: #8B8378;
 
 $linkColor: #A37B46;
+
+$borderColor: #8C98A1;
+$shadowColor: darken($borderColor, 10%);
+
+$inputBackgroundColor: #FFF8CE;
 
 /* Game label colormap */
 #game_label {
   &.game_label_color_0 { color: blue; }
   &.game_label_color_1 { color: #BB0000; } // red
   &.game_label_color_2 { color: darkgreen; }
-  &.game_label_color_3 { color: pink; }
-  &.game_label_color_4 { color: yellowgreen; }
+  &.game_label_color_3 { color: magenta; }
+  &.game_label_color_4 { color: goldenrod; }
   &.game_label_color_5 { color: maroon; }
 }
 
@@ -33,11 +38,15 @@ $linkColor: #A37B46;
   }
 }
 
-/* Tab headers (change only inactive tabs' header color) */
-.ui-state-default:not(.ui-state-active) {
+/* Tab headers */
+.ui-state-default:not(.ui-state-active) {  // text color of the inactive tab headers
   a, a:link, a:visited {
     color: $tertiaryTextColor !important;
   }
+}
+
+#zone_tabs .ui-tabs-nav .ui-state-active { // background color of the active tab header
+  background-color: darken($backgroundColor, 10%);
 }
 
 /* ******************************************************************************************
@@ -45,8 +54,6 @@ $linkColor: #A37B46;
  * ****************************************************************************************** */
 
 /* Shadow mixin and its overriding usages */
-$shadowColor: darken($backgroundColor, 40%);
-
 @mixin shadowBox($offset: 2px, $blur: 10px, $color: $shadowColor, $inset: "") {
   box-shadow: $offset $offset $blur $color unquote($inset);
   -moz-box-shadow: $offset $offset $blur $color unquote($inset);
@@ -108,7 +115,7 @@ body {
   background-color: lighten($backgroundColor, 5%);
 
   &.admin {
-    background: darken($backgroundColor, 4%);
+    background: darken($backgroundColor, 8%);
   }
 }
 
@@ -126,7 +133,7 @@ a, .dynamic_link, .event_text a.event_link_trade, .ui-widget-content a {
 }
 
 /* Usages of $secondaryTextColor */
-#trade_summary, .rulecard.former, .row_trade_list.finalized {
+#trade_summary, .rulecard.former, .row_trade_list.finalized, .free_information_text {
   color: $secondaryTextColor;
 }
 
@@ -141,6 +148,13 @@ a, .dynamic_link, .event_text a.event_link_trade, .ui-widget-content a {
   border-color: $selectionHaloColor !important;
 }
 
-.free_information_text {
-  color: $selectionHaloColor;
+/* Usages of $borderColor -- excluding input fields, which keep the default border color */
+.game-player, .rulecard, .rulecard.former, .rulecard_thumbnail,
+  #zone_tabs .ui-tabs-panel, #zone_tabs .ui-tabs-nav .ui-state-default, .free_information, #login_form {
+  border-color: $borderColor;
+}
+
+/* Usages of $inputBackgroundColor */
+input, textarea, select {
+  background-color: $inputBackgroundColor;
 }
