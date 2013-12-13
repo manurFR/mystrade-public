@@ -6,7 +6,7 @@ from django.core.mail import EmailMessage
 from django.core.mail.message import BadHeaderError
 from django.template import Context
 from django.template.loader import get_template
-from django.utils.timezone import now
+from django.utils.timezone import now, utc
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +22,10 @@ def roundTimeToMinute(dt = None, roundToMinutes = 1):
         return dt - datetime.timedelta(minutes = dt.minute % roundToMinutes)
     else:
         return dt + datetime.timedelta(minutes = roundToMinutes - dt.minute % roundToMinutes)
+
+def get_timestamp(dt = now()):
+    """ Returns the number of seconds since Jan. 1st, 1970, midnight """
+    return int((dt - utc.localize(datetime.datetime(1970, 1, 1, 0, 0, 0))).total_seconds())
 
 def send_notification_email(template_name, recipients, data = None):
     """ Templates : the first line must be the subject, all subsequent lines the body. No line(s) of separation should be added.

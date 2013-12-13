@@ -21,12 +21,12 @@
     <div id="game_details">
         <div class="note" id="rule_counter">Rules : <span id="nb_selected_rules"></span> / {{ nb_max_rulecards }}</div>
         <div><strong>You selected:</strong></div>
-        <div>Ruleset : {{ session.ruleset }} &mdash;
-        Start date : {{ session.start_date|date:"SHORT_DATETIME_FORMAT" }} &mdash;
-        End date : {{ session.end_date|date:"SHORT_DATETIME_FORMAT" }}</div>
+        <div>Ruleset : {{ ruleset }} &mdash;
+        Start date : {{ start_date|date:"SHORT_DATETIME_FORMAT" }} &mdash;
+        End date : {{ end_date|date:"SHORT_DATETIME_FORMAT" }}</div>
 
-        {{ session.players|length }} players :
-        {% for player in session.players %}
+        {{ players|length }} players :
+        {% for player in players %}
             <div class="game-player"><a href="{% url 'otherprofile' player.id %}">{{ player.name }}</a></div>
         {% endfor %}
     </div>

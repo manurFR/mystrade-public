@@ -1,7 +1,7 @@
-Django==1.5.4
+Django==1.6
 psycopg2 # needs "sudo apt-get install libpq-dev python-dev" before
 django-widget-tweaks
-South==0.8.1 # do not use 0.8.2 (which is the current version right now): it doesn't load initial_data.json during test. Wait for the next release to delete the version constraint.
+South
 django-extensions
 Werkzeug
 #pygraphviz  # doesn't work: need to do 'sudo apt-get install python-pygraphviz' manually

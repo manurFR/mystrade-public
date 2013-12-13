@@ -202,7 +202,7 @@ def accept_trade(request, game_id, trade_id):
             trade.status == 'REPLIED' and request.user == trade.initiator):
             # Accepting a trade and exchanging the cards is a near-perfect textbook example of a process that must be transactional
             try:
-                with transaction.commit_on_success():
+                with transaction.atomic():
                     finalize_reason_form = FinalizeReasonForm(request.POST)
                     if finalize_reason_form.is_valid():
                         trade.status = 'ACCEPTED'

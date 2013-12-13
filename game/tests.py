@@ -119,7 +119,8 @@ class EntryPageViewTest(MystradeTestCase):
         self.assertNotContains(response, "09/05/2013 11:30 p.m.")
 
 class GameCreationViewsTest(TestCase):
-    fixtures = ['test_users.json'] # from profile app
+    fixtures = ['initial_data.json',
+                'test_users.json'] # from profile app
 
     def setUp(self):
         self.testUserCanCreate = get_user_model().objects.get(username = 'test1')
@@ -153,48 +154,48 @@ class GameCreationViewsTest(TestCase):
 
     def test_create_game_first_page(self):
         response = self.client.post("/game/create/", {'ruleset': self.ruleset.id,
-                                                      'start_date': '11/10/2012 18:30',
-                                                      'end_date': '11/13/2012 00:15',
+                                                      'start_date': '11/10/2012 18:30', # user test1 is in timezone Europe/Paris, so -1 hour in winter,
+                                                      'end_date': '11/13/2012 00:15',   #  so the UTC datetimes are 1 hour earlier
                                                       'players': [player.id for player in self.testUsersNoCreate]})
         self.assertRedirects(response, "/game/selectrules/")
-        self.assertEqual(1, self.client.session['ruleset'].id)
-        self.assertEqual(get_default_timezone().localize(datetime.datetime(2012, 11, 10, 18, 30)), self.client.session['start_date'])
-        self.assertEqual(get_default_timezone().localize(datetime.datetime(2012, 11, 13, 00, 15)), self.client.session['end_date'])
-        self.assertItemsEqual(list(self.testUsersNoCreate), self.client.session['players'])
+        self.assertEqual(1, self.client.session['ruleset'])
+        self.assertEqual(1352568600, self.client.session['start_date'])
+        self.assertEqual(1352762100, self.client.session['end_date'])
+        self.assertItemsEqual([player.id for player in self.testUsersNoCreate], self.client.session['players'])
 
     def test_access_select_rules_with_incomplete_session_redirects_to_first_page(self):
         session = self.client.session
-        session['ruleset'] = self.ruleset
+        session['ruleset'] = self.ruleset.id
         session.save()
         response = self.client.get("/game/selectrules/")
         self.assertRedirects(response, "/game/create/")
  
     def test_access_select_rules_without_enough_players_redirects_to_first_page(self):
         session = self.client.session
-        session['ruleset'] = self.ruleset
-        session['start_date'] = '11/10/2012 18:30'
-        session['end_date'] = '11/13/2012 00:15'
-        session['players'] = [self.testUsersNoCreate[0]]
+        session['ruleset'] = self.ruleset.id
+        session['start_date'] = 1352568600
+        session['end_date'] = 1352762100
+        session['players'] = [self.testUsersNoCreate[0].id]
         session.save()
         response = self.client.get("/game/selectrules/")
         self.assertRedirects(response, "/game/create/")
 
     def test_access_select_rules_with_invalid_dates_redirects_to_first_page(self):
         session = self.client.session
-        session['ruleset'] = self.ruleset
-        session['start_date'] = '11/10/2012 18:30'
-        session['end_date'] = '11/13/2011 00:15'
-        session['players'] = [self.testUsersNoCreate[0]]
+        session['ruleset'] = self.ruleset.id
+        session['start_date'] = 1352568600
+        session['end_date'] = 1352762100
+        session['players'] = [self.testUsersNoCreate[0].id]
         session.save()
         response = self.client.get("/game/selectrules/")
         self.assertRedirects(response, "/game/create/")
 
     def test_access_select_rules(self):
         session = self.client.session
-        session['ruleset'] = self.ruleset
-        session['start_date'] = '11/10/2012 18:30'
-        session['end_date'] = '11/13/2012 00:15'
-        session['players'] = self.testUsersNoCreate
+        session['ruleset'] = self.ruleset.id
+        session['start_date'] = 1352568600
+        session['end_date'] = 1352762100
+        session['players'] = [user.id for user in self.testUsersNoCreate]
         session.save()
         response = self.client.get("/game/selectrules/")
         self.assertEqual(200, response.status_code)
@@ -202,10 +203,10 @@ class GameCreationViewsTest(TestCase):
 
     def test_create_game_with_too_many_rulecards(self):
         session = self.client.session
-        session['ruleset'] = self.ruleset
-        session['start_date'] = '11/10/2012 18:30'
-        session['end_date'] = '11/13/2012 00:15'
-        session['players'] = self.testUsersNoCreate[:4] # only 4 players
+        session['ruleset'] = self.ruleset.id
+        session['start_date'] = 1352568600
+        session['end_date'] = 1352762100
+        session['players'] = [user.id for user in self.testUsersNoCreate[:4]] # only 4 players
         session.save()
         response = self.client.post("/game/selectrules/",
                                     {'rulecard_{0}'.format(RuleCard.objects.get(ruleset = self.ruleset, ref_name = 'HAG01').id): 'True',
@@ -234,10 +235,10 @@ class GameCreationViewsTest(TestCase):
         self.ruleset.save()
 
         session = self.client.session
-        session['ruleset'] = self.ruleset
-        session['start_date'] = '11/10/2012 18:30'
-        session['end_date'] = '11/13/2012 00:15'
-        session['players'] = self.testUsersNoCreate[:4] # only 4 players
+        session['ruleset'] = self.ruleset.id
+        session['start_date'] = 1352568600
+        session['end_date'] = 1352762100
+        session['players'] = [user.id for user in self.testUsersNoCreate[:4]] # only 4 players
         session.save()
         response = self.client.get("/game/selectrules/")
 
@@ -1616,7 +1617,8 @@ class ControlBoardViewTest(MystradeTestCase):
         self.assertEqual(status_code, response.status_code)
 
 class TransactionalViewsTest(TransactionTestCase):
-    fixtures = ['test_users.json', # from profile app
+    fixtures = ['initial_data.json',
+                'test_users.json', # from profile app
                 'test_games.json']
 
     def setUp(self):
@@ -1712,6 +1714,8 @@ class TransactionalViewsTest(TransactionTestCase):
             Scoresheet.persist = old_persist
 
 class FormsTest(TestCase):
+    fixtures = ['initial_data.json']
+
     def test_validate_number_of_players(self):
         chosen_ruleset = Ruleset.objects.get(id = 1)
         self.assertRaisesMessage(ValidationError, 'Please select at least 3 players (as many as there are mandatory rule cards in this ruleset).', 

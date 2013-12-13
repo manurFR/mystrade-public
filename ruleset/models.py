@@ -25,11 +25,11 @@ class RuleCard(models.Model):
     ref_name = models.CharField("Internal reference name", max_length = 20, unique = True)
     public_name = models.CharField("Public name shown to the players (can be blank)", max_length = 50, blank = True)
 
-    mandatory = models.BooleanField("Activate for rules that must always be included in their ruleset")
+    mandatory = models.BooleanField("Activate for rules that must always be included in their ruleset", default = False)
 
     step = models.IntegerField("Rules will be applied in ascending step during the scoring (can be blank for rules that should not be individually applied)",
         null = True)
-    glob = models.BooleanField("Activate for rules that need to know the hands of all players to operate",
+    glob = models.BooleanField("Activate for rules that need to know the hands of all players to operate", default = False,
         db_column = 'global') # 'global' is a python reserved word
 
     description = models.TextField()

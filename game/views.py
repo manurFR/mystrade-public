@@ -2,6 +2,7 @@ import logging
 import datetime
 
 import bleach
+from django.contrib.auth import get_user_model
 from django.http import HttpResponse, Http404
 import markdown
 from django.conf import settings
@@ -25,6 +26,7 @@ from trade.models import Trade
 from profile.helpers import UserNameCache
 from trade.views import _prepare_offer_form, _parse_offer_form, FormInvalidException
 from utils import utils, stats
+from utils.utils import get_timestamp
 
 logger = logging.getLogger(__name__)
 
@@ -365,7 +367,7 @@ def submit_hand(request, game_id):
     if request.method == 'POST':
         try:
             offer, selected_commodities, selected_rulecards = _parse_offer_form(request, game)
-            with transaction.commit_on_success():
+            with transaction.atomic():
                 gameplayer = GamePlayer.objects.get(game = game, player = request.user)
                 gameplayer.submit_date = now()
                 gameplayer.save()
@@ -414,10 +416,10 @@ def create_game(request):
     if request.method == 'POST':
         form = CreateGameForm(request.user, request.POST)
         if form.is_valid():
-            request.session['ruleset'] = form.cleaned_data['ruleset']
-            request.session['start_date'] = form.cleaned_data['start_date'].astimezone(utc)
-            request.session['end_date'] = form.cleaned_data['end_date'].astimezone(utc)
-            request.session['players'] = sorted(form.cleaned_data['players'].all(), key = lambda player: player.name) # convert from Queryset to list
+            request.session['ruleset'] = form.cleaned_data['ruleset'].id
+            request.session['start_date'] = get_timestamp(form.cleaned_data['start_date'].astimezone(utc))
+            request.session['end_date'] = get_timestamp(form.cleaned_data['end_date'].astimezone(utc))
+            request.session['players'] = [player.id for player in sorted(form.cleaned_data['players'].all(), key = lambda player: player.name)]
             return redirect('select_rules')
     else:
         form = CreateGameForm(request.user)
@@ -429,10 +431,10 @@ def select_rules(request):
        or 'end_date' not in request.session or 'players' not in request.session:
         return redirect('create_game')
 
-    ruleset = request.session['ruleset']
-    start_date = request.session['start_date']
-    end_date = request.session['end_date']
-    players = request.session['players']
+    ruleset = Ruleset.objects.get(pk = request.session['ruleset'])
+    start_date = utc.localize(datetime.datetime.utcfromtimestamp(request.session['start_date']))
+    end_date = utc.localize(datetime.datetime.utcfromtimestamp(request.session['end_date']))
+    players = get_user_model().objects.filter(id__in = request.session['players'])
 
     try:
         validate_dates(start_date, end_date)
@@ -507,7 +509,8 @@ def select_rules(request):
 
         return redirect('game', game.id)
     else:
-        return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session,
+        return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'ruleset': ruleset,
+                                                          'start_date': start_date, 'end_date': end_date, 'players': players,
                                                           'nb_max_rulecards': nb_max_rulecards})
 
 #############################################################################
@@ -520,7 +523,7 @@ def close_game(request, game_id):
     if request.is_ajax() and request.method == 'POST' and game.has_super_access(request.user):
         if game.end_date <= now() and game.closing_date is None :
             try:
-                with transaction.commit_on_success():
+                with transaction.atomic():
                     game.closing_date = now()
                     game.save()
 

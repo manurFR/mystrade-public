@@ -8,7 +8,7 @@ class MystradeUserManager(BaseUserManager):
         return MystradeUserQuerySet(self.model, using=self._db)
 
 class MystradeUser(AbstractUser):
-    send_notifications = models.BooleanField("Send game notifications", help_text = "Check to receive email alerts about your trades and games")
+    send_notifications = models.BooleanField("Send game notifications", default = True, help_text = "Check to receive email alerts about your trades and games")
 
     timezone = models.CharField("Your timezone", max_length= 50, choices = [(tz, tz) for tz in pytz.common_timezones], help_text = "Required. For the display of dates.")
 

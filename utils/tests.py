@@ -7,18 +7,19 @@ from django.core import mail
 from django.template import Template
 from django.test import TestCase
 from django.test.utils import override_settings
-from django.utils.timezone import now
+from django.utils.timezone import now, utc
 from model_mommy import mommy
 from game.models import Game, CommodityInHand
 from ruleset.models import RuleCard, Commodity
 from trade.models import Trade, Offer, TradedCommodities
-from utils import roundTimeToMinute, _send_notification_email, send_notification_email, _limit_line_breaks
+from utils import roundTimeToMinute, _send_notification_email, send_notification_email, _limit_line_breaks, get_timestamp
 from stats import record
 from models import StatsScore
 
 class MystradeTestCase(TestCase):
     """ Parent test case class with default element bootstrapped, to be inherited by other apps' test cases """
-    fixtures = ['test_users.json', # from profile app
+    fixtures = ['initial_data.json', # from ruleset
+                'test_users.json',   # from profile app
                 'test_games.json']
 
     def setUp(self):
@@ -47,6 +48,9 @@ class UtilsTest(TestCase):
                          roundTimeToMinute(datetime.datetime(2012, 11, 9, 14, 7, 18, 324), 15))
         self.assertEqual(datetime.datetime(2012, 11, 9, 14, 15),
                          roundTimeToMinute(datetime.datetime(2012, 11, 9, 14, 8), 15))
+
+    def test_get_timestamp(self):
+        self.assertEqual(1386953223, get_timestamp(utc.localize(datetime.datetime(2013, 12, 13, 16, 47, 03))))
 
     @override_settings(EMAIL_SUBJECT_PREFIX = '[test] ', EMAIL_MYSTRADE = 'mystrade@test.com')
     def test_send_notification_email(self):
