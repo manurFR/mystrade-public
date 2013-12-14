@@ -81,6 +81,8 @@ def sign_up(request):
         user_form = MystradeUserForm()
         user_form['send_notifications'].field.initial = True
         password_form = SetPasswordForm(user = None)
+        # during sign up, user is not a MystradeUser yet
+        request.user.DEFAULT_PALETTE = get_user_model().DEFAULT_PALETTE
 
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form, 'sign_up': True,
                                                         'palettes': get_user_model().PALETTES})
