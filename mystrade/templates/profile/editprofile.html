@@ -159,12 +159,12 @@
         refreshDisplayedName();
 
         function loadPalette(palette) {
-            $("#override_style").remove();
+            $("#palette_style").remove();
         {% for p in palettes %}
             {% if p.key != user.DEFAULT_PALETTE %}
                 if (palette === '{{ p.key }}') {
                     $("head").append(
-                            '<link id="override_style" rel="stylesheet" href="{% get_static_prefix %}css/palette/{{ p.key }}.css" />');
+                            '<link id="palette_style" rel="stylesheet" href="{% get_static_prefix %}css/palette/{{ p.key }}.css" />');
                 }
             {% endif %}
         {% endfor %}
