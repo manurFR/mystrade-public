@@ -7,6 +7,10 @@ DEPLOY_WITH_WARNINGS=0
 
 PIP_BUILD_DIRECTORY=/tmp/pip-build-mystrade
 
+# Show current branch
+BRANCH=`git rev-parse --abbrev-ref HEAD`
+echo "Git branch deployed: $BRANCH"
+
 # Update .bash_profile
 cp -f $PROD_DIR/.bash_profile $HOME
 if (( $? )); then
