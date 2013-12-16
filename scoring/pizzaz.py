@@ -126,28 +126,27 @@ def PIZ13(rulecard, scoresheets):
                 scoresheet_responder.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(trade.initiator.name, trade.closing_date, nb_cards), score = 10)
 
 def PIZ14(rulecard, scoresheets):
-    """ The player(s) having traded the largest number of toppings (cards given + cards received) during
-         the course of the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus.
+    """  The player(s) having traded the largest number of rule cards (given + received) during the course of
+          the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus.
 
         # Global rulecard #
     """
-    toppings_count = {}
+    rulecards_count = {}
     for scoresheet in scoresheets:
-        nb_traded_toppings = 0
+        nb_traded_rulecards= 0
         for trade in Trade.objects.filter(Q(initiator = scoresheet.gameplayer.player) | Q(responder = scoresheet.gameplayer.player),
                                           game = scoresheet.gameplayer.game, status = 'ACCEPTED'):
-            nb_traded_toppings += sum([tc.nb_traded_cards for tc in trade.initiator_offer.tradedcommodities]
-                                    + [tc.nb_traded_cards for tc in trade.responder_offer.tradedcommodities])
-        toppings_count[scoresheet] = nb_traded_toppings
+            nb_traded_rulecards += len(trade.initiator_offer.rules.all()) + len(trade.responder_offer.rules.all())
+        rulecards_count[scoresheet] = nb_traded_rulecards
 
-    max_toppings = max(toppings_count.values())
-    winners = [scoresheet for scoresheet, nb_traded_toppings in toppings_count.iteritems() if nb_traded_toppings == max_toppings]
+    max_rulecards = max(rulecards_count.values())
+    winners = [scoresheet for scoresheet, nb_traded_rulecards in rulecards_count.iteritems() if nb_traded_rulecards == max_rulecards]
 
     for scoresheet in winners:
         tied = ""
         if len(winners) > 1:
             tied = u", tied with {0}".format(", ".join([player.gameplayer.player.name for player in winners if player != scoresheet]))
-        scoresheet.register_score_from_rule(rulecard, u'Your trades have included the largest number of exchanged toppings in the game ({0} toppings{1}). You earn a bonus of 10 point.'.format(max_toppings, tied),
+        scoresheet.register_score_from_rule(rulecard, u'Your trades have included the largest number of exchanged rule cards in the game ({0} cards{1}). You earn a bonus of 10 point.'.format(max_rulecards, tied),
                                             score = 10)
 
 def PIZ15(rulecard, scoresheet):

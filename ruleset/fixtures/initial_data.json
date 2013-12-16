@@ -583,7 +583,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "TRADER",
-            "description": "The player(s) having traded the largest number of toppings (cards given + cards received) during the course of the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus.",
+            "description": " The player(s) having traded the largest number of rule cards (given + received) during the course of the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus.",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ14",
