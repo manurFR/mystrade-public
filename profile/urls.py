@@ -23,7 +23,7 @@ urlpatterns = patterns('profile.views',
                                                         'extra_context':         {'action': 'password_reset_done'}
                                                         },
                                                                     name = 'password_reset_done'),
-    url(r'^password_reset_confirm/(?P<uidb36>[0-9A-Za-z]{1,13})-(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+    url(r'^password_reset_confirm/(?P<uidb64>[0-9A-Za-z]{1,13})-(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
                                         password_reset_confirm, {
                                                         'template_name':         'profile/password_reset.html',
                                                         'extra_context':         {'action': 'password_reset_confirm'}

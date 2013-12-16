@@ -7,12 +7,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from profile.models import MystradeUser
 
-
-class MystradeUserAdminForm(forms.ModelForm):
-    class Meta:
-        model = MystradeUser
-
-
 class MystradeUserCreationForm(UserCreationForm):
     class Meta:
         model = get_user_model()
@@ -27,6 +21,9 @@ class MystradeUserCreationForm(UserCreationForm):
         except get_user_model().DoesNotExist:
             return username
         raise forms.ValidationError(self.error_messages[u'duplicate_username'])
+
+class MystradeUserAdminForm(forms.ModelForm):
+    pass
 
 class MystradeUserAdmin(UserAdmin):
     form = MystradeUserAdminForm

@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models.query import QuerySet
 
 class MystradeUserManager(BaseUserManager):
-    def get_query_set(self):
+    def get_queryset(self):
         return MystradeUserQuerySet(self.model, using=self._db)
 
 class MystradeUser(AbstractUser):

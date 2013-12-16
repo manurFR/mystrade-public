@@ -1,5 +1,6 @@
 {% load staticfiles %}
 {% load humanize %}
+{% load cycle from future %} {# security autoescaping introduced in django 1.6 #}
 
 {% if trade_list %}
     <div id="table_trade_list">

@@ -17,7 +17,6 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
-SEND_BROKEN_LINK_EMAILS = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.alwaysdata.com'
@@ -42,6 +41,7 @@ STATIC_ROOT = os.path.join(SITE_ROOT, "..", "public", "static")
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',

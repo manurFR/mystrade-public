@@ -15,10 +15,12 @@ SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 # ]
 
 ADMINS = (
-    ('Emmanuel', 'emmanuel.bizieau@laposte.net'),
+    ('Emmanuel', 'hello@mystra.de'),
 )
 
 MANAGERS = ADMINS
+
+ALLOWED_HOSTS = [ '127.0.0.1' ]
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'localhost'
@@ -120,6 +122,7 @@ TEMPLATE_LOADERS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.BrokenLinkEmailsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
