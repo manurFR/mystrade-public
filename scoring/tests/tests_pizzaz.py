@@ -10,6 +10,8 @@ from trade.models import Trade, Offer, TradedCommodities
 
 
 class PizzazTest(TestCase):
+    fixtures = ['initial_data.json']
+
     def setUp(self):
         self.game = mommy.make(Game, ruleset = Ruleset.objects.get(id = 3))
 

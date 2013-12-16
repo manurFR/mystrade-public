@@ -907,7 +907,8 @@ class SensitiveTradeElementsTest(MystradeTestCase):
             self.assertNotContains(response, 'Some information(s), hidden until trade accepted by both players.')
 
 class TransactionalViewsTest(TransactionTestCase):
-    fixtures = ['test_users.json', # from profile app
+    fixtures = ['initial_data.json',
+                'test_users.json', # from profile app
                 'test_games.json']
 
     def setUp(self):

@@ -7,6 +7,8 @@ from scoring.card_scoring import tally_scores, Scoresheet
 from scoring.tests.commons import _prepare_hand, _prepare_scoresheet
 
 class ScoringTest(TestCase):
+    fixtures = ['initial_data.json']
+
     def setUp(self):
         self.game = mommy.make(Game, ruleset = Ruleset.objects.get(id = 1))
 

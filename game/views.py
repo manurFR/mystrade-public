@@ -432,6 +432,7 @@ def select_rules(request):
         return redirect('create_game')
 
     ruleset = Ruleset.objects.get(pk = request.session['ruleset'])
+    # transform back timestamp to datetime.datetime
     start_date = utc.localize(datetime.datetime.utcfromtimestamp(request.session['start_date']))
     end_date = utc.localize(datetime.datetime.utcfromtimestamp(request.session['end_date']))
     players = get_user_model().objects.filter(id__in = request.session['players'])

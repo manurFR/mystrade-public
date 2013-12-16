@@ -5,6 +5,8 @@ from ruleset.models import Ruleset, RuleCard
 from scoring.tests.commons import _prepare_scoresheet, assertRuleNotApplied, assertRuleApplied
 
 class HaggleTest(TestCase):
+    fixtures = ['initial_data.json']
+
     def setUp(self):
         self.game = mommy.make(Game, ruleset = Ruleset.objects.get(id = 1))
 

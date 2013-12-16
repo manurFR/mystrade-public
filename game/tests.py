@@ -360,28 +360,28 @@ class GameBoardMainTest(MystradeTestCase):
                                end_date = now() + datetime.timedelta(days = 4, seconds = 2))
 
         response = self.client.get("/game/{0}/".format(game1.id))
-        self.assertContains(response, "starting in 2 days")
+        self.assertContains(response, u"starting in 2\xa0days")
 
         # during the game
         game2 = mommy.make(Game, master = self.loginUser, start_date = now() + datetime.timedelta(days = -2),
                                end_date = now() + datetime.timedelta(days = 4, seconds = 2))
 
         response = self.client.get("/game/{0}/".format(game2.id))
-        self.assertContains(response, "ending in 4 days")
+        self.assertContains(response, u"ending in 4\xa0days")
 
         # after end_date
         game3 = mommy.make(Game, master = self.loginUser, start_date = now() + datetime.timedelta(days = -4),
                                end_date = now() + datetime.timedelta(days = -2))
 
         response = self.client.get("/game/{0}/".format(game3.id))
-        self.assertContains(response, "ended 2 days ago")
+        self.assertContains(response, u"ended 2\xa0days ago")
 
         # after closing_date
         game4 = mommy.make(Game, master = self.loginUser, start_date = now() + datetime.timedelta(days = -4),
                                end_date = now() + datetime.timedelta(days = -2), closing_date = now() + datetime.timedelta(days = -1))
 
         response = self.client.get("/game/{0}/".format(game4.id))
-        self.assertContains(response, "closed 1 day ago")
+        self.assertContains(response, u"closed 1\xa0day ago")
 
     def test_game_board_with_trade_id_displays_the_corresponding_trade(self):
         trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
@@ -773,7 +773,7 @@ class GameBoardTabRecentlyTest(MystradeTestCase):
         self.game.save()
 
         response = self._getTabRecently()
-        self.assertContains(response, 'Game #{0} will start in 3 hours.'.format(self.game.id))
+        self.assertContains(response, u'Game #{0} will start in 3\xa0hours.'.format(self.game.id))
 
     def test_tab_recently_events_include_own_trades(self):
         trade1 = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
