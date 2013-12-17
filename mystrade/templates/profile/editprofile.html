@@ -22,48 +22,48 @@
                 </td>
 			</tr>
 			<tr>
-				<th>{{ user_form.username.label_tag }} :</th>
+				<th>{{ user_form.username.label_tag }}</th>
 				<td>{{ user_form.username }}&nbsp;<span class="errors">{{ user_form.username.errors.as_text }}</span>
 				    <span class="helptext">{{ user_form.username.help_text }}</span></td>
 			</tr>
 			<tr>
-				<th>{{ user_form.first_name.label_tag }} :</th>
+				<th>{{ user_form.first_name.label_tag }}</th>
 				<td>{{ user_form.first_name }}&nbsp;<span class="errors">{{ user_form.first_name.errors.as_text }}</span>
 				    <span class="helptext">(optional)</span></td>
 			</tr>
 			<tr>
-				<th>{{ user_form.last_name.label_tag }} :</th>
+				<th>{{ user_form.last_name.label_tag }}</th>
 				<td>{{ user_form.last_name }}&nbsp;<span class="errors">{{ user_form.last_name.errors.as_text }}</span>
 				    <span class="helptext">(optional)</span>
 				    <div class="helptext">People will see you as : <div class="game-player"><span id="displayed_name"></span></div></div></td>
 			</tr>
 			<tr>
-				<th>{{ user_form.email.label_tag }} :</th>
+				<th>{{ user_form.email.label_tag }}</th>
 				<td>{{ user_form.email|attr:"size:40" }}&nbsp;<span class="errors">{{ user_form.email.errors.as_text }}</span>
 				    <span class="helptext">Required</span></td>
 			</tr>
             <tr>
-                <th>{{ user_form.send_notifications.label_tag }} :</th>
+                <th>{{ user_form.send_notifications.label_tag }}</th>
                 <td>{{ user_form.send_notifications }}&nbsp;<span class="errors">{{ user_form.send_notifications.errors.as_text }}</span>
                     <span class="helptext">{{ user_form.send_notifications.help_text }}</span></td>
             </tr>
             <tr>
-                <th>{{ user_form.timezone.label_tag }} :</th>
+                <th>{{ user_form.timezone.label_tag }}</th>
                 <td>{{ user_form.timezone }}&nbsp;<span class="errors">{{ user_form.timezone.errors.as_text }}</span>
                     <span class="helptext">{{ user_form.timezone.help_text }}</span></td>
             </tr>
 			<tr>
-				<th>{{ user_form.bio.label_tag }} :</th>
+				<th>{{ user_form.bio.label_tag }}</th>
 				<td>{{ user_form.bio|attr:"cols:75"|attr:"rows:5" }}&nbsp;<span class="errors">{{ user_form.bio.errors.as_text }}</span>
 				    <span class="helptext">{{ user_form.bio.help_text }}</span></td>
 			</tr>
 			<tr>
-				<th>{{ user_form.contact.label_tag }} :</th>
+				<th>{{ user_form.contact.label_tag }}</th>
 				<td>{{ user_form.contact|attr:"cols:75"|attr:"rows:5" }}&nbsp;<span class="errors">{{ user_form.contact.errors.as_text }}</span>
 				    <span class="helptext">{{ user_form.contact.help_text }}</span></td>
 			</tr>
             <tr>
-                <th>{{ user_form.palette.label_tag }} :</th>
+                <th>{{ user_form.palette.label_tag }}</th>
 
                 <td class="zone_palettes">
                 {% for palette in palettes %}
@@ -87,20 +87,20 @@
 			</tr>
         {% if not sign_up %}
             <tr>
-                <th>{{ password_form.old_password.label_tag }} :</th>
+                <th>{{ password_form.old_password.label_tag }}</th>
                 <td>{{ password_form.old_password }}&nbsp;<span class="errors">{{ password_form.old_password.errors.as_text }}</span>
                     <span class="helptext">{{ password_form.old_password.help_text }}</span></td>
             </tr>
         {% endif %}
 			<tr>
 				<th>{% if sign_up %}<label for="id_new_password1">Type your password :</label>
-                    {% else %}{{ password_form.new_password1.label_tag }} :{% endif %}</th>
+                    {% else %}{{ password_form.new_password1.label_tag }}{% endif %}</th>
 				<td>{{ password_form.new_password1 }}&nbsp;<span class="errors">{{ password_form.new_password1.errors.as_text }}</span>
 				    <span class="helptext">Required</span></td>
 			</tr>
 			<tr>
 				<th>{% if sign_up %}<label for="id_new_password2">Please type your password again :</label>
-                    {% else %}{{ password_form.new_password2.label_tag }} :{% endif %}</th>
+                    {% else %}{{ password_form.new_password2.label_tag }}{% endif %}</th>
 				<td>{{ password_form.new_password2 }}&nbsp;<span class="errors">{{ password_form.new_password2.errors.as_text }}</span>
 				    <span class="helptext">Required</span></td>
 			</tr>

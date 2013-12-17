@@ -10,7 +10,7 @@ from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
 from django.utils.datetime_safe import strftime
 from django.utils.formats import date_format
-from django.utils.timezone import get_default_timezone, now, utc, localtime
+from django.utils.timezone import now, utc, localtime
 from model_mommy import mommy
 from game import views
 

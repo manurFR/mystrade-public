@@ -1,5 +1,5 @@
 # Django settings for mystrade project.
-from settings import *
+from settings import * # take standard settings and override
 
 ###### PRODUCTION #####
 
