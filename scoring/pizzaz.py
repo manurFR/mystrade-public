@@ -102,28 +102,36 @@ def PIZ13(rulecard, scoresheets):
     """
     MESSAGE_DETAIL = u'Your trade with {0} (accepted on {1:%Y/%m/%d %I:%M %p}) included {2} cards. It is the largest number of cards exchanged in a trade. You both earn a bonus of 10 points.'
 
-    cards_count = {}
-    for trade in Trade.objects.filter(game = scoresheets[0].gameplayer.game, status = 'ACCEPTED'):
-        cards_count[trade] = trade.initiator_offer.total_traded_cards + trade.responder_offer.total_traded_cards
+    # Note: A tie between trades involving only the same two players each time doesn't cancel the bonus, even if the
+    #  players switch between the roles of initiator and responder in these trades. Those two players get the 10 points.
+    #  In such a case, we want that the MESSAGE_DETAIL display the earliest closing_date from the tied trades.
+    #  Thus we use a list below: it is guaranteed to keep the "order by closing_date" for the later iteration -- a dict would not.
+    cards_count = []
+    for trade in Trade.objects.filter(game = scoresheets[0].gameplayer.game, status = 'ACCEPTED').order_by('closing_date'):
+        cards_count.append((trade, trade.initiator_offer.total_traded_cards + trade.responder_offer.total_traded_cards))
 
     if len(cards_count) == 0:
         return
 
-    max_cards = max(cards_count.values())
+    max_cards = max([count for trade, count in cards_count])
 
-    if cards_count.values().count(max_cards) == 1: # detect tie
-        for trade, nb_cards in cards_count.iteritems():
-            if nb_cards == max_cards:
-                scoresheet_initiator = None
-                scoresheet_responder = None
-                for scoresheet in scoresheets:
-                    if scoresheet.gameplayer.player == trade.initiator:
-                        scoresheet_initiator = scoresheet
-                    elif scoresheet.gameplayer.player == trade.responder:
-                        scoresheet_responder = scoresheet
+    winning_trade = None
+    for trade, nb_cards in cards_count: # <- Here, the iteration that would risk losing the order if we had used a dict.
+        if nb_cards == max_cards:
+            if not winning_trade: # let's keep the first winning trade
+                winning_trade = trade
+            elif not (trade.initiator == winning_trade.initiator and trade.responder == winning_trade.responder) \
+             and not (trade.initiator == winning_trade.responder and trade.responder == winning_trade.initiator):
+                # tie: another trade with different players has the maximum cards exchanged -- no bonus awarded
+                return
+            # another "best" trade with the same two players wouldn't cancel the bonus, and the winning trade would stay the first one
 
-                scoresheet_initiator.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(trade.responder.name, trade.closing_date, nb_cards), score = 10)
-                scoresheet_responder.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(trade.initiator.name, trade.closing_date, nb_cards), score = 10)
+    for scoresheet in scoresheets:
+        if scoresheet.gameplayer.player == winning_trade.initiator:
+            scoresheet.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(winning_trade.responder.name, winning_trade.closing_date, max_cards), score = 10)
+        elif scoresheet.gameplayer.player == winning_trade.responder:
+            scoresheet.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(winning_trade.initiator.name, winning_trade.closing_date, max_cards), score = 10)
+
 
 def PIZ14(rulecard, scoresheets):
     """  The player(s) having traded the largest number of rule cards (given + received) during the course of

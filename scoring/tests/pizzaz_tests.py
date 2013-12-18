@@ -205,6 +205,7 @@ class PizzazTest(TestCase):
                     closing_date = utc.localize(datetime.datetime(2013, 11, 21, 12, 12, 0)))
 
         rulecard.perform([scoresheet1, scoresheet2, scoresheet3])
+
         self.assertEqual(3*2 + 2*3, scoresheet1.total_score)
         assertRuleNotApplied(scoresheet1, rulecard)
         self.assertEqual(2*3 + 2 + 3, scoresheet2.total_score)
@@ -222,6 +223,33 @@ class PizzazTest(TestCase):
             rulecard.perform([scoresheet1, scoresheet2, scoresheet3])
         except ValueError:
             self.fail("PIZ13 for a player without accepted trades should not raise a ValueError")
+
+    def test_PIZ13_tie_but_same_players(self):
+        # if the tie is between trades involving the same two players, the bonus is still awarded
+        rulecard = RuleCard.objects.get(ref_name = 'PIZ13')
+        player1, scoresheet1 = _prepare_scoresheet_and_returns_tuple(self.game, "p1", olives = 3, mozzarella = 2)
+        player2, scoresheet2 = _prepare_scoresheet_and_returns_tuple(self.game, "p2", pepperoni = 2, pineapple = 1, ham = 1)
+
+        mommy.make(Trade, game = self.game, initiator = player2, responder = player1, status = 'ACCEPTED',  # 8 cards too
+                   initiator_offer = _prepare_offer(self.game, player2, [], {'mushrooms': 2, 'mozzarella': 2}),
+                   responder_offer = _prepare_offer(self.game, player1, [], {'pepperoni': 2, 'pineapple': 2}),
+                   closing_date = utc.localize(datetime.datetime(2013, 11, 21, 12, 12, 0)))
+        mommy.make(Trade, game = self.game, initiator = player1, responder = player2, status = 'ACCEPTED',  # 8 cards
+                   initiator_offer = _prepare_offer(self.game, player1, [], {'mushrooms': 2, 'ham': 1}),
+                   responder_offer = _prepare_offer(self.game, player2, [], {'olives': 3, 'mozzarella': 2}),
+                   closing_date = utc.localize(datetime.datetime(2013, 11, 18, 15, 35, 0)))
+
+        rulecard.perform([scoresheet1, scoresheet2])
+
+        # the score detail text should show the datetime of the first trade in chronological order of its closing_date (accepted date)
+        self.assertEqual(3*2 + 2*3 + 10, scoresheet1.total_score)
+        assertRuleApplied(scoresheet1, rulecard, 'Your trade with p2 (accepted on 2013/11/18 03:35 PM) included 8 cards. ' +
+                                                 'It is the largest number of cards exchanged in a trade. You both earn a bonus of 10 points.',
+                          score = 10)
+        self.assertEqual(2*3 + 2 + 3 + 10, scoresheet2.total_score)
+        assertRuleApplied(scoresheet2, rulecard, 'Your trade with p1 (accepted on 2013/11/18 03:35 PM) included 8 cards. ' +
+                                                 'It is the largest number of cards exchanged in a trade. You both earn a bonus of 10 points.',
+                          score = 10)
 
     def test_PIZ14(self):
         """  The player(s) having traded the largest number of rule cards (given + received) during the course of
@@ -490,7 +518,7 @@ class PizzazTest(TestCase):
         scoresheets = tally_scores(self.game)
         self.assertEqual(6, len(scoresheets))
 
-        self.assertEqual(0 + 2*6 + 2 + 3*2 + 4 + 6 - 10,                                    scoresheets[0].total_score)
+        self.assertEqual(0 + 2*6 + 2 + 3*2 + 4 + 6 - 10,                                scoresheets[0].total_score)
         self.assertEqual(4*3 + 0 + 2 + 6 + 4 + 12 + 2 + 10 - 10,                        scoresheets[1].total_score)
         self.assertEqual(3*2 + 3*2 + 3*5 + 3 + 6 + 12 + 3*4 + 10 - 10,                  scoresheets[2].total_score)
         self.assertEqual(3*3 + 0 + 2*6 + 4 + 3*3 + 2*4 - 2*5 + 4*4 + 2*2 - 10,          scoresheets[3].total_score)
