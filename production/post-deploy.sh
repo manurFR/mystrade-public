@@ -45,6 +45,13 @@ if (( $? )); then
     echo "** WARNING ** [cp -f $PROD_DIR/settings_production.py $HOME/mystrade/mystrade/] failed";
 fi
 
+# Copy secrets.json along with settings_production.py
+cp -f $PROD_DIR/secrets.json $HOME/mystrade/mystrade/
+if (( $? )); then
+    DEPLOY_WITH_WARNINGS=1
+    echo "** WARNING ** [cp -f $PROD_DIR/secrets.json $HOME/mystrade/mystrade/] failed";
+fi
+
 # Copy favicon.ico to root of public directory (for Internet Explorer)
 if [ -f $HOME/mystrade/mystrade/static/favicon.ico ]; then
     cp -f $HOME/mystrade/mystrade/static/favicon.ico $HOME/mystrade/public/
