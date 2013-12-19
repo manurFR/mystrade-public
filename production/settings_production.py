@@ -21,7 +21,7 @@ MANAGERS = ADMINS
 SEND_BROKEN_LINK_EMAILS = True
 
 secrets = {}
-with open("secrets.json") as fic:
+with open(os.path.join(SITE_ROOT, "secrets.json")) as fic:
     secrets = json.load(fic)
 
 SECRET_KEY = secrets['SECRET_KEY']
