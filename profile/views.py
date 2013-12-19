@@ -101,10 +101,13 @@ def activation(request, user_id, activation_key):
             user = get_user_model().objects.get(pk = user_id)
         except get_user_model().DoesNotExist:
             raise PermissionDenied
-        if activation_key == _generate_activation_key(user):
+        if not user.is_active and activation_key == _generate_activation_key(user):
             if _activation_key_expired(user):
-                user.delete()
-                return render(request, 'profile/activation_expired.html')
+                try:
+                    user.delete()
+                    return render(request, 'profile/activation_expired.html')
+                except:
+                    raise PermissionDenied
             else:
                 user.is_active = True
                 user.save()

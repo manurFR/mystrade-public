@@ -46,14 +46,14 @@ class Game(models.Model):
 
 class GamePlayer(models.Model):
     game = models.ForeignKey(Game)
-    player = models.ForeignKey(settings.AUTH_USER_MODEL)
+    player = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.PROTECT) # prevent deletion of users having already participated in at least a game
 
     submit_date = models.DateTimeField(null = True)
     last_seen = models.DateTimeField("The last time this player sent an HTTP request related to this game", null = True)
 
 class RuleInHand(models.Model):
     game = models.ForeignKey(Game)
-    player = models.ForeignKey(settings.AUTH_USER_MODEL)
+    player = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.PROTECT)
     rulecard = models.ForeignKey(RuleCard)
 
     ownership_date = models.DateTimeField("The date when this card was acquired")
@@ -74,7 +74,7 @@ class RuleInHand(models.Model):
 
 class CommodityInHand(models.Model):
     game = models.ForeignKey(Game)
-    player = models.ForeignKey(settings.AUTH_USER_MODEL)
+    player = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.PROTECT)
     commodity = models.ForeignKey(Commodity)
 
     nb_cards = models.PositiveSmallIntegerField(default = 0)
@@ -102,7 +102,7 @@ class Message(models.Model):
     event_type = 'message'
 
     game = models.ForeignKey(Game)
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL)
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete = models.PROTECT)
 
     content = models.CharField(max_length = MAX_LENGTH)
     posting_date = models.DateTimeField(default = now)

@@ -7,6 +7,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils.timezone import now
 from model_mommy import mommy
+from game.models import Message, Game, GamePlayer
 from profile.models import MystradeUser
 from profile.views import _generate_activation_key
 from utils.tests import MystradeTestCase
@@ -273,7 +274,7 @@ class SignUpTest(TestCase):
 
     @override_settings(ACCOUNT_ACTIVATION_DAYS = 2)
     def test_activation_with_expired_key_fails_and_deletes_the_user(self):
-        user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com',
+        user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com', is_active = False,
                           date_joined = now() + datetime.timedelta(days = -3))
 
         response = self.client.get(reverse("activation", args = [user.id, _generate_activation_key(user)]), follow = True)
@@ -285,6 +286,22 @@ class SignUpTest(TestCase):
             pass
         self.assertTemplateUsed(response, "profile/activation_expired.html")
         self.assertContains(response, "Your activation link has expired")
+
+    @override_settings(ACCOUNT_ACTIVATION_DAYS = 2)
+    def test_activation_of_an_already_active_user_with_an_expired_key_should_not_delete_the_user(self):
+        game = mommy.make(Game)
+        user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com', is_active = True,
+                          date_joined = now() + datetime.timedelta(days = -3))
+        mommy.make(Message, game = game, sender = user, content = 'abc')
+        mommy.make(GamePlayer, game = game, player = user)
+
+        response = self.client.get(reverse("activation", args = [user.id, _generate_activation_key(user)]), follow = True)
+        self.assertEqual(403, response.status_code)
+
+        try:
+            get_user_model().objects.get(username = 'test')
+        except get_user_model().DoesNotExist:
+            self.fail("User with expired key should have been deleted")
 
     def test_activation_with_the_bad_key_fails(self):
         user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com', is_active = False)
