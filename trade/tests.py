@@ -1056,6 +1056,25 @@ class FormsTest(MystradeTestCase):
 
         self.assertIn("A commodity card in a pending trade can not be offered in another trade.", context_manager.exception.formdata['offer_errors'])
 
+    def test_parse_offer_form_is_fine_with_commodities_that_have_appeared_in_your_hand_since_the_display_of_the_offer_form(self):
+        # https://bitbucket.org/manur/mystrade/issue/52/erreur-bizarre-de-cr-ation-de-trade
+        cih1 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 2)
+        cih2 = mommy.make(CommodityInHand, game = self.game, player = self.loginUser, nb_cards = 1) # new commodity
+
+        request = RequestFactory().post("/trade/{0}/create/".format(self.game.id),
+                                        {'commodity_{0}'.format(cih1.commodity.id): 2}, # new commodity not in the form
+                                        HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        request.user = self.loginUser
+
+        try:
+            offer, selected_commodities, selected_rules = _parse_offer_form(request, self.game)
+        except KeyError:
+            self.fail("A new commodity in one's hand since the display of the offer form should not make the creation fail")
+
+        self.assertEqual(2, selected_commodities[cih1])
+        self.assertTrue(cih2 in selected_commodities)
+        self.assertIsNone(selected_commodities[cih2])
+
     def test_a_trade_with_a_responder_who_has_already_submitted_his_hand_is_forbidden(self):
         ihavesubmitted = mommy.make(get_user_model(), username = 'ihavesubmitted')
         ihavent = mommy.make(get_user_model(), username = 'ihavent')
