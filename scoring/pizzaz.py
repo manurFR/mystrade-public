@@ -64,11 +64,12 @@ def PIZ11(rulecard, scoresheet):
         a bonus of 8 points. (Different letters will add up.) """
     letters = {}
     for sfc in scoresheet.scores_from_commodity:
-        capital = sfc.commodity.name[0:1].upper()
-        if capital in letters:
-            letters[capital].append(sfc.commodity.name)
-        else:
-            letters[capital] = [sfc.commodity.name]
+        if sfc.nb_scored_cards > 0: # prevent excluded cards (from PIZ08) to activate this reward
+            capital = sfc.commodity.name[0:1].upper()
+            if capital in letters:
+                letters[capital].append(sfc.commodity.name)
+            else:
+                letters[capital] = [sfc.commodity.name]
     for capital, toppings in letters.iteritems():
         if len(toppings) >= 3:
             # sort (alphabetically) the list of toppings to have a determinist output

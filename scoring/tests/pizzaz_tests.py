@@ -122,6 +122,20 @@ class PizzazTest(TestCase):
         assertRuleApplied(scoresheet, rulecard, '3 different toppings starting by the letter M (Mozzarella, Mushrooms, Mussels) give you a bonus of 8 points.', score = 8)
         assertRuleApplied(scoresheet, rulecard, '4 different toppings starting by the letter P (Parmesan, Pepperoni, Pineapple, Prosciutto) give you a bonus of 8 points.', score = 8)
 
+    def test_PIZ11_with_PIZ08(self):
+        """ Do toppings eliminated by PIZ08 (ham, pineapple, peppers) count or not for the PIZ11 evaluation (they shouldn't) ? """
+        rulecardPIZ08 = RuleCard.objects.get(ref_name = 'PIZ08')
+        rulecardPIZ11 = RuleCard.objects.get(ref_name = 'PIZ11')
+
+        scoresheet = _prepare_scoresheet(self.game, "p1", parmesan = 1, pineapple = 1, prosciutto = 2)
+
+        rulecardPIZ08.perform(scoresheet)
+        rulecardPIZ11.perform(scoresheet)
+
+        self.assertEqual(3 + 0 + 2*3, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecardPIZ08, 'Don Peppino absolutely dislikes ham, pineapple and peppers. Those cards give you no points.')
+        assertRuleNotApplied(scoresheet, rulecardPIZ11)
+
     def test_PIZ12(self):
         """ The cook whose pizza has the smallest number of different toppings will earn a bonus of 12 points.
             In case of a tie, each player will earn the bonus. (Multiple copies of the same topping count for one.) """
