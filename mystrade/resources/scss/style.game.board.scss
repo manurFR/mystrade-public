@@ -88,6 +88,9 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
   margin-left: $widthOfZoneHand + 20px;
   background: none;
   border-width: 0px;
+  a, .dynamic_link {
+    color: $linkColor;
+  }
 
   .ui-tabs-nav {
      height:2.2em;
@@ -130,6 +133,17 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
 #zone_selected_rulecards {
   min-height: $heightOfThumbnailRuleCards + 16px;
+}
+
+#zone_add_free_information {
+  #zone_link_add_free_information {
+    @include font($size: $defaultFontSize);
+    min-height: 30px;
+
+    img {
+      vertical-align: -40%;
+    }
+  }
 }
 
 #zone_submit_hand {
@@ -233,10 +247,6 @@ $widthOfZoneHand: 2 * $fullWidthOfARuleCard; // let's have 2 rule cards per row
 
   .event_text {
     display: inline;
-
-    a {
-      color: $linkColor;
-    }
 
     .warning_icon {
       vertical-align: text-bottom;

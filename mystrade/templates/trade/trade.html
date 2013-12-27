@@ -64,8 +64,10 @@
         $("#zone_accept,#zone_decline").hide();
         {% if errors %}
             $('#zone_choice_buttons').hide("blind");
+            $("#zone_link_add_free_information").hide();
         {% else %}
             $('#zone_offer').hide();
+            $('#zone_form_free_information').hide();
         {% endif %}
     });
 
@@ -87,6 +89,11 @@
         $("#zone_choice_buttons").show("blind");
         $("#id_finalize_reason").val("")
     {% endif %}
+    });
+
+    $("#link_add_free_information").on("click", function() {
+        $("#zone_link_add_free_information").hide("blind");
+        $("#zone_form_free_information").show("blind");
     });
 
     $("#reply").on("click", function() {

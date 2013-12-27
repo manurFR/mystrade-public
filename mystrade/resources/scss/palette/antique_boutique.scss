@@ -128,7 +128,7 @@ body {
 }
 
 /* Usages of $linkColor */
-a, .dynamic_link, .event_text a.event_link_trade, .ui-widget-content a {
+a, .dynamic_link, #zone_tabs a, .ui-widget-content a {
   color: $linkColor;
 }
 

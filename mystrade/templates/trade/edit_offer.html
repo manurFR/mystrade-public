@@ -18,11 +18,21 @@
     <div id="zone_selected_commodities"></div>
     <h3>Rules</h3>
     <div id="zone_selected_rulecards"></div>
+
     <h3>Free Information(s) <span class="helptext">(optional)</span></h3>
-    {{ offer_form.free_information|attr:"rows:3" }}<br/>
-    <span class="helptext">That piece of information will NOT be revealed until both players have accepted the trade.</span>
-    <img class="note" src="{% static 'explanation.png' %}" height="16" width="16" alt="" title="For now, the other player will only be informed that there IS a free information with the trade, not its content. You should give an hint of what it is in the comment below."/>
-    <span class="errors">{{ offer_form.free_information.errors.as_text }}</span>
+    <div id="zone_add_free_information">
+        <div id="zone_link_add_free_information">
+            <img src="{% static 'info.png' %}" width="20" height="20" alt="(i)" title="Free text you wish to give as part of your offer."/>
+            <a id="link_add_free_information">Add a free information...</a>
+        </div>
+        <div id="zone_form_free_information">
+            {{ offer_form.free_information|attr:"rows:3" }}<br/>
+            <span class="helptext">That piece of information will NOT be revealed until both players have accepted the trade.</span>
+            <img class="note" src="{% static 'explanation.png' %}" height="16" width="16" alt="" title="For now, the other player will only be informed that there IS a free information with the trade, not its content. You should give an hint of what it is in the comment below."/>
+            <span class="errors">{{ offer_form.free_information.errors.as_text }}</span>
+        </div>
+    </div>
+
     <h3>Comment <span class="helptext">(optional)</span></h3>
     {{ offer_form.comment|attr:"rows:3" }}<br/>
     <span class="helptext">Your comment will be immediately shown to the other player.</span><br/>

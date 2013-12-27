@@ -42,6 +42,10 @@ $shadowColor: darken($backgroundColor, 20%);
   }
 }
 
+#zone_tabs .ui-tabs-nav .ui-state-active { // background color of the active tab header
+  background-color: darken($backgroundColor, 10%);
+}
+
 /* ******************************************************************************************
  * **      There shouldn't be anything to change below these lines. But check anyway.      **
  * ****************************************************************************************** */
@@ -121,7 +125,7 @@ body {
 }
 
 /* Usages of $linkColor */
-a, .dynamic_link, .event_text a.event_link_trade, .ui-widget-content a {
+a, .dynamic_link, #zone_tabs a, .ui-widget-content a {
   color: $linkColor;
 }
 
