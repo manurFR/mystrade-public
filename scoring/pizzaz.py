@@ -13,12 +13,12 @@ def PIZ04(rulecard, scoresheet):
         scoresheet.register_score_from_rule(rulecard, u'A pizza with no cheese gives you a bonus of 6 points.', score = 6)
 
 def PIZ06(rulecard, scoresheet):
-    """Don Peppino likes his pizza with no more than 10 toppings (cards). Each added topping removes 5 points."""
+    """Don Peppino likes his pizza with no more than 10 toppings (cards). Each added topping removes 8 points."""
     total_scored_cards = 0
     for sfc in scoresheet.scores_from_commodity:
         total_scored_cards += sfc.nb_scored_cards
     if total_scored_cards > 10:
-        removed_points = (total_scored_cards - 10) * 5
+        removed_points = (total_scored_cards - 10) * 8
         scoresheet.register_score_from_rule(rulecard, u'Since your pizza has {0} toppings (more than 10), you lose {1} points.'.format(total_scored_cards, removed_points),
                                             score = -removed_points)
 
@@ -160,7 +160,7 @@ def PIZ14(rulecard, scoresheets):
 
 def PIZ15(rulecard, scoresheet):
     """ The cooks who will not have performed a trade with at least 7 different players during the game will
-         lose 10 points. Only accepted trades with at least one card (rule or topping) given by each player count. """
+         lose 20 points. Only accepted trades with at least one card (rule or topping) given by each player count. """
     traders = set()
     for trade in Trade.objects.filter(game = scoresheet.gameplayer.game, status = 'ACCEPTED', initiator = scoresheet.gameplayer.player):
         if trade.initiator_offer.total_traded_cards > 0 and trade.responder_offer.total_traded_cards > 0:
@@ -170,14 +170,14 @@ def PIZ15(rulecard, scoresheet):
             traders.add(trade.initiator)
 
     if len(traders) == 0:
-        scoresheet.register_score_from_rule(rulecard, u'Since you have not performed any trades (including one card or more given by each player) although you were required to do it with at least 7 other players, you lose 10 points.',
-                                            score = -10)
+        scoresheet.register_score_from_rule(rulecard, u'Since you have not performed any trades (including one card or more given by each player) although you were required to do it with at least 7 other players, you lose 20 points.',
+                                            score = -20)
     elif len(traders) == 1:
-        scoresheet.register_score_from_rule(rulecard, u'Since you have performed trades (including one card or more given by each player) with only 1 other player (less than the 7 players required), you lose 10 points.',
-                                            score = -10)
+        scoresheet.register_score_from_rule(rulecard, u'Since you have performed trades (including one card or more given by each player) with only 1 other player (less than the 7 players required), you lose 20 points.',
+                                            score = -20)
     elif len(traders) < 7:
-        scoresheet.register_score_from_rule(rulecard, u'Since you have performed trades (including one card or more given by each player) with only {0} different players (less than the 7 players required), you lose 10 points.'.format(len(traders)),
-                                            score = -10)
+        scoresheet.register_score_from_rule(rulecard, u'Since you have performed trades (including one card or more given by each player) with only {0} different players (less than the 7 players required), you lose 20 points.'.format(len(traders)),
+                                            score = -20)
 
 def PIZ16(rulecard, scoresheet):
     """ The default value of a card is doubled if the card name contains at least once the letter K or Z. """

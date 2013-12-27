@@ -28,12 +28,12 @@ class PizzazTest(TestCase):
         assertRuleApplied(scoresheet, rulecard, 'A pizza with no cheese gives you a bonus of 6 points.', score = 6)
 
     def test_PIZ06(self):
-        """Don Peppino likes his pizza with no more than 10 toppings (cards). Each added topping removes 5 points."""
+        """Don Peppino likes his pizza with no more than 10 toppings (cards). Each added topping removes 8 points."""
         rulecard = RuleCard.objects.get(ref_name = 'PIZ06')
         scoresheet = _prepare_scoresheet(self.game, "p1", ham = 6, mushrooms = 5) # ham: 3 pts, mushrooms: 2 pts
         rulecard.perform(scoresheet)
-        self.assertEqual(6*3 + 5*2 - 5, scoresheet.total_score)
-        assertRuleApplied(scoresheet, rulecard, 'Since your pizza has 11 toppings (more than 10), you lose 5 points.', score = -5)
+        self.assertEqual(6*3 + 5*2 - 8, scoresheet.total_score)
+        assertRuleApplied(scoresheet, rulecard, 'Since your pizza has 11 toppings (more than 10), you lose 8 points.', score = -8)
 
     def test_PIZ07(self):
         """ If your pizza has more Vegetable [V] cards than Meat [M], Fish & Seafood [F&S] and Cheese [C] cards combined,
@@ -341,7 +341,7 @@ class PizzazTest(TestCase):
 
     def test_PIZ15(self):
         """ The cooks who will not have performed a trade with at least 7 different players during the game will
-             lose 10 points. Only accepted trades with at least one card (rule or topping) given by each player count. """
+             lose 20 points. Only accepted trades with at least one card (rule or topping) given by each player count. """
         rulecard = RuleCard.objects.get(ref_name = 'PIZ15')
         players = []
         scoresheets = []
@@ -386,21 +386,21 @@ class PizzazTest(TestCase):
             rulecard.perform(scoresheet)
 
         for i in [0, 9]:
-            self.assertEqual(3*2 + 2*3 - 10, scoresheets[i].total_score)
-            assertRuleApplied(scoresheets[i], rulecard, 'Since you have performed trades (including one card or more given by each player) with only 1 other player (less than the 7 players required), you lose 10 points.', score = -10)
+            self.assertEqual(3*2 + 2*3 - 20, scoresheets[i].total_score)
+            assertRuleApplied(scoresheets[i], rulecard, 'Since you have performed trades (including one card or more given by each player) with only 1 other player (less than the 7 players required), you lose 20 points.', score = -20)
         for i in range(1, 6):
-            self.assertEqual(3*2 + 2*3 - 10, scoresheets[i].total_score)
-            assertRuleApplied(scoresheets[i], rulecard, 'Since you have performed trades (including one card or more given by each player) with only 4 different players (less than the 7 players required), you lose 10 points.', score = -10)
-        self.assertEqual(3*2 + 2*3 - 10, scoresheets[6].total_score)
-        assertRuleApplied(scoresheets[6], rulecard, 'Since you have performed trades (including one card or more given by each player) with only 2 different players (less than the 7 players required), you lose 10 points.', score = -10)
+            self.assertEqual(3*2 + 2*3 - 20, scoresheets[i].total_score)
+            assertRuleApplied(scoresheets[i], rulecard, 'Since you have performed trades (including one card or more given by each player) with only 4 different players (less than the 7 players required), you lose 20 points.', score = -20)
+        self.assertEqual(3*2 + 2*3 - 20, scoresheets[6].total_score)
+        assertRuleApplied(scoresheets[6], rulecard, 'Since you have performed trades (including one card or more given by each player) with only 2 different players (less than the 7 players required), you lose 20 points.', score = -20)
 
         self.assertEqual(3*2 + 2*3, scoresheets[7].total_score)
         assertRuleNotApplied(scoresheets[7], rulecard)
         self.assertEqual(3*2 + 2*3, scoresheets[8].total_score)
         assertRuleNotApplied(scoresheets[8], rulecard)
 
-        self.assertEqual(3*2 + 2*3 - 10, scoresheets[10].total_score)
-        assertRuleApplied(scoresheets[10], rulecard, 'Since you have not performed any trades (including one card or more given by each player) although you were required to do it with at least 7 other players, you lose 10 points.', score = -10)
+        self.assertEqual(3*2 + 2*3 - 20, scoresheets[10].total_score)
+        assertRuleApplied(scoresheets[10], rulecard, 'Since you have not performed any trades (including one card or more given by each player) although you were required to do it with at least 7 other players, you lose 20 points.', score = -20)
 
     def test_PIZ16(self):
         """ The default value of a card is doubled if the card name contains at least once the letter K or Z. """
@@ -527,17 +527,17 @@ class PizzazTest(TestCase):
                    responder_offer = _prepare_offer(self.game, gp6.player, [rih2]),
                    closing_date = utc.localize(datetime.datetime(2013, 11, 1, 13, 00, 0)))
 
-        # + everyone loses 10 points with PIZ15
+        # + everyone loses 20 points with PIZ15
 
         scoresheets = tally_scores(self.game)
         self.assertEqual(6, len(scoresheets))
 
-        self.assertEqual(0 + 2*6 + 2 + 3*2 + 4 + 6 - 10,                                scoresheets[0].total_score)
-        self.assertEqual(4*3 + 0 + 2 + 6 + 4 + 12 + 2 + 10 - 10,                        scoresheets[1].total_score)
-        self.assertEqual(3*2 + 3*2 + 3*5 + 3 + 6 + 12 + 3*4 + 10 - 10,                  scoresheets[2].total_score)
-        self.assertEqual(3*3 + 0 + 2*6 + 4 + 3*3 + 2*4 - 2*5 + 4*4 + 2*2 - 10,          scoresheets[3].total_score)
-        self.assertEqual(3 + 4 + 4 + 2 + 4 + 0 + 6 + 12 + 4 + 2*8 + 4*2 + 10 + 10 - 10, scoresheets[4].total_score)
-        self.assertEqual(2*3 + 3 + 2 + 4 + 12 + 6 + 10 - 10,                            scoresheets[5].total_score)
+        self.assertEqual(0 + 2*6 + 2 + 3*2 + 4 + 6 - 20,                                scoresheets[0].total_score)
+        self.assertEqual(4*3 + 0 + 2 + 6 + 4 + 12 + 2 + 10 - 20,                        scoresheets[1].total_score)
+        self.assertEqual(3*2 + 3*2 + 3*5 + 3 + 6 + 12 + 3*4 + 10 - 20,                  scoresheets[2].total_score)
+        self.assertEqual(3*3 + 0 + 2*6 + 4 + 3*3 + 2*4 - 2*8 + 4*4 + 2*2 - 20,          scoresheets[3].total_score)
+        self.assertEqual(3 + 4 + 4 + 2 + 4 + 0 + 6 + 12 + 4 + 2*8 + 4*2 + 10 + 10 - 20, scoresheets[4].total_score)
+        self.assertEqual(2*3 + 3 + 2 + 4 + 12 + 6 + 10 - 20,                            scoresheets[5].total_score)
 
 def _prepare_scoresheet_and_returns_tuple(game, player, **commodities):
     scoresheet = _prepare_scoresheet(game, player, **commodities)
