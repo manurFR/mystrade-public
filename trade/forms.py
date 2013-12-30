@@ -24,7 +24,7 @@ class OfferForm(forms.Form):
         super(OfferForm, self).__init__(*args, **kwargs)
 
         for cih in commodities:
-            self.fields['commodity_{0}'.format(cih.commodity_id)] = forms.IntegerField(widget = forms.HiddenInput, min_value = 0, max_value = cih.nb_cards)
+            self.fields['commodity_{0}'.format(cih.commodity_id)] = forms.IntegerField(widget = forms.HiddenInput, min_value = 0, max_value = cih.nb_cards, required = False)
         for rih in rulecards:
             self.fields['rulecard_{0}'.format(rih.id)] = forms.BooleanField(widget = forms.HiddenInput, required = False)
 
@@ -43,7 +43,7 @@ class OfferForm(forms.Form):
         nb_selected_commodities = 0
         nb_selected_rulecards = 0
         for name in self.cleaned_data.keys():
-            if name.startswith('commodity_'):
+            if name.startswith('commodity_') and self.cleaned_data[name]:
                 nb_selected_commodities += self.cleaned_data[name]
             elif name.startswith('rulecard_') and self.cleaned_data[name]:
                 nb_selected_rulecards += 1

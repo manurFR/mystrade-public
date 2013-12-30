@@ -7,6 +7,10 @@ DEPLOY_WITH_WARNINGS=0
 
 PIP_BUILD_DIRECTORY=/tmp/pip-build-mystrade
 
+# Show current branch
+BRANCH=`git rev-parse --abbrev-ref HEAD`
+echo "Git branch deployed: $BRANCH"
+
 # Update .bash_profile
 cp -f $PROD_DIR/.bash_profile $HOME
 if (( $? )); then
@@ -39,6 +43,13 @@ cp -f $PROD_DIR/settings_production.py $HOME/mystrade/mystrade/
 if (( $? )); then
     DEPLOY_WITH_WARNINGS=1
     echo "** WARNING ** [cp -f $PROD_DIR/settings_production.py $HOME/mystrade/mystrade/] failed";
+fi
+
+# Copy secrets.json along with settings_production.py
+cp -f $PROD_DIR/secrets.json $HOME/mystrade/mystrade/
+if (( $? )); then
+    DEPLOY_WITH_WARNINGS=1
+    echo "** WARNING ** [cp -f $PROD_DIR/secrets.json $HOME/mystrade/mystrade/] failed";
 fi
 
 # Copy favicon.ico to root of public directory (for Internet Explorer)

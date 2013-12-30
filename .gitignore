@@ -6,3 +6,4 @@
 .idea/dictionaries/
 .idea/misc.xml
 .sass-cache/
+production/secrets.json

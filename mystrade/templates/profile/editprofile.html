@@ -104,6 +104,13 @@
 				<td>{{ password_form.new_password2 }}&nbsp;<span class="errors">{{ password_form.new_password2.errors.as_text }}</span>
 				    <span class="helptext">Required</span></td>
 			</tr>
+        {% if sign_up %}
+            <tr>
+                <th>{{ user_form.mystery.label_tag }} :</th>
+                <td>{{ user_form.mystery }}&nbsp;<span class="errors">{{ user_form.mystery.errors.as_text }}</span>
+                    <span class="helptext">{{ user_form.mystery.help_text }}</span></td>
+            </tr>
+        {% endif %}
 		</table>
 
 		<div class="submit-button note">
@@ -159,19 +166,16 @@
         refreshDisplayedName();
 
         function loadPalette(palette) {
-            var css;
+            $("#palette_style").remove();
         {% for p in palettes %}
-            if (palette === '{{ p.key }}') {
-            {% if p.key == user.DEFAULT_PALETTE %}
-                css = '{% static 'css/style.profile.css' %}';
-            {% else %}
-                css = '{% get_static_prefix %}css/palette/{{ p.key }}.css';
+            {% if p.key != user.DEFAULT_PALETTE %}
+                if (palette === '{{ p.key }}') {
+                    $("head").append(
+                            '<link id="palette_style" rel="stylesheet" href="{% get_static_prefix %}css/palette/{{ p.key }}.css" />');
+                }
             {% endif %}
-            }
         {% endfor %}
 
-            $("#override_style").remove();
-            $("head").append('<link id="override_style" rel="stylesheet" href="' + css + '" %}" />');
         }
     </script>
 {% endblock content %}

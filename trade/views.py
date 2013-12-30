@@ -91,7 +91,7 @@ def create_trade(request, game_id):
     game = get_object_or_404(Game, id = game_id)
 
     # Trade creation is not allowed for :
-    #  - players who have already submitted their hand to the game master
+    #  - players who have already submitted their hand
     #  - all site users who are not players in this game (including the game master and admins who are not players)
     try:
         if GamePlayer.objects.get(game = game, player = request.user).submit_date:
@@ -100,7 +100,7 @@ def create_trade(request, game_id):
         raise PermissionDenied
 
     if request.is_ajax() and game.is_active():
-        status_code = 200
+        errors = False
         if request.method == 'POST':
             trade_form = TradeForm(request.user, game, request.POST)
 
@@ -123,17 +123,18 @@ def create_trade(request, game_id):
 
                     return HttpResponse()
                 else:
-                    status_code = 422
+                    errors = True
                     offer_form = _prepare_offer_form(request, game, offer, selected_commodities, selected_rulecards)
             except FormInvalidException as ex:
-                status_code = 422
+                errors = True
                 offer_form = _prepare_offer_form(request, game, ex.formdata['offer'], ex.formdata['selected_commodities'], ex.formdata['selected_rules'])
                 offer_form._errors = {NON_FIELD_ERRORS: ex.formdata['offer_errors']}
         else:
             trade_form = TradeForm(request.user, game)
             offer_form = _prepare_offer_form(request, game)
 
-        return render(request, 'trade/trade.html', {'game': game, 'trade_form': trade_form, 'offer_form': offer_form}, status = status_code)
+        return render(request, 'trade/trade.html', {'game': game, 'trade_form': trade_form, 'offer_form': offer_form, 'errors': errors},
+                      status = 422 if errors else 200)
 
     raise PermissionDenied
 

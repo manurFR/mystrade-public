@@ -1,4 +1,5 @@
 # Django settings for mystrade project.
+import json
 from settings import * # take standard settings and override
 
 ###### PRODUCTION #####
@@ -18,11 +19,17 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+secrets = {}
+with open(os.path.join(SITE_ROOT, "secrets.json")) as fic:
+    secrets = json.load(fic)
+
+SECRET_KEY = secrets['SECRET_KEY']
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.alwaysdata.com'
 EMAIL_PORT = 25
 EMAIL_HOST_USER = 'mystrade@alwaysdata.net'
-EMAIL_HOST_PASSWORD = 'alrolandxp80'
+EMAIL_HOST_PASSWORD = secrets['EMAIL_HOST_PASSWORD']
 EMAIL_USE_TLS = True
 EMAIL_SUBJECT_PREFIX = '[MysTrade] ' # for admins
 
@@ -31,7 +38,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'mystrade_db',
         'USER': 'mystrade',
-        'PASSWORD': 'alrolandxp80',
+        'PASSWORD': secrets['DB_PASSWORD'],
         'HOST': 'postgresql1.alwaysdata.com',
     }
 }

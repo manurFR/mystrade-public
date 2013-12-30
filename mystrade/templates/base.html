@@ -11,7 +11,7 @@
 
 		{% block styles %}{% endblock %}
         {% if user.palette and user.palette != user.DEFAULT_PALETTE %}
-            <link rel="stylesheet" href="{% get_static_prefix %}css/palette/{{ user.palette }}.css" />
+            <link id="palette_style" rel="stylesheet" href="{% get_static_prefix %}css/palette/{{ user.palette }}.css" />
         {% endif %}
 
 		{% block scripts %}{% endblock %}

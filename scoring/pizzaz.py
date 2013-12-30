@@ -13,12 +13,12 @@ def PIZ04(rulecard, scoresheet):
         scoresheet.register_score_from_rule(rulecard, u'A pizza with no cheese gives you a bonus of 6 points.', score = 6)
 
 def PIZ06(rulecard, scoresheet):
-    """Don Peppino likes his pizza with no more than 10 toppings (cards). Each added topping removes 5 points."""
+    """Don Peppino likes his pizza with no more than 10 toppings (cards). Each added topping removes 8 points."""
     total_scored_cards = 0
     for sfc in scoresheet.scores_from_commodity:
         total_scored_cards += sfc.nb_scored_cards
     if total_scored_cards > 10:
-        removed_points = (total_scored_cards - 10) * 5
+        removed_points = (total_scored_cards - 10) * 8
         scoresheet.register_score_from_rule(rulecard, u'Since your pizza has {0} toppings (more than 10), you lose {1} points.'.format(total_scored_cards, removed_points),
                                             score = -removed_points)
 
@@ -64,11 +64,12 @@ def PIZ11(rulecard, scoresheet):
         a bonus of 8 points. (Different letters will add up.) """
     letters = {}
     for sfc in scoresheet.scores_from_commodity:
-        capital = sfc.commodity.name[0:1].upper()
-        if capital in letters:
-            letters[capital].append(sfc.commodity.name)
-        else:
-            letters[capital] = [sfc.commodity.name]
+        if sfc.nb_scored_cards > 0: # prevent excluded cards (from PIZ08) to activate this reward
+            capital = sfc.commodity.name[0:1].upper()
+            if capital in letters:
+                letters[capital].append(sfc.commodity.name)
+            else:
+                letters[capital] = [sfc.commodity.name]
     for capital, toppings in letters.iteritems():
         if len(toppings) >= 3:
             # sort (alphabetically) the list of toppings to have a determinist output
@@ -102,57 +103,64 @@ def PIZ13(rulecard, scoresheets):
     """
     MESSAGE_DETAIL = u'Your trade with {0} (accepted on {1:%Y/%m/%d %I:%M %p}) included {2} cards. It is the largest number of cards exchanged in a trade. You both earn a bonus of 10 points.'
 
-    cards_count = {}
-    for trade in Trade.objects.filter(game = scoresheets[0].gameplayer.game, status = 'ACCEPTED'):
-        cards_count[trade] = trade.initiator_offer.total_traded_cards + trade.responder_offer.total_traded_cards
+    # Note: A tie between trades involving only the same two players each time doesn't cancel the bonus, even if the
+    #  players switch between the roles of initiator and responder in these trades. Those two players get the 10 points.
+    #  In such a case, we want that the MESSAGE_DETAIL display the earliest closing_date from the tied trades.
+    #  Thus we use a list below: it is guaranteed to keep the "order by closing_date" for the later iteration -- a dict would not.
+    cards_count = []
+    for trade in Trade.objects.filter(game = scoresheets[0].gameplayer.game, status = 'ACCEPTED').order_by('closing_date'):
+        cards_count.append((trade, trade.initiator_offer.total_traded_cards + trade.responder_offer.total_traded_cards))
 
     if len(cards_count) == 0:
         return
 
-    max_cards = max(cards_count.values())
+    max_cards = max([count for trade, count in cards_count])
 
-    if cards_count.values().count(max_cards) == 1: # detect tie
-        for trade, nb_cards in cards_count.iteritems():
-            if nb_cards == max_cards:
-                scoresheet_initiator = None
-                scoresheet_responder = None
-                for scoresheet in scoresheets:
-                    if scoresheet.gameplayer.player == trade.initiator:
-                        scoresheet_initiator = scoresheet
-                    elif scoresheet.gameplayer.player == trade.responder:
-                        scoresheet_responder = scoresheet
+    winning_trade = None
+    for trade, nb_cards in cards_count: # <- Here, the iteration that would risk losing the order if we had used a dict.
+        if nb_cards == max_cards:
+            if not winning_trade: # let's keep the first winning trade
+                winning_trade = trade
+            elif not (trade.initiator == winning_trade.initiator and trade.responder == winning_trade.responder) \
+             and not (trade.initiator == winning_trade.responder and trade.responder == winning_trade.initiator):
+                # tie: another trade with different players has the maximum cards exchanged -- no bonus awarded
+                return
+            # another "best" trade with the same two players wouldn't cancel the bonus, and the winning trade would stay the first one
 
-                scoresheet_initiator.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(trade.responder.name, trade.closing_date, nb_cards), score = 10)
-                scoresheet_responder.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(trade.initiator.name, trade.closing_date, nb_cards), score = 10)
+    for scoresheet in scoresheets:
+        if scoresheet.gameplayer.player == winning_trade.initiator:
+            scoresheet.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(winning_trade.responder.name, winning_trade.closing_date, max_cards), score = 10)
+        elif scoresheet.gameplayer.player == winning_trade.responder:
+            scoresheet.register_score_from_rule(rulecard, MESSAGE_DETAIL.format(winning_trade.initiator.name, winning_trade.closing_date, max_cards), score = 10)
+
 
 def PIZ14(rulecard, scoresheets):
-    """ The player(s) having traded the largest number of toppings (cards given + cards received) during
-         the course of the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus.
+    """  The player(s) having traded the largest number of rule cards (given + received) during the course of
+          the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus.
 
         # Global rulecard #
     """
-    toppings_count = {}
+    rulecards_count = {}
     for scoresheet in scoresheets:
-        nb_traded_toppings = 0
+        nb_traded_rulecards= 0
         for trade in Trade.objects.filter(Q(initiator = scoresheet.gameplayer.player) | Q(responder = scoresheet.gameplayer.player),
                                           game = scoresheet.gameplayer.game, status = 'ACCEPTED'):
-            nb_traded_toppings += sum([tc.nb_traded_cards for tc in trade.initiator_offer.tradedcommodities]
-                                    + [tc.nb_traded_cards for tc in trade.responder_offer.tradedcommodities])
-        toppings_count[scoresheet] = nb_traded_toppings
+            nb_traded_rulecards += len(trade.initiator_offer.rules.all()) + len(trade.responder_offer.rules.all())
+        rulecards_count[scoresheet] = nb_traded_rulecards
 
-    max_toppings = max(toppings_count.values())
-    winners = [scoresheet for scoresheet, nb_traded_toppings in toppings_count.iteritems() if nb_traded_toppings == max_toppings]
+    max_rulecards = max(rulecards_count.values())
+    winners = [scoresheet for scoresheet, nb_traded_rulecards in rulecards_count.iteritems() if nb_traded_rulecards == max_rulecards]
 
     for scoresheet in winners:
         tied = ""
         if len(winners) > 1:
             tied = u", tied with {0}".format(", ".join([player.gameplayer.player.name for player in winners if player != scoresheet]))
-        scoresheet.register_score_from_rule(rulecard, u'Your trades have included the largest number of exchanged toppings in the game ({0} toppings{1}). You earn a bonus of 10 point.'.format(max_toppings, tied),
+        scoresheet.register_score_from_rule(rulecard, u'Your trades have included the largest number of exchanged rule cards in the game ({0} cards{1}). You earn a bonus of 10 point.'.format(max_rulecards, tied),
                                             score = 10)
 
 def PIZ15(rulecard, scoresheet):
     """ The cooks who will not have performed a trade with at least 7 different players during the game will
-         lose 10 points. Only accepted trades with at least one card (rule or topping) given by each player count. """
+         lose 20 points. Only accepted trades with at least one card (rule or topping) given by each player count. """
     traders = set()
     for trade in Trade.objects.filter(game = scoresheet.gameplayer.game, status = 'ACCEPTED', initiator = scoresheet.gameplayer.player):
         if trade.initiator_offer.total_traded_cards > 0 and trade.responder_offer.total_traded_cards > 0:
@@ -162,14 +170,14 @@ def PIZ15(rulecard, scoresheet):
             traders.add(trade.initiator)
 
     if len(traders) == 0:
-        scoresheet.register_score_from_rule(rulecard, u'Since you have not performed any trades (including one card or more given by each player) although you were required to do it with at least 7 other players, you lose 10 points.',
-                                            score = -10)
+        scoresheet.register_score_from_rule(rulecard, u'Since you have not performed any trades (including one card or more given by each player) although you were required to do it with at least 7 other players, you lose 20 points.',
+                                            score = -20)
     elif len(traders) == 1:
-        scoresheet.register_score_from_rule(rulecard, u'Since you have performed trades (including one card or more given by each player) with only 1 other player (less than the 7 players required), you lose 10 points.',
-                                            score = -10)
+        scoresheet.register_score_from_rule(rulecard, u'Since you have performed trades (including one card or more given by each player) with only 1 other player (less than the 7 players required), you lose 20 points.',
+                                            score = -20)
     elif len(traders) < 7:
-        scoresheet.register_score_from_rule(rulecard, u'Since you have performed trades (including one card or more given by each player) with only {0} different players (less than the 7 players required), you lose 10 points.'.format(len(traders)),
-                                            score = -10)
+        scoresheet.register_score_from_rule(rulecard, u'Since you have performed trades (including one card or more given by each player) with only {0} different players (less than the 7 players required), you lose 20 points.'.format(len(traders)),
+                                            score = -20)
 
 def PIZ16(rulecard, scoresheet):
     """ The default value of a card is doubled if the card name contains at least once the letter K or Z. """

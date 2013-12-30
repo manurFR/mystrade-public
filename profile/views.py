@@ -47,9 +47,11 @@ def editprofile(request):
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form,
                                                         'palettes': get_user_model().PALETTES})
 
+ANTIBOT_FIELD_VALUE = "mystrade"
+
 def sign_up(request):
     if request.method == 'POST':
-        user_form = MystradeUserForm(data = request.POST)
+        user_form = MystradeUserForm(data = request.POST, expected_mystery = ANTIBOT_FIELD_VALUE)
         password_form = SetPasswordForm(data = request.POST, user = None)
 
         if user_form.is_valid() and password_form.is_valid():
@@ -81,6 +83,8 @@ def sign_up(request):
         user_form = MystradeUserForm()
         user_form['send_notifications'].field.initial = True
         password_form = SetPasswordForm(user = None)
+        # during sign up, user is not a MystradeUser yet
+        request.user.DEFAULT_PALETTE = get_user_model().DEFAULT_PALETTE
 
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form, 'sign_up': True,
                                                         'palettes': get_user_model().PALETTES})
@@ -99,10 +103,13 @@ def activation(request, user_id, activation_key):
             user = get_user_model().objects.get(pk = user_id)
         except get_user_model().DoesNotExist:
             raise PermissionDenied
-        if activation_key == _generate_activation_key(user):
+        if not user.is_active and activation_key == _generate_activation_key(user):
             if _activation_key_expired(user):
-                user.delete()
-                return render(request, 'profile/activation_expired.html')
+                try:
+                    user.delete()
+                    return render(request, 'profile/activation_expired.html')
+                except:
+                    raise PermissionDenied
             else:
                 user.is_active = True
                 user.save()
