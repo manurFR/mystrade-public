@@ -153,7 +153,8 @@ class SignUpTest(TestCase):
                 'email':            '',
                 'timezone':         '',
                 'new_password1':    '',
-                'new_password2':    ''
+                'new_password2':    '',
+                'mystery':          ''
             })
 
         self.assertFormError(response, 'user_form', 'username', 'This field is required.')
@@ -161,6 +162,7 @@ class SignUpTest(TestCase):
         self.assertFormError(response, 'user_form', 'timezone', 'This field is required.')
         self.assertFormError(response, 'password_form', 'new_password1', 'This field is required.')
         self.assertFormError(response, 'password_form', 'new_password2', 'This field is required.')
+        self.assertFormError(response, 'user_form', 'mystery', 'Wrong answer.')
 
     def test_register_fails_when_email_is_not_valid(self):
         response = self.client.post(reverse("signup"),
@@ -169,7 +171,8 @@ class SignUpTest(TestCase):
                 'email':            'abc',
                 'timezone':         'Europe/Berlin',
                 'new_password1':    'pwd',
-                'new_password2':    'pwd'
+                'new_password2':    'pwd',
+                'mystery':          'mysTRADE'
             })
 
         self.assertFormError(response, 'user_form', 'email', 'Enter a valid email address.')
@@ -181,10 +184,31 @@ class SignUpTest(TestCase):
                 'email':            'test@aaa.com',
                 'timezone':         'Moon/Moonbase_Alpha',
                 'new_password1':    'pwd',
-                'new_password2':    'pwd'
+                'new_password2':    'pwd',
+                'mystery':          'mysTrade'
             })
 
         self.assertFormError(response, 'user_form', 'timezone', 'Select a valid choice. Moon/Moonbase_Alpha is not one of the available choices.')
+
+    def test_register_fails_when_antibot_verification_fails(self):
+        response = self.client.post(reverse("signup"),
+            {
+                'username':             'test',
+                'first_name':           'johnny',
+                'last_name':            'cash',
+                'email':                'j.cash@BaB.com',
+                'send_notifications':   'on',
+                'timezone':             'America/Chicago',
+                'bio':                  'my bio',
+                'contact':              'my contact',
+                'palette':              MystradeUser.DEFAULT_PALETTE,
+                'new_password1':        'pwd123',
+                'new_password2':        'pwd123',
+                'mystery':              'FAIL'
+            })
+
+        self.assertTemplateUsed(response, 'profile/editprofile.html')
+        self.assertFormError(response, 'user_form', 'mystery', 'Wrong answer.')
 
     def test_register_keeps_timezone_and_other_fields_when_errors_are_detected(self):
         response = self.client.post(reverse("signup"),
@@ -195,7 +219,8 @@ class SignUpTest(TestCase):
                 'timezone':         'Pacific/Tahiti',
                 'contact':          'my contact',
                 'new_password1':    'pwd',
-                'new_password2':    'pwd'
+                'new_password2':    'pwd',
+                'mystery':          'Mystrade'
             })
 
         self.assertFormError(response, 'user_form', 'email', 'The email address is required.')
@@ -203,6 +228,7 @@ class SignUpTest(TestCase):
         self.assertEqual("johnny", response.context['user_form']['first_name'].data)
         self.assertEqual("Pacific/Tahiti", response.context['user_form']['timezone'].data)
         self.assertEqual("my contact", response.context['user_form']['contact'].data)
+        self.assertEqual("Mystrade", response.context['user_form']['mystery'].data)
 
     def test_register_username_and_email_must_be_unique(self):
         mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com')
@@ -213,7 +239,8 @@ class SignUpTest(TestCase):
                 'email':            'test@aaa.com',
                 'timezone':         'Europe/Madrid',
                 'new_password1':    'pwd',
-                'new_password2':    'pwd'
+                'new_password2':    'pwd',
+                'mystery':          'Mystrade'
             })
 
         self.assertFormError(response, 'user_form', 'username', 'User with this Username already exists.')
@@ -232,7 +259,8 @@ class SignUpTest(TestCase):
                 'contact':              'my contact',
                 'palette':              MystradeUser.DEFAULT_PALETTE,
                 'new_password1':        'pwd123',
-                'new_password2':        'pwd123'
+                'new_password2':        'pwd123',
+                'mystery':              'MysTrade'
             })
 
         self.assertContains(response, "has been sent to the email address you supplied")
@@ -261,6 +289,25 @@ class SignUpTest(TestCase):
         self.assertEqual('[MysTrade] Registration activation on mystrade.com', email.subject)
         self.assertIn('please navigate to the link below', email.body)
         self.assertIn('/profile/activation/{0}/{1}'.format(created_user.id, _generate_activation_key(created_user)), email.body)
+
+    def test_register_antibot_verification_field_accepts_dots(self):
+        response = self.client.post(reverse("signup"),
+            {
+                'username':             'test',
+                'first_name':           'johnny',
+                'last_name':            'cash',
+                'email':                'j.cash@BaB.com',
+                'send_notifications':   'on',
+                'timezone':             'America/Chicago',
+                'bio':                  'my bio',
+                'contact':              'my contact',
+                'palette':              MystradeUser.DEFAULT_PALETTE,
+                'new_password1':        'pwd123',
+                'new_password2':        'pwd123',
+                'mystery':              'mystra.de'
+            })
+
+        self.assertContains(response, "has been sent to the email address you supplied")
 
     def test_activation_of_an_invalid_key(self):
         user = mommy.make(get_user_model(), username = 'test', email = 'test@aaa.com')

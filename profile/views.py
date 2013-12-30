@@ -47,9 +47,11 @@ def editprofile(request):
     return render(request, 'profile/editprofile.html', {'user_form': user_form, 'password_form': password_form,
                                                         'palettes': get_user_model().PALETTES})
 
+ANTIBOT_FIELD_VALUE = "mystrade"
+
 def sign_up(request):
     if request.method == 'POST':
-        user_form = MystradeUserForm(data = request.POST)
+        user_form = MystradeUserForm(data = request.POST, expected_mystery = ANTIBOT_FIELD_VALUE)
         password_form = SetPasswordForm(data = request.POST, user = None)
 
         if user_form.is_valid() and password_form.is_valid():
