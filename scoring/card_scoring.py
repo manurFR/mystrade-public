@@ -5,7 +5,7 @@ from scoring.models import ScoreFromRule, ScoreFromCommodity
 def tally_scores(game):
     scoresheets = [Scoresheet(gameplayer) for gameplayer in GamePlayer.objects.filter(game = game)]
 
-    for rule in game.rules.filter(step__isnull = False).order_by('step'):
+    for rule in game.rules.filter(step__isnull = False).order_by('step', 'ref_name'):
         if rule.glob:
             rule.perform(scoresheets)
         else:
@@ -92,6 +92,16 @@ class Scoresheet(object):
                                      nb_submitted_cards = nb_scored_cards, nb_scored_cards = nb_scored_cards,
                                      actual_value = cih.commodity.value, score = 0)
             self._scores_from_commodity.append(sfc)
+
+    def _print_scoresheet(self):
+        total_score = self.total_score
+        print "Scoresheet for {0}:".format(self.gameplayer.player.name)
+        for sfc in self.scores_from_commodity:
+            print "   {0}: {1} points ({2} cards x {3} points)".format(sfc.commodity.name, sfc.score, sfc.nb_scored_cards, sfc.actual_value)
+        for sfr in self.scores_from_rule:
+            print "   {0} / {1} / {2}".format(sfr.rulecard.ref_name, '{0} points'.format(sfr.score) if sfr.score else '[n/a]', sfr.detail)
+        print " TOTAL: {0} points".format(total_score)
+        print ""
 
     @property
     def total_score(self):

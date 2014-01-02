@@ -262,11 +262,11 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "4",
-            "description": "If a player has a combined number of yellow and green cards strictly higher than five cards, all of his/her green cards lose their value.",
+            "description": "If a player has a combined number of scoring yellow and green cards strictly higher than five cards, all of his/her green cards lose their value.",
             "mandatory": false,
             "ruleset": 2,
             "ref_name": "RMX04",
-            "step": 10,
+            "step": 11,
             "glob": false
         }
     },
@@ -583,7 +583,7 @@
         "model": "ruleset.rulecard",
         "fields": {
             "public_name": "TRADER",
-            "description": " The player(s) having traded the largest number of rule cards (given + received) during the course of the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus.",
+            "description": "The player(s) having traded the largest number of rule cards (given + received) during the course of the game will earn a 10 points bonus. In case of a tie, each player will earn the bonus.",
             "mandatory": false,
             "ruleset": 3,
             "ref_name": "PIZ14",

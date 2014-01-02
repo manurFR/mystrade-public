@@ -277,11 +277,13 @@ class RemixedHaggleTest(TestCase):
             self.game.rules.add(rule)
         _prepare_hand(self.game, player = "p1", blue = 2, white = 1, pink = 3, yellow = 3, green = 2) # -6+7 8 14
         _prepare_hand(self.game, player = "p2", blue = 7, white = 5, pink = 3,             green = 1) # 9 11 12 15
-        _prepare_hand(self.game, player = "p3", blue = 3, white = 1, pink = 1, yellow = 4, green = 2) # 4 5 -6+7 8
+        _prepare_hand(self.game, player = "p3", blue = 3, white = 1, pink = 1, yellow = 3, green = 2) # 5 -6+7 8
         _prepare_hand(self.game, player = "p4",           white = 2, pink = 2, yellow = 2, green = 2) # -6 13 14
+        _prepare_hand(self.game, player = "p5", blue = 1, white = 1, pink = 1, yellow = 1, green = 5) # 4 -6 8
         scoresheets = tally_scores(self.game)
-        self.assertEqual(4, len(scoresheets))
-        self.assertEqual(35+8+4, scoresheets[0].total_score)
-        self.assertEqual(31+20-10+9+10, scoresheets[1].total_score)
-        self.assertEqual(12+8, scoresheets[2].total_score)
-        self.assertEqual((28-10+4)*2, scoresheets[3].total_score)
+        self.assertEqual(5, len(scoresheets))
+        self.assertEqual(2*1 + 2 + 3*3 + 3*4 + 2*5 + 8 + 4, scoresheets[0].total_score)
+        self.assertEqual(7*1 + 5*2 + 3*3 + 0 + 5 + 20 - 10 + 9 + 10, scoresheets[1].total_score)
+        self.assertEqual(3*1 + 2 + 3 + 4 + 2*5 + 8 - 10, scoresheets[2].total_score)
+        self.assertEqual((0 + 2*2 + 2*3 + 2*4 + 2*5 - 10 + 4)*2, scoresheets[3].total_score)
+        self.assertEqual(1 + 2 + 3 + 4 + 0 - 10 + 8, scoresheets[4].total_score)
