@@ -1,6 +1,9 @@
 from random import shuffle
 from ruleset.models import Commodity
-from game.models import RuleInHand, CommodityInHand
+from game.models import RuleInHand, CommodityInHand, GamePlayer
+from scoring.card_scoring import Scoresheet, tally_scores
+from scoring.models import ScoreFromCommodity
+
 
 class RuleCardDealer(object):
     def add_a_card_to_hand(self, hand, deck):
@@ -18,19 +21,37 @@ class CommodityCardDealer(object):
         """ From this deck, add to the hand a commodity. Duplicates are ok. """
         hand.append(deck.pop())
 
-def deal_cards(game):
-    players = game.players.all()
-    nb_players = len(players)
-    rules = dispatch_cards(nb_players, game.ruleset.starting_rules, game.rules.all(), RuleCardDealer())
-    commodities = dispatch_cards(nb_players, game.ruleset.starting_commodities,
-                                 Commodity.objects.filter(ruleset = game.ruleset), CommodityCardDealer())
-    for idx, player in enumerate(players):
-        for rulecard in rules[idx]:
-            RuleInHand.objects.create(game = game, player = player, rulecard = rulecard, ownership_date = game.start_date)
-        for commodity in set(commodities[idx]): # only one record per distinct commodity
-            CommodityInHand.objects.create(game = game, player = player, commodity = commodity, nb_cards = commodities[idx].count(commodity))
+MAX_TRIES = 50
+def deal_cards(game, nb_tries = 0):
+    if nb_tries >= MAX_TRIES:
+        return False
 
-def dispatch_cards(nb_players, nb_cards_per_player, cards, card_dealer):
+    # players = game.players.all()
+    gameplayers = GamePlayer.objects.filter(game = game)
+    # nb_players = players.count()
+    ruleset_commodities = Commodity.objects.filter(ruleset = game.ruleset)
+    try:
+        rules       = dispatch_cards(gameplayers, game.ruleset.starting_rules,       game.rules.all(),    RuleCardDealer())
+        commodities = dispatch_cards(gameplayers, game.ruleset.starting_commodities, ruleset_commodities, CommodityCardDealer())
+
+        # evaluate spread
+        scoresheets = prepare_scoresheets(commodities)
+        tally_scores(game, scoresheets)
+        scores = [scoresheet.total_score for scoresheet in scoresheets]
+        if max(scores) - min(scores) > 10:
+            raise InappropriateDealingException
+
+        for gameplayer, rulecard in rules.iteritems():
+            RuleInHand.objects.create(game = game, player = gameplayer.player, rulecard = rulecard, ownership_date = game.start_date)
+        for gameplayer, commodities in commodities.iteritems():
+            for commodity in set(commodities): # only one record per distinct commodity
+                CommodityInHand.objects.create(game = game, player = gameplayer.player, commodity = commodity, nb_cards = commodities.count(commodity))
+
+        return True
+    except InappropriateDealingException:
+        deal_cards(game, nb_tries = nb_tries + 1) # recursive call to try again
+
+def dispatch_cards(gameplayers, nb_cards_per_player, cards, card_dealer):
     """ A deck of n copies of the cards is prepared, with n chosen so that less than an
          additional complete copy will be needed for everyone to get nb_cards_per_player cards
          (if there are as many players as cards, n = nb_cards_per_player).
@@ -45,19 +66,23 @@ def dispatch_cards(nb_players, nb_cards_per_player, cards, card_dealer):
          it is the card_dealer's responsibility to raise an InappropriateDealingException.
          It will make this function start the dealing from scratch.
     """
-    copies = int(nb_cards_per_player * float(nb_players) / len(cards))
+    hands = dict([(gameplayer, []) for gameplayer in gameplayers])
 
-    hands = [[] for _player in range(nb_players)]
+    copies = int(nb_cards_per_player * float(gameplayers.count()) / len(cards))
     deck = prepare_deck(cards, copies)
-    idx = 0
-    while len(hands[idx % nb_players]) < nb_cards_per_player:
-        try:
-            card_dealer.add_a_card_to_hand(hands[idx % nb_players], deck)
+
+    for _i in range(nb_cards_per_player):
+        for gameplayer, hand in hands.iteritems():
+            card_dealer.add_a_card_to_hand(hand, deck)
             if len(deck) == 0:
                 deck = prepare_deck(cards, 1)
-            idx += 1
-        except InappropriateDealingException: # let's start over, with a recursive call
-            return dispatch_cards(nb_players, nb_cards_per_player, cards, card_dealer)
+
+    # idx = 0
+    # while len(hands[idx % nb_players]) < nb_cards_per_player:
+    #     card_dealer.add_a_card_to_hand(hands[idx % nb_players], deck)
+    #     if len(deck) == 0:
+    #         deck = prepare_deck(cards, 1)
+    #     idx += 1
     return hands
 
 def prepare_deck(cards, nb_copies = 1):
@@ -67,6 +92,19 @@ def prepare_deck(cards, nb_copies = 1):
         deck.extend(cards)
     shuffle(deck)
     return deck
+
+def prepare_scoresheets(dealt_commodities):
+    scoresheets = []
+    for gameplayer, commodities in dealt_commodities.iteritems():
+        scores_from_commodity = []
+        for commodity in set(commodities):
+            scores_from_commodity.append(ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player,
+                                                            commodity = commodity,
+                                                            nb_submitted_cards = commodities.count(commodity),
+                                                            nb_scored_cards = commodities.count(commodity),
+                                                            actual_value = commodity.value))
+        scoresheets.append(Scoresheet(gameplayer = gameplayer, scores_from_commodity = scores_from_commodity))
+    return scoresheets
 
 class InappropriateDealingException(Exception):
     pass

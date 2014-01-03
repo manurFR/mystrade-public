@@ -2,8 +2,9 @@ from game.models import GamePlayer, CommodityInHand
 from ruleset.models import Commodity
 from scoring.models import ScoreFromRule, ScoreFromCommodity
 
-def tally_scores(game):
-    scoresheets = [Scoresheet(gameplayer) for gameplayer in GamePlayer.objects.filter(game = game)]
+def tally_scores(game, scoresheets = None):
+    if scoresheets is None:
+        scoresheets = [Scoresheet(gameplayer) for gameplayer in GamePlayer.objects.filter(game = game)]
 
     for rule in game.rules.filter(step__isnull = False).order_by('step', 'ref_name'):
         if rule.glob:
@@ -32,8 +33,9 @@ class Scoresheet(object):
         for sfc in self._scores_from_commodity:
             sfc.name = sfc.commodity.name.lower()
 
-        self.neutral_commodity = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = Commodity(),
-                                                    nb_submitted_cards = 0, nb_scored_cards = 0, actual_value = 0, score = 0)
+        if gameplayer:
+            self.neutral_commodity = ScoreFromCommodity(game = gameplayer.game, player = gameplayer.player, commodity = Commodity(),
+                                                        nb_submitted_cards = 0, nb_scored_cards = 0, actual_value = 0, score = 0)
 
     def score_for_commodity(self, name):
         for sfc in self.scores_from_commodity:

@@ -12,10 +12,10 @@ from django.utils.datetime_safe import strftime
 from django.utils.formats import date_format
 from django.utils.timezone import now, utc, localtime
 from model_mommy import mommy
-from game import views
+from game import views, deal
 
 from game.deal import InappropriateDealingException, RuleCardDealer, deal_cards, \
-    prepare_deck, dispatch_cards, CommodityCardDealer
+    prepare_deck, dispatch_cards, CommodityCardDealer, MAX_TRIES
 from game.forms import validate_number_of_players, validate_dates
 from game.helpers import rules_in_hand, rules_formerly_in_hand, commodities_in_hand, known_rules, free_informations_until_now
 from game.models import Game, RuleInHand, CommodityInHand, GamePlayer, Message
@@ -1782,46 +1782,27 @@ class DealTest(TestCase):
         CommodityCardDealer().add_a_card_to_hand(hand, self.commodities)
         self.assertEqual(2, hand.count(expected_commodity))
 
-    def test_dispatch_rules_with_as_many_players_as_rules(self):
-        hands = dispatch_cards(6, 2, self.rules, RuleCardDealer())
+    def test_dispatch_cards_with_as_many_players_as_rules(self):
+        hands = dispatch_cards(6, 2, self.rules, CommodityCardDealer())
         for hand in hands:
             self.assertEqual(2, len(hand))
-            self.assertNotEqual(hand[0], hand[1])
 
-    def test_dispatch_rules_with_more_players_than_rules(self):
-        hands = dispatch_cards(7, 2, self.rules, RuleCardDealer())
+    def test_dispatch_cards_with_more_players_than_rules(self):
+        hands = dispatch_cards(7, 2, self.rules, CommodityCardDealer())
         for hand in hands:
             self.assertEqual(2, len(hand))
-            self.assertNotEqual(hand[0], hand[1])
-
-    def test_dispatch_rules_with_inappropriate_dealing_should_make_start_over(self):
-        class MockCardDealer(RuleCardDealer):
-            def __init__(self):
-                self.raisedException = False
-            def add_a_card_to_hand(self, hand, deck):
-                if not self.raisedException:
-                    self.raisedException = True
-                    raise InappropriateDealingException
-                else:
-                    super(MockCardDealer, self).add_a_card_to_hand(hand, deck)
-        mock = MockCardDealer()
-        hands = dispatch_cards(6, 2, self.rules, mock)
-        self.assertTrue(mock.raisedException)
-        for hand in hands:
-            self.assertEqual(2, len(hand))
-            self.assertNotEqual(hand[0], hand[1])
 
     def test_deal_cards(self):
         nb_rules_per_player = 4
         nb_commodities_per_player = 14
 
         ruleset = mommy.make(Ruleset, starting_rules = nb_rules_per_player, starting_commodities = nb_commodities_per_player)
-        mommy.make(Commodity, ruleset = ruleset, _quantity = 10)
+        mommy.make(Commodity, ruleset = ruleset, value = 1, _quantity = 10)
         game = mommy.make(Game, ruleset = ruleset, rules = self.rules, end_date = now() + datetime.timedelta(days = 7))
         for player in self.users:
             GamePlayer.objects.create(game = game, player = player)
 
-        deal_cards(game)
+        self.assertTrue(deal_cards(game))
 
         # check that each player has the requested number of cards
         for player in self.users:
@@ -1844,6 +1825,27 @@ class DealTest(TestCase):
         for commodity in Commodity.objects.filter(ruleset = ruleset):
             nb_cards = CommodityInHand.objects.filter(game = game, commodity = commodity).aggregate(Sum('nb_cards'))
             self.assertTrue(min_occurence <= nb_cards['nb_cards__sum'] <= min_occurence+1)
+
+    def test_deal_cards_returns_False_after_too_many_tries(self):
+        self.assertFalse(deal_cards(None, MAX_TRIES))
+
+    def test_deal_cards_fails_if_the_spread_between_max_and_min_initial_scores_is_too_high(self):
+        ruleset = mommy.make(Ruleset, starting_rules = 2, starting_commodities = 5)
+        commodity = mommy.make(Commodity, ruleset = ruleset)
+        game = mommy.make(Game, ruleset = ruleset, rules = self.rules, end_date = now() + datetime.timedelta(days = 7))
+        gp1 = GamePlayer.objects.create(game = game, player = self.users[0])
+        gp2 = GamePlayer.objects.create(game = game, player = self.users[1])
+
+        old_prepare_scoresheets = deal.prepare_scoresheets
+        def mock_prepare_scoresheets(_dealt_commodities):
+            return [Scoresheet(gameplayer = gp1, scores_from_commodity = [ScoreFromCommodity(commodity = commodity, nb_scored_cards = 1, actual_value = 1)]),
+                    Scoresheet(gameplayer = gp2, scores_from_commodity = [ScoreFromCommodity(commodity = commodity, nb_scored_cards = 2, actual_value = 10)])]
+        deal.prepare_scoresheets = mock_prepare_scoresheets
+
+        try:
+            self.assertFalse(deal_cards(game))
+        finally:
+            deal.prepare_scoresheets = old_prepare_scoresheets
 
 class HelpersTest(MystradeTestCase):
 
