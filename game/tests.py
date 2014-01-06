@@ -1740,14 +1740,25 @@ class FormsTest(TestCase):
             self.fail("validate_dates should not fail when end_date is strictly posterior to start_date")
 
 class DealTest(TestCase):
+    RULES_PER_PLAYER = 4
+    COMMODITIES_PER_PLAYER = 14
+
     def setUp(self):
+        self.ruleset = mommy.make(Ruleset, starting_rules = self.RULES_PER_PLAYER, starting_commodities = self.COMMODITIES_PER_PLAYER)
+        self.game = mommy.make(Game, ruleset = self.ruleset, end_date = now() + datetime.timedelta(days = 7))
+
         self.users = []
         self.rules = []
-        self.commodities = []
         for i in range(6):
-            self.users.append(mommy.make(get_user_model(), username = i))
-            self.rules.append(mommy.make(RuleCard, ref_name = i))
-            self.commodities.append(mommy.make(Commodity, name = i))
+            player = mommy.make(get_user_model(), username=i)
+            self.users.append(player)
+            mommy.make(GamePlayer, game = self.game, player = player)
+            self.rules.append(mommy.make(RuleCard, ruleset = self.ruleset, ref_name = i))
+        self.game.rules.add(*self.rules)
+
+        self.commodities = []
+        for i in range(10):
+            self.commodities.append(mommy.make(Commodity, ruleset = self.ruleset, name = str(i), value = 1))
 
     def test_prepare_deck(self):
         deck = prepare_deck(self.rules, nb_copies = 2)
@@ -1777,73 +1788,63 @@ class DealTest(TestCase):
             RuleCardDealer().add_a_card_to_hand(self.rules, self.rules)
 
     def test_add_a_card_to_hand_duplicates_allowed_for_commodities(self):
-        expected_commodity = self.commodities[5]
+        expected_commodity = self.commodities[-1] # the last commodity of the list will be the first to pop out
         hand = [expected_commodity]
         CommodityCardDealer().add_a_card_to_hand(hand, self.commodities)
         self.assertEqual(2, hand.count(expected_commodity))
 
     def test_dispatch_cards_with_as_many_players_as_rules(self):
-        hands = dispatch_cards(6, 2, self.rules, CommodityCardDealer())
-        for hand in hands:
+        hands = dispatch_cards(GamePlayer.objects.filter(game = self.game), 2, self.rules, CommodityCardDealer())
+        for hand in hands.values():
             self.assertEqual(2, len(hand))
 
     def test_dispatch_cards_with_more_players_than_rules(self):
-        hands = dispatch_cards(7, 2, self.rules, CommodityCardDealer())
-        for hand in hands:
+        # add a 7th player
+        mommy.make(GamePlayer, game = self.game, player = mommy.make(get_user_model(), username = '7th player'))
+
+        hands = dispatch_cards(GamePlayer.objects.filter(game = self.game), 2, self.rules, CommodityCardDealer())
+        for hand in hands.values():
             self.assertEqual(2, len(hand))
 
     def test_deal_cards(self):
-        nb_rules_per_player = 4
-        nb_commodities_per_player = 14
-
-        ruleset = mommy.make(Ruleset, starting_rules = nb_rules_per_player, starting_commodities = nb_commodities_per_player)
-        mommy.make(Commodity, ruleset = ruleset, value = 1, _quantity = 10)
-        game = mommy.make(Game, ruleset = ruleset, rules = self.rules, end_date = now() + datetime.timedelta(days = 7))
-        for player in self.users:
-            GamePlayer.objects.create(game = game, player = player)
-
-        self.assertTrue(deal_cards(game))
+        self.assertTrue(deal_cards(self.game))
 
         # check that each player has the requested number of cards
         for player in self.users:
-            rules = RuleInHand.objects.filter(game = game, player = player)
-            self.assertEqual(nb_rules_per_player, len(rules))
+            rules = RuleInHand.objects.filter(game = self.game, player = player)
+            self.assertEqual(self.RULES_PER_PLAYER, len(rules))
             for rule in rules:
-                self.assertEqual(game.start_date, rule.ownership_date)
-            commodities = CommodityInHand.objects.filter(game = game, player = player)
+                self.assertEqual(self.game.start_date, rule.ownership_date)
+            commodities = CommodityInHand.objects.filter(game = self.game, player = player)
             nb_commodities = 0
             for commodity in commodities:
                 nb_commodities += commodity.nb_cards
-            self.assertEqual(nb_commodities_per_player, nb_commodities)
+            self.assertEqual(self.COMMODITIES_PER_PLAYER, nb_commodities)
 
         # check that each card has the expected number of copies in play (and that the difference between the least frequent and the most frequent is no more than 1)
-        min_occurence = nb_rules_per_player*len(self.users)/len(self.rules)
+        min_occurence = self.RULES_PER_PLAYER*len(self.users)/len(self.rules)
         for rule in self.rules:
-            nb_cards = RuleInHand.objects.filter(game = game, rulecard = rule).count()
+            nb_cards = RuleInHand.objects.filter(game = self.game, rulecard = rule).count()
             self.assertTrue(min_occurence <= nb_cards <= min_occurence+1)
-        min_occurence = nb_commodities_per_player *len(self.users)/10
-        for commodity in Commodity.objects.filter(ruleset = ruleset):
-            nb_cards = CommodityInHand.objects.filter(game = game, commodity = commodity).aggregate(Sum('nb_cards'))
+        min_occurence = self.COMMODITIES_PER_PLAYER*len(self.users)/len(self.commodities)
+        for commodity in self.commodities:
+            nb_cards = CommodityInHand.objects.filter(game = self.game, commodity = commodity).aggregate(Sum('nb_cards'))
             self.assertTrue(min_occurence <= nb_cards['nb_cards__sum'] <= min_occurence+1)
 
     def test_deal_cards_returns_False_after_too_many_tries(self):
         self.assertFalse(deal_cards(None, MAX_TRIES))
 
     def test_deal_cards_fails_if_the_spread_between_max_and_min_initial_scores_is_too_high(self):
-        ruleset = mommy.make(Ruleset, starting_rules = 2, starting_commodities = 5)
-        commodity = mommy.make(Commodity, ruleset = ruleset)
-        game = mommy.make(Game, ruleset = ruleset, rules = self.rules, end_date = now() + datetime.timedelta(days = 7))
-        gp1 = GamePlayer.objects.create(game = game, player = self.users[0])
-        gp2 = GamePlayer.objects.create(game = game, player = self.users[1])
-
         old_prepare_scoresheets = deal.prepare_scoresheets
         def mock_prepare_scoresheets(_dealt_commodities):
-            return [Scoresheet(gameplayer = gp1, scores_from_commodity = [ScoreFromCommodity(commodity = commodity, nb_scored_cards = 1, actual_value = 1)]),
-                    Scoresheet(gameplayer = gp2, scores_from_commodity = [ScoreFromCommodity(commodity = commodity, nb_scored_cards = 2, actual_value = 10)])]
+            return [Scoresheet(gameplayer = GamePlayer.objects.get(game = self.game, player = self.users[0]),
+                               scores_from_commodity = [ScoreFromCommodity(commodity = self.commodities[0], nb_scored_cards = 1, actual_value = 1)]),
+                    Scoresheet(gameplayer = GamePlayer.objects.get(game = self.game, player = self.users[1]),
+                               scores_from_commodity = [ScoreFromCommodity(commodity = self.commodities[0], nb_scored_cards = 3, actual_value = 10)])]
         deal.prepare_scoresheets = mock_prepare_scoresheets
 
         try:
-            self.assertFalse(deal_cards(game))
+            self.assertFalse(deal_cards(self.game))
         finally:
             deal.prepare_scoresheets = old_prepare_scoresheets
 

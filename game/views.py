@@ -464,24 +464,31 @@ def select_rules(request):
 
         if len(selected_rules) > nb_max_rulecards:
             error = "Please select at most {0} rule cards (including the mandatory ones)".format(nb_max_rulecards)
-            return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session,
+            return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session, 'ruleset': ruleset,
+                                                              'start_date': start_date, 'end_date': end_date, 'players': players,
                                                               'nb_max_rulecards': nb_max_rulecards, 'error': error})
 
         game = Game.objects.create(ruleset    = ruleset,
-                                   master     = request.user,
+                                   master     =  request.user,
                                    start_date = start_date,
                                    end_date   = end_date)
         for player in players:
             GamePlayer.objects.create(game = game, player = player)
         for rule in selected_rules:
             game.rules.add(rule)
+
+        # deal starting cards
+        if not deal_cards(game):
+            game.delete()
+            error = "We failed to deal cards without the difference of starting scores being too large. Please try again."
+            return render(request, 'game/select_rules.html', {'rulecards': rulecards, 'session': request.session, 'ruleset': ruleset,
+                                                              'start_date': start_date, 'end_date': end_date, 'players': players,
+                                                              'nb_max_rulecards': nb_max_rulecards, 'error': error})
+
         del request.session['ruleset']
         del request.session['start_date']
         del request.session['end_date']
         del request.session['players']
-
-        # deal starting cards
-        deal_cards(game)
 
         # record score stats at the game creation
         stats.record(game)

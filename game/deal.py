@@ -21,16 +21,16 @@ class CommodityCardDealer(object):
         """ From this deck, add to the hand a commodity. Duplicates are ok. """
         hand.append(deck.pop())
 
-MAX_TRIES = 50
+MAX_TRIES = 20
+MAX_ACCEPTED_SPREAD = 25 # points of difference between highest and lowest initial scores
 def deal_cards(game, nb_tries = 0):
     if nb_tries >= MAX_TRIES:
         return False
 
-    # players = game.players.all()
-    gameplayers = GamePlayer.objects.filter(game = game)
-    # nb_players = players.count()
-    ruleset_commodities = Commodity.objects.filter(ruleset = game.ruleset)
     try:
+        gameplayers = GamePlayer.objects.filter(game = game)
+        ruleset_commodities = Commodity.objects.filter(ruleset = game.ruleset)
+
         rules       = dispatch_cards(gameplayers, game.ruleset.starting_rules,       game.rules.all(),    RuleCardDealer())
         commodities = dispatch_cards(gameplayers, game.ruleset.starting_commodities, ruleset_commodities, CommodityCardDealer())
 
@@ -38,18 +38,20 @@ def deal_cards(game, nb_tries = 0):
         scoresheets = prepare_scoresheets(commodities)
         tally_scores(game, scoresheets)
         scores = [scoresheet.total_score for scoresheet in scoresheets]
-        if max(scores) - min(scores) > 10:
+        # print "try#{0} - min: {1} / max: {2} / diff: {3}".format(nb_tries, min(scores), max(scores), max(scores) - min(scores))
+        if max(scores) - min(scores) > MAX_ACCEPTED_SPREAD:
             raise InappropriateDealingException
 
-        for gameplayer, rulecard in rules.iteritems():
-            RuleInHand.objects.create(game = game, player = gameplayer.player, rulecard = rulecard, ownership_date = game.start_date)
+        for gameplayer, rulecards in rules.iteritems():
+            for rulecard in rulecards:
+                RuleInHand.objects.create(game = game, player = gameplayer.player, rulecard = rulecard, ownership_date = game.start_date)
         for gameplayer, commodities in commodities.iteritems():
             for commodity in set(commodities): # only one record per distinct commodity
                 CommodityInHand.objects.create(game = game, player = gameplayer.player, commodity = commodity, nb_cards = commodities.count(commodity))
 
         return True
     except InappropriateDealingException:
-        deal_cards(game, nb_tries = nb_tries + 1) # recursive call to try again
+        return deal_cards(game, nb_tries = nb_tries + 1) # recursive call to try again
 
 def dispatch_cards(gameplayers, nb_cards_per_player, cards, card_dealer):
     """ A deck of n copies of the cards is prepared, with n chosen so that less than an

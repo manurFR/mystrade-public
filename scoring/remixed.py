@@ -34,7 +34,7 @@ def RMX06(rulecard, scoresheets):
         for victim in scoresheets:
             if victim != culprit:
                 victim.register_score_from_rule(rulecard,
-                                                'Since {0} has {1} blue cards, 10 points are deducted.'.format(culprit.player_name, culprit.nb_scored_cards('Blue')),
+                                                u'Since {0} has {1} blue cards, 10 points are deducted.'.format(culprit.player_name, culprit.nb_scored_cards('Blue')),
                                                 score = -10)
 
 def RMX07(rulecard, scoresheet):
@@ -112,7 +112,7 @@ def RMX11(rulecard, scoresheet):
     for sfc in scoresheet.scores_from_commodity:
         if sfc.nb_submitted_cards >= 7:
             scoresheet.register_score_from_rule(rulecard,
-                                                'Since {0} {1} cards where submitted (seven or more), 10 points are deducted.'.format(sfc.nb_submitted_cards, sfc.name),
+                                                u'Since {0} {1} cards where submitted (seven or more), 10 points are deducted.'.format(sfc.nb_submitted_cards, sfc.name),
                                                 score = -10)
 
 def RMX12(rulecard, scoresheets):
