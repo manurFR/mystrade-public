@@ -1,4 +1,5 @@
 # Django settings for mystrade project.
+import json
 import logging
 import os
 import sys
@@ -8,6 +9,10 @@ TEMPLATE_DEBUG = DEBUG
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 
+secrets = {}
+with open(os.path.join(SITE_ROOT, "secrets.json")) as fic:
+    secrets = json.load(fic)
+
 # Required when DEBUG is False, ie in production, to prevent "host-poisoning attacks".
 # ALLOWED_HOSTS = [
 #     '.example.com', # Allow domain and subdomains
@@ -15,7 +20,7 @@ SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 # ]
 
 ADMINS = (
-    ('Emmanuel', 'hello@mystra.de'),
+    ('Emmanuel', secrets['ADMIN_EMAIL']),
 )
 
 MANAGERS = ADMINS
@@ -30,7 +35,7 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 EMAIL_SUBJECT_PREFIX = '[MysTrade] ' # for admins
 
-EMAIL_MYSTRADE = 'hello@mystra.de'
+EMAIL_MYSTRADE = secrets['EMAIL_MYSTRADE']
 
 ACCOUNT_ACTIVATION_DAYS = 2
 
@@ -39,7 +44,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': 'mystrade',              # Or path to database file if using sqlite3.
         'USER': 'django',                # Not used with sqlite3.
-        'PASSWORD': 'djrolandxp80',      # Not used with sqlite3.
+        'PASSWORD': secrets['LOCAL_DB_PASSWORD'],   # Not used with sqlite3.
         'HOST': 'localhost',             # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
@@ -111,7 +116,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '***REMOVED***'
+SECRET_KEY = secrets['SECRET_KEY']
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (

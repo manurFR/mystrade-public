@@ -6,7 +6,6 @@
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://127.0.0.1/mystrade</jdbc-url>
       <user-name>django</user-name>
-      <user-password>dfcedfc0dfd8dfc5dfc6dfcbdfc4dfcedfd2dfdadf92df9a</user-password>
       <libraries>
         <library>
           <url>file://$USER_HOME$/.IntelliJIdea12/config/jdbc-drivers/postgresql-driver-license.txt</url>
