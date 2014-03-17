@@ -20,7 +20,7 @@ class MystradeTestCase(TestCase):
     """ Parent test case class with default element bootstrapped, to be inherited by other apps' test cases """
     fixtures = ['initial_data.json', # from ruleset
                 'test_users.json',   # from profile app
-                'test_games.json']
+                'test_games.json']   # from game app
 
     def setUp(self):
         self.game =             Game.objects.get(id = 1)

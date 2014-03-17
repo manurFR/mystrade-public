@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" hash="4214230542">
-    <data-source source="LOCAL" name="Django default" product="PostgreSQL" version="9.1.9" jdbc-version="3.0" driver-name="PostgreSQL Native Driver" driver-version="PostgreSQL 9.1 JDBC3 (build 901)" uuid="1ecc1de1-d14d-43a5-bc64-69ec11d495c4">
-      <identifier-quote-string>&quot;</identifier-quote-string>
+    <data-source source="LOCAL" name="Django default" product="" version="" jdbc-version="" driver-name="" driver-version="" uuid="27a062d6-ae87-46c3-870f-44aaa1ff6268">
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://127.0.0.1/mystrade</jdbc-url>
       <user-name>django</user-name>
