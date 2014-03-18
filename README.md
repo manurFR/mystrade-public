@@ -1,6 +1,6 @@
 #MysTrade
 
-MysTrade is a multiplayer, asynchronous, party game for large groups. It is inspired by [Haggle](http://en.wikipedia.org/wiki/Haggle_(game\)), a game from Sid Sackson's 1969 book *A Gamut of Game*. A minimum of ten players is required, but twelve to fifteen is a better count.
+MysTrade is a multiplayer, asynchronous, party game for large groups. It is inspired by [Haggle](http://en.wikipedia.org/wiki/Haggle_(game)), a game from Sid Sackson's 1969 book *A Gamut of Game*. A minimum of ten players is required, but twelve to fifteen is a better count.
 
 Players try to earn the most points by performing trades of "commodity" and "rule cards". Commodity cards are the one that give points, alone or in specific combinations. The rule cards detail how many points each kind of commodity cards is worth, and how they can be combined to give more (or less) points to their owner.
 
@@ -13,9 +13,9 @@ Three different "rulesets" of cards are included: the original Haggle ruleset fr
 
 MysTrade has been implemented in Python 2.7 with the [Django](https://www.djangoproject.com/) framework (v. 1.6.1 at the time of writing). The use of the following libraries and tools is notable : [pip](http://www.pip-installer.org/en/latest/), [PostgreSQL](http://www.postgresql.org/), [South](http://south.aeracode.org/), [SASS](http://sass-lang.com/), [Django Debug Toolbar](https://github.com/django-debug-toolbar/django-debug-toolbar), [Django Extensions](https://github.com/django-extensions/django-extensions), [Model Mommy](https://github.com/vandersonmota/model_mommy), [Bleach](https://github.com/jsocol/bleach), [jQuery](http://jquery.com/) and [jQueryUI](http://jqueryui.com/).
 
-* Thanks to git hooks, the deployment of new versions on the production server is made with a one-command "git push production" on the development box, à la Heroku. Look at the scripts in the (/production) folder.
+* Thanks to git hooks, the deployment of new versions on the production server is made with a one-command "git push production" on the development box, à la Heroku. Look at the scripts in the [production/](production/) folder.
 
-* The functions called for scoring calculation are dynamically linked to the rule cards used for scoring, depending on the ruleset and card names fetched from the database. Django signals and importlib are used for this feature. See (/ruleset/models.py), lines 44-55.
+* The functions called for scoring calculation are dynamically linked to the rule cards used for scoring, depending on the ruleset and card names fetched from the database. Django signals and importlib are used for this feature. See [ruleset/models.py](ruleset/models.py), lines 44-55.
 
 * Players can choose between three "palettes" of color for the look of the website, with live-switching between palettes on the profile editing page.
 
@@ -25,6 +25,6 @@ MysTrade has been implemented in Python 2.7 with the [Django](https://www.django
 
 * Players can specify their timezone in their profile, making all dates display in this timezone.
 
-* Development was made in TDD; there are ~280 unit tests securing the code, which can be run with "./runtests.sh" (a PostgreSQL instance is required, see (/mystrade/settings.py)).
+* Development was made in TDD; there are ~280 unit tests securing the code, which can be run with "./runtests.sh" (a PostgreSQL instance is required, see [mystrade/settings.py](mystrade/settings.py)).
 
 The game was made through more than 600 git commits, with ~6000 lines of Python code, ~2300 lines of HTML, ~1300 lines of SASS and 200+ quite complex lines of JavaScript/jQuery for the main game page (10.000 LOC total).
