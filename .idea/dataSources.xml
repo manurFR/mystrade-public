@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" hash="4214230542">
-    <data-source source="LOCAL" name="Django default" product="" version="" jdbc-version="" driver-name="" driver-version="" uuid="27a062d6-ae87-46c3-870f-44aaa1ff6268">
+    <data-source source="LOCAL" name="Django default" uuid="27a062d6-ae87-46c3-870f-44aaa1ff6268">
+      <driver-ref>postgresql</driver-ref>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://127.0.0.1/mystrade</jdbc-url>
       <user-name>django</user-name>
@@ -14,8 +15,8 @@
         </library>
       </libraries>
     </data-source>
-    <data-source source="LOCAL" name="Django default" product="PostgreSQL" version="9.1.9" jdbc-version="3.0" driver-name="PostgreSQL Native Driver" driver-version="PostgreSQL 9.1 JDBC3 (build 901)" uuid="534334f4-4e56-4444-a3b1-2999267f6c15">
-      <identifier-quote-string>&quot;</identifier-quote-string>
+    <data-source source="LOCAL" name="Django default" uuid="534334f4-4e56-4444-a3b1-2999267f6c15">
+      <driver-ref>postgresql</driver-ref>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://127.0.0.1/mystrade</jdbc-url>
       <user-name>django</user-name>
@@ -27,6 +28,21 @@
         </library>
         <library>
           <url>jar://$USER_HOME$/.IntelliJIdea12/config/jdbc-drivers/postgresql-9.1-901.jdbc3.jar!/</url>
+        </library>
+      </libraries>
+    </data-source>
+    <data-source source="LOCAL" name="Django default" uuid="1ecc1de1-d14d-43a5-bc64-69ec11d495c4">
+      <driver-ref>postgresql</driver-ref>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://127.0.0.1/mystrade</jdbc-url>
+      <user-name>django</user-name>
+      <user-password>dfcedfc0dfd8dfc5dfc6dfcbdfc4dfcedfd2dfdadf92df9a</user-password>
+      <libraries>
+        <library>
+          <url>file://$USER_HOME$/.IntelliJIdea12/config/jdbc-drivers/postgresql-driver-license.txt</url>
+        </library>
+        <library>
+          <url>file://$USER_HOME$/.IntelliJIdea12/config/jdbc-drivers/postgresql-9.1-901.jdbc3.jar</url>
         </library>
       </libraries>
     </data-source>

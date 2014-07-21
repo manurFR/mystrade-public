@@ -1121,7 +1121,7 @@ class TradeModelsTest(MystradeTestCase):
 
     def _test_trade_abort_for_status_and_finalizer(self, current_status, expected_status, finalizer):
         closing_date = now()
-        trade = mommy.prepare(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
+        trade = mommy.make(Trade, game = self.game, initiator = self.loginUser, responder = self.alternativeUser,
                               status = current_status, finalizer = None, closing_date = None)
         trade.abort(finalizer, closing_date)
         try:
