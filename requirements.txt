@@ -10,4 +10,5 @@ model_mommy
 markdown
 bleach
 numpy
-#matplotlib # doesn't work: need to do 'sudo apt-get install python-matplotlib' manually
+pytz
+matplotlib # BEWARE: needed 'sudo apt-get install libfreetype6-dev libxft-dev' and 'sudo apt-get build-dep python-matplotlib' before
